@@ -218,6 +218,20 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="kromek_d3s_enabled"
+            android:summary="Enable streaming of Kromek D3s radiation data when connected on USB port"
+            android:title="Kromek D3S Radiation Sensor" />
+
+        <MultiSelectListPreference
+            android:key="kromek_d3s_options"
+            android:title="Kromek D3S Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
     </PreferenceCategory>
 
 

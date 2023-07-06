@@ -26,6 +26,7 @@ dependencies {
 //    implementation project(path: ':sensorhub-android-sos-ipc')
   implementation project(path: ':sensorhub-datastore-h2')
   implementation project(path: ':sensorhub-service-sweapi')
+  implementation project(path: ':sensorhub-driver-kromek-d3s')
 }
 
 android {

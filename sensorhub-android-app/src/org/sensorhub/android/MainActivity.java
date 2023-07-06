@@ -48,6 +48,8 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.botts.impl.sensor.kromek.d3s.D3sConfig;
+
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.api.common.SensorHubException;
@@ -408,6 +410,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             // don't add it to SOS-T here since it's already configured with a wildcard
             // meaning it will forward data from all systems by default
             //addSosTConfig(trupulseConfig, sosUser, sosPwd);
+        }
+
+        // Kromek D3s sensor
+        enabled = prefs.getBoolean("kromek_d3s_enabled", false);
+        if (enabled)
+        {
+            D3sConfig kromekD3sConfig = new D3sConfig();
+            sensorhubConfig.add(kromekD3sConfig);
         }
 
         // AngelSensor
