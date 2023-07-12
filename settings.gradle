@@ -31,7 +31,8 @@ def repos = [
         'processing/sensorhub-process-geoloc'
     ],
     'osh-oakridge-modules': [
-        'sensors/sensorhub-driver-kromek-d3s'
+        'sensors/sensorhub-driver-kromek-d3s',
+        'sensors/sensorhub-utils-rad'
     ]
 ]
 
