@@ -26,17 +26,13 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.support.v7.view.menu.ListMenuPresenter;
+import androidx.appcompat.view.menu.ListMenuPresenter;
 import android.text.InputType;
-import android.text.PrecomputedText;
 import android.util.Log;
 import android.widget.BaseAdapter;
-
-import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -45,9 +41,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 
 public class UserSettingsActivity extends PreferenceActivity
