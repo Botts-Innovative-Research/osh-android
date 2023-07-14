@@ -10,6 +10,3 @@
 	path = submodules/osh-oakridge-modules
 	url = git@github.com:Botts-Innovative-Research/osh-oakridge-modules.git
     branch = kromek-d3s
-[submodule "submodules/osh-oakridge-modules"]
-	path = submodules/osh-oakridge-modules
-	url = git@github.com:Botts-Innovative-Research/osh-oakridge-modules.git
