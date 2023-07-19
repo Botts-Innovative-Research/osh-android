@@ -9,4 +9,4 @@
 [submodule "include/osh-oakridge-modules"]
 	path = submodules/osh-oakridge-modules
 	url = git@github.com:Botts-Innovative-Research/osh-oakridge-modules.git
-    branch = kromek-d3s
+    branch = kromek-d3s-android
