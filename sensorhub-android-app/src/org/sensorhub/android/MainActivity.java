@@ -417,6 +417,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (enabled)
         {
             D3sConfig kromekD3sConfig = new D3sConfig();
+            kromekD3sConfig.id = "KROMEK_D3S_SENSOR";
+            kromekD3sConfig.name = "Kromek D3S Radiation Sensor [" + deviceName + "]";
+
             sensorhubConfig.add(kromekD3sConfig);
         }
 
