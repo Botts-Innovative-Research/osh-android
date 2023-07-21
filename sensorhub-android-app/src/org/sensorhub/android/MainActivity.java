@@ -49,6 +49,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.botts.impl.sensor.kromek.d3s.D3sConfig;
+import com.botts.impl.sensor.kromek.d3s.D3sSensor;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
@@ -419,7 +420,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             D3sConfig kromekD3sConfig = new D3sConfig();
             kromekD3sConfig.id = "KROMEK_D3S_SENSOR";
             kromekD3sConfig.name = "Kromek D3S Radiation Sensor [" + deviceName + "]";
-
+            kromekD3sConfig.moduleClass = D3sSensor.class.getCanonicalName();
+            kromekD3sConfig.autoStart = true;
+            kromekD3sConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED; //kluge to fix initial update
             sensorhubConfig.add(kromekD3sConfig);
         }
 
@@ -1517,7 +1520,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         for(Map.Entry<String,?> pref : prefMap.entrySet()){
             if(pref.getValue() instanceof HashSet) {
                 if(((HashSet) pref.getValue()).contains("FETCH_LOCAL")) {
-                    Log.d(TAG, "shouldServe: TRUE");
+//                    Log.d(TAG, "shouldServe: TRUE");
                     return true;
                 }
             }
