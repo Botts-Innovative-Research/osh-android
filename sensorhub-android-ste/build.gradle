@@ -1,0 +1,8 @@
+apply plugin: 'com.android.library'
+
+description = 'STE Radiation Pager'
+ext.details = 'Driver for STE Radiation Pager'
+
+dependencies {
+    api project(':sensorhub-core')
+}
