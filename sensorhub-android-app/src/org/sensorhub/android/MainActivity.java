@@ -80,6 +80,7 @@ import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.service.sweapi.SWEApiService;
 import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
+import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 
 import java.io.File;
 import java.net.MalformedURLException;
