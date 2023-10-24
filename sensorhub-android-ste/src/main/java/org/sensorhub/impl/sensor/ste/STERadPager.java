@@ -12,10 +12,10 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
+import org.sensorhub.android.SensorHubService;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 
 import java.util.UUID;
@@ -38,17 +38,19 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     private BluetoothGattCharacteristic rxCharacteristic;
     private BluetoothGattCharacteristic txCharacteristic;
 
-    public STERadPager(Context context) {
-        this.context = context;
+    public STERadPager() {
+
     }
 
     @Override
     public boolean isConnected() {
-        return false;
+        return true;
     }
 
     @Override
     public void doInit() {
+        context = SensorHubService.getContext();
+
         final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Activity.BLUETOOTH_SERVICE);
         btAdapter = bluetoothManager.getAdapter();
 
@@ -60,9 +62,9 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     @Override
     public void doStart() {
         BluetoothDevice device = btAdapter.getRemoteDevice(DEVICE_NAME);
-        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
+        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
             // request permission
-            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH}, 1);
         }
         btGatt = device.connectGatt(context, false, gattCallback);
         deviceInformationService = btGatt.getService((DEVICE_INFORMATION_SERVICE));
@@ -87,21 +89,39 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
             }
         }
 
+//        public void onCharacteristicRead(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value, int status) {
+//            if(characteristic.getUuid().equals(MODEL_NUMBER_CHARACTERISTIC)) {
+//                // do stuff with model number
+//                byte[] someVal = characteristic.getValue();
+//                String message = new String(someVal);
+//            }else if(characteristic == rxCharacteristic) {
+//                // do stuff with rx
+//                byte[] someVal = characteristic.getValue();
+//                String message = new String(someVal);
+//            }else if(characteristic == txCharacteristic) {
+//                // do stuff with tx
+//                byte[] someVal = characteristic.getValue();
+//                String message = new String(someVal);
+//            }else {
+//                System.out.println(characteristic.getUuid());
+//            }
+//        }
+
         @Override
-        public void onCharacteristicRead(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value, int status) {
-            if(characteristic.getUuid().equals(MODEL_NUMBER_CHARACTERISTIC)) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (characteristic.getUuid().equals(MODEL_NUMBER_CHARACTERISTIC)) {
                 // do stuff with model number
                 byte[] someVal = characteristic.getValue();
                 String message = new String(someVal);
-            }else if(characteristic == rxCharacteristic) {
+            } else if (characteristic == rxCharacteristic) {
                 // do stuff with rx
                 byte[] someVal = characteristic.getValue();
                 String message = new String(someVal);
-            }else if(characteristic == txCharacteristic) {
+            } else if (characteristic == txCharacteristic) {
                 // do stuff with tx
                 byte[] someVal = characteristic.getValue();
                 String message = new String(someVal);
-            }else {
+            } else {
                 System.out.println(characteristic.getUuid());
             }
         }

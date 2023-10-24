@@ -151,7 +151,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         FlirOne,
         DJIDrone,
         ProxySensor,
-        BLELocation
+        BLELocation,
+        STERadPager,
     }
 
     
@@ -409,6 +410,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             // don't add it to SOS-T here since it's already configured with a wildcard
             // meaning it will forward data from all systems by default
             //addSosTConfig(trupulseConfig, sosUser, sosPwd);
+        }
+
+        // STE Rad Pager sensor
+        enabled = prefs.getBoolean("ste_radpager_enabled", false);
+        if(enabled){
+            STERadPagerConfig steRadPagerConfig = new STERadPagerConfig();
+            steRadPagerConfig.id = "STE_RADPAGER_SENSOR";
+            steRadPagerConfig.name = "STE Rad Pager [" + deviceName + "]";
+            steRadPagerConfig.autoStart = true;
+            steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+
+            sensorhubConfig.add(steRadPagerConfig);
         }
 
         // AngelSensor
@@ -956,6 +969,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.BLELocation.equals(sensor)){
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        } else if(Sensors.STERadPager.equals(sensor)){
+            return prefs.getBoolean("ste_radpager_enabled", false) && prefs.getStringSet("radpager_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;
@@ -1537,6 +1552,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }
         if(checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED){
             permissions.add(Manifest.permission.RECORD_AUDIO);
+        }if(checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED){
+            permissions.add(Manifest.permission.BLUETOOTH);
+        }if(checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
         }
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];

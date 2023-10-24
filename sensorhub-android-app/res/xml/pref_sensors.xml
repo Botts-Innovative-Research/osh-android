@@ -218,6 +218,20 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+        <SwitchPreference
+            android:key="ste_radpager_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of STE RadPager data (sensor must be connected via Bluetooth LE on startup)"
+            android:title="STE RadPager Data" />
+
+        <MultiSelectListPreference
+            android:key="ste_radpager_options"
+            android:title="STE RadPager Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
     </PreferenceCategory>
 
 
