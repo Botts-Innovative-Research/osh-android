@@ -23,6 +23,8 @@ import org.sensorhub.impl.sensor.AbstractSensorModule;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
@@ -42,7 +44,9 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     private BluetoothGattCharacteristic modelNumberCharacteristic;
     private BluetoothGattCharacteristic rxCharacteristic;
     private BluetoothGattCharacteristic txCharacteristic;
+    private Timer txNotificationTimer;
     STERadPagerOutput output;
+    private boolean btConnected = false;
 
     public STERadPager() {
 
@@ -50,7 +54,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
 
     @Override
     public boolean isConnected() {
-        return true;
+        return btConnected;
     }
 
     @Override
@@ -89,62 +93,24 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH}, 1);
         }
 
-
-        btGatt = device.connectGatt(context, false, gattCallback);
-        btGatt.connect();
+        btGatt = device.connectGatt(context, true, gattCallback);
     }
 
     @Override
     public void doStop() {
-
+        txNotificationTimer.cancel();
+        btGatt.disconnect();
+        btGatt.close();
     }
 
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                // do stuff on connection
-                System.out.println("Connected");
+                btConnected = true;
                 boolean discoveryStarted = gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                // do stuff on disconnection
-            }
-        }
-
-//        public void onCharacteristicRead(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value, int status) {
-//            if(characteristic.getUuid().equals(MODEL_NUMBER_CHARACTERISTIC)) {
-//                // do stuff with model number
-//                byte[] someVal = characteristic.getValue();
-//                String message = new String(someVal);
-//            }else if(characteristic == rxCharacteristic) {
-//                // do stuff with rx
-//                byte[] someVal = characteristic.getValue();
-//                String message = new String(someVal);
-//            }else if(characteristic == txCharacteristic) {
-//                // do stuff with tx
-//                byte[] someVal = characteristic.getValue();
-//                String message = new String(someVal);
-//            }else {
-//                System.out.println(characteristic.getUuid());
-//            }
-//        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (characteristic.getUuid().equals(MODEL_NUMBER_CHARACTERISTIC)) {
-                // do stuff with model number
-                byte[] someVal = characteristic.getValue();
-                String message = new String(someVal);
-            } else if (characteristic == rxCharacteristic) {
-                // do stuff with rx
-                byte[] someVal = characteristic.getValue();
-                String message = new String(someVal);
-            } else if (characteristic == txCharacteristic) {
-                // do stuff with tx
-                byte[] someVal = characteristic.getValue();
-                String message = new String(someVal);
-            } else {
-                System.out.println(characteristic.getUuid());
+                txNotificationTimer.cancel();
             }
         }
 
@@ -152,6 +118,8 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             if (characteristic.getUuid().equals(RX_CHARACTERISTIC)) {
                 parseMessage(characteristic.getValue());
+            } else if (characteristic.getUuid().equals(TX_CHARACTERISTIC)) {
+
             }
         }
 
@@ -173,18 +141,35 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
 
             gatt.setCharacteristicNotification(txCharacteristic, true);
 
-//            gatt.readCharacteristic(rxCharacteristic);
-//            gatt.writeCharacteristic(txCharacteristic);
+            txNotificationTimer = new Timer();
+            TimerTask txNotificationTask = new TimerTask() {
+                @Override
+                public void run() {
+                    txCharacteristic.setValue("?");
+                    btGatt.writeCharacteristic(txCharacteristic);
+                }
+            };
+            txNotificationTimer.schedule(txNotificationTask, 0, 1000);
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (status != BluetoothGatt.GATT_SUCCESS) {
+                logger.info("Failed to write to characteristic");
+            }
         }
 
         private void parseMessage(byte[] characteristicValue) {
             String message = new String(characteristicValue, StandardCharsets.UTF_8);
             message = message.replaceAll("\r\n", "");
             String[] splitMsg = message.split(",");
-            logger.info("Alarm: {}, Counts: {}, Threshold: {}", splitMsg[1], splitMsg[2], splitMsg[3]);
 
-            output.insertSensorData(splitMsg);
+            if (splitMsg[0].equals("GT")) {
+                logger.info("Alarm: {}, Counts: {}, Threshold: {}", splitMsg[1], splitMsg[2], splitMsg[3]);
+                output.insertSensorData(splitMsg);
+            }else {
+                logger.info("Unknown message: {}", message);
+            }
         }
-
     };
 }
