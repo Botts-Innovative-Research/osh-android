@@ -13,15 +13,25 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
+import net.opengis.sensorml.v20.PhysicalComponent;
+
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.api.data.IStreamingDataInterface;
 import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
+import org.sensorhub.impl.sensor.android.SensorMLBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,6 +45,8 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     private static final UUID RX_CHARACTERISTIC = UUID.fromString("49535343-1E4D-4BD9-BA61-23C647249616");
     private static final UUID TX_CHARACTERISTIC = UUID.fromString("49535343-8841-43F4-A8D4-ECBE34729BB3");
     private static final String DEVICE_NAME = "RADIATION PAGER";
+    private final ArrayList<PhysicalComponent> smlComponents;
+    private final SensorMLBuilder smlBuilder;
 
     private BluetoothGatt btGatt;
     private BluetoothAdapter btAdapter;
@@ -46,10 +58,14 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     private BluetoothGattCharacteristic txCharacteristic;
     private Timer txNotificationTimer;
     STERadPagerOutput output;
+    STERadPagerLocationOutput locationOutput;
     private boolean btConnected = false;
+    private LocationManager locationManager;
+    private HandlerThread eventThread;
 
     public STERadPager() {
-
+        this.smlComponents = new ArrayList<PhysicalComponent>();
+        this.smlBuilder = new SensorMLBuilder();
     }
 
     @Override
@@ -73,6 +89,23 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         output = new STERadPagerOutput(this);
         output.doInit();
         addOutput(output, false);
+
+
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION)) {
+            this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+            List<String> locProviders = locationManager.getAllProviders();
+            for (String provName : locProviders) {
+                logger.debug("Detected location provider " + provName);
+                LocationProvider locProvider = locationManager.getProvider(provName);
+
+                // keep only GPS for now
+                if (locProvider.requiresSatellite()) {
+                    locationOutput = new STERadPagerLocationOutput(this, locationManager, locProvider);
+                    useLocationProvider(locationOutput, locProvider);
+                }
+            }
+        }
     }
 
     @Override
@@ -94,6 +127,13 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         }
 
         btGatt = device.connectGatt(context, true, gattCallback);
+
+
+        eventThread = new HandlerThread("STERadPagerEventThread");
+        eventThread.start();
+        Handler eventHandler = new Handler(eventThread.getLooper());
+
+        locationOutput.doStart(eventHandler);
     }
 
     @Override
@@ -167,9 +207,15 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
             if (splitMsg[0].equals("GT")) {
                 logger.info("Alarm: {}, Counts: {}, Threshold: {}", splitMsg[1], splitMsg[2], splitMsg[3]);
                 output.insertSensorData(splitMsg);
-            }else {
+            } else {
                 logger.info("Unknown message: {}", message);
             }
         }
     };
+
+    protected void useLocationProvider(IStreamingDataInterface output, LocationProvider locProvider) {
+        addOutput(output, false);
+        smlComponents.add(smlBuilder.getComponentDescription(locationManager, locProvider));
+        logger.info("Getting data from " + locProvider.getName() + " location provider");
+    }
 }
