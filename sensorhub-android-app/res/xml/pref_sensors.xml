@@ -232,6 +232,20 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+        <SwitchPreference
+            android:key="kromek_d5_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of Kromek D5 data (sensor must be paired via Bluetooth on startup)"
+            android:title="Kromek D5 Data" />
+
+        <MultiSelectListPreference
+            android:key="kromek_d5_options"
+            android:title="Kromek D5 Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
     </PreferenceCategory>
 
 
