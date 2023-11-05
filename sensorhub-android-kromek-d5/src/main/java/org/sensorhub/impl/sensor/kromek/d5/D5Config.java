@@ -13,18 +13,32 @@
 package org.sensorhub.impl.sensor.kromek.d5;
 
 import android.content.Context;
-import android.provider.Settings;
 
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.api.config.DisplayInfo;
 import org.sensorhub.api.sensor.SensorConfig;
 
+/**
+ * Configuration for the Kromek D5 sensor
+ *
+ * @author Michael Elmore
+ * @since Nov 2013
+ */
 public class D5Config extends SensorConfig {
+    private final Context context = SensorHubService.getContext();
+
     public D5Config() {
-        this.moduleClass = D5Sensor.class.getCanonicalName();
+        moduleClass = D5Sensor.class.getCanonicalName();
     }
 
-    public static String getUid() {
-        Context context = SensorHubService.getContext();
-        return "urn:android:kromek:d5:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    public Context getContext() {
+        return context;
     }
+
+    /**
+     * The unique identifier for the configured sensor.
+     */
+    @DisplayInfo.Required
+    @DisplayInfo(desc = "Serial number or unique identifier")
+    public String serialNumber = "D5M100000";
 }

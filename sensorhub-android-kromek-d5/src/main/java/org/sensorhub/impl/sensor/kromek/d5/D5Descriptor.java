@@ -16,6 +16,12 @@ import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleProvider;
 import org.sensorhub.api.module.ModuleConfig;
 
+/**
+ * Module descriptor for the Kromek D5 sensor
+ *
+ * @author Michael Elmore
+ * @since Nov 2013
+ */
 public class D5Descriptor implements IModuleProvider {
     @Override
     public String getModuleName() {

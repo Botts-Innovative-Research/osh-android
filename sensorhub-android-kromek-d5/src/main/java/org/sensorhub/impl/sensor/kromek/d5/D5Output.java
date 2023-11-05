@@ -18,51 +18,40 @@ import net.opengis.swe.v20.DataEncoding;
 
 import org.sensorhub.api.data.DataEvent;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vast.swe.SWEHelper;
 
+/**
+ * Output for the Kromek D5 sensor
+ *
+ * @author Michael Elmore
+ * @since Nov 2013
+ */
 public class D5Output extends AbstractSensorOutput<D5Sensor> {
-    String name = "STE Rad Pager Data";
+    private static final Logger logger = LoggerFactory.getLogger(D5Output.class);
     DataComponent dataComponent;
     DataEncoding dataEncoding;
+    int count = 0;
 
     protected D5Output(D5Sensor parent) {
-        super("STE Rad Pager Data", parent);
+        super("Kromek D5 Data", parent);
+
+        logger.info("Creating D5 Output");
     }
 
     public void doInit() {
+        logger.info("Initializing D5 Output");
         SWEHelper fac = new SWEHelper();
 
         dataComponent = fac.createRecord()
-                .name(name)
-                .label("STE Rad Pager Data")
+                .name("Test")
+                .label("Test")
                 .addField("time", fac.createTime().asSamplingTimeIsoUTC()
-                        .label("Time Stamp")
-                        .build())
-                .addField("Counts", fac.createQuantity()
-                        .label("Counts")
-                        .description("# of Gamma Detection Events measure by the rad sensing assembly every half second pre-scaled by 1/2")
-                        .build())
-                .addField("CPS", fac.createQuantity()
-                        .label("Counts per Second")
-                        .description("Counts per Second calculated by the Counts Property * 4")
-                        .build())
-                .addField("Saturation", fac.createBoolean()
-                        .label("Saturation")
-                        .description("If the Rad Sensor is saturated on the front end, invalidating the Counts value. USER SHOULD RETREAT IF THIS IS TRUE!!!")
-                        .build())
-                .addField("Threshold", fac.createQuantity()
-                        .label("Threshold")
-                        .description("Measured background radiation threshold")
-                        .build())
-                .addField("Alarm Level Value", fac.createQuantity()
-                        .label("Alarm Level - Value")
-                        .description("Alarm Level indicated")
-                        .build())
-                .addField("Alarm Level Exposure Rate", fac.createQuantity()
-                        .label("Alarm Level - Exposure Rate")
-                        .description("Exposure Rate indicated")
-                        .uom("uR/h")
-                        .build())
+                        .label("Time Stamp"))
+                .addField("Count", fac.createQuantity()
+                        .label("Count")
+                        .description("Just a count field, for testing."))
                 .build();
 
         dataEncoding = fac.newTextEncoding(",", "\n");
@@ -80,85 +69,17 @@ public class D5Output extends AbstractSensorOutput<D5Sensor> {
 
     @Override
     public double getAverageSamplingPeriod() {
-        return 0;
+        return 1;
     }
 
-    public void insertSensorData(String[] data) {
-        int alarm;
-        boolean saturated;
-
-        if (data[1].equals("!")) {
-            saturated = true;
-            alarm = 9;
-        } else if (data[1].equals("")) {
-            saturated = false;
-            alarm = 0;
-        } else {
-            saturated = false;
-            alarm = Integer.parseInt(data[1]);
-        }
-
-        int counts = Integer.parseInt(data[2]);
-        int cps = counts * 4;
-        int threshold = Integer.parseInt(data[3]);
-        int exposureRate;
-        switch (alarm) {
-            case 0:
-                exposureRate = 0;
-                break;
-            case 1:
-                exposureRate = 10;
-                break;
-            case 2:
-                exposureRate = 25;
-                break;
-            case 3:
-                exposureRate = 60;
-                break;
-            case 4:
-                exposureRate = 140;
-                break;
-            case 5:
-                exposureRate = 300;
-                break;
-            case 6:
-                exposureRate = 600;
-                break;
-            case 7:
-                exposureRate = 1400;
-                break;
-            case 8:
-                exposureRate = 3000;
-                break;
-            case 9:
-                exposureRate = 6000;
-                break;
-            case -1:
-                // Figure out how to communicate that this is bad
-                exposureRate = -1;
-                break;
-            default:
-                exposureRate = Integer.parseInt(null);
-                break;
-        }
-
-        buildRecord(counts, cps, threshold, saturated, alarm, exposureRate);
-    }
-
-    private void buildRecord(int count, int cps, int threshold, boolean saturated, int alarmLevel, int exposureRate) {
+    public void buildRecord() {
         DataBlock dataBlock = dataComponent.createDataBlock();
 
-        dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000);
-        dataBlock.setDoubleValue(1, count);
-        dataBlock.setDoubleValue(2, cps);
-        dataBlock.setBooleanValue(3, saturated);
-        dataBlock.setDoubleValue(4, threshold);
-        dataBlock.setDoubleValue(5, alarmLevel);
-        dataBlock.setDoubleValue(6, exposureRate);
+        dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
+        dataBlock.setDoubleValue(1, count++);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();
         eventHandler.publish(new DataEvent(latestRecordTime, this, dataBlock));
     }
-
 }
