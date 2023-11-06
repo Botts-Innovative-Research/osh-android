@@ -12,9 +12,6 @@
 
 package org.sensorhub.impl.sensor.kromek.d5;
 
-import android.content.Context;
-
-import org.sensorhub.android.SensorHubService;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +25,6 @@ import org.slf4j.LoggerFactory;
  */
 public class D5Sensor extends AbstractSensorModule<D5Config> {
     private static final Logger logger = LoggerFactory.getLogger(D5Sensor.class);
-    private final Context context = SensorHubService.getContext();
-
     D5Output output;
 
     public D5Sensor() {
@@ -65,9 +60,5 @@ public class D5Sensor extends AbstractSensorModule<D5Config> {
     @Override
     public void doStop() {
         logger.info("Stopping D5 Sensor");
-    }
-
-    public Context getContext() {
-        return context;
     }
 }
