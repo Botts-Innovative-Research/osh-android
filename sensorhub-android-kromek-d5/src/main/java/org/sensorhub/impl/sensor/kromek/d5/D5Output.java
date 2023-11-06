@@ -72,7 +72,8 @@ public class D5Output extends AbstractSensorOutput<D5Sensor> {
         return 1;
     }
 
-    public void buildRecord() {
+    public void setData() {
+        logger.info("Setting D5 Output Data");
         DataBlock dataBlock = dataComponent.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
@@ -81,5 +82,6 @@ public class D5Output extends AbstractSensorOutput<D5Sensor> {
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();
         eventHandler.publish(new DataEvent(latestRecordTime, this, dataBlock));
+        logger.info("D5 Output Data Set");
     }
 }

@@ -46,15 +46,15 @@ public class D5Sensor extends AbstractSensorModule<D5Config> {
 
         // Create outputs
         output = new D5Output(this);
-        output.doInit();
         addOutput(output, false);
-
-        output.buildRecord();
+        output.doInit();
     }
 
     @Override
     public void doStart() {
         logger.info("Starting D5 Sensor");
+
+        output.setData();
     }
 
     @Override
