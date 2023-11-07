@@ -19,7 +19,7 @@ import org.sensorhub.api.config.DisplayInfo;
 import org.sensorhub.api.sensor.SensorConfig;
 
 /**
- * Configuration for the Kromek D5 sensor
+ * Configuration class for the Kromek D5 driver
  *
  * @author Michael Elmore
  * @since Nov 2013
@@ -41,4 +41,11 @@ public class D5Config extends SensorConfig {
     @DisplayInfo.Required
     @DisplayInfo(desc = "Serial number or unique identifier")
     public String serialNumber = "D5M100000";
+
+    /**
+     * The output settings for the configured sensor.
+     */
+    @DisplayInfo.Required
+    @DisplayInfo(label = "Outputs", desc = "Configuration options for source data outputs from driver")
+    public D5ConfigOutputs outputs = new D5ConfigOutputs();
 }

@@ -39,10 +39,10 @@ public class Shared {
      * Reads until a framing byte is received, then reads the length, then reads the rest of the message.
      *
      * @param in The input stream to read from.
-     * @return The received data, excluding overhead.
+     * @return The received data, excluding framing bytes.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     static byte[] receiveData(InputStream in) throws IOException {
-        List<Byte> output = new ArrayList<>();
         int b;
 
         // Read until we get a framing byte
@@ -60,20 +60,19 @@ public class Shared {
         byte length2 = (byte) in.read();
         int length = bytesToUInt(length1, length2);
 
-        output.add(length1);
-        output.add(length2);
-
         // Read the rest of the message, excluding the two bytes we already read
-        for (int i = 0; i < length - 2; i++) {
-            b = in.read();
-            output.add((byte) b);
-        }
+        byte[] data = new byte[length - 2];
+        in.read(data);
 
-        byte[] result = new byte[output.size()];
-        for (int i = 0; i < output.size(); i++) {
-            result[i] = output.get(i);
-        }
-        return result;
+        // Read the ending framing byte
+        in.read();
+
+        // Return the data, plus the length bytes we already read
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(length1);
+        outputStream.write(length2);
+        outputStream.write(data);
+        return outputStream.toByteArray();
     }
 
     /**
@@ -93,10 +92,13 @@ public class Shared {
         byte[] message = report.encodeRequest();
 
         // Send the framed message to the server
+        D5Sensor.logger.info("Sending request: " + Arrays.toString(message));
         outputStream.write(message);
 
         // Receive data from the server
+        D5Sensor.logger.info("Receiving response...");
         byte[] receivedData = receiveData(inputStream);
+        D5Sensor.logger.info("Received response: " + Arrays.toString(receivedData));
 
         // Decode the received data using SLIP framing
         byte[] decodedData = decodeSLIP(receivedData);
@@ -104,6 +106,7 @@ public class Shared {
         // The first five bytes are the header
         byte componentId = decodedData[3];
         byte reportId = decodedData[4];
+        D5Sensor.logger.info("Received report: " + componentId + " " + reportId);
 
         // These shouldn't happen, but just in case they do, ignore them.
         // Acknowledgements are typically a response to a command, and we only send requests.
@@ -113,11 +116,13 @@ public class Shared {
 
         // The payload is everything in between
         byte[] payload = Arrays.copyOfRange(decodedData, 5, decodedData.length - 2);
+        D5Sensor.logger.info("Received payload: " + Arrays.toString(payload));
 
         // Create a new report with the payload
         report = report.getClass()
                 .getDeclaredConstructor(byte.class, byte.class, byte[].class)
                 .newInstance(componentId, reportId, payload);
+
         return report;
     }
 

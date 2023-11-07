@@ -9,57 +9,70 @@
  *
  * Copyright (c) 2023 Botts Innovative Research, Inc. All Rights Reserved.
  */
-
 package org.sensorhub.impl.sensor.kromek.d5;
 
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataComponent;
 import net.opengis.swe.v20.DataEncoding;
+import net.opengis.swe.v20.DataRecord;
 
 import org.sensorhub.api.data.DataEvent;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
+import org.sensorhub.impl.sensor.kromek.d5.reports.SerialReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vast.swe.SWEHelper;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
- * Output for the Kromek D5 sensor
+ * Output specification and provider for R5Sensor driver.
  *
  * @author Michael Elmore
- * @since Nov 2013
+ * @since Oct. 2023
  */
 public class D5Output extends AbstractSensorOutput<D5Sensor> {
-    private static final Logger logger = LoggerFactory.getLogger(D5Output.class);
-    DataComponent dataComponent;
-    DataEncoding dataEncoding;
-    int count = 0;
+    public static final Logger logger = LoggerFactory.getLogger(D5Output.class);
+    private static final int MAX_NUM_TIMING_SAMPLES = 10;
+    private final long[] timingHistogram = new long[MAX_NUM_TIMING_SAMPLES];
+    private final Object histogramLock = new Object();
+    private final int samplingPeriod;
 
-    protected D5Output(D5Sensor parent) {
-        super("Kromek D5 Data", parent);
+    private DataRecord dataRecord;
+    private DataEncoding dataEncoding;
+    long lastSetTimeMillis = System.currentTimeMillis();
+    private int setCount = 0;
 
-        logger.info("Creating D5 Output");
+    /**
+     * Constructor for the output.
+     *
+     * @param parentSensor Sensor driver providing this output
+     */
+    D5Output(D5Sensor parentSensor, String outputName, int samplingPeriod) {
+        super(outputName, parentSensor);
+        this.samplingPeriod = samplingPeriod;
+
+        logger.debug("Output " + outputName + " created");
     }
 
-    public void doInit() {
-        logger.info("Initializing D5 Output");
-        SWEHelper fac = new SWEHelper();
+    /**
+     * Initializes the data structure for the output, defining the fields, their ordering,
+     * and data types.
+     */
+    void doInit(SerialReport data) {
+        logger.debug("Initializing output");
 
-        dataComponent = fac.createRecord()
-                .name("Test")
-                .label("Test")
-                .addField("time", fac.createTime().asSamplingTimeIsoUTC()
-                        .label("Time Stamp"))
-                .addField("Count", fac.createQuantity()
-                        .label("Count")
-                        .description("Just a count field, for testing."))
-                .build();
+        dataRecord = data.createDataRecord();
 
-        dataEncoding = fac.newTextEncoding(",", "\n");
+        dataEncoding = new SWEHelper().newTextEncoding(",", "\n");
+
+        logger.debug("Initializing output Complete");
     }
 
     @Override
     public DataComponent getRecordDescription() {
-        return dataComponent;
+        return dataRecord;
     }
 
     @Override
@@ -69,19 +82,42 @@ public class D5Output extends AbstractSensorOutput<D5Sensor> {
 
     @Override
     public double getAverageSamplingPeriod() {
-        return 1;
+        return samplingPeriod;
     }
 
-    public void setData() {
-        logger.info("Setting D5 Output Data");
-        DataBlock dataBlock = dataComponent.createDataBlock();
+    public void setData(SerialReport data) {
+        try {
+            DataBlock dataBlock;
+            if (latestRecord == null) {
+                dataBlock = dataRecord.createDataBlock();
+            } else {
+                dataBlock = latestRecord.renew();
+            }
 
-        dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
-        dataBlock.setDoubleValue(1, count++);
+            synchronized (histogramLock) {
+                int setIndex = setCount % MAX_NUM_TIMING_SAMPLES;
 
-        latestRecord = dataBlock;
-        latestRecordTime = System.currentTimeMillis();
-        eventHandler.publish(new DataEvent(latestRecordTime, this, dataBlock));
-        logger.info("D5 Output Data Set");
+                // Get a sampling time for the latest set based on the previously set sampling time
+                timingHistogram[setIndex] = System.currentTimeMillis() - lastSetTimeMillis;
+
+                // Set the latest sampling time to now
+                lastSetTimeMillis = timingHistogram[setIndex];
+            }
+
+            ++setCount;
+
+            double timestamp = System.currentTimeMillis() / 1000d;
+
+            data.setDataBlock(dataBlock, dataRecord, timestamp);
+
+            latestRecord = dataBlock;
+            latestRecordTime = System.currentTimeMillis();
+
+            eventHandler.publish(new DataEvent(latestRecordTime, D5Output.this, dataBlock));
+        } catch (Exception e) {
+            StringWriter stringWriter = new StringWriter();
+            e.printStackTrace(new PrintWriter(stringWriter));
+            logger.error("Error in worker thread: {} due to exception: {}", Thread.currentThread().getName(), stringWriter);
+        }
     }
 }
