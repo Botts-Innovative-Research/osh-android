@@ -330,7 +330,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorhubConfig.add(sweApiServiceConfig);
 
 
-        //Storage Configuration
+        // Storage Configuration
 //        if(prefs.getBoolean("hub_enable", true) && prefs.getBoolean("hub_enable_local_storage", true)) {
         if (shouldStore(prefs)) {
             File dbFile = new File(getApplicationContext().getFilesDir() + "/db/");
@@ -394,7 +394,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             // don't add it to SOS-T here since it's already configured with a wildcard
             // meaning it will forward data from all systems by default
-            //addSosTConfig(trupulseConfig, sosUser, sosPwd);
+            // addSosTConfig(trupulseConfig, sosUser, sosPwd);
         }
 
         // STE Rad Pager sensor
@@ -417,6 +417,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             config.name = "Kromek D5 [" + deviceName + "]";
             config.autoStart = true;
             config.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            config.serialNumber = prefs.getString("d5_serial", null);
+            config.outputs.enabledReports = prefs.getStringSet("kromek_d5_output_options", Collections.emptySet());
+            config.outputs.parseEnabledReports();
 
             sensorhubConfig.add(config);
         }
@@ -1489,7 +1492,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     private void checkForPermissions() {
         List<String> permissions = new ArrayList<>();
 
-        //Check for necessary permissions
+        // Check for necessary permissions
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
