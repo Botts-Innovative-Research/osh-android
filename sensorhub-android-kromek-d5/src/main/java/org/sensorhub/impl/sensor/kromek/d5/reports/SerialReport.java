@@ -18,6 +18,8 @@ import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIA
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_BUILD_FOR_PRODUCT_D5;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
@@ -36,12 +38,12 @@ public abstract class SerialReport {
     private static String reportDescription = "Report";
     private static String reportDefinition = SWEHelper.getPropertyUri(reportName);
     private static final int overheadLength = KROMEK_SERIAL_MESSAGE_OVERHEAD + KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
-    private int pollingRate = 1;
+    private static int pollingRate = 1;
 
     /**
      * Create a new message with the given componentId and reportId.
      */
-    public SerialReport(byte componentId, byte reportId) {
+    protected SerialReport(byte componentId, byte reportId) {
         this.componentId = componentId;
         this.reportId = reportId;
         setReportInfo();
@@ -259,7 +261,7 @@ public abstract class SerialReport {
      *
      * @return The polling rate for the report.
      */
-    public int getPollingRate() {
+    public static int getPollingRate() {
         return pollingRate;
     }
 
@@ -271,9 +273,9 @@ public abstract class SerialReport {
      *
      * @param pollingRate The polling rate for the report.
      */
-    public void setPollingRate(int pollingRate) {
+    public static void setPollingRate(int pollingRate) {
         if (pollingRate < 0) pollingRate = 1;
-        this.pollingRate = pollingRate;
+        SerialReport.pollingRate = pollingRate;
     }
 
     /**
@@ -289,6 +291,7 @@ public abstract class SerialReport {
      *
      * @return A string representation of the message.
      */
+    @NonNull
     public abstract String toString();
 
     /**

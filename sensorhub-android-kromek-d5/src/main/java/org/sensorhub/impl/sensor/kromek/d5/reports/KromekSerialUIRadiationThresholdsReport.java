@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_RADIATION_THRESHOLD_INDEXED_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -75,6 +77,7 @@ public class KromekSerialUIRadiationThresholdsReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialUIRadiationThresholdsReport.class.getSimpleName() + " {" +
                 "index=" + index +
@@ -142,7 +145,7 @@ public class KromekSerialUIRadiationThresholdsReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialUIRadiationThresholdsReport.class.getSimpleName());
+        setReportName("KromekSerialUIRadiationThresholdsReport");
         setReportLabel("Radiation Thresholds");
         setReportDescription("Radiation Thresholds");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

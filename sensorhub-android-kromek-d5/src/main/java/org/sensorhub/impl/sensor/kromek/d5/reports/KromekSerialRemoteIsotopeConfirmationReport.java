@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_REMOTE_ISOTOPE_CONFIRMATION_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
@@ -41,6 +43,7 @@ public class KromekSerialRemoteIsotopeConfirmationReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialRemoteIsotopeConfirmationReport.class.getSimpleName() + " {" +
                 "mode=" + mode +
@@ -75,7 +78,7 @@ public class KromekSerialRemoteIsotopeConfirmationReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialRemoteIsotopeConfirmationReport.class.getSimpleName());
+        setReportName("KromekSerialRemoteIsotopeConfirmationReport");
         setReportLabel("Remote Isotope Confirmation Report");
         setReportDescription("Remote Isotope Confirmation Report");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_DOSE_INFO_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
@@ -51,6 +53,7 @@ public class KromekSerialDoseInfoReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialDoseInfoReport.class.getSimpleName() + " {" +
                 "lifetimeDose=" + lifetimeDose +
@@ -114,7 +117,7 @@ public class KromekSerialDoseInfoReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialDoseInfoReport.class.getSimpleName());
+        setReportName("KromekSerialDoseInfoReport");
         setReportLabel("Dose Info");
         setReportDescription("Kromek Serial Dose Info Report");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

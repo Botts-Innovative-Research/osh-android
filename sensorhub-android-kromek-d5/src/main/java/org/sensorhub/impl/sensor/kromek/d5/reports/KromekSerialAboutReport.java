@@ -17,6 +17,8 @@ import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIA
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_PRODUCTNAME_SIZE;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_SERIALNUMBER_SIZE;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
@@ -79,6 +81,7 @@ public class KromekSerialAboutReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialAboutReport.class.getSimpleName() + " {" +
                 "firmware=" + firmware +
@@ -130,10 +133,10 @@ public class KromekSerialAboutReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialAboutReport.class.getSimpleName());
+        setReportName("KromekSerialAboutReport");
         setReportLabel("About");
         setReportDescription("About");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
-        setPollingRate(0);
+        setPollingRate(10);
     }
 }

@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_ETHERNET_CONFIG_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -59,6 +61,7 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialEthernetConfigReport.class.getSimpleName() + " {" +
                 "dhcp=" + dhcp +
@@ -117,7 +120,7 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialEthernetConfigReport.class.getSimpleName());
+        setReportName("KromekSerialEthernetConfigReport");
         setReportLabel("Ethernet Config");
         setReportDescription("Configuration for the ethernet interface.");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

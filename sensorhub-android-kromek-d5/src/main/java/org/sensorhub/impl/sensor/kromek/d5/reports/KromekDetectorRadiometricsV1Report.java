@@ -16,6 +16,8 @@ import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIA
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_RADIOMETRICS_V1_ID;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_SPECTRUM_MAX_BINS;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -85,6 +87,7 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekDetectorRadiometricsV1Report.class.getSimpleName() + " {" +
                 "status=" + status +

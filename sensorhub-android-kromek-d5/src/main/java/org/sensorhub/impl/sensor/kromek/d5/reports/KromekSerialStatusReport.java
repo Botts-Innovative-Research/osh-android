@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_STATUS_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -62,6 +64,7 @@ public class KromekSerialStatusReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialStatusReport.class.getSimpleName() + " {" +
                 "appStatus=" + appStatus +
@@ -166,7 +169,7 @@ public class KromekSerialStatusReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialStatusReport.class.getSimpleName());
+        setReportName("KromekSerialStatusReport");
         setReportLabel("Status");
         setReportDescription("Reports the status of the device");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

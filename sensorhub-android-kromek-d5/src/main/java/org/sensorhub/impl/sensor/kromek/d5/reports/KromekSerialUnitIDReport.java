@@ -16,6 +16,8 @@ import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIA
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_MAX_UNIT_ID_LENGTH;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_UNIT_ID_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -43,6 +45,7 @@ public class KromekSerialUnitIDReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialUnitIDReport.class.getSimpleName() + " {" +
                 "unitID=" + Arrays.toString(unitID) +
@@ -83,10 +86,9 @@ public class KromekSerialUnitIDReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialUnitIDReport.class.getSimpleName());
+        setReportName("KromekSerialUnitIDReport");
         setReportLabel("Unit ID");
         setReportDescription("Unit ID");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
-
     }
 }

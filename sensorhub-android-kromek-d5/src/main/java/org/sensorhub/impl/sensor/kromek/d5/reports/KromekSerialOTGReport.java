@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_OTG_MODE_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
@@ -39,6 +41,7 @@ public class KromekSerialOTGReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialOTGReport.class.getSimpleName() + " {" +
                 "mode=" + mode +
@@ -72,7 +75,7 @@ public class KromekSerialOTGReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialOTGReport.class.getSimpleName());
+        setReportName("KromekSerialOTGReport");
         setReportLabel("USB OTG");
         setReportDescription("USB OTG");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

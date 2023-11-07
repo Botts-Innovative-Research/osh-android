@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_COMPRESSION_ENABLED_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -50,6 +52,7 @@ public class KromekSerialCompressionEnabledReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialCompressionEnabledReport.class.getSimpleName() + " {" +
                 "enabled=" + enabled +
@@ -105,7 +108,7 @@ public class KromekSerialCompressionEnabledReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialCompressionEnabledReport.class.getSimpleName());
+        setReportName("KromekSerialCompressionEnabledReport");
         setReportLabel("Compression Enabled");
         setReportDescription("Reports if compression is enabled and the compression parameters");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

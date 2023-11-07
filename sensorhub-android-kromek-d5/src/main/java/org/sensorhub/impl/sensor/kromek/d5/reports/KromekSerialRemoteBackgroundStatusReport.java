@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_REMOTE_BACKGROUND_COLLECTION_STATUS_ID;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
@@ -51,6 +53,7 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialRemoteBackgroundStatusReport.class.getSimpleName() + " {" +
                 "state=" + state +
@@ -118,7 +121,7 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialRemoteBackgroundStatusReport.class.getSimpleName());
+        setReportName("KromekSerialRemoteBackgroundStatusReport");
         setReportLabel("Remote Background Status");
         setReportDescription("Remote Background Status");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));

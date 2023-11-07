@@ -15,6 +15,8 @@ package org.sensorhub.impl.sensor.kromek.d5.reports;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_RADIOMETRIC_STATUS_REPORT;
 
+import android.support.annotation.NonNull;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
@@ -57,6 +59,7 @@ public class KromekSerialRadiometricStatusReport extends SerialReport {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return KromekSerialRadiometricStatusReport.class.getSimpleName() + " {" +
                 "doseAlarmActive=" + doseAlarmActive +
@@ -138,7 +141,7 @@ public class KromekSerialRadiometricStatusReport extends SerialReport {
 
     @Override
     void setReportInfo() {
-        setReportName(KromekSerialRadiometricStatusReport.class.getSimpleName());
+        setReportName("KromekSerialRadiometricStatusReport");
         setReportLabel("Radiometric Status");
         setReportDescription("Radiometric Status");
         setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
