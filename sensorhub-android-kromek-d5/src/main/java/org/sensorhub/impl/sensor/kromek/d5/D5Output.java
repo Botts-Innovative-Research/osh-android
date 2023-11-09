@@ -108,7 +108,7 @@ public class D5Output extends AbstractSensorOutput<D5Sensor> {
 
             double timestamp = System.currentTimeMillis() / 1000d;
 
-            data.setDataBlock(dataBlock, dataRecord, timestamp);
+            data.setDataBlock(dataBlock, timestamp);
 
             latestRecord = dataBlock;
             latestRecordTime = System.currentTimeMillis();
