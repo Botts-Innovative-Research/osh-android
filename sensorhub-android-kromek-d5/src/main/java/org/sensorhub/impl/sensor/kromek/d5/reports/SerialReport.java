@@ -23,8 +23,6 @@ import android.support.annotation.NonNull;
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
-import org.vast.swe.SWEHelper;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,7 +34,6 @@ public abstract class SerialReport {
     private static String reportName = "Report";
     private static String reportLabel = "Report";
     private static String reportDescription = "Report";
-    private static String reportDefinition = SWEHelper.getPropertyUri(reportName);
     private static final int overheadLength = KROMEK_SERIAL_MESSAGE_OVERHEAD + KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
     private static int pollingRate = 1;
 
@@ -179,7 +176,7 @@ public abstract class SerialReport {
      *
      * @return The name of the report.
      */
-    public static String getReportName() {
+    public String getReportName() {
         return reportName;
     }
 
@@ -199,7 +196,7 @@ public abstract class SerialReport {
      *
      * @return The label for the report.
      */
-    public static String getReportLabel() {
+    public String getReportLabel() {
         return reportLabel;
     }
 
@@ -219,7 +216,7 @@ public abstract class SerialReport {
      *
      * @return The description for the report.
      */
-    public static String getReportDescription() {
+    public String getReportDescription() {
         return reportDescription;
     }
 
@@ -234,26 +231,6 @@ public abstract class SerialReport {
     }
 
     /**
-     * Get the definition for the report.
-     * This is the URI for the SWE definition of the report.
-     *
-     * @return The definition for the report.
-     */
-    public static String getReportDefinition() {
-        return reportDefinition;
-    }
-
-    /**
-     * Set the definition for the report.
-     * This is the URI for the SWE definition of the report.
-     *
-     * @param reportDefinition The definition for the report.
-     */
-    void setReportDefinition(String reportDefinition) {
-        SerialReport.reportDefinition = reportDefinition;
-    }
-
-    /**
      * Get the polling rate for the report.
      * This is the number of seconds between requests for reports.
      * The default is 1 second.
@@ -261,7 +238,7 @@ public abstract class SerialReport {
      *
      * @return The polling rate for the report.
      */
-    public static int getPollingRate() {
+    public int getPollingRate() {
         return pollingRate;
     }
 
@@ -273,7 +250,7 @@ public abstract class SerialReport {
      *
      * @param pollingRate The polling rate for the report.
      */
-    public static void setPollingRate(int pollingRate) {
+    public void setPollingRate(int pollingRate) {
         if (pollingRate < 0) pollingRate = 1;
         SerialReport.pollingRate = pollingRate;
     }
@@ -308,7 +285,7 @@ public abstract class SerialReport {
      *
      * @param dataBlock The data block to set.
      */
-    public abstract void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp);
+    public abstract void setDataBlock(DataBlock dataBlock, double timestamp);
 
     /**
      * Called by the constructor to set the report info.
@@ -317,7 +294,6 @@ public abstract class SerialReport {
      * @see #setReportName(String)
      * @see #setReportLabel(String)
      * @see #setReportDescription(String)
-     * @see #setReportDefinition(String)
      * @see #setPollingRate(int)
      */
     abstract void setReportInfo();
