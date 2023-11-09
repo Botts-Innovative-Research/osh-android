@@ -72,7 +72,6 @@ public class KromekSerialDoseInfoReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -105,7 +104,7 @@ public class KromekSerialDoseInfoReport extends SerialReport {
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         dataBlock.setDoubleValue(++index, lifetimeDose);
@@ -120,6 +119,6 @@ public class KromekSerialDoseInfoReport extends SerialReport {
         setReportName("KromekSerialDoseInfoReport");
         setReportLabel("Dose Info");
         setReportDescription("Kromek Serial Dose Info Report");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
+        setPollingRate(1);
     }
 }

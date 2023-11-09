@@ -55,7 +55,6 @@ public class KromekSerialOTGReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -67,7 +66,7 @@ public class KromekSerialOTGReport extends SerialReport {
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         dataBlock.setStringValue(++index, mode.toString());
@@ -78,7 +77,6 @@ public class KromekSerialOTGReport extends SerialReport {
         setReportName("KromekSerialOTGReport");
         setReportLabel("USB OTG");
         setReportDescription("USB OTG");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(5);
     }
 }

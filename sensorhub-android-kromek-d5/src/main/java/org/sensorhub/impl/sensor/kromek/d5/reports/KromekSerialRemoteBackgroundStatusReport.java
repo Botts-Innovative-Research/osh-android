@@ -72,7 +72,6 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -108,7 +107,7 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         dataBlock.setStringValue(++index, state.toString());
@@ -124,6 +123,6 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
         setReportName("KromekSerialRemoteBackgroundStatusReport");
         setReportLabel("Remote Background Status");
         setReportDescription("Remote Background Status");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
+        setPollingRate(1);
     }
 }

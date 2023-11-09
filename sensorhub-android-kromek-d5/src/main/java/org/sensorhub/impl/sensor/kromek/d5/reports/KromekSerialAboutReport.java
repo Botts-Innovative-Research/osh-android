@@ -98,7 +98,6 @@ public class KromekSerialAboutReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -122,7 +121,7 @@ public class KromekSerialAboutReport extends SerialReport {
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         dataBlock.setStringValue(++index, firmware);
@@ -135,8 +134,7 @@ public class KromekSerialAboutReport extends SerialReport {
     void setReportInfo() {
         setReportName("KromekSerialAboutReport");
         setReportLabel("About");
-        setReportDescription("About");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
+        setReportDescription("Information about the device");
         setPollingRate(10);
     }
 }

@@ -121,7 +121,6 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -227,7 +226,7 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         dataBlock.setStringValue(++index, mode.toString());
@@ -258,6 +257,6 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
         setReportName("KromekSerialRemoteIsotopeConfirmationStatusReport");
         setReportLabel("Remote Isotope Confirmation Status Report");
         setReportDescription("Remote Isotope Confirmation Status Report");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
+        setPollingRate(1);
     }
 }

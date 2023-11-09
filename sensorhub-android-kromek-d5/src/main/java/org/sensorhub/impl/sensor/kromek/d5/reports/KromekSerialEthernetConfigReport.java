@@ -79,7 +79,6 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -108,7 +107,7 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         dataBlock.setBooleanValue(++index, dhcp);
@@ -123,7 +122,6 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
         setReportName("KromekSerialEthernetConfigReport");
         setReportLabel("Ethernet Config");
         setReportDescription("Configuration for the ethernet interface.");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
-        setPollingRate(30);
+        setPollingRate(10);
     }
 }

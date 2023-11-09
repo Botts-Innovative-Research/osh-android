@@ -59,7 +59,6 @@ public class KromekSerialUnitIDReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
-                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -77,7 +76,7 @@ public class KromekSerialUnitIDReport extends SerialReport {
     }
 
     @Override
-    public void setDataBlock(DataBlock dataBlock, DataRecord dataRecord, double timestamp) {
+    public void setDataBlock(DataBlock dataBlock, double timestamp) {
         int index = 0;
         dataBlock.setDoubleValue(index, timestamp);
         for (int i = 0; i < KROMEK_SERIAL_MAX_UNIT_ID_LENGTH; i++)
@@ -89,6 +88,6 @@ public class KromekSerialUnitIDReport extends SerialReport {
         setReportName("KromekSerialUnitIDReport");
         setReportLabel("Unit ID");
         setReportDescription("Unit ID");
-        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
+        setPollingRate(1);
     }
 }
