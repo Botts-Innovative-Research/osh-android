@@ -121,6 +121,7 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -257,6 +258,7 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
         setReportName("KromekSerialRemoteIsotopeConfirmationStatusReport");
         setReportLabel("Remote Isotope Confirmation Status Report");
         setReportDescription("Remote Isotope Confirmation Status Report");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(1);
     }
 }

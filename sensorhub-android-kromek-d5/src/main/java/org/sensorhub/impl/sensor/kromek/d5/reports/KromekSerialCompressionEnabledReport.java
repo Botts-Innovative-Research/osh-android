@@ -70,6 +70,7 @@ public class KromekSerialCompressionEnabledReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -110,6 +111,7 @@ public class KromekSerialCompressionEnabledReport extends SerialReport {
         setReportName("KromekSerialCompressionEnabledReport");
         setReportLabel("Compression Enabled");
         setReportDescription("Reports if compression is enabled and the compression parameters");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(10);
     }
 }

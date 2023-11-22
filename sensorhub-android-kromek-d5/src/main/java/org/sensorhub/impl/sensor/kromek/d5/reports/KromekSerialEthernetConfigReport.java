@@ -79,6 +79,7 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -122,6 +123,7 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
         setReportName("KromekSerialEthernetConfigReport");
         setReportLabel("Ethernet Config");
         setReportDescription("Configuration for the ethernet interface.");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(10);
     }
 }

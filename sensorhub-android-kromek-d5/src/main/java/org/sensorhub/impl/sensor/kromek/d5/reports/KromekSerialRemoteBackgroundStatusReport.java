@@ -72,6 +72,7 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -123,6 +124,7 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
         setReportName("KromekSerialRemoteBackgroundStatusReport");
         setReportLabel("Remote Background Status");
         setReportDescription("Remote Background Status");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(1);
     }
 }

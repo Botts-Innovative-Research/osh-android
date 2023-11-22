@@ -55,6 +55,7 @@ public class KromekSerialOTGReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -77,6 +78,7 @@ public class KromekSerialOTGReport extends SerialReport {
         setReportName("KromekSerialOTGReport");
         setReportLabel("USB OTG");
         setReportDescription("USB OTG");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(5);
     }
 }

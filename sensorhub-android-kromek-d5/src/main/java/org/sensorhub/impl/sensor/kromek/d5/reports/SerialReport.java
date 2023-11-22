@@ -23,6 +23,8 @@ import android.support.annotation.NonNull;
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 
+import org.vast.swe.SWEHelper;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,6 +36,7 @@ public abstract class SerialReport {
     private static String reportName = "Report";
     private static String reportLabel = "Report";
     private static String reportDescription = "Report";
+    private static String reportDefinition = SWEHelper.getPropertyUri(reportName);
     private static final int overheadLength = KROMEK_SERIAL_MESSAGE_OVERHEAD + KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
     private static int pollingRate = 1;
 
@@ -228,6 +231,24 @@ public abstract class SerialReport {
      */
     void setReportDescription(String reportDescription) {
         SerialReport.reportDescription = reportDescription;
+    }
+
+    /**
+     * Get the definition for the report.
+     *
+     * @return The definition for the report.
+     */
+    public String getReportDefinition() {
+        return reportDefinition;
+    }
+
+    /**
+     * Set the definition for the report.
+     *
+     * @param reportDefinition The definition for the report.
+     */
+    void setReportDefinition(String reportDefinition) {
+        SerialReport.reportDefinition = reportDefinition;
     }
 
     /**

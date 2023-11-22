@@ -117,6 +117,7 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -225,6 +226,7 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
         setReportName("KromekDetectorRadiometricsV1Report");
         setReportLabel("Radiometrics V1 Report");
         setReportDescription("Radiometrics V1 Report");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(1);
     }
 }

@@ -87,6 +87,7 @@ public class KromekSerialStatusReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -171,6 +172,7 @@ public class KromekSerialStatusReport extends SerialReport {
         setReportName("KromekSerialStatusReport");
         setReportLabel("Status");
         setReportDescription("Reports the status of the device");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(10);
     }
 }

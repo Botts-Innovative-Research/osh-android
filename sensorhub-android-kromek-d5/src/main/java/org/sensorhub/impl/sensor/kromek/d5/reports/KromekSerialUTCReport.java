@@ -61,6 +61,7 @@ public class KromekSerialUTCReport extends SerialReport {
                 .name(getReportName())
                 .label(getReportLabel())
                 .description(getReportDescription())
+                .definition(getReportDefinition())
                 .addField("timestamp", sweFactory.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Precision Time Stamp"))
@@ -95,6 +96,7 @@ public class KromekSerialUTCReport extends SerialReport {
         setReportName("KromekSerialUTCReport");
         setReportLabel("Kromek Serial UTC Report");
         setReportDescription("Kromek Serial UTC Report");
+        setReportDefinition(SWEHelper.getPropertyUri(getReportName()));
         setPollingRate(1);
     }
 }
