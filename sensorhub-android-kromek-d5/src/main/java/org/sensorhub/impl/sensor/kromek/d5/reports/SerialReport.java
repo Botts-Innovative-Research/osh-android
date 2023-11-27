@@ -30,15 +30,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public abstract class SerialReport {
+    private static final int overheadLength = KROMEK_SERIAL_MESSAGE_OVERHEAD + KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
     private final byte componentId;
     private final byte reportId;
 
-    private static String reportName = "Report";
-    private static String reportLabel = "Report";
-    private static String reportDescription = "Report";
-    private static String reportDefinition = SWEHelper.getPropertyUri(reportName);
-    private static final int overheadLength = KROMEK_SERIAL_MESSAGE_OVERHEAD + KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
-    private static int pollingRate = 1;
+    private String reportName = "Report";
+    private String reportLabel = "Report";
+    private String reportDescription = "Report";
+    private String reportDefinition = SWEHelper.getPropertyUri(reportName);
+    private int pollingRate = 1;
 
     /**
      * Create a new message with the given componentId and reportId.
@@ -190,7 +190,7 @@ public abstract class SerialReport {
      * @param reportName The name of the report.
      */
     void setReportName(String reportName) {
-        SerialReport.reportName = reportName;
+        this.reportName = reportName;
     }
 
     /**
@@ -210,7 +210,7 @@ public abstract class SerialReport {
      * @param reportLabel The label for the report.
      */
     void setReportLabel(String reportLabel) {
-        SerialReport.reportLabel = reportLabel;
+        this.reportLabel = reportLabel;
     }
 
     /**
@@ -230,7 +230,7 @@ public abstract class SerialReport {
      * @param reportDescription The description for the report.
      */
     void setReportDescription(String reportDescription) {
-        SerialReport.reportDescription = reportDescription;
+        this.reportDescription = reportDescription;
     }
 
     /**
@@ -248,7 +248,7 @@ public abstract class SerialReport {
      * @param reportDefinition The definition for the report.
      */
     void setReportDefinition(String reportDefinition) {
-        SerialReport.reportDefinition = reportDefinition;
+        this.reportDefinition = reportDefinition;
     }
 
     /**
@@ -273,7 +273,7 @@ public abstract class SerialReport {
      */
     public void setPollingRate(int pollingRate) {
         if (pollingRate < 0) pollingRate = 1;
-        SerialReport.pollingRate = pollingRate;
+        this.pollingRate = pollingRate;
     }
 
     /**
