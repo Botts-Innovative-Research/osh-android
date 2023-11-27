@@ -50,7 +50,7 @@ public class D5MessageRouter implements Runnable {
             this.device = device;
 
             config = sensor.getConfiguration();
-            thread = new Thread(this, "Message Handler");
+            thread = new Thread(this, "Message Router");
         } catch (Exception e) {
             logger.error("Error", e);
         }
@@ -67,13 +67,18 @@ public class D5MessageRouter implements Runnable {
     public synchronized void run() {
         UUID uuid = device.getUuids()[0].getUuid();
         try (BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid)) {
-            logger.info("Socket created");
             if (socket == null) {
-                logger.error("Socket is null");
+                logger.error("Unable to create socket");
                 return;
             }
+
             if (!socket.isConnected()) {
-                socket.connect();
+                try {
+                    socket.connect();
+                } catch (Exception e) {
+                    logger.error("Failed to via Bluetooth. Ensure that Bluetooth in enabled and the device is paired.", e);
+                    return;
+                }
             }
             logger.info("Socket connected");
 
@@ -82,35 +87,32 @@ public class D5MessageRouter implements Runnable {
             OutputStream outputStream = socket.getOutputStream();
 
             while (true) {
-                if (sensor.processLock) {
-                    sleep(1000);
-                    continue;
-                }
+                if (!sensor.processLock) {
+                    // For each active output, send a request and receive a response
+                    for (Map.Entry<Class<?>, D5Output> entry : sensor.outputs.entrySet()) {
+                        Class<?> reportClass = entry.getKey();
+                        D5Output output = entry.getValue();
 
-                // For each active output, send a request and receive a response
-                for (Map.Entry<Class<?>, D5Output> entry : sensor.outputs.entrySet()) {
-                    Class<?> reportClass = entry.getKey();
-                    D5Output output = entry.getValue();
+                        try {
+                            // Create a message to send
+                            SerialReport report = (SerialReport) reportClass.getDeclaredConstructor().newInstance();
 
-                    try {
-                        // Create a message to send
-                        SerialReport report = (SerialReport) reportClass.getDeclaredConstructor().newInstance();
+                            // All reports are sent on the first iteration (when count == 0)
+                            if (count != 0 && report.getPollingRate() == 0) {
+                                // If the polling rate is 0, the report is not sent.
+                                // This is used for reports that are only sent once.
+                                continue;
+                            } else if (count != 0 && count % report.getPollingRate() != 0) {
+                                // If the polling rate is not 0, the report is sent every N iterations
+                                continue;
+                            }
 
-                        // All reports are sent on the first iteration (when count == 0)
-                        if (count != 0 && report.getPollingRate() == 0) {
-                            // If the polling rate is 0, the report is not sent.
-                            // This is used for reports that are only sent once.
-                            continue;
-                        } else if (count != 0 && count % report.getPollingRate() != 0) {
-                            // If the polling rate is not 0, the report is sent every N iterations
-                            continue;
+                            report = sendRequest(report, inputStream, outputStream);
+
+                            output.setData(report);
+                        } catch (Exception e) {
+                            logger.error("Error", e);
                         }
-
-                        report = sendRequest(report, inputStream, outputStream);
-
-                        output.setData(report);
-                    } catch (Exception e) {
-                        logger.error("Error", e);
                     }
                 }
                 count++;
