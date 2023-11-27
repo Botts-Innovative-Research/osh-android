@@ -24,7 +24,7 @@ subprojects {
     google()
   }
 
-  if (!project.projectDir.parent.endsWith('osh-android')) {
+  if (project.projectDir.parent != rootDir.toString()) {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
