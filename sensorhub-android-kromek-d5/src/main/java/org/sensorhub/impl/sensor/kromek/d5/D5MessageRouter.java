@@ -76,7 +76,7 @@ public class D5MessageRouter implements Runnable {
                 try {
                     socket.connect();
                 } catch (Exception e) {
-                    logger.error("Failed to via Bluetooth. Ensure that Bluetooth in enabled and the device is paired.", e);
+                    logger.error("Failed to connect via Bluetooth. Ensure that Bluetooth in enabled and the device is paired.", e);
                     return;
                 }
             }

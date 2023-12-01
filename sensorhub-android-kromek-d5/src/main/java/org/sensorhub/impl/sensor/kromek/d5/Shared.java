@@ -18,6 +18,7 @@ import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIA
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_FRAMING_ESC_FRAME_BYTE;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_FRAMING_FRAME_BYTE;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_ACK_REPORT_ID_ERROR;
+import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_BUILD_FOR_PRODUCT_D5;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_ACK_ID;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.SerialReport.bytesToUInt;
 
@@ -130,6 +131,9 @@ public class Shared {
      * The message is then framed with the FRAME byte at the end.
      */
     public static byte[] encodeSLIP(byte[] data) {
+        // If we're not building for the D5, then don't use SLIP framing
+        if (!KROMEK_SERIAL_REPORTS_BUILD_FOR_PRODUCT_D5) return data;
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         outputStream.write(KROMEK_SERIAL_FRAMING_FRAME_BYTE);

@@ -12,8 +12,9 @@
 
 package org.sensorhub.impl.sensor.kromek.d5.reports;
 
+@SuppressWarnings({"unused", "SpellCheckingInspection"})
 public class Constants {
-    public static final int KROMEK_SERIAL_REPORTS_USE_COMPONENT = 1;
+    public static final boolean KROMEK_SERIAL_REPORTS_USE_COMPONENT = true;
 
     public static final byte KROMEK_SERIAL_FRAMING_FRAME_BYTE = (byte) 0xC0; // Framing byte at the beginning / end of messages.
     public static final byte KROMEK_SERIAL_FRAMING_ESC_BYTE = (byte) 0xDB; // 0xDB byte between messages
@@ -21,7 +22,7 @@ public class Constants {
     public static final byte KROMEK_SERIAL_FRAMING_ESC_ESC_BYTE = (byte) 0xDD; // 0xDB --> (0xDB 0xDD)
 
 
-    public static final int KROMEK_SERIAL_MESSAGE_CRC_POLYNOMIAL =  0x1021;
+    public static final int KROMEK_SERIAL_MESSAGE_CRC_POLYNOMIAL = 0x1021;
     public static final byte KROMEK_SERIAL_MESSAGE_CRC_INITIAL_VALUE = (byte) 0xFFFF;
     public static final int KROMEK_SERIAL_MESSAGE_CRC_BIT_WIDTH = 16;
     public static final boolean KROMEK_SERIAL_MESSAGE_CRC_WRITE_TRANSPOSE = false;
@@ -30,13 +31,7 @@ public class Constants {
 
     public static final byte KROMEK_SERIAL_MESSAGE_MODE = (byte) 0x00;
 
-    public static class KromekSerialMessageHeader {
-        public short length; // Total length including KROMEK_SERIAL_MESSAGE_OVERHEAD
-        public byte mode;
-    }
-
-    //(sizeof(KromekSerialMessageHeader) + sizeof(KromekSerialMessageCRC))
-    public static final int KROMEK_SERIAL_MESSAGE_OVERHEAD = 5;
+    public static final int KROMEK_SERIAL_MESSAGE_OVERHEAD = KromekSerialMessageHeader.size + KromekSerialMessageCRC.size;
     public static final int KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD = 2;
 
     // Define one of the following here
@@ -190,14 +185,20 @@ public class Constants {
     public static final byte KROMEK_SERIAL_REPORTS_IN_UNIT_ID_ID = (byte) 0xFC;
     public static final byte KROMEK_SERIAL_REPORTS_IN_ALARM_AUTO_SILENCE_ID = (byte) 0xFD;
 
-    //KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT specific IN reports
+    // KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT specific IN reports
     public static final byte KROMEK_SERIAL_REPORTS_OUT_ALPHABETA_UI_CONFIG_REPORT = (byte) 0x01;
-    //public static final byte KROMEK_SERIAL_REPORTS_OUT_RADIOMETRIC_STATUS_REPORT = (byte) 0x02; //NOT USED, IN only
-    //public static final byte KROMEK_SERIAL_REPORTS_OUT_ALPHABETA_RADIOMETRICS_ID = (byte) 0x03; //NOT USED, IN only
+    /**
+     * @deprecated NOT USED, IN only
+     */
+    public static final byte KROMEK_SERIAL_REPORTS_OUT_RADIOMETRIC_STATUS_REPORT = (byte) 0x02;
+    /**
+     * @deprecated NOT USED, IN only
+     */
+    public static final byte KROMEK_SERIAL_REPORTS_OUT_ALPHABETA_RADIOMETRICS_ID = (byte) 0x03;
     public static final byte KROMEK_SERIAL_REPORTS_OUT_SETTINGS_ITEM_PIN_ENABLE_ID = (byte) 0x04;
     public static final byte KROMEK_SERIAL_REPORTS_OUT_DOSE_RATE_AVERAGING_PERIOD_ID = (byte) 0x05;
 
-    //KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT specific OUT reports
+    // KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT specific OUT reports
     public static final byte KROMEK_SERIAL_REPORTS_IN_ALPHABETA_UI_CONFIG_REPORT = (byte) 0x81;
     public static final byte KROMEK_SERIAL_REPORTS_IN_RADIOMETRIC_STATUS_REPORT = (byte) 0x82;
     public static final byte KROMEK_SERIAL_REPORTS_IN_ALPHABETA_RADIOMETRICS_ID = (byte) 0x83;
@@ -211,10 +212,4 @@ public class Constants {
 
     public static final int KROMEK_SERIAL_REPORTS_IN_SPECTRUM_MAX_BINS = 4096;
     public static final int KROMEK_SERIAL_REPORTS_IN_SPECTRUM_ENERGY_MAX_BINS = 1024;
-
-//    // Use this for clarity in code. All IN requests from the host are simply a header
-//    public static final byte  KromekSerialReportRequest = KromekSerialReportHeader;
-//    public static final byte  KromekSerialReportRequestWithIndex = KromekSerialReportHeaderWithIndex;
-
-
 }

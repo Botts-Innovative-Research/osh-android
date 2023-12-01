@@ -13,9 +13,7 @@
 package org.sensorhub.impl.sensor.kromek.d5.reports;
 
 import static org.sensorhub.impl.sensor.kromek.d5.Shared.encodeSLIP;
-import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_MESSAGE_MODE;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_MESSAGE_OVERHEAD;
-import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_BUILD_FOR_PRODUCT_D5;
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_HEADER_OVERHEAD;
 
 import android.support.annotation.NonNull;
@@ -67,8 +65,8 @@ public abstract class SerialReport {
      * Encodes the message in the following format:
      * <p>
      *     <ul>
-     *         <li>Length (2 bytes)</li>
-     *         <li>Mode (1 byte)</li>
+     *         <li>Message header - Length (2 bytes)</li>
+     *         <li>Message header - Mode (1 byte)</li>
      *         <li>Payload header - Component ID (1 byte)</li>
      *         <li>Payload header - Report ID (1 byte)</li>
      *         <li>Payload (variable length; not included for requests)</li>
@@ -82,20 +80,21 @@ public abstract class SerialReport {
      */
     public byte[] encodeRequest() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        // Write the length as uint16_t
-        outputStream.write((byte) (overheadLength & 0xFF));
-        outputStream.write((byte) (0));
-        outputStream.write(KROMEK_SERIAL_MESSAGE_MODE);
-        outputStream.write(componentId);
-        outputStream.write(reportId);
 
-        // CRC is always 0 for requests. Write two 0 bytes.
-        outputStream.write((byte) 0);
-        outputStream.write((byte) 0);
+        // Write the message header.
+        KromekSerialMessageHeader messageHeader = new KromekSerialMessageHeader((short) overheadLength);
+        for (byte b : messageHeader.encode()) outputStream.write(b);
+
+        // Write the report header.
+        KromekSerialReportHeader reportHeader = new KromekSerialReportHeader(componentId, reportId);
+        for (byte b : reportHeader.encode()) outputStream.write(b);
+
+        // Write the CRC. This is always zero for requests.
+        KromekSerialMessageCRC crc = new KromekSerialMessageCRC(0);
+        for (byte b : crc.encode()) outputStream.write(b);
 
         byte[] message = outputStream.toByteArray();
-        if (KROMEK_SERIAL_REPORTS_BUILD_FOR_PRODUCT_D5)
-            message = encodeSLIP(message);
+        message = encodeSLIP(message);
 
         return message;
     }
