@@ -52,6 +52,7 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
     private float longitude;
     private long deviceTimestamp;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialRemoteIsotopeConfirmationStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

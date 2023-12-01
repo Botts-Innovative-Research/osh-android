@@ -47,6 +47,7 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
     private byte spectrumReserved;
     private final int[] spectrumBins = new int[KROMEK_SERIAL_REPORTS_IN_SPECTRUM_MAX_BINS];
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekDetectorRadiometricsV1Report(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

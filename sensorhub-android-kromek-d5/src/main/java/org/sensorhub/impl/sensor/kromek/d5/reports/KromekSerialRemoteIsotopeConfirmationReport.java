@@ -28,6 +28,7 @@ import java.util.Arrays;
 public class KromekSerialRemoteIsotopeConfirmationReport extends SerialReport {
     private KromekSerialRemoteControlMode mode;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialRemoteIsotopeConfirmationReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

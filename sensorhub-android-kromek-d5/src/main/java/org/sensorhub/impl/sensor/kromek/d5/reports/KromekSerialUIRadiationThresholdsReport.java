@@ -34,6 +34,7 @@ public class KromekSerialUIRadiationThresholdsReport extends SerialReport {
     private float thresholdValue;
     private long alertBitmap;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialUIRadiationThresholdsReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

@@ -33,6 +33,7 @@ public class KromekSerialDoseInfoReport extends SerialReport {
     private long reserved0;
     private KromekSerialDosemeterSource selectedDoseDetector;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialDoseInfoReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

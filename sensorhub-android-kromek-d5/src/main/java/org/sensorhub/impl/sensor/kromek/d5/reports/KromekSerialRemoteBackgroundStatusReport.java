@@ -33,6 +33,7 @@ public class KromekSerialRemoteBackgroundStatusReport extends SerialReport {
     private float longitude;
     private long deviceTimestamp;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialRemoteBackgroundStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

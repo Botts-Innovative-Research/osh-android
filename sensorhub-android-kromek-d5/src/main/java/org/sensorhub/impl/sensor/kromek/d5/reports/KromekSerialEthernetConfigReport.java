@@ -30,6 +30,7 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
     private int[] gateway;
     private int port;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialEthernetConfigReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

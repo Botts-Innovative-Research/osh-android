@@ -32,6 +32,7 @@ public class KromekSerialCompressionEnabledReport extends SerialReport {
     private int compressionDirection;
     private final byte[] reserved = new byte[2];
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialCompressionEnabledReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

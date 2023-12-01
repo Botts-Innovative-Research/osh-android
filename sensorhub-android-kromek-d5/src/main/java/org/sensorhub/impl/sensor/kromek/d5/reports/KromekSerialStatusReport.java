@@ -39,6 +39,7 @@ public class KromekSerialStatusReport extends SerialReport {
     private byte btStatus;
     private int detectorStatus2;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

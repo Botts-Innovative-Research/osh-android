@@ -32,6 +32,7 @@ public class KromekSerialAboutReport extends SerialReport {
     private String productname;
     private String serialnumber;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialAboutReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

@@ -45,6 +45,7 @@ public class KromekSerialRemoteExtendedIsotopeConfirmationStatusReport extends S
     private int numNuclideResults;
     private byte[] nuclideData;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialRemoteExtendedIsotopeConfirmationStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

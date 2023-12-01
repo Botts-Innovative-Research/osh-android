@@ -28,6 +28,7 @@ public class KromekSerialUTCReport extends SerialReport {
     private float timezoneOffset;
     private boolean dstEnabled;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialUTCReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

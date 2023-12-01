@@ -26,6 +26,7 @@ import org.vast.swe.SWEHelper;
 public class KromekSerialOTGReport extends SerialReport {
     private KromekSerialUSBOTGMode mode;
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialOTGReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);

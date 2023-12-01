@@ -29,6 +29,7 @@ import java.util.Arrays;
 public class KromekSerialUnitIDReport extends SerialReport {
     private final int[] unitID = new int[KROMEK_SERIAL_MAX_UNIT_ID_LENGTH];
 
+    @SuppressWarnings("unused") // Used by reflection
     public KromekSerialUnitIDReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
