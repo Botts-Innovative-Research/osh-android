@@ -17,11 +17,16 @@ import static java.lang.Thread.sleep;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.os.Looper;
+import android.widget.Toast;
 
+import org.sensorhub.android.SensorHubService;
 import org.sensorhub.impl.sensor.kromek.d5.reports.SerialReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
@@ -65,6 +70,9 @@ public class D5MessageRouter implements Runnable {
      * It sends requests to the sensor and receives responses.
      */
     public synchronized void run() {
+        Looper.prepare();
+        Context context = SensorHubService.getContext();
+
         UUID uuid = device.getUuids()[0].getUuid();
         try (BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid)) {
             if (socket == null) {
@@ -76,7 +84,8 @@ public class D5MessageRouter implements Runnable {
                 try {
                     socket.connect();
                 } catch (Exception e) {
-                    logger.error("Failed to connect via Bluetooth. Ensure that Bluetooth in enabled and the device is paired.", e);
+                    logger.error("Failed to connect via Bluetooth.", e);
+                    Toast.makeText(context, "Failed to connect via Bluetooth.\nEnsure that Bluetooth in enabled and the device is paired.", Toast.LENGTH_LONG).show();
                     return;
                 }
             }
@@ -118,7 +127,9 @@ public class D5MessageRouter implements Runnable {
                 count++;
                 sleep(1000);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
