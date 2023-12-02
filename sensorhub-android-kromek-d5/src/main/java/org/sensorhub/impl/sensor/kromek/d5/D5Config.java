@@ -12,9 +12,6 @@
 
 package org.sensorhub.impl.sensor.kromek.d5;
 
-import android.content.Context;
-
-import org.sensorhub.android.SensorHubService;
 import org.sensorhub.api.config.DisplayInfo;
 import org.sensorhub.api.sensor.SensorConfig;
 
@@ -25,14 +22,8 @@ import org.sensorhub.api.sensor.SensorConfig;
  * @since Nov 2013
  */
 public class D5Config extends SensorConfig {
-    private final Context context = SensorHubService.getContext();
-
     public D5Config() {
         moduleClass = D5Sensor.class.getCanonicalName();
-    }
-
-    public Context getContext() {
-        return context;
     }
 
     /**
