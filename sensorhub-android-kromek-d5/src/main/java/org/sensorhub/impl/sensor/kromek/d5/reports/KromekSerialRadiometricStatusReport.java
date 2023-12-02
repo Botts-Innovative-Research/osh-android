@@ -36,18 +36,29 @@ public class KromekSerialRadiometricStatusReport extends SerialReport {
     private int numNuclideResults;
     private byte[] nuclideData;
 
-    @SuppressWarnings("unused") // Used by reflection
+    /**
+     * Create a new report. This report has no data and is sent to the device to request a report.
+     */
+    public KromekSerialRadiometricStatusReport() {
+        this(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT, KROMEK_SERIAL_REPORTS_IN_RADIOMETRIC_STATUS_REPORT, null);
+    }
+
+    /**
+     * Create a new report from the given data. This constructor is used by reflection in the MessageRouter.
+     *
+     * @param componentId Component ID for the report
+     * @param reportId    Report ID for the report
+     * @param data        Data for the report, as received from the device
+     */
     public KromekSerialRadiometricStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
     }
 
-    public KromekSerialRadiometricStatusReport() {
-        super(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD_EXT, KROMEK_SERIAL_REPORTS_IN_RADIOMETRIC_STATUS_REPORT);
-    }
-
     @Override
     public void decodePayload(byte[] payload) {
+        if (payload == null) return;
+
         doseAlarmActive = byteToBoolean(payload[0]);
         gammaCpsAlarmActive = byteToBoolean(payload[1]);
         neutronCpsAlarmActive = byteToBoolean(payload[2]);
@@ -150,6 +161,11 @@ public class KromekSerialRadiometricStatusReport extends SerialReport {
         setPollingRate(1);
     }
 
+    /**
+     * Set the location of the device from the Android GPS location service.
+     *
+     * @param location the location
+     */
     public void setLocation(Location location) {
         latitude = (float) location.getLatitude();
         longitude = (float) location.getLongitude();

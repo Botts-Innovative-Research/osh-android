@@ -30,18 +30,29 @@ public class KromekSerialEthernetConfigReport extends SerialReport {
     private int[] gateway;
     private int port;
 
-    @SuppressWarnings("unused") // Used by reflection
+    /**
+     * Create a new report. This report has no data and is sent to the device to request a report.
+     */
+    public KromekSerialEthernetConfigReport() {
+        this(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_ETHERNET_CONFIG_ID, null);
+    }
+
+    /**
+     * Create a new report from the given data. This constructor is used by reflection in the MessageRouter.
+     *
+     * @param componentId Component ID for the report
+     * @param reportId    Report ID for the report
+     * @param data        Data for the report, as received from the device
+     */
     public KromekSerialEthernetConfigReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
     }
 
-    public KromekSerialEthernetConfigReport() {
-        super(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_ETHERNET_CONFIG_ID);
-    }
-
     @Override
     public void decodePayload(byte[] payload) {
+        if (payload == null) return;
+
         dhcp = byteToBoolean(payload[0]);
         address = new int[4];
         address[0] = bytesToUInt(payload[1]);

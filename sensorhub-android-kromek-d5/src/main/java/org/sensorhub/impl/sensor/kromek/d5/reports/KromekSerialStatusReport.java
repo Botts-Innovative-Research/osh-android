@@ -39,18 +39,29 @@ public class KromekSerialStatusReport extends SerialReport {
     private byte btStatus;
     private int detectorStatus2;
 
-    @SuppressWarnings("unused") // Used by reflection
+    /**
+     * Create a new report. This report has no data and is sent to the device to request a report.
+     */
+    public KromekSerialStatusReport() {
+        this(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_STATUS_ID, null);
+    }
+
+    /**
+     * Create a new report from the given data. This constructor is used by reflection in the MessageRouter.
+     *
+     * @param componentId Component ID for the report
+     * @param reportId    Report ID for the report
+     * @param data        Data for the report, as received from the device
+     */
     public KromekSerialStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
     }
 
-    public KromekSerialStatusReport() {
-        super(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_STATUS_ID);
-    }
-
     @Override
     public void decodePayload(byte[] payload) {
+        if (payload == null) return;
+
         appStatus = bytesToUInt(payload[0]);
         power = KromekSerialPowerSource.values()[bytesToUInt(payload[1])];
         temperature = bytesToInt(payload[2]);

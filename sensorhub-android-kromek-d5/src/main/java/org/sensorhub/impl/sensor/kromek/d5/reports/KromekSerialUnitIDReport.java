@@ -29,18 +29,29 @@ import java.util.Arrays;
 public class KromekSerialUnitIDReport extends SerialReport {
     private final int[] unitID = new int[KROMEK_SERIAL_MAX_UNIT_ID_LENGTH];
 
-    @SuppressWarnings("unused") // Used by reflection
+    /**
+     * Create a new report. This report has no data and is sent to the device to request a report.
+     */
+    public KromekSerialUnitIDReport() {
+        this(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_UNIT_ID_ID, null);
+    }
+
+    /**
+     * Create a new report from the given data. This constructor is used by reflection in the MessageRouter.
+     *
+     * @param componentId Component ID for the report
+     * @param reportId    Report ID for the report
+     * @param data        Data for the report, as received from the device
+     */
     public KromekSerialUnitIDReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
     }
 
-    public KromekSerialUnitIDReport() {
-        super(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_UNIT_ID_ID);
-    }
-
     @Override
     public void decodePayload(byte[] payload) {
+        if (payload == null) return;
+
         for (int i = 0; i < KROMEK_SERIAL_MAX_UNIT_ID_LENGTH; i++)
             unitID[i] = bytesToUInt(payload[i]);
     }

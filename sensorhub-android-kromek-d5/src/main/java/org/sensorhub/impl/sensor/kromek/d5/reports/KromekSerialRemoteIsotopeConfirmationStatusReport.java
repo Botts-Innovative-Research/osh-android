@@ -52,18 +52,29 @@ public class KromekSerialRemoteIsotopeConfirmationStatusReport extends SerialRep
     private float longitude;
     private long deviceTimestamp;
 
-    @SuppressWarnings("unused") // Used by reflection
+    /**
+     * Create a new report. This report has no data and is sent to the device to request a report.
+     */
+    public KromekSerialRemoteIsotopeConfirmationStatusReport() {
+        this(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_REMOTE_ISOTOPE_CONFIRMATION_STATUS_ID, null);
+    }
+
+    /**
+     * Create a new report from the given data. This constructor is used by reflection in the MessageRouter.
+     *
+     * @param componentId Component ID for the report
+     * @param reportId    Report ID for the report
+     * @param data        Data for the report, as received from the device
+     */
     public KromekSerialRemoteIsotopeConfirmationStatusReport(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
     }
 
-    public KromekSerialRemoteIsotopeConfirmationStatusReport() {
-        super(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_REMOTE_ISOTOPE_CONFIRMATION_STATUS_ID);
-    }
-
     @Override
     public void decodePayload(byte[] payload) {
+        if (payload == null) return;
+
         mode = KromekSerialRemoteControlMode.values()[(int) bytesToUInt(payload[0], payload[1], payload[2], payload[3])];
         state = KromekSerialRemoteModeState.values()[bytesToUInt(payload[4])];
         numNuclideResults = bytesToUInt(payload[5], payload[6]);

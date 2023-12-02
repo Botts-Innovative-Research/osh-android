@@ -47,18 +47,29 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
     private byte spectrumReserved;
     private final int[] spectrumBins = new int[KROMEK_SERIAL_REPORTS_IN_SPECTRUM_MAX_BINS];
 
-    @SuppressWarnings("unused") // Used by reflection
+    /**
+     * Create a new report. This report has no data and is sent to the device to request a report.
+     */
+    public KromekDetectorRadiometricsV1Report() {
+        this(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_RADIOMETRICS_V1_ID, null);
+    }
+
+    /**
+     * Create a new report from the given data. This constructor is used by reflection in the MessageRouter.
+     *
+     * @param componentId Component ID for the report
+     * @param reportId    Report ID for the report
+     * @param data        Data for the report, as received from the device
+     */
     public KromekDetectorRadiometricsV1Report(byte componentId, byte reportId, byte[] data) {
         super(componentId, reportId);
         decodePayload(data);
     }
 
-    public KromekDetectorRadiometricsV1Report() {
-        super(KROMEK_SERIAL_COMPONENT_INTERFACE_BOARD, KROMEK_SERIAL_REPORTS_IN_RADIOMETRICS_V1_ID);
-    }
-
     @Override
     public void decodePayload(byte[] payload) {
+        if (payload == null) return;
+
         status = bytesToUInt(payload[0], payload[1], payload[2], payload[3]);
         realTimeMs = bytesToUInt(payload[4], payload[5], payload[6], payload[7]);
         sequenceNumber = bytesToUInt(payload[8], payload[9], payload[10], payload[11]);
