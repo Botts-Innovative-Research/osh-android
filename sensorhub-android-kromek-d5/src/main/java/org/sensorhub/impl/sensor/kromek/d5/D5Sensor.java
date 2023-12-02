@@ -111,6 +111,7 @@ public class D5Sensor extends AbstractSensorModule<D5Config> {
         processLock = true;
 
         if (messageRouter != null) {
+            messageRouter.stop();
             messageRouter = null;
         }
     }

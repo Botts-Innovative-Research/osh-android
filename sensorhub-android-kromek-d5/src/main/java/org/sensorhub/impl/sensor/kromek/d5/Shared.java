@@ -98,12 +98,11 @@ public class Shared {
         // Receive data from the server
         byte[] receivedData = receiveData(inputStream);
 
-        // Decode the received data using SLIP framing
-        byte[] decodedData = decodeSLIP(receivedData);
+        // Decode the received data using SLIP framing - Note: this doesn't appear to be necessary
 
         // The first five bytes are the header
-        byte componentId = decodedData[3];
-        byte reportId = decodedData[4];
+        byte componentId = receivedData[3];
+        byte reportId = receivedData[4];
 
         // These shouldn't happen, but just in case they do, ignore them.
         // Acknowledgements are typically a response to a command, and we only send requests.
@@ -112,14 +111,12 @@ public class Shared {
         }
 
         // The payload is everything in between
-        byte[] payload = Arrays.copyOfRange(decodedData, 5, decodedData.length - 2);
+        byte[] payload = Arrays.copyOfRange(receivedData, 5, receivedData.length - 2);
 
         // Create a new report with the payload
         report = report.getClass()
                 .getDeclaredConstructor(byte.class, byte.class, byte[].class)
                 .newInstance(componentId, reportId, payload);
-
-        D5Sensor.logger.info("Received report: " + report);
 
         return report;
     }

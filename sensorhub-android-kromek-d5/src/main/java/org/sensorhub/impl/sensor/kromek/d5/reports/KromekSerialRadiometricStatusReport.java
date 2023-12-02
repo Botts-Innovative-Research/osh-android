@@ -16,8 +16,6 @@ import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIA
 import static org.sensorhub.impl.sensor.kromek.d5.reports.Constants.KROMEK_SERIAL_REPORTS_IN_RADIOMETRIC_STATUS_REPORT;
 
 import android.location.Location;
-import android.location.LocationListener;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import net.opengis.swe.v20.DataBlock;
@@ -28,7 +26,7 @@ import org.vast.swe.SWEHelper;
 
 import java.util.Arrays;
 
-public class KromekSerialRadiometricStatusReport extends SerialReport implements LocationListener {
+public class KromekSerialRadiometricStatusReport extends SerialReport {
     private boolean doseAlarmActive;
     private boolean gammaCpsAlarmActive;
     private boolean neutronCpsAlarmActive;
@@ -152,24 +150,8 @@ public class KromekSerialRadiometricStatusReport extends SerialReport implements
         setPollingRate(1);
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
+    public void setLocation(Location location) {
         latitude = (float) location.getLatitude();
         longitude = (float) location.getLongitude();
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
     }
 }
