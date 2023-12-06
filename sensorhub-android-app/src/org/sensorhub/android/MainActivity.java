@@ -1511,6 +1511,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
         }
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN);
+        }
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
         permARR = permissions.toArray(permARR);
