@@ -42,12 +42,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
  * This class is responsible for sending and receiving messages to and from the sensor.
- * Requests are sent to the sensor and responses are received every second unless the polling rate is changed for a
- * particular report.
+ * Requests are sent to the sensor and responses are received every second unless the
+ * polling rate is changed for a particular report.
  *
  * @author Michael Elmore
  * @since Oct. 2023
@@ -64,15 +65,11 @@ public class D5MessageRouter implements Runnable, LocationListener {
     private int count = 0;
 
     public D5MessageRouter(D5Sensor sensor, BluetoothDevice device) {
-        try {
-            this.sensor = sensor;
-            this.device = device;
+        this.sensor = sensor;
+        this.device = device;
 
-            config = sensor.getConfiguration();
-            thread = new Thread(this, "Message Router");
-        } catch (Exception e) {
-            logger.error("Error", e);
-        }
+        config = sensor.getConfiguration();
+        thread = new Thread(this, "Message Router");
     }
 
     public void start() {
@@ -89,8 +86,8 @@ public class D5MessageRouter implements Runnable, LocationListener {
             for (String provName : locProviders) {
                 LocationProvider locProvider = locationManager.getProvider(provName);
 
-                // Only interested in GPS
-                if (locProvider.requiresSatellite()) {
+                // Use the fused location provider if available
+                if (Objects.equals(locProvider.getName(), "fused")) {
                     if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         break;
                     }
