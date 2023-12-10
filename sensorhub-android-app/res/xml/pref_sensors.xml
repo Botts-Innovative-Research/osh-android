@@ -232,7 +232,32 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+        <!-- Kromek D5 sensor -->
+        <SwitchPreference
+            android:key="kromek_d5_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of Kromek D5 data (sensor must be paired via Bluetooth on startup)"
+            android:title="Kromek D5 Data" />
+        <MultiSelectListPreference
+            android:key="kromek_d5_data_options"
+            android:title="Kromek D5 Data Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+        <EditTextPreference
+            android:defaultValue="D5M100000"
+            android:inputType="text"
+            android:key="d5_serial"
+            android:singleLine="true"
+            android:title="D5 Sensor serial number" />
+        <MultiSelectListPreference
+            android:key="kromek_d5_output_options"
+            android:title="Kromek D5 Output Options"
+            android:summary="List of available output options"
+            android:entries="@array/kromek_d5_report_list"
+            android:entryValues="@array/kromek_d5_report_values"
+            android:defaultValue="@array/kromek_d5_report_defaults" />
+        <!-- Kromek D5 sensor end -->
     </PreferenceCategory>
-
-
 </PreferenceScreen>

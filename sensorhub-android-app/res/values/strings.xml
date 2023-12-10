@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">OpenSensorHub SmartHub</string>
     <string name="hello_world">Please configure and start SmartHub using the Options Menu</string>
     <string name="action_settings">Settings</string>
@@ -111,13 +111,13 @@
     <string name="spot_report_ft">Ft.</string>
 
     <string-array name="spot_report_closure_type">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>Public</item>
         <item>All</item>
     </string-array>
 
     <string-array name="spot_report_action_items">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>Open</item>
         <item>Close</item>
     </string-array>
@@ -129,13 +129,13 @@
     <string name="spot_report_closure_type">Type:</string>
 
     <string-array name="spot_report_flood_feature_type">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>Channel Drainage</item>
         <item>Land Surface</item>
     </string-array>
 
     <string-array name="spot_report_observation_modes">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>Meter</item>
         <item>Visual</item>
         <item>Model</item>
@@ -145,12 +145,12 @@
     <string name="spot_report_depth">Depth:</string>
     <string name="spot_report_observation_mode">Obs. Mode:</string>
 
-    <string name="spot_report_med_sign">Describe Medical Condition...</string>
-    <string name="spot_report_med_value">Enter measurement (BP, Temp, etc.)...</string>
+    <string name="spot_report_med_sign">Describe Medical Condition…</string>
+    <string name="spot_report_med_value">Enter measurement (BP, Temp, etc.)…</string>
     <string name="spot_report_med_emergency">Emergency (T/F)</string>
 
     <string-array name="spot_report_aid_types">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>Environment</item>
         <item>Health</item>
         <item>Safety</item>
@@ -158,7 +158,7 @@
     </string-array>
 
     <string-array name="spot_report_aid_urgency_value">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>5</item>
         <item>4</item>
         <item>3</item>
@@ -169,18 +169,18 @@
     <string name="spot_report_aid_type">Aid Type:</string>
     <string name="spot_report_aid_num"># Persons:</string>
     <string name="spot_report_aid_urgency">Urgency:</string>
-    <string name="spot_report_aid_description">Describe aid needed...</string>
+    <string name="spot_report_aid_description">Describe aid needed…</string>
     <string name="spot_report_aid_reporter">Enter your name or id</string>
 
     <string-array name="spot_report_tracked_resource">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>Person</item>
         <item>Vehicle</item>
         <item>Device</item>
     </string-array>
 
     <string-array name="spot_report_tracked_method">
-        <item>Select...</item>
+        <item>Select…</item>
         <item>GPS</item>
         <item>BlueTooth Beacon</item>
         <item>WiFi</item>
@@ -203,4 +203,45 @@
         <item>OPUS</item>
         <item>PCM</item>
     </string-array>
+
+    <!-- Kromek D5 sensor -->
+    <string-array name="kromek_d5_report_list">
+        <item>Radiometrics Report</item>
+        <item>Radiometric Status Report</item>
+        <item>Compression Enabled Report</item>
+        <item>Ethernet Config Report</item>
+        <item>Status Report</item>
+        <item>Unit ID Report</item>
+        <item>Dose Info Report</item>
+        <item>Remote Isotope Confirmation Report</item>
+        <item>Remote Isotope Confirmation Status Report</item>
+        <item>UTC Report</item>
+        <item>Remote Background Status Report</item>
+        <item>Remote Extended Isotope Confirmation Status Report</item>
+        <item>UI Radiation Thresholds Report</item>
+        <item>About Report</item>
+        <item>OTG Report</item>
+    </string-array>
+    <string-array name="kromek_d5_report_values">
+        <item tools:ignore="Typos">KromekDetectorRadiometricsV1Report</item>
+        <item>KromekSerialRadiometricStatusReport</item>
+        <item>KromekSerialCompressionEnabledReport</item>
+        <item>KromekSerialEthernetConfigReport</item>
+        <item>KromekSerialStatusReport</item>
+        <item>KromekSerialUnitIDReport</item>
+        <item>KromekSerialDoseInfoReport</item>
+        <item>KromekSerialRemoteIsotopeConfirmationReport</item>
+        <item>KromekSerialRemoteIsotopeConfirmationStatusReport</item>
+        <item>KromekSerialUTCReport</item>
+        <item>KromekSerialRemoteBackgroundStatusReport</item>
+        <item>KromekSerialRemoteExtendedIsotopeConfirmationStatusReport</item>
+        <item>KromekSerialUIRadiationThresholdsReport</item>
+        <item>KromekSerialAboutReport</item>
+        <item>KromekSerialOTGReport</item>
+    </string-array>
+    <string-array name="kromek_d5_report_defaults">
+        <item tools:ignore="Typos">>KromekDetectorRadiometricsV1Report</item>
+        <item>KromekSerialRadiometricStatusReport</item>
+    </string-array>
+    <!-- Kromek D5 sensor end -->
 </resources>

@@ -12,7 +12,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.0.1'
+    classpath 'com.android.tools.build:gradle:7.4.2'
   }
 }
 
@@ -24,7 +24,7 @@ subprojects {
     google()
   }
 
-  if (!project.projectDir.parent.endsWith('osh-android')) {
+  if (project.projectDir.parent != rootDir.toString()) {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
