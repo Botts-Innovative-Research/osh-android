@@ -101,7 +101,7 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
         ByteBuffer byteBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Convert bytes to integers
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < KROMEK_SERIAL_REPORTS_IN_SPECTRUM_MAX_BINS; i++) {
             spectrumBins[i] = byteBuffer.getShort() & 0xFFFF; // Get as short, then convert to int to handle as unsigned
         }
     }
