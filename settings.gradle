@@ -30,6 +30,9 @@ def repos = [
         'processing/sensorhub-process-vecmath',
         'processing/sensorhub-process-geoloc'
     ]
+        'osh-oakridge-modules':[
+                'sensors/sensorhub-driver-rs350'
+        ]
 ]
 
 repos.each { repoName, modules ->

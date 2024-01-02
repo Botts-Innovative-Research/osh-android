@@ -151,6 +151,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         BLELocation,
         STERadPager,
         KromekD5,
+        RS350,
+
     }
 
 
@@ -422,6 +424,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             config.outputs.parseEnabledReports();
 
             sensorhubConfig.add(config);
+        }
+
+        //RS350 sensor
+        enabled = prefs.getBoolean("rs350_enabled", false);
+        if (enabled){
+
         }
 
         // AngelSensor

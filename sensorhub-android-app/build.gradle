@@ -28,6 +28,7 @@ dependencies {
     implementation project(path: ':sensorhub-service-sweapi')
     implementation project(':sensorhub-android-ste')
     implementation project(path: ':sensorhub-android-kromek-d5')
+    implementation project(':sensorhub-driver-rs350')
 }
 
 android {
