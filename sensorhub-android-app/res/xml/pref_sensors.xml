@@ -206,6 +206,28 @@
 
         <SwitchPreference
             android:defaultValue="false"
+            android:key="angel_enabled"
+            android:summary="Enable streaming of Polar Heart Sensor (sensor must be connected via Bluetooth LE)"
+            android:title="Polar Heart Rate Data" />
+
+
+        <EditTextPreference
+            android:defaultValue="CB:14:3B:29:BF:47"
+            android:inputType="text"
+            android:key="angel_address"
+            android:singleLine="true"
+            android:title="Polar Heart Sensor Bluetooth Address" />
+
+        <MultiSelectListPreference
+            android:key="polar_options"
+            android:title="Polar Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
+        <SwitchPreference
+            android:defaultValue="false"
             android:key="flirone_enabled"
             android:summary="Enable streaming of FLIR One thermal camera data when connected on USB port"
             android:title="FLIR One Thermal Camera Data" />

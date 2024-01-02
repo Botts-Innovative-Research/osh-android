@@ -50,6 +50,8 @@ import android.widget.TextView;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
+import org.sensorhub.android.comm.ble.BleConfig;
+import org.sensorhub.android.comm.ble.BleNetwork;
 import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
@@ -80,6 +82,8 @@ import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.service.sweapi.SWEApiService;
 import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
+
+import org.sensorhub.impl.sensor.polar.PolarConfig;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -147,6 +151,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         TruPulse,
         TruPulseSim,
         Angel,
+        Polar,
         FlirOne,
         DJIDrone,
         ProxySensor,
@@ -408,6 +413,17 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             // don't add it to SOS-T here since it's already configured with a wildcard
             // meaning it will forward data from all systems by default
             //addSosTConfig(trupulseConfig, sosUser, sosPwd);
+        }
+        //polar sensor
+        enabled = prefs.getBoolean("polar_enabled", false);
+        if (enabled) {
+            PolarConfig polarConfig = new PolarConfig();
+            polarConfig.id = "POLAR_HEART_SENSOR";
+            polarConfig.name = "Polar Heart [" + deviceName + "]";
+            polarConfig.autoStart = true;
+            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+
+            sensorhubConfig.add(polarConfig);
         }
 
         // AngelSensor
