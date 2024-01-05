@@ -54,6 +54,7 @@ subprojects {
 
   configurations.all {
     exclude group: 'org.sensorhub', module: 'sensorhub-comm-ble-dbus'
+
     resolutionStrategy.dependencySubstitution {
       // force use of local projects
       substitute module('org.sensorhub:sensorhub-core') with project(':sensorhub-core')
@@ -66,7 +67,9 @@ subprojects {
       // override objenesis version to get new android instantiators
       substitute module('uk.com.robust-it:cloning:1.9.1') with module('uk.com.robust-it:cloning:1.9.10')
       substitute module('org.slf4j:slf4j-android:1.6.1-RC1') with module('org.slf4j:slf4j-api:1.7.25')
+
     }
+
   }
 
   version = oshCoreVersion

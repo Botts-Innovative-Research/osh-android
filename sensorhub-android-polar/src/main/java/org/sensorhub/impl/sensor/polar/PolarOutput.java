@@ -46,8 +46,8 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
     private static final String SENSOR_OUTPUT_DESCRIPTION = "[DESCRIPTION]";
     private static final Logger logger = LoggerFactory.getLogger(PolarOutput.class);
     private DataRecord dataRecord;
-    int lastBatteryLevel;
-    int[] lastHeartRate;
+    double lastBatteryLevel;
+    double lastHeartRate;
     BufferedReader bufferedReader;
 
     protected PolarOutput(Polar parent) {
@@ -62,17 +62,19 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
                 .label(SENSOR_OUTPUT_LABEL)
                 .description(SENSOR_OUTPUT_DESCRIPTION)
                 .addField("time", fac.createTime().asSamplingTimeIsoUTC()
-                        .label("Time")
+                        .label("Time Stamp")
                         .build()
                 )
-                .addField("heartRate", fac.createQuantity()
+                .addField("HeartRate", fac.createQuantity()
                         .label("Heart Rate")
-                        .description("heartbeats per minute")
+                        .definition("http://qudt.org/vocab/quantitykind/HeartRate")
+                        .description("heart rate")
                         .uom("/min")
                         .build())
                 .addField("batteryLevel", fac.createQuantity()
                         .label("Battery Status")
-                        .description("Polar H9 battery level status")
+                        .definition("http://sensorml.com/ont/isa/property/Reserve_Capacity")
+                        .description("Polar H9 battery level")
                         .uom("%")
                         .build())
                 .build();
@@ -96,12 +98,12 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
         return dataEncoding;
     }
 
-    public void setData(double hr, double batLevel) {
+    public void setData(int hr) {
         DataBlock dataBlock = dataRecord.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
-        dataBlock.setDoubleValue(1, hr);
-        dataBlock.setDoubleValue(2, batLevel);
+        dataBlock.setIntValue(1, hr);
+//        dataBlock.setDoubleValue(2, batteryLevel);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();

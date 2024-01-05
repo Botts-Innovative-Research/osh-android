@@ -206,15 +206,14 @@
 
         <SwitchPreference
             android:defaultValue="false"
-            android:key="angel_enabled"
+            android:key="polar_enabled"
             android:summary="Enable streaming of Polar Heart Sensor (sensor must be connected via Bluetooth LE)"
             android:title="Polar Heart Rate Data" />
-
 
         <EditTextPreference
             android:defaultValue="CB:14:3B:29:BF:47"
             android:inputType="text"
-            android:key="angel_address"
+            android:key="polar_address"
             android:singleLine="true"
             android:title="Polar Heart Sensor Bluetooth Address" />
 
