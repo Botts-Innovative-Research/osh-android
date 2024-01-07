@@ -99,7 +99,7 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
     }
 
     public void setData(int hr) {
-        DataBlock dataBlock = dataRecord.createDataBlock();
+        DataBlock dataBlock = dataStruct.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
         dataBlock.setIntValue(1, hr);
