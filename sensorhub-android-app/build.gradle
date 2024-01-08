@@ -49,6 +49,8 @@ android {
 
     packagingOptions {
         exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE.md'
         exclude '**/empty'
         exclude 'META-INF/rxjava.properties'
     }
@@ -67,6 +69,12 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+
+    configurations {
+        configureEach {
+            exclude group: 'com.sun.activation', module: 'jakarta.activation'
+        }
     }
 }
 
