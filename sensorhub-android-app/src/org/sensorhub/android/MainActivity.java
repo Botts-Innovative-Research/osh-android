@@ -47,6 +47,8 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.botts.impl.sensor.rs350.RS350Config;
+
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.api.event.Event;
@@ -58,6 +60,8 @@ import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
+import org.sensorhub.impl.comm.TCPCommProviderConfig;
+import org.sensorhub.impl.comm.TCPConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
 import org.sensorhub.impl.event.EventBus;
@@ -95,6 +99,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -426,10 +431,22 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(config);
         }
 
-        //RS350 sensor
+        // RS350 sensor
         enabled = prefs.getBoolean("rs350_enabled", false);
-        if (enabled){
+        if (enabled) {
+            RS350Config config = new RS350Config();
+            config.id = "RS350_SENSOR";
+            config.name = "RS350 [" + deviceName + "]";
+            config.autoStart = true;
+            config.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            config.serialNumber = prefs.getString("rs350_serial", null);
+            TCPCommProviderConfig tcpConfig = new TCPCommProviderConfig();
+            tcpConfig.protocol.remoteHost = prefs.getString("rs350_ip", null);
+            tcpConfig.protocol.remotePort = Integer.parseInt(Objects.requireNonNull(prefs.getString("rs350_port", null)));
+            tcpConfig.moduleClass = TCPConfig.class.getCanonicalName();
+            config.commSettings = tcpConfig;
 
+            sensorhubConfig.add(config);
         }
 
         // AngelSensor
