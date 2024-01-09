@@ -1,16 +1,16 @@
 /***************************** BEGIN LICENSE BLOCK ***************************
 
-The contents of this file are subject to the Mozilla Public License, v. 2.0.
-If a copy of the MPL was not distributed with this file, You can obtain one
-at http://mozilla.org/MPL/2.0/.
+ The contents of this file are subject to the Mozilla Public License, v. 2.0.
+ If a copy of the MPL was not distributed with this file, You can obtain one
+ at http://mozilla.org/MPL/2.0/.
 
-Software distributed under the License is distributed on an "AS IS" basis,
-WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-for the specific language governing rights and limitations under the License.
- 
-Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
- 
-******************************* END LICENSE BLOCK ***************************/
+ Software distributed under the License is distributed on an "AS IS" basis,
+ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ for the specific language governing rights and limitations under the License.
+
+ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
+
+ ******************************* END LICENSE BLOCK ***************************/
 
 package org.sensorhub.impl.sensor.polar;
 
@@ -45,7 +45,7 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
     private static final String SENSOR_OUTPUT_LABEL = "POLAR HEART MONITOR DATA";
     private static final String SENSOR_OUTPUT_DESCRIPTION = "[DESCRIPTION]";
     private static final Logger logger = LoggerFactory.getLogger(PolarOutput.class);
-//    private DataRecord dataRecord;
+    //    private DataRecord dataRecord;
 //    double lastBatteryLevel;
 //    double lastHeartRate;
     BufferedReader bufferedReader;
@@ -109,38 +109,4 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
         latestRecordTime = System.currentTimeMillis();
         eventHandler.publish(new DataEvent(latestRecordTime, this, dataBlock));
     }
-
-//    protected void sendData(){
-//        try{
-//            long time = 0;
-//            String line = bufferedReader.readLine();
-//            Polar.logger.debug("Message received: {}", line);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        DataBlock data;
-//        if (latestRecord == null)
-//            data = dataStruct.createDataBlock();
-//        else
-//            data = latestRecord.renew();
-//        long timeStamp = System.currentTimeMillis();
-//        data.setDoubleValue(0, timeStamp / 1000.);
-////        data.setFloatValue(1, lastHeartRate);
-//        data.setDoubleValue(2, lastBatteryLevel);
-//
-//        // update latest record and send event
-//        latestRecord = data;
-//        latestRecordTime = timeStamp;
-//        eventHandler.publish(new DataEvent(latestRecordTime, PolarOutput.this, data));
-//
-//    }
-//    public void newHeartRate(int [] hr) {
-//        this.lastHeartRate = hr;
-//        sendData();
-//    }
-
-//    public void newBatteryLevel(int level) {
-//        this.lastBatteryLevel = level;
-//        sendData();
-//    }
 }
