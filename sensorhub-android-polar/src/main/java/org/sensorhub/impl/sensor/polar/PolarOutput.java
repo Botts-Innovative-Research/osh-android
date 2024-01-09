@@ -45,9 +45,9 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
     private static final String SENSOR_OUTPUT_LABEL = "POLAR HEART MONITOR DATA";
     private static final String SENSOR_OUTPUT_DESCRIPTION = "[DESCRIPTION]";
     private static final Logger logger = LoggerFactory.getLogger(PolarOutput.class);
-    private DataRecord dataRecord;
-    double lastBatteryLevel;
-    double lastHeartRate;
+//    private DataRecord dataRecord;
+//    double lastBatteryLevel;
+//    double lastHeartRate;
     BufferedReader bufferedReader;
 
     protected PolarOutput(Polar parent) {
@@ -71,12 +71,12 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
                         .description("heart rate")
                         .uom("/min")
                         .build())
-                .addField("batteryLevel", fac.createQuantity()
-                        .label("Battery Status")
-                        .definition("http://sensorml.com/ont/isa/property/Reserve_Capacity")
-                        .description("Polar H9 battery level")
-                        .uom("%")
-                        .build())
+//                .addField("batteryLevel", fac.createQuantity()
+//                        .label("Battery Status")
+//                        .definition("http://sensorml.com/ont/isa/property/Reserve_Capacity")
+//                        .description("Polar H9 battery level")
+//                        .uom("%")
+//                        .build())
                 .build();
 
         dataEncoding = fac.newTextEncoding(",", "\n");
