@@ -1,25 +1,49 @@
 package org.sensorhub.impl.sensor.ste;
 
+import static org.sensorhub.impl.sensor.android.AndroidSensorsDriver.LOCAL_REF_FRAME;
+
+import android.annotation.SuppressLint;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
+import android.os.Bundle;
+import android.os.Handler;
+
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataComponent;
 import net.opengis.swe.v20.DataEncoding;
-import net.opengis.swe.v20.DataRecord;
+import net.opengis.swe.v20.Vector;
 
 import org.sensorhub.api.data.DataEvent;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.vast.swe.SWEHelper;
+import org.vast.swe.helper.GeoPosHelper;
 
-public class STERadPagerOutput extends AbstractSensorOutput<STERadPager> {
+public class STERadPagerOutput extends AbstractSensorOutput<STERadPager> implements LocationListener {
+    private String localFrameURI;
     String name = "STE Rad Pager Data";
     DataComponent dataComponent;
     DataEncoding dataEncoding;
+    LocationManager locManager;
+    LocationProvider locProvider;
+    Location lastLocation;
+    double lastLocationTime;
+    boolean enabled;
 
-    protected STERadPagerOutput(STERadPager parent) {
+    protected STERadPagerOutput(STERadPager parent, LocationManager locManager, LocationProvider locProvider) {
         super("STE Rad Pager Data", parent);
+        this.locManager = locManager;
+        this.locProvider = locProvider;
+        this.name = locProvider.getName().replaceAll(" ", "_") + "_data";
+        this.localFrameURI = parent.getUniqueIdentifier() + "#" + LOCAL_REF_FRAME;
     }
 
     public void doInit() {
         SWEHelper fac = new SWEHelper();
+        GeoPosHelper geoFac = new GeoPosHelper();
+        Vector locVector = geoFac.newLocationVectorLLA(null);
+        locVector.setLocalFrame(localFrameURI);
 
         dataComponent = fac.createRecord()
                 .name(name)
@@ -59,9 +83,15 @@ public class STERadPagerOutput extends AbstractSensorOutput<STERadPager> {
                         .description("Exposure Rate indicated")
                         .uom("uR/h")
                         .build())
+                .addField("location", locVector)
                 .build();
 
         dataEncoding = fac.newTextEncoding(",", "\n");
+    }
+
+    @SuppressLint("MissingPermission")
+    public void doStart(Handler handler) {
+        locManager.requestLocationUpdates(locProvider.getName(), 100, 0.0f, this, handler.getLooper());
     }
 
     @Override
@@ -152,9 +182,50 @@ public class STERadPagerOutput extends AbstractSensorOutput<STERadPager> {
         dataBlock.setDoubleValue(5, alarmLevel);
         dataBlock.setDoubleValue(6, exposureRate);
 
+        // if last location is less than 2 minutes old, use it
+        if ((double) (System.currentTimeMillis() / 1000) - (lastLocationTime) < 120.0) {
+            dataBlock.setDoubleValue(7, lastLocation.getLatitude());
+            dataBlock.setDoubleValue(8, lastLocation.getLongitude());
+            dataBlock.setDoubleValue(9, lastLocation.getAltitude());
+        } else {
+            log.debug("Location is too old, not using it");
+//            dataBlock.setDoubleValue(7, null);
+//            dataBlock.setDoubleValue(8, null);
+//            dataBlock.setDoubleValue(9, null);
+        }
+
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();
         eventHandler.publish(new DataEvent(latestRecordTime, this, dataBlock));
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        /*log.debug("Location received from " + getName() + ": "
+                  + location.getLatitude() + ", " +
+                  + location.getLongitude() + ", " +
+                  + location.getAltitude()); */
+
+        double sampleTime = location.getTime() / 1000.0;
+        lastLocation = location;
+        lastLocationTime = sampleTime;
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        enabled = true;
+    }
+
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        enabled = false;
     }
 
 }
