@@ -60,8 +60,8 @@ import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
+import org.sensorhub.impl.comm.TCPCommProvider;
 import org.sensorhub.impl.comm.TCPCommProviderConfig;
-import org.sensorhub.impl.comm.TCPConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
 import org.sensorhub.impl.event.EventBus;
@@ -441,9 +441,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             config.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
             config.serialNumber = prefs.getString("rs350_serial", null);
             TCPCommProviderConfig tcpConfig = new TCPCommProviderConfig();
-            tcpConfig.protocol.remoteHost = prefs.getString("rs350_ip", null);
+            tcpConfig.protocol.remoteHost = prefs.getString("rs350_address", null);
             tcpConfig.protocol.remotePort = Integer.parseInt(Objects.requireNonNull(prefs.getString("rs350_port", null)));
-            tcpConfig.moduleClass = TCPConfig.class.getCanonicalName();
+            tcpConfig.moduleClass = TCPCommProvider.class.getCanonicalName();
             config.commSettings = tcpConfig;
 
             sensorhubConfig.add(config);
