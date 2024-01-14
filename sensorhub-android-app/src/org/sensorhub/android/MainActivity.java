@@ -47,8 +47,6 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.botts.impl.sensor.rs350.RS350Config;
-
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.api.event.Event;
@@ -74,6 +72,7 @@ import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.kromek.d5.D5Config;
+import org.sensorhub.impl.sensor.rs350.RS350Config;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
