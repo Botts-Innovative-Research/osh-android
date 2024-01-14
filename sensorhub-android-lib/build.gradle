@@ -11,7 +11,6 @@ dependencies {
 //  api project(':sensorhub-android-flirone')
   //api project(':sensorhub-android-dji')
 //  api project(':sensorhub-storage-h2')
-  api project(':sensorhub-driver-rs350')
 
   implementation 'org.slf4j:slf4j-android:1.6.1-RC1'
   implementation('javax.xml.stream:stax-api:1.0-2')

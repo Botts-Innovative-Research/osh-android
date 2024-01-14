@@ -31,7 +31,6 @@ def repos = [
         'processing/sensorhub-process-geoloc'
     ],
       'osh-oakridge-modules':[
-          'sensors/sensorhub-driver-rs350',
           'sensors/sensorhub-utils-rad'
       ]
 ]
