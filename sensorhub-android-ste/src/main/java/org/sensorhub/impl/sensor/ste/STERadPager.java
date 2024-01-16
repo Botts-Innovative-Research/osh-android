@@ -58,7 +58,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     private BluetoothGattCharacteristic txCharacteristic;
     private Timer txNotificationTimer;
     STERadPagerOutput output;
-    STERadPagerLocationOutput locationOutput;
+//    STERadPagerLocationOutput locationOutput;
     private boolean btConnected = false;
     private LocationManager locationManager;
     private HandlerThread eventThread;
@@ -86,9 +86,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         if (btAdapter == null || !btAdapter.isEnabled()) {
             Toast.makeText(context, "Bluetooth is not enabled", Toast.LENGTH_LONG).show();
         }
-        output = new STERadPagerOutput(this);
-        output.doInit();
-        addOutput(output, false);
+//        output = new STERadPagerOutput(this);
 
 
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION)) {
@@ -101,11 +99,14 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
 
                 // keep only GPS for now
                 if (locProvider.requiresSatellite()) {
-                    locationOutput = new STERadPagerLocationOutput(this, locationManager, locProvider);
-                    useLocationProvider(locationOutput, locProvider);
+//                    locationOutput = new STERadPagerLocationOutput(this, locationManager, locProvider);
+                    output = new STERadPagerOutput(this, locationManager, locProvider);
+                    useLocationProvider(output, locProvider);
                 }
             }
         }
+        output.doInit();
+        addOutput(output, false);
     }
 
     @Override
@@ -133,7 +134,8 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         eventThread.start();
         Handler eventHandler = new Handler(eventThread.getLooper());
 
-        locationOutput.doStart(eventHandler);
+//        locationOutput.doStart(eventHandler);
+        output.doStart(eventHandler);
     }
 
     @Override
