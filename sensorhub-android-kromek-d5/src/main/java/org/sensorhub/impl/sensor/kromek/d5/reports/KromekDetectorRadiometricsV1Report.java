@@ -22,7 +22,6 @@ import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataRecord;
 import net.opengis.swe.v20.DataType;
 
-import org.sensorhub.impl.sensor.kromek.d5.D5Sensor;
 import org.vast.swe.SWEHelper;
 
 import java.nio.ByteBuffer;
@@ -80,7 +79,6 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
         doseRate = doseRate * 1000000;
         // Sometimes the dose rate is super high for some reason. If it is, set it to 0 so it doesn't mess up the graph.
         if (doseRate > 100) {
-            D5Sensor.logger.info("Dose rate is too high: " + doseRate + " uSv/h. Setting to 0.");
             doseRate = 0;
         }
         doseUserAccumulated = bytesToFloat(payload[20], payload[21], payload[22], payload[23]);
@@ -103,7 +101,7 @@ public class KromekDetectorRadiometricsV1Report extends SerialReport {
         ByteBuffer byteBuffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         // Convert bytes to integers
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < KROMEK_SERIAL_REPORTS_IN_SPECTRUM_MAX_BINS; i++) {
             spectrumBins[i] = byteBuffer.getShort() & 0xFFFF; // Get as short, then convert to int to handle as unsigned
         }
     }
