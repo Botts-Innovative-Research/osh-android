@@ -50,11 +50,10 @@ public class AlarmOutput extends OutputBase {
                 .addField("MeasurementClassCode", radHelper.createMeasurementClassCode())
                 // RAD Alarm
                 .addField("AlarmCategoryCode", radHelper.createAlarmCatCode())
-                .addField("AlarmDescription",
-                        radHelper.createText()
-                                .name("AlarmDescription")
-                                .label("Alarm Description")
-                                .definition(RADHelper.getRadUri("alarm-description")))
+                .addField("AlarmDescription", radHelper.createText()
+                        .name("AlarmDescription")
+                        .label("Alarm Description")
+                        .definition(RADHelper.getRadUri("alarm-description")))
                 .build();
     }
 
@@ -67,8 +66,13 @@ public class AlarmOutput extends OutputBase {
             dataBlock.setDoubleValue(1, message.getDerivedData().getRealTimeDuration());
             dataBlock.setStringValue(2, message.getDerivedData().getRemark());
             dataBlock.setStringValue(3, message.getDerivedData().getMeasurementClassCode());
-            dataBlock.setStringValue(4, message.getAnalysisResults().getRadAlarm().getRadAlarmCategoryCode());
-            dataBlock.setStringValue(5, message.getAnalysisResults().getRadAlarm().getRadAlarmDescription());
+            if (message.getAnalysisResults() == null) {
+                dataBlock.setStringValue(4, "null");
+                dataBlock.setStringValue(5, "null");
+            } else {
+                dataBlock.setStringValue(4, message.getAnalysisResults().getRadAlarm().getRadAlarmCategoryCode());
+                dataBlock.setStringValue(5, message.getAnalysisResults().getRadAlarm().getRadAlarmDescription());
+            }
 
             latestRecord = dataBlock;
             latestRecordTime = System.currentTimeMillis();

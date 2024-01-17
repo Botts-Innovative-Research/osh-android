@@ -1,8 +1,11 @@
 package org.sensorhub.impl.sensor.rs350;
 
+import android.os.Looper;
+import android.widget.Toast;
+
+import org.sensorhub.android.SensorHubService;
 import org.sensorhub.api.comm.ICommProvider;
 import org.sensorhub.api.common.SensorHubException;
-import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.module.ModuleRegistry;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.impl.sensor.rs350.outputs.AlarmOutput;
@@ -14,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 public class RS350Sensor extends AbstractSensorModule<RS350Config> {
@@ -31,8 +33,6 @@ public class RS350Sensor extends AbstractSensorModule<RS350Config> {
 
     AlarmOutput alarmOutput;
     RS350MessageHandler rs350MessageHandler;
-
-    InputStream msgIn;
 
     public RS350Sensor() {
 
@@ -76,10 +76,11 @@ public class RS350Sensor extends AbstractSensorModule<RS350Config> {
 
     @Override
     public void doStart() throws SensorHubException {
-        // init comm provider
-        if (commProvider == null) {
+        Looper.prepare();
 
-            // we need to recreate comm provider here because it can be changed by UI
+        // Init comm provider
+        if (commProvider == null) {
+            // We need to recreate comm provider here because it can be changed by UI
             try {
                 if (config.commSettings == null)
                     throw new SensorHubException("No communication settings specified");
@@ -87,21 +88,18 @@ public class RS350Sensor extends AbstractSensorModule<RS350Config> {
                 ModuleRegistry moduleReg = getParentHub().getModuleRegistry();
                 commProvider = (ICommProvider<?>) moduleReg.loadSubModule(config.commSettings, true);
                 commProvider.start();
-
             } catch (Exception e) {
                 commProvider = null;
                 throw e;
             }
         }
 
-        // connect to data stream
-        try {
-            msgIn = new BufferedInputStream(commProvider.getInputStream());
-        } catch (IOException e) {
-            throw new SensorException("Error while initializing communications ", e);
+        if (!commProvider.isStarted()) {
+            Toast.makeText(SensorHubService.getContext(), "Failed to connect to RS-350 via TCP.\nEnsure the IP Address and Port Number are correct and restart SmartHub.", Toast.LENGTH_LONG).show();
+            throw new SensorHubException("Comm provider failed to start");
         }
 
-        rs350MessageHandler = new RS350MessageHandler(msgIn, "</RadInstrumentData>");
+        rs350MessageHandler = new RS350MessageHandler(this);
 
         if (config.outputs.enableLocationOutput) {
             rs350MessageHandler.addMessageListener(locationOutput);
@@ -146,5 +144,43 @@ public class RS350Sensor extends AbstractSensorModule<RS350Config> {
         } else {
             return commProvider.isStarted();
         }
+    }
+
+    public void stopCommProvider() {
+        if (commProvider != null) {
+            try {
+                commProvider.stop();
+            } catch (Exception e) {
+                logger.error("Uncaught exception attempting to stop comm module", e);
+            }
+        }
+    }
+
+    public void startCommProvider() {
+        if (commProvider != null) {
+            try {
+                commProvider.start();
+            } catch (Exception e) {
+                logger.error("Uncaught exception attempting to start comm module", e);
+            }
+        }
+    }
+
+    public InputStream getInputStream() {
+        if (commProvider != null) {
+            try {
+                return new BufferedInputStream(commProvider.getInputStream());
+            } catch (Exception e) {
+                logger.error("Uncaught exception attempting to get input stream", e);
+            }
+        }
+        return null;
+    }
+
+    public boolean isCommProviderStarted() {
+        if (commProvider != null) {
+            return commProvider.isStarted();
+        }
+        return false;
     }
 }
