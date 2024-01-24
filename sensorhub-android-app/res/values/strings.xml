@@ -15,6 +15,7 @@
     <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
     <string name="sensor_angel">Angel Sensor</string>
     <string name="sensor_flirone">Flirone Sensor</string>
+    <string name="sensor_rs350">RS350 Backpack</string>
     <string-array name="video_codec_list">
         <item>JPEG</item>
         <item>H264</item>

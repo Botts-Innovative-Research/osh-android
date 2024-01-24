@@ -259,5 +259,29 @@
             android:entryValues="@array/kromek_d5_report_values"
             android:defaultValue="@array/kromek_d5_report_defaults" />
         <!-- Kromek D5 sensor end -->
+        <!-- RS350 Backpack -->
+        <SwitchPreference
+            android:key="rs350_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of RS350 Backpack data"
+            android:title="RS350 Backpack Data"/>
+        <EditTextPreference
+            android:defaultValue="192.168.0.168"
+            android:key="rs350_address"
+            android:singleLine="true"
+            android:title="RS350 IP Address"/>
+        <EditTextPreference
+            android:defaultValue="44439"
+            android:key="rs350_port"
+            android:singleLine="true"
+            android:title="RS350 Port Number"/>
+        <EditTextPreference
+            android:defaultValue="RS1"
+            android:inputType="text"
+            android:key="rs350_serial"
+            android:singleLine="true"
+            android:title="RS350 serial number or UID" />
+
+
     </PreferenceCategory>
 </PreferenceScreen>

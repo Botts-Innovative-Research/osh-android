@@ -29,7 +29,10 @@ def repos = [
         'sensors/health/sensorhub-driver-angelsensor',
         'processing/sensorhub-process-vecmath',
         'processing/sensorhub-process-geoloc'
-    ]
+    ],
+      'osh-oakridge-modules':[
+          'sensors/sensorhub-utils-rad'
+      ]
 ]
 
 repos.each { repoName, modules ->

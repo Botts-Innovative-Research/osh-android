@@ -58,6 +58,8 @@ import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
+import org.sensorhub.impl.comm.TCPCommProvider;
+import org.sensorhub.impl.comm.TCPCommProviderConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
 import org.sensorhub.impl.event.EventBus;
@@ -70,6 +72,7 @@ import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.kromek.d5.D5Config;
+import org.sensorhub.impl.sensor.rs350.RS350Config;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
@@ -95,6 +98,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -151,6 +155,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         BLELocation,
         STERadPager,
         KromekD5,
+        RS350,
+
     }
 
 
@@ -420,6 +426,24 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             config.serialNumber = prefs.getString("d5_serial", null);
             config.outputs.enabledReports = prefs.getStringSet("kromek_d5_output_options", Collections.emptySet());
             config.outputs.parseEnabledReports();
+
+            sensorhubConfig.add(config);
+        }
+
+        // RS350 sensor
+        enabled = prefs.getBoolean("rs350_enabled", false);
+        if (enabled) {
+            RS350Config config = new RS350Config();
+            config.id = "RS350_SENSOR";
+            config.name = "RS350 [" + deviceName + "]";
+            config.autoStart = true;
+            config.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            config.serialNumber = prefs.getString("rs350_serial", null);
+            TCPCommProviderConfig tcpConfig = new TCPCommProviderConfig();
+            tcpConfig.protocol.remoteHost = prefs.getString("rs350_address", null);
+            tcpConfig.protocol.remotePort = Integer.parseInt(Objects.requireNonNull(prefs.getString("rs350_port", null)));
+            tcpConfig.moduleClass = TCPCommProvider.class.getCanonicalName();
+            config.commSettings = tcpConfig;
 
             sensorhubConfig.add(config);
         }
