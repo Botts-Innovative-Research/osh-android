@@ -6,68 +6,67 @@ ext.buildToolsVersion = "30.0.2"
 version = oshCoreVersion
 
 buildscript {
-  repositories {
-    google()
-    mavenCentral()
-  }
+    repositories {
+        google()
+        mavenCentral()
+    }
 
-  dependencies {
-    classpath 'com.android.tools.build:gradle:7.0.1'
-  }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.4'
+    }
 }
 
 subprojects {
-  group = 'org.sensorhub'
+    group = 'org.sensorhub'
 
-  repositories {
-    mavenCentral()
-    google()
-  }
-
-  if (!project.projectDir.parent.endsWith('osh-android')) {
-    apply plugin: 'java-library'
-    apply plugin: 'maven-publish'
-
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-    ext.details = null
-    ext.pom = {}
-
-    configurations {
-      embeddedApi
-      embeddedImpl
-      embedded
-      embedded.extendsFrom(embeddedApi, embeddedImpl)
-      api.extendsFrom(embeddedApi)
-      implementation.extendsFrom(embeddedImpl)
-      compile {
-        extendsFrom embedded
-      }
+    repositories {
+        mavenCentral()
+        google()
     }
 
-    task osgi {
-      // dummy osgi task since just to make subprojects happy
-      // it does nothing since osgi is not used on Android
+    if (project.projectDir.parent != rootDir.toString()) {
+        apply plugin: 'java-library'
+        apply plugin: 'maven-publish'
+
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+        ext.details = null
+        ext.pom = {}
+
+        configurations {
+            embeddedApi
+            embeddedImpl
+            embedded
+            embedded.extendsFrom(embeddedApi, embeddedImpl)
+            api.extendsFrom(embeddedApi)
+            implementation.extendsFrom(embeddedImpl)
+            compile {
+                extendsFrom embedded
+            }
+        }
+
+        task osgi {
+            // dummy osgi task since just to make subprojects happy
+            // it does nothing since osgi is not used on Android
+        }
     }
-  }
 
-  configurations.all {
-    exclude group: 'org.sensorhub', module: 'sensorhub-comm-ble-dbus'
-    resolutionStrategy.dependencySubstitution {
-      // force use of local projects
-      substitute module('org.sensorhub:sensorhub-core') with project(':sensorhub-core')
-      substitute module('org.sensorhub:sensorhub-comm-ble') with project(':sensorhub-comm-ble')
-      substitute module('org.sensorhub:sensorhub-service-swe') with project(':sensorhub-service-swe')
-      substitute module('org.sensorhub:sensorhub-service-video') with project(':sensorhub-service-video')
-      substitute module('org.vast.opengis:ogc-services-sps') with project(':ogc-services-sps')
-      substitute module('org.sensorhub:sensorhub-service-sweapi') with project(':sensorhub-service-sweapi')
+    configurations.all {
+        exclude group: 'org.sensorhub', module: 'sensorhub-comm-ble-dbus'
+        resolutionStrategy.dependencySubstitution {
+            // force use of local projects
+            substitute module('org.sensorhub:sensorhub-core') with project(':sensorhub-core')
+            substitute module('org.sensorhub:sensorhub-comm-ble') with project(':sensorhub-comm-ble')
+            substitute module('org.sensorhub:sensorhub-service-swe') with project(':sensorhub-service-swe')
+            substitute module('org.sensorhub:sensorhub-service-video') with project(':sensorhub-service-video')
+            substitute module('org.vast.opengis:ogc-services-sps') with project(':ogc-services-sps')
+            substitute module('org.sensorhub:sensorhub-service-sweapi') with project(':sensorhub-service-sweapi')
 
-      // override objenesis version to get new android instantiators
-      substitute module('uk.com.robust-it:cloning:1.9.1') with module('uk.com.robust-it:cloning:1.9.10')
-      substitute module('org.slf4j:slf4j-android:1.6.1-RC1') with module('org.slf4j:slf4j-api:1.7.25')
+            // override objenesis version to get new android instantiators
+            substitute module('uk.com.robust-it:cloning:1.9.1') with module('uk.com.robust-it:cloning:1.9.10')
+            substitute module('org.slf4j:slf4j-android:1.6.1-RC1') with module('org.slf4j:slf4j-api:1.7.25')
+        }
     }
-  }
 
-  version = oshCoreVersion
+    version = oshCoreVersion
 }
-

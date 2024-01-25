@@ -12,20 +12,19 @@ repositories {
 dependencies {
   api project(':sensorhub-android-lib')
 
-//  implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
   implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
-//  implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.0'
   implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
-  implementation 'com.android.support:appcompat-v7:26.1.0'
-  implementation 'com.android.support:design:26.1.0'
+  implementation 'com.android.support:appcompat-v7:28.0.0'
+  implementation 'com.android.support:design:28.0.0'
   implementation 'com.android.support.constraint:constraint-layout:2.0.4'
   implementation 'android.arch.navigation:navigation-fragment:1.0.0'
   implementation 'android.arch.navigation:navigation-ui:1.0.0'
-  implementation 'com.android.support:support-v4:26.1.0'
+  implementation 'com.android.support:support-v4:28.0.0'
 //  implementation project(path: ':sensorhub-storage-compat')
-//    implementation project(path: ':sensorhub-android-sos-ipc')
-  implementation project(path: ':sensorhub-datastore-h2')
-  implementation project(path: ':sensorhub-service-sweapi')
+//  implementation project(path: ':sensorhub-android-sos-ipc')
+  implementation project(':sensorhub-datastore-h2')
+  implementation project(':sensorhub-service-sweapi')
+  implementation project(':sensorhub-android-wear-os')
 }
 
 android {
@@ -62,8 +61,7 @@ android {
   lintOptions {
     abortOnError false
   }
-    buildFeatures {
-        viewBinding true
-    }
+  buildFeatures {
+    viewBinding true
+  }
 }
-
