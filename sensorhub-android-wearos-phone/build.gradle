@@ -8,6 +8,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation project(':sensorhub-android-service')
     implementation project(':sensorhub-driver-android')
+    implementation 'com.google.android.gms:play-services-wearable:18.1.0'
 }
 
 android {

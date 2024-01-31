@@ -21,7 +21,7 @@ import java.util.List;
 
 public class MainActivity extends Activity implements SensorEventListener {
     private static final String TAG = "MainActivity";
-    private static final String MESSAGE_PATH = "/OSH";
+    private static final String HEART_RATE_PATH = "/OSH/HeartRate";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         int heartRate = Math.round(event.values[0]);
-        Log.d("Heart Rate", "HeartRate: " + heartRate);
+        Log.d("Heart Rate", "Heart Rate: " + heartRate);
 
         // Send heart rate to the phone
         Task<List<Node>> wearableList = Wearable.getNodeClient(getApplicationContext()).getConnectedNodes();
@@ -55,7 +55,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             for (Node node : nodes) {
                 String nodeId = node.getId();
                 String message = Integer.toString(heartRate);
-                Task<Integer> sendMessageTask = Wearable.getMessageClient(getApplicationContext()).sendMessage(nodeId, MESSAGE_PATH, message.getBytes(StandardCharsets.UTF_8));
+                Task<Integer> sendMessageTask = Wearable.getMessageClient(getApplicationContext()).sendMessage(nodeId, HEART_RATE_PATH, message.getBytes(StandardCharsets.UTF_8));
                 sendMessageTask.addOnSuccessListener(integer -> Log.d(TAG, "Message sent successfully"));
                 sendMessageTask.addOnFailureListener(e -> Log.d(TAG, "Message failed"));
             }
