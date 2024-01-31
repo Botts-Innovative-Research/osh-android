@@ -1,4 +1,4 @@
-package org.sensorhub.impl.sensor.wearos;
+package org.sensorhub.impl.sensor.wearos.phone;
 
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleProvider;

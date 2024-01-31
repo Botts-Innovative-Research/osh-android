@@ -1,4 +1,4 @@
-package org.sensorhub.impl.sensor.wearos;
+package org.sensorhub.impl.sensor.wearos.phone;
 
 import org.sensorhub.api.sensor.SensorConfig;
 

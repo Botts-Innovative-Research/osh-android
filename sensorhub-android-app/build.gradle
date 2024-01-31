@@ -3,65 +3,55 @@ apply plugin: 'com.android.application'
 description = 'OSH Demo Android App'
 ext.details = 'OSH demo app for Android'
 
-repositories {
-//  maven {
-//    url "https://repo.eclipse.org/content/repositories/paho-releases/"
-//  }
-}
-
 dependencies {
-  api project(':sensorhub-android-lib')
+    api project(':sensorhub-android-lib')
 
-  implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
-  implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
-  implementation 'androidx.appcompat:appcompat:1.0.0'
-  implementation 'com.google.android.material:material:1.0.0'
-  implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-  implementation 'androidx.navigation:navigation-fragment:2.0.0-rc02'
-  implementation 'androidx.navigation:navigation-ui:2.0.0-rc02'
-  implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-//  implementation project(path: ':sensorhub-storage-compat')
-//  implementation project(path: ':sensorhub-android-sos-ipc')
-  implementation project(':sensorhub-datastore-h2')
-  implementation project(':sensorhub-service-sweapi')
-  implementation project(':sensorhub-android-wear-os')
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.gms:play-services-wearable:18.1.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation project(':sensorhub-datastore-h2')
+    implementation project(':sensorhub-service-sweapi')
+    implementation project(':sensorhub-android-wearos-phone')
 }
 
 android {
-  compileSdkVersion rootProject.compileSdkVersion
-  buildToolsVersion rootProject.buildToolsVersion
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
 
-  defaultConfig {
-    minSdkVersion rootProject.minSdkVersion
-    targetSdkVersion rootProject.targetSdkVersion
-    versionCode 1
-    versionName rootProject.version
-  }
-
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_11
-    targetCompatibility JavaVersion.VERSION_11
-  }
-
-  packagingOptions {
-    exclude 'META-INF/LICENSE'
-    exclude '**/empty'
-    exclude 'META-INF/rxjava.properties'
-  }
-
-  sourceSets {
-    main {
-      manifest.srcFile 'AndroidManifest.xml'
-      java.srcDirs = ['src']
-      res.srcDirs = ['res']
-      assets.srcDirs = ['assets']
+    defaultConfig {
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode 1
+        versionName rootProject.version
     }
-  }
 
-  lintOptions {
-    abortOnError false
-  }
-  buildFeatures {
-    viewBinding true
-  }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude '**/empty'
+        exclude 'META-INF/rxjava.properties'
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+    buildFeatures {
+        viewBinding true
+    }
 }

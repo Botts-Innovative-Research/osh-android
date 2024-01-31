@@ -1,4 +1,4 @@
-package org.sensorhub.impl.sensor.wearos;
+package org.sensorhub.impl.sensor.wearos.phone;
 
 import net.opengis.swe.v20.DataComponent;
 import net.opengis.swe.v20.DataEncoding;
