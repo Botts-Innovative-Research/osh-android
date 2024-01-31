@@ -7,7 +7,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "org.sensorhub.impl.sensor.wearos.watch"
+        applicationId "org.opensensorhub.android"
         minSdk 26
         targetSdk 34
         versionCode 1

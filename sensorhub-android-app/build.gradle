@@ -22,6 +22,7 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
+        applicationId "org.opensensorhub.android"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
