@@ -72,7 +72,7 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
-import org.sensorhub.impl.sensor.wearos.WearOSConfig;
+import org.sensorhub.impl.sensor.wearos.phone.WearOSConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
@@ -911,7 +911,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         } else if (Sensors.BLELocation.equals(sensor)) {
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if (Sensors.WearOS.equals(sensor)) {
-            return prefs.getBoolean("ste_radpager_enabled", false) && prefs.getStringSet("radpager_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("wearos_enabled", false) && prefs.getStringSet("wearos_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;
