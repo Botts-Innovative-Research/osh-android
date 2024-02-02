@@ -25,7 +25,7 @@ public class WearOSOutput extends AbstractSensorOutput<WearOSDriver> {
                 .label(name)
                 .definition(SWEHelper.getPropertyUri("wear-os-data"))
                 .addField("time", sweHelper.createTime().asSamplingTimeIsoUTC()
-                        .label("Time Stamp")
+                        .label("Sampling Time")
                         .build())
                 .addField("heartRate", sweHelper.createQuantity()
                         .label("Heart Rate")
@@ -52,10 +52,10 @@ public class WearOSOutput extends AbstractSensorOutput<WearOSDriver> {
         return 0;
     }
 
-    public void setData(int heartRate) {
+    public void setData(long timeStamp, int heartRate) {
         DataBlock dataBlock = dataComponent.createDataBlock();
 
-        dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
+        dataBlock.setLongValue(0, timeStamp / 1000);
         dataBlock.setIntValue(1, heartRate);
 
         latestRecord = dataBlock;

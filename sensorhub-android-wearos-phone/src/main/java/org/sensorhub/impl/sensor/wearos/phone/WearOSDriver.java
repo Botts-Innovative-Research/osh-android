@@ -52,10 +52,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             byte[] data = messageEvent.getData();
             String message = new String(data);
             logger.info("Message from watch: {} {}", messageEvent.getPath(), message);
-
-            if (message.matches("\\d+")) {
-                int heartRate = Integer.parseInt(message);
-                output.setData(heartRate);
+            String[] messageSplit = message.split(",");
+            if (messageSplit.length == 2) {
+                long timestamp = Long.parseLong(messageSplit[0]);
+                int heartRate = Integer.parseInt(messageSplit[1]);
+                output.setData(timestamp, heartRate);
             }
         }
     }

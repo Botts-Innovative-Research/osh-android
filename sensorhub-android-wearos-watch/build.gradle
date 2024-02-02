@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "org.opensensorhub.android"
-        minSdk 26
+        minSdk 33
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -28,4 +28,5 @@ android {
 
 dependencies {
     implementation 'com.google.android.gms:play-services-wearable:18.1.0'
+    implementation "androidx.health:health-services-client:1.1.0-alpha02"
 }
