@@ -13,8 +13,11 @@ import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+
 public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements MessageClient.OnMessageReceivedListener {
     private static final Logger logger = LoggerFactory.getLogger(WearOSDriver.class);
+    private static final String CONFIRMATION_PATH = "/OSH/Confirmation";
     private static final String HEART_RATE_PATH = "/OSH/HeartRate";
     private WearOSOutput output;
     private Context context;
@@ -58,6 +61,8 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
                 int heartRate = Integer.parseInt(messageSplit[1]);
                 output.setData(timestamp, heartRate);
             }
+
+            Wearable.getMessageClient(context).sendMessage(messageEvent.getSourceNodeId(), CONFIRMATION_PATH, "Received".getBytes(StandardCharsets.UTF_8));
         }
     }
 }
