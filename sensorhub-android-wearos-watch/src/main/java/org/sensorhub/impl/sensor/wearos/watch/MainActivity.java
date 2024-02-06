@@ -2,6 +2,7 @@ package org.sensorhub.impl.sensor.wearos.watch;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -9,7 +10,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.health.services.client.HealthServices;
 import androidx.health.services.client.HealthServicesClient;
 import androidx.health.services.client.PassiveListenerCallback;
@@ -26,6 +26,7 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,8 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String CONFIRMATION_PATH = "/OSH/Confirmation";
     private static final String HEART_RATE_PATH = "/OSH/HeartRate";
+    private static final int PERMISSIONS_REQUEST_BODY_SENSORS = 1;
+    private static final int PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND = 2;
     Date lastConfirmationDate = new Date(0);
 
     @Override
@@ -42,29 +45,23 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
         setContentView(R.layout.main);
 
-        // Request android.permission.BODY_SENSORS
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS);
-        Log.d(TAG, " permissionCheck: " + permissionCheck);
+        requestPermissions();
+        startMonitoring();
 
-        if (permissionCheck == -1)
-            requestPermissions(new String[]{Manifest.permission.BODY_SENSORS}, 1);
-
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND);
-        Log.d(TAG, " permissionCheck: " + permissionCheck);
-
-        if (permissionCheck == -1)
-            requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, 1);
-
-
-        HealthServicesClient healthServicesClient = HealthServices.getClient(this);
-        PassiveMonitoringClient passiveMonitoringClient = healthServicesClient.getPassiveMonitoringClient();
-
-        PassiveListenerConfig passiveListenerConfig = new PassiveListenerConfig.Builder()
-                .setDataTypes(Collections.singleton(DataType.HEART_RATE_BPM))
-                .build();
-
-        passiveMonitoringClient.setPassiveListenerCallback(passiveListenerConfig, this);
         Wearable.getMessageClient(this).addListener(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d(TAG, "onRequestPermissionsResult: " + requestCode + " " + Arrays.toString(permissions) + " " + Arrays.toString(grantResults));
+
+        if (requestCode == PERMISSIONS_REQUEST_BODY_SENSORS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND);
+            }
+            startMonitoring();
+        }
     }
 
     @Override
@@ -75,10 +72,10 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             Date date = Date.from(dataPointInstant);
             double value = (double) dataPoint.getValue();
             int heartRate = (int) value;
-            Log.d(TAG, "onNewDataPointsReceived{\n" +
-                    "  name: " + dataPoint.getDataType().getName() + "\n" +
-                    "  value: " + heartRate + "\n" +
-                    "  date: " + date + "\n" +
+            Log.d(TAG, "onNewDataPointsReceived{" +
+                    "  name: " + dataPoint.getDataType().getName() +
+                    "  value: " + heartRate +
+                    "  date: " + date +
                     "}");
 
             // Set the heart rate value to the UI
@@ -112,6 +109,33 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             runOnUiThread(() -> (findViewById(R.id.warning)).setVisibility(View.INVISIBLE));
 
             lastConfirmationDate = new Date();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startMonitoring();
+    }
+
+    private void startMonitoring() {
+        HealthServicesClient healthServicesClient = HealthServices.getClient(this);
+        PassiveMonitoringClient passiveMonitoringClient = healthServicesClient.getPassiveMonitoringClient();
+
+        PassiveListenerConfig passiveListenerConfig = new PassiveListenerConfig.Builder()
+                .setDataTypes(Collections.singleton(DataType.HEART_RATE_BPM))
+                .build();
+
+        passiveMonitoringClient.setPassiveListenerCallback(passiveListenerConfig, this);
+    }
+
+    private void requestPermissions() {
+        if (checkSelfPermission(Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND);
+            }
+        } else {
+            requestPermissions(new String[]{Manifest.permission.BODY_SENSORS}, PERMISSIONS_REQUEST_BODY_SENSORS);
         }
     }
 }
