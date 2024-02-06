@@ -4,9 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -38,6 +39,10 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS = 1;
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND = 2;
     Date lastConfirmationDate = new Date(0);
+    Handler displayHandler;
+    Runnable displayCallback;
+    static int heartRate;
+    static boolean displayWarning = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +50,11 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
         setContentView(R.layout.main);
 
+        displayHandler = new Handler(Looper.getMainLooper());
+
         requestPermissions();
         startMonitoring();
-
+        startRefreshingUI();
         Wearable.getMessageClient(this).addListener(this);
     }
 
@@ -71,15 +78,12 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             Instant dataPointInstant = dataPoint.getTimeInstant(bootInstant);
             Date date = Date.from(dataPointInstant);
             double value = (double) dataPoint.getValue();
-            int heartRate = (int) value;
+            heartRate = (int) value;
             Log.d(TAG, "onNewDataPointsReceived{" +
                     "  name: " + dataPoint.getDataType().getName() +
                     "  value: " + heartRate +
                     "  date: " + date +
                     "}");
-
-            // Set the heart rate value to the UI
-            runOnUiThread(() -> ((TextView) findViewById(R.id.heartRateValue)).setText(String.valueOf(heartRate)));
 
             // Send heart rate to the phone
             Task<List<Node>> nodesTask = Wearable.getNodeClient(this).getConnectedNodes();
@@ -91,9 +95,8 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             });
 
             // If the last confirmation was more than 10 seconds ago, show the warning
-            Log.d(TAG, "date.getTime() - lastConfirmationDate.getTime(): " + (date.getTime() - lastConfirmationDate.getTime()));
             if (date.getTime() - lastConfirmationDate.getTime() > 10000) {
-                runOnUiThread(() -> (findViewById(R.id.warning)).setVisibility(View.VISIBLE));
+                displayWarning = true;
             }
         });
     }
@@ -106,7 +109,7 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             Log.d(TAG, "Message from phone: " + messageEvent.getPath() + " " + message);
 
             // Hide the warning
-            runOnUiThread(() -> (findViewById(R.id.warning)).setVisibility(View.INVISIBLE));
+            displayWarning = false;
 
             lastConfirmationDate = new Date();
         }
@@ -115,7 +118,44 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     @Override
     protected void onResume() {
         super.onResume();
+        startRefreshingUI();
         startMonitoring();
+    }
+
+    @Override
+    protected void onPause() {
+        stopRefreshingUI();
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        stopRefreshingUI();
+        super.onStop();
+    }
+
+    protected void startRefreshingUI() {
+        if (displayCallback != null)
+            return;
+
+        // Handler to display async messages in UI
+        displayCallback = new Runnable() {
+            public void run() {
+                ((TextView) findViewById(R.id.heartRateValue)).setText(String.valueOf(heartRate));
+                ((TextView) findViewById(R.id.warning)).setText(displayWarning ? getResources().getString(R.string.warning) : "");
+                displayHandler.postDelayed(this, 500);
+            }
+        };
+
+        displayHandler.post(displayCallback);
+    }
+
+
+    protected void stopRefreshingUI() {
+        if (displayCallback != null) {
+            displayHandler.removeCallbacks(displayCallback);
+            displayCallback = null;
+        }
     }
 
     private void startMonitoring() {
