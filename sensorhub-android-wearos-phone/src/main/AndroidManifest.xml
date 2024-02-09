@@ -1,5 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.sensorhub.impl.sensor.wearos">
-
-    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="33" />
-</manifest>
+<manifest package="org.sensorhub.impl.sensor.wearos" />

@@ -9,8 +9,16 @@ dependencies {
     implementation project(':sensorhub-android-service')
     implementation project(':sensorhub-driver-android')
     implementation 'com.google.android.gms:play-services-wearable:18.1.0'
+    implementation project(':sensorhub-android-wearos-lib')
 }
 
 android {
-    compileSdk = 28
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 30
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
 }

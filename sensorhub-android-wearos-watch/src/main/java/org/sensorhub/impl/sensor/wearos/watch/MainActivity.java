@@ -30,6 +30,9 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import org.sensorhub.impl.sensor.wearos.lib.Constants;
+import org.sensorhub.impl.sensor.wearos.lib.data.WearOSData;
+
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -39,8 +42,6 @@ import java.util.Locale;
 
 public class MainActivity extends Activity implements MessageClient.OnMessageReceivedListener, PassiveListenerCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String CONFIRMATION_PATH = "/OSH/Confirmation";
-    private static final String HEART_RATE_PATH = "/OSH/HeartRate";
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS = 1;
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND = 2;
     PassiveMonitoringClient passiveMonitoringClient;
@@ -75,24 +76,45 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
     @Override
     public void onNewDataPointsReceived(@NonNull DataPointContainer dataPoints) {
+        WearOSData data = new WearOSData();
         PassiveListenerCallback.super.onNewDataPointsReceived(dataPoints);
         Instant bootInstant = Instant.ofEpochMilli(System.currentTimeMillis() - SystemClock.elapsedRealtime());
 
         dataPoints.getIntervalDataPoints().forEach(dataPoint -> {
             switch (dataPoint.getDataType().getName()) {
+                case "Elevation Gain":
+                    data.addElevationGain(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
+                    break;
                 case "Daily Elevation Gain":
+                    data.addElevationGainDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     ((TextView) findViewById(R.id.elevationValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
                     break;
+                case "Floors":
+                    data.addFloors(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
+                    break;
                 case "Daily Floors":
+                    data.addFloorsDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     ((TextView) findViewById(R.id.floorsValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
                     break;
+                case "Steps":
+                    data.addSteps(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (long) dataPoint.getValue());
+                    break;
                 case "Daily Steps":
+                    data.addStepsDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (long) dataPoint.getValue());
                     ((TextView) findViewById(R.id.stepsValue)).setText(String.valueOf((long) dataPoint.getValue()));
                     break;
+                case "Distance":
+                    data.addDistance(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
+                    break;
                 case "Daily Distance":
+                    data.addDistanceDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     ((TextView) findViewById(R.id.distanceValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
                     break;
+                case "Calories":
+                    data.addCalories(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
+                    break;
                 case "Daily Calories":
+                    data.addCaloriesDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     ((TextView) findViewById(R.id.caloriesValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
                     break;
                 default:
@@ -102,20 +124,18 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
         dataPoints.getSampleDataPoints().forEach(dataPoint -> {
             if (dataPoint.getDataType().getName().equals("HeartRate")) {
-                Instant dataPointInstant = dataPoint.getTimeInstant(bootInstant);
-                Date date = Date.from(dataPointInstant);
-                double value = (double) dataPoint.getValue();
-                int heartRate = (int) value;
-                ((TextView) findViewById(R.id.heartRateValue)).setText(String.valueOf(heartRate));
+                data.addHeartRate(dataPoint.getTimeInstant(bootInstant), (double) dataPoint.getValue());
+                ((TextView) findViewById(R.id.heartRateValue)).setText(String.format(new Locale("en"), "%.0f", (double) dataPoint.getValue()));
+            }
+        });
 
-                // Send heart rate to the phone
-                Task<List<Node>> nodesTask = Wearable.getNodeClient(this).getConnectedNodes();
-                nodesTask.addOnSuccessListener(nodes -> {
-                    for (Node node : nodes) {
-                        String message = date.getTime() + "," + heartRate;
-                        Wearable.getMessageClient(this).sendMessage(node.getId(), HEART_RATE_PATH, message.getBytes(StandardCharsets.UTF_8));
-                    }
-                });
+        Log.d(TAG, data.toJSon());
+
+        // Send data to the phone
+        Task<List<Node>> nodesTask = Wearable.getNodeClient(this).getConnectedNodes();
+        nodesTask.addOnSuccessListener(nodes -> {
+            for (Node node : nodes) {
+                Wearable.getMessageClient(this).sendMessage(node.getId(), Constants.DATA_PATH, data.toJSon().getBytes(StandardCharsets.UTF_8));
             }
         });
 
@@ -142,7 +162,7 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
-        if (messageEvent.getPath().equals(CONFIRMATION_PATH)) {
+        if (messageEvent.getPath().equals(Constants.CONFIRMATION_PATH)) {
             byte[] data = messageEvent.getData();
             String message = new String(data);
             Log.d(TAG, "Message from phone: " + messageEvent.getPath() + " " + message);
