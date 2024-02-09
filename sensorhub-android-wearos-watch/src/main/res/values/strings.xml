@@ -1,6 +1,16 @@
 <resources>
     <string name="app_name">Open Sensor Hub</string>
     <string name="warning">Not connected</string>
-    <string name="heartRate">Heart Rate: </string>
-    <string name="heartRateValue">--</string>
+    <string name="heartRate">Heart Rate:\u0020</string>
+    <string name="activityState">Activity:\u0020</string>
+    <string name="steps">Steps:\u0020</string>
+    <string name="calories">Calories:\u0020</string>
+    <string name="distance">Distance:\u0020</string>
+    <string name="floors">Floors:\u0020</string>
+    <string name="elevation">Elevation:\u0020</string>
+    <string name="defaultValue">--</string>
+    <string name="activityStatePassive">Passive</string>
+    <string name="activityStateAsleep">Asleep</string>
+    <string name="activityStateExercise">Exercise</string>
+    <string name="activityStateUnknown">Unknown</string>
 </resources>
