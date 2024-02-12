@@ -31,6 +31,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.sensorhub.impl.sensor.wearos.lib.Constants;
+import org.sensorhub.impl.sensor.wearos.lib.Outputs;
 import org.sensorhub.impl.sensor.wearos.lib.data.WearOSData;
 
 import java.nio.charset.StandardCharsets;
@@ -44,9 +45,12 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS = 1;
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND = 2;
+    private static final String OUTPUTS_PREFS = "outputs";
     PassiveMonitoringClient passiveMonitoringClient;
     Date lastConfirmationDate = new Date(0);
     DataType<?, ?> elevationGainDailyType;
+    Outputs outputs;
+    boolean isStarting = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +58,18 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
         setContentView(R.layout.main);
 
+        outputs = new Outputs(getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableHeartRate", true),
+                getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableElevationGain", true),
+                getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableCalories", true),
+                getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableFloors", true),
+                getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableSteps", true),
+                getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableDistance", true));
+
         passiveMonitoringClient = HealthServices.getClient(this).getPassiveMonitoringClient();
 
-        stopMonitoring();
+        // Clear the passive listener callback in case one was set in a previous session
+        passiveMonitoringClient.clearPassiveListenerCallbackAsync();
+        requestOutputs();
         requestPermissions();
         startMonitoring();
         Wearable.getMessageClient(this).addListener(this);
@@ -163,18 +176,34 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(Constants.CONFIRMATION_PATH)) {
-            byte[] data = messageEvent.getData();
-            String message = new String(data);
-            Log.d(TAG, "Message from phone: " + messageEvent.getPath() + " " + message);
-
             // Hide the warning
             ((TextView) findViewById(R.id.warning)).setText("");
 
             lastConfirmationDate = new Date();
+        } else if (messageEvent.getPath().equals(Constants.OUTPUTS_PATH)) {
+            byte[] data = messageEvent.getData();
+            String message = new String(data);
+
+            outputs = Outputs.fromJSon(message);
+
+            getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).edit()
+                    .putBoolean("enableHeartRate", outputs.getEnableHeartRate())
+                    .putBoolean("enableElevationGain", outputs.getEnableElevationGain())
+                    .putBoolean("enableCalories", outputs.getEnableCalories())
+                    .putBoolean("enableFloors", outputs.getEnableFloors())
+                    .putBoolean("enableSteps", outputs.getEnableSteps())
+                    .putBoolean("enableDistance", outputs.getEnableDistance())
+                    .apply();
+
+            startMonitoring();
         }
     }
 
     private void startMonitoring() {
+        if (isStarting) {
+            return;
+        }
+        isStarting = true;
         MainActivity mainActivity = this;
 
         ListenableFuture<PassiveMonitoringCapabilities> capabilitiesFuture = passiveMonitoringClient.getCapabilitiesAsync();
@@ -192,21 +221,32 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
                 });
 
                 java.util.Set<DataType<?, ?>> dataTypes = new java.util.HashSet<>();
-                if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
+                        && outputs.getEnableHeartRate()) {
                     dataTypes.add(DataType.HEART_RATE_BPM);
                 }
                 if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
-                    dataTypes.add(DataType.CALORIES);
-                    dataTypes.add(DataType.CALORIES_DAILY);
-                    dataTypes.add(DataType.DISTANCE);
-                    dataTypes.add(DataType.DISTANCE_DAILY);
-                    dataTypes.add(DataType.STEPS);
-                    dataTypes.add(DataType.STEPS_DAILY);
-                    dataTypes.add(DataType.FLOORS);
-                    dataTypes.add(DataType.FLOORS_DAILY);
-                    dataTypes.add(DataType.ELEVATION_GAIN);
-                    if (elevationGainDailyType != null) {
-                        dataTypes.add(elevationGainDailyType);
+                    if (outputs.getEnableCalories()) {
+                        dataTypes.add(DataType.CALORIES);
+                        dataTypes.add(DataType.CALORIES_DAILY);
+                    }
+                    if (outputs.getEnableDistance()) {
+                        dataTypes.add(DataType.DISTANCE);
+                        dataTypes.add(DataType.DISTANCE_DAILY);
+                    }
+                    if (outputs.getEnableSteps()) {
+                        dataTypes.add(DataType.STEPS);
+                        dataTypes.add(DataType.STEPS_DAILY);
+                    }
+                    if (outputs.getEnableFloors()) {
+                        dataTypes.add(DataType.FLOORS);
+                        dataTypes.add(DataType.FLOORS_DAILY);
+                    }
+                    if (outputs.getEnableElevationGain()) {
+                        dataTypes.add(DataType.ELEVATION_GAIN);
+                        if (elevationGainDailyType != null) {
+                            dataTypes.add(elevationGainDailyType);
+                        }
                     }
                 }
 
@@ -218,29 +258,24 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
                 PassiveListenerConfig passiveListenerConfig = builder.build();
 
                 passiveMonitoringClient.setPassiveListenerCallback(passiveListenerConfig, mainActivity);
+                isStarting = false;
             }
 
             @Override
             public void onFailure(@NonNull Throwable t) {
                 Log.e(TAG, "Failed to get passive monitoring capabilities", t);
+                isStarting = false;
             }
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private void stopMonitoring() {
-        ListenableFuture<Void> clearFuture = passiveMonitoringClient.clearPassiveListenerCallbackAsync();
-
-        Futures.addCallback(clearFuture, new FutureCallback<Void>() {
-            @Override
-            public void onSuccess(@Nullable Void result) {
-                // Do nothing
+    private void requestOutputs() {
+        Task<List<Node>> nodesTask = Wearable.getNodeClient(this).getConnectedNodes();
+        nodesTask.addOnSuccessListener(nodes -> {
+            for (Node node : nodes) {
+                Wearable.getMessageClient(this).sendMessage(node.getId(), Constants.OUTPUTS_PATH, "request".getBytes(StandardCharsets.UTF_8));
             }
-
-            @Override
-            public void onFailure(@NonNull Throwable t) {
-                // Do nothing
-            }
-        }, ContextCompat.getMainExecutor(this));
+        });
     }
 
     private void requestPermissions() {

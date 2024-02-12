@@ -1,5 +1,7 @@
 package org.sensorhub.impl.sensor.wearos.lib;
 
+import com.google.gson.Gson;
+
 public class Outputs {
     private final boolean enableHeartRate;
     private final boolean enableElevationGain;
@@ -39,5 +41,13 @@ public class Outputs {
 
     public boolean getEnableDistance() {
         return enableDistance;
+    }
+
+    public String toJSon() {
+        return new Gson().toJson(this);
+    }
+
+    public static Outputs fromJSon(String json) {
+        return new Gson().fromJson(json, Outputs.class);
     }
 }

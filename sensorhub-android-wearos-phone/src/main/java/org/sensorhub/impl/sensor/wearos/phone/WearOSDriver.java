@@ -4,8 +4,10 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
 import org.sensorhub.android.SensorHubService;
@@ -25,6 +27,7 @@ import org.sensorhub.impl.sensor.wearos.phone.output.HeartRateOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.StepsOutput;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements MessageClient.OnMessageReceivedListener {
     private HeartRateOutput heartRateOutput;
@@ -52,6 +55,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     @Override
     public void doStart() {
         Wearable.getMessageClient(context).addListener(this);
+        broadcastEnabledOutputs();
     }
 
     @Override
@@ -73,11 +77,13 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             }
 
             Wearable.getMessageClient(context).sendMessage(messageEvent.getSourceNodeId(), Constants.CONFIRMATION_PATH, "Received".getBytes(StandardCharsets.UTF_8));
+        } else if (messageEvent.getPath().equals(Constants.OUTPUTS_PATH)) {
+            broadcastEnabledOutputs();
         }
     }
 
     public void createOutputs() {
-        if (config.getEnableHeartRate()) {
+        if (config.getOutputs().getEnableHeartRate()) {
             heartRateOutput = new HeartRateOutput(this);
             heartRateOutput.doInit();
             addOutput(heartRateOutput, false);
@@ -85,7 +91,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             heartRateOutput = null;
         }
 
-        if (config.getEnableElevationGain()) {
+        if (config.getOutputs().getEnableElevationGain()) {
             elevationGainOutput = new ElevationGainOutput(this);
             elevationGainOutput.doInit();
             addOutput(elevationGainOutput, false);
@@ -93,7 +99,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             elevationGainOutput = null;
         }
 
-        if (config.getEnableCalories()) {
+        if (config.getOutputs().getEnableCalories()) {
             caloriesOutput = new CaloriesOutput(this);
             caloriesOutput.doInit();
             addOutput(caloriesOutput, false);
@@ -101,7 +107,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             caloriesOutput = null;
         }
 
-        if (config.getEnableFloors()) {
+        if (config.getOutputs().getEnableFloors()) {
             floorsOutput = new FloorsOutput(this);
             floorsOutput.doInit();
             addOutput(floorsOutput, false);
@@ -109,7 +115,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             floorsOutput = null;
         }
 
-        if (config.getEnableSteps()) {
+        if (config.getOutputs().getEnableSteps()) {
             stepsOutput = new StepsOutput(this);
             stepsOutput.doInit();
             addOutput(stepsOutput, false);
@@ -117,13 +123,22 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             stepsOutput = null;
         }
 
-        if (config.getEnableDistance()) {
+        if (config.getOutputs().getEnableDistance()) {
             distanceOutput = new DistanceOutput(this);
             distanceOutput.doInit();
             addOutput(distanceOutput, false);
         } else {
             distanceOutput = null;
         }
+    }
+
+    public void broadcastEnabledOutputs() {
+        Task<List<Node>> nodesTask = Wearable.getNodeClient(context).getConnectedNodes();
+        nodesTask.addOnSuccessListener(nodes -> {
+            for (Node node : nodes) {
+                Wearable.getMessageClient(context).sendMessage(node.getId(), Constants.OUTPUTS_PATH, config.getOutputs().toJSon().getBytes(StandardCharsets.UTF_8));
+            }
+        });
     }
 
     public void setHeartRateData(@NonNull WearOSData data) {

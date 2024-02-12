@@ -17,27 +17,7 @@ public class WearOSConfig extends SensorConfig {
         return this.deviceName;
     }
 
-    public boolean getEnableHeartRate() {
-        return this.outputs.getEnableHeartRate();
-    }
-
-    public boolean getEnableElevationGain() {
-        return this.outputs.getEnableElevationGain();
-    }
-
-    public boolean getEnableCalories() {
-        return this.outputs.getEnableCalories();
-    }
-
-    public boolean getEnableFloors() {
-        return this.outputs.getEnableFloors();
-    }
-
-    public boolean getEnableSteps() {
-        return this.outputs.getEnableSteps();
-    }
-
-    public boolean getEnableDistance() {
-        return this.outputs.getEnableDistance();
+    public Outputs getOutputs() {
+        return this.outputs;
     }
 }
