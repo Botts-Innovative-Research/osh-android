@@ -1,6 +1,7 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -39,7 +40,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends Activity implements MessageClient.OnMessageReceivedListener, PassiveListenerCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -51,6 +51,15 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     DataType<?, ?> elevationGainDailyType;
     Outputs outputs;
     boolean isStarting = false;
+
+    TextView warningTextView;
+    TextView heartRateTextView;
+    TextView activityStateTextView;
+    TextView elevationTextView;
+    TextView caloriesTextView;
+    TextView floorsTextView;
+    TextView stepsTextView;
+    TextView distanceTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +73,15 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
                 getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableFloors", true),
                 getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableSteps", true),
                 getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).getBoolean("enableDistance", true));
+
+        warningTextView = findViewById(R.id.warning);
+        activityStateTextView = findViewById(R.id.activityState);
+        heartRateTextView = findViewById(R.id.heartRate);
+        elevationTextView = findViewById(R.id.elevation);
+        caloriesTextView = findViewById(R.id.calories);
+        floorsTextView = findViewById(R.id.floors);
+        stepsTextView = findViewById(R.id.steps);
+        distanceTextView = findViewById(R.id.distance);
 
         passiveMonitoringClient = HealthServices.getClient(this).getPassiveMonitoringClient();
 
@@ -87,6 +105,7 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         }
     }
 
+    @SuppressLint("StringFormatMatches")
     @Override
     public void onNewDataPointsReceived(@NonNull DataPointContainer dataPoints) {
         WearOSData data = new WearOSData();
@@ -100,35 +119,35 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
                     break;
                 case "Daily Elevation Gain":
                     data.addElevationGainDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
-                    ((TextView) findViewById(R.id.elevationValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
+                    elevationTextView.setText(getResources().getString(R.string.elevation, dataPoint.getValue()));
                     break;
                 case "Floors":
                     data.addFloors(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     break;
                 case "Daily Floors":
                     data.addFloorsDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
-                    ((TextView) findViewById(R.id.floorsValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
+                    floorsTextView.setText(getResources().getString(R.string.floors, dataPoint.getValue()));
                     break;
                 case "Steps":
                     data.addSteps(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (long) dataPoint.getValue());
                     break;
                 case "Daily Steps":
                     data.addStepsDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (long) dataPoint.getValue());
-                    ((TextView) findViewById(R.id.stepsValue)).setText(String.valueOf((long) dataPoint.getValue()));
+                    stepsTextView.setText(getResources().getString(R.string.steps, dataPoint.getValue()));
                     break;
                 case "Distance":
                     data.addDistance(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     break;
                 case "Daily Distance":
                     data.addDistanceDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
-                    ((TextView) findViewById(R.id.distanceValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
+                    distanceTextView.setText(getResources().getString(R.string.distance, dataPoint.getValue()));
                     break;
                 case "Calories":
                     data.addCalories(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
                     break;
                 case "Daily Calories":
                     data.addCaloriesDaily(dataPoint.getStartInstant(bootInstant), dataPoint.getEndInstant(bootInstant), (double) dataPoint.getValue());
-                    ((TextView) findViewById(R.id.caloriesValue)).setText(String.format(new Locale("en"), "%.2f", (double) dataPoint.getValue()));
+                    caloriesTextView.setText(getResources().getString(R.string.calories, dataPoint.getValue()));
                     break;
                 default:
                     break;
@@ -138,7 +157,7 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         dataPoints.getSampleDataPoints().forEach(dataPoint -> {
             if (dataPoint.getDataType().getName().equals("HeartRate")) {
                 data.addHeartRate(dataPoint.getTimeInstant(bootInstant), (double) dataPoint.getValue());
-                ((TextView) findViewById(R.id.heartRateValue)).setText(String.format(new Locale("en"), "%.0f", (double) dataPoint.getValue()));
+                heartRateTextView.setText(getResources().getString(R.string.heartRate, dataPoint.getValue()));
             }
         });
 
@@ -154,7 +173,7 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
         // If the last confirmation was more than 10 seconds ago, show the warning
         if (Duration.between(lastConfirmationDate.toInstant(), Instant.now()).getSeconds() > 10) {
-            ((TextView) findViewById(R.id.warning)).setText(getResources().getString(R.string.warning));
+            warningTextView.setVisibility(TextView.VISIBLE);
         }
     }
 
@@ -163,13 +182,13 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         PassiveListenerCallback.super.onUserActivityInfoReceived(info);
 
         if (info.getUserActivityState() == UserActivityState.USER_ACTIVITY_PASSIVE) {
-            ((TextView) findViewById(R.id.activityStateValue)).setText(getResources().getString(R.string.activityStatePassive));
+            activityStateTextView.setText(R.string.activityStatePassive);
         } else if (info.getUserActivityState() == UserActivityState.USER_ACTIVITY_ASLEEP) {
-            ((TextView) findViewById(R.id.activityStateValue)).setText(getResources().getString(R.string.activityStateAsleep));
+            activityStateTextView.setText(R.string.activityStateAsleep);
         } else if (info.getUserActivityState() == UserActivityState.USER_ACTIVITY_EXERCISE) {
-            ((TextView) findViewById(R.id.activityStateValue)).setText(getResources().getString(R.string.activityStateExercise));
+            activityStateTextView.setText(R.string.activityStateExercise);
         } else {
-            ((TextView) findViewById(R.id.activityStateValue)).setText(getResources().getString(R.string.activityStateUnknown));
+            activityStateTextView.setText(R.string.activityStateUnknown);
         }
     }
 
@@ -185,6 +204,25 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             String message = new String(data);
 
             outputs = Outputs.fromJSon(message);
+
+            if (!outputs.getEnableHeartRate()) {
+                heartRateTextView.setText(R.string.heartRateDefault);
+            }
+            if (!outputs.getEnableElevationGain()) {
+                elevationTextView.setText(R.string.elevationDefault);
+            }
+            if (!outputs.getEnableCalories()) {
+                caloriesTextView.setText(R.string.caloriesDefault);
+            }
+            if (!outputs.getEnableFloors()) {
+                floorsTextView.setText(R.string.floorsDefault);
+            }
+            if (!outputs.getEnableSteps()) {
+                stepsTextView.setText(R.string.stepsDefault);
+            }
+            if (!outputs.getEnableDistance()) {
+                distanceTextView.setText(R.string.distanceDefault);
+            }
 
             getSharedPreferences(OUTPUTS_PREFS, MODE_PRIVATE).edit()
                     .putBoolean("enableHeartRate", outputs.getEnableHeartRate())

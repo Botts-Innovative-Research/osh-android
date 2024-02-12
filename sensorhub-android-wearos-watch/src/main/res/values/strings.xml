@@ -1,16 +1,21 @@
 <resources>
     <string name="app_name">Open Sensor Hub</string>
     <string name="warning">Not connected</string>
-    <string name="heartRate">Heart Rate:\u0020</string>
-    <string name="activityState">Activity:\u0020</string>
-    <string name="steps">Steps:\u0020</string>
-    <string name="calories">Calories:\u0020</string>
-    <string name="distance">Distance:\u0020</string>
-    <string name="floors">Floors:\u0020</string>
-    <string name="elevation">Elevation:\u0020</string>
-    <string name="defaultValue">--</string>
-    <string name="activityStatePassive">Passive</string>
-    <string name="activityStateAsleep">Asleep</string>
-    <string name="activityStateExercise">Exercise</string>
-    <string name="activityStateUnknown">Unknown</string>
+    <string name="heartRateDefault">Heart Rate: --</string>
+    <string name="heartRate">Heart Rate: %.0f</string>
+    <string name="activityStateDefault">Activity: --</string>
+    <string name="activityStatePassive">Activity: Passive</string>
+    <string name="activityStateAsleep">Activity: Asleep</string>
+    <string name="activityStateExercise">Activity: Exercise</string>
+    <string name="activityStateUnknown">Activity: Unknown</string>
+    <string name="stepsDefault">Steps: --</string>
+    <string name="steps">Steps: %d</string>
+    <string name="caloriesDefault">Calories: --</string>
+    <string name="calories">Calories: %.2f</string>
+    <string name="distanceDefault">Distance: --</string>
+    <string name="distance">Distance: %.2f</string>
+    <string name="floorsDefault">Floors: --</string>
+    <string name="floors">Floors: %.2f</string>
+    <string name="elevationDefault">Elevation: --</string>
+    <string name="elevation">Elevation: %.2f</string>
 </resources>

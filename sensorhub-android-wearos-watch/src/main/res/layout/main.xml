@@ -7,13 +7,11 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="5dp"
         app:layout_boxedEdges="all">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dp"
+            android:layout_height="wrap_content"
             app:layout_boxedEdges="all">
 
             <TextView
@@ -38,112 +36,56 @@
                 android:id="@+id/heartRate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/heartRate"
+                android:text="@string/heartRateDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/warning" />
-
-            <TextView
-                android:id="@+id/heartRateValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/heartRate"
                 app:layout_constraintTop_toBottomOf="@+id/warning" />
 
             <TextView
                 android:id="@+id/activityState"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/activityState"
+                android:text="@string/activityStateDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/heartRate" />
-
-            <TextView
-                android:id="@+id/activityStateValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/activityState"
                 app:layout_constraintTop_toBottomOf="@+id/heartRate" />
 
             <TextView
                 android:id="@+id/steps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/steps"
+                android:text="@string/stepsDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/activityState" />
-
-            <TextView
-                android:id="@+id/stepsValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/steps"
                 app:layout_constraintTop_toBottomOf="@+id/activityState" />
 
             <TextView
                 android:id="@+id/calories"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/calories"
+                android:text="@string/caloriesDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/steps" />
-
-            <TextView
-                android:id="@+id/caloriesValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/calories"
                 app:layout_constraintTop_toBottomOf="@+id/steps" />
 
             <TextView
                 android:id="@+id/distance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/distance"
+                android:text="@string/distanceDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/calories" />
-
-            <TextView
-                android:id="@+id/distanceValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/distance"
                 app:layout_constraintTop_toBottomOf="@+id/calories" />
 
             <TextView
                 android:id="@+id/floors"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/floors"
+                android:text="@string/floorsDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/distance" />
-
-            <TextView
-                android:id="@+id/floorsValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/floors"
                 app:layout_constraintTop_toBottomOf="@+id/distance" />
 
             <TextView
                 android:id="@+id/elevation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/elevation"
+                android:text="@string/elevationDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/floors" />
-
-            <TextView
-                android:id="@+id/elevationValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/defaultValue"
-                app:layout_constraintLeft_toRightOf="@+id/elevation"
                 app:layout_constraintTop_toBottomOf="@+id/floors" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
