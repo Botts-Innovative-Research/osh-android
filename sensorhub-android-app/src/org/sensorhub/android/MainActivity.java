@@ -94,6 +94,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -398,13 +399,24 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         // Wear OS driver
         enabled = prefs.getBoolean("wearos_enabled", false);
         if (enabled) {
-            WearOSConfig steRadPagerConfig = new WearOSConfig();
-            steRadPagerConfig.id = "WEAROS_DRIVER";
-            steRadPagerConfig.name = "Wear OS [" + deviceName + "]";
-            steRadPagerConfig.autoStart = true;
-            steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            Set<String> enabledOutputs = prefs.getStringSet("wearos_output_options", null);
+            if (enabledOutputs == null) {
+                enabledOutputs = new HashSet<>();
+            }
 
-            sensorhubConfig.add(steRadPagerConfig);
+            WearOSConfig config = new WearOSConfig(deviceName,
+                    enabledOutputs.contains(getResources().getString(R.string.wearos_heartRate)),
+                    enabledOutputs.contains(getResources().getString(R.string.wearos_elevationGain)),
+                    enabledOutputs.contains(getResources().getString(R.string.wearos_calories)),
+                    enabledOutputs.contains(getResources().getString(R.string.wearos_floors)),
+                    enabledOutputs.contains(getResources().getString(R.string.wearos_steps)),
+                    enabledOutputs.contains(getResources().getString(R.string.wearos_distance)));
+            config.id = "WEAROS_DRIVER";
+            config.name = "Wear OS [" + deviceName + "]";
+            config.autoStart = true;
+            config.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+
+            sensorhubConfig.add(config);
         }
 
         // AngelSensor

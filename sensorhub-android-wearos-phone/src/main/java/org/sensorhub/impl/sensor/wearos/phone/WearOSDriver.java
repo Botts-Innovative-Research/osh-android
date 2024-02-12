@@ -23,13 +23,10 @@ import org.sensorhub.impl.sensor.wearos.phone.output.ElevationGainOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.FloorsOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.HeartRateOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.StepsOutput;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
 public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements MessageClient.OnMessageReceivedListener {
-    private static final Logger logger = LoggerFactory.getLogger(WearOSDriver.class);
     private HeartRateOutput heartRateOutput;
     private ElevationGainOutput elevationGainOutput;
     private CaloriesOutput caloriesOutput;
@@ -45,33 +42,10 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
 
     @Override
     public void doInit() {
-        generateUniqueID("urn:rsi:wearos:", null);
-        generateXmlID("wear-os_", null);
+        generateUniqueID("urn:rsi:wearos:", config.getDeviceName());
+        generateXmlID("wear-os_", config.getDeviceName());
 
-        heartRateOutput = new HeartRateOutput(this);
-        heartRateOutput.doInit();
-        addOutput(heartRateOutput, false);
-
-        elevationGainOutput = new ElevationGainOutput(this);
-        elevationGainOutput.doInit();
-        addOutput(elevationGainOutput, false);
-
-        caloriesOutput = new CaloriesOutput(this);
-        caloriesOutput.doInit();
-        addOutput(caloriesOutput, false);
-
-        floorsOutput = new FloorsOutput(this);
-        floorsOutput.doInit();
-        addOutput(floorsOutput, false);
-
-        stepsOutput = new StepsOutput(this);
-        stepsOutput.doInit();
-        addOutput(stepsOutput, false);
-
-        distanceOutput = new DistanceOutput(this);
-        distanceOutput.doInit();
-        addOutput(distanceOutput, false);
-
+        createOutputs();
         context = SensorHubService.getContext();
     }
 
@@ -102,13 +76,71 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    public void createOutputs() {
+        if (config.getEnableHeartRate()) {
+            heartRateOutput = new HeartRateOutput(this);
+            heartRateOutput.doInit();
+            addOutput(heartRateOutput, false);
+        } else {
+            heartRateOutput = null;
+        }
+
+        if (config.getEnableElevationGain()) {
+            elevationGainOutput = new ElevationGainOutput(this);
+            elevationGainOutput.doInit();
+            addOutput(elevationGainOutput, false);
+        } else {
+            elevationGainOutput = null;
+        }
+
+        if (config.getEnableCalories()) {
+            caloriesOutput = new CaloriesOutput(this);
+            caloriesOutput.doInit();
+            addOutput(caloriesOutput, false);
+        } else {
+            caloriesOutput = null;
+        }
+
+        if (config.getEnableFloors()) {
+            floorsOutput = new FloorsOutput(this);
+            floorsOutput.doInit();
+            addOutput(floorsOutput, false);
+        } else {
+            floorsOutput = null;
+        }
+
+        if (config.getEnableSteps()) {
+            stepsOutput = new StepsOutput(this);
+            stepsOutput.doInit();
+            addOutput(stepsOutput, false);
+        } else {
+            stepsOutput = null;
+        }
+
+        if (config.getEnableDistance()) {
+            distanceOutput = new DistanceOutput(this);
+            distanceOutput.doInit();
+            addOutput(distanceOutput, false);
+        } else {
+            distanceOutput = null;
+        }
+    }
+
     public void setHeartRateData(@NonNull WearOSData data) {
+        if (heartRateOutput == null) {
+            return;
+        }
+
         for (int i = 0; i < data.getHeartRateSize(); i++) {
             heartRateOutput.setData(data.getHeartRate(i).getTimestamp(), data.getHeartRate(i).getValue());
         }
     }
 
     public void setElevationGainData(@NonNull WearOSData data) {
+        if (elevationGainOutput == null) {
+            return;
+        }
+
         for (int i = 0; i < data.getElevationGainSize(); i++) {
             ElevationGainData elevationGain = data.getElevationGain(i);
             ElevationGainData elevationGainDaily = data.getMatchingElevationGainDaily(elevationGain);
@@ -125,6 +157,10 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     }
 
     public void setCaloriesData(@NonNull WearOSData data) {
+        if (caloriesOutput == null) {
+            return;
+        }
+
         for (int i = 0; i < data.getCaloriesSize(); i++) {
             CaloriesData calories = data.getCalories(i);
             CaloriesData caloriesDaily = data.getMatchingCaloriesDaily(calories);
@@ -141,6 +177,10 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     }
 
     public void setFloorsData(@NonNull WearOSData data) {
+        if (floorsOutput == null) {
+            return;
+        }
+
         for (int i = 0; i < data.getFloorsSize(); i++) {
             FloorsData floors = data.getFloors(i);
             FloorsData floorsDaily = data.getMatchingFloorsDaily(floors);
@@ -157,6 +197,10 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     }
 
     public void setStepsData(@NonNull WearOSData data) {
+        if (stepsOutput == null) {
+            return;
+        }
+
         for (int i = 0; i < data.getStepsSize(); i++) {
             StepsData steps = data.getSteps(i);
             StepsData stepsDaily = data.getMatchingStepsDaily(steps);
@@ -173,6 +217,10 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     }
 
     public void setDistanceData(@NonNull WearOSData data) {
+        if (distanceOutput == null) {
+            return;
+        }
+
         for (int i = 0; i < data.getDistanceSize(); i++) {
             DistanceData distance = data.getDistance(i);
             DistanceData distanceDaily = data.getMatchingDistanceDaily(distance);

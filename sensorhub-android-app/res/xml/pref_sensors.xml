@@ -226,11 +226,19 @@
 
         <MultiSelectListPreference
             android:key="wearos_options"
-            android:title="Wear OS Output Options"
+            android:title="Wear OS Data Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
+
+        <MultiSelectListPreference
+            android:key="wearos_output_options"
+            android:title="Wear OS Output Options"
+            android:summary="List of available output options"
+            android:entries="@array/wearos_output"
+            android:entryValues="@array/wearos_output_values"
+            android:defaultValue="@array/wearos_output_defaults" />
 
     </PreferenceCategory>
 </PreferenceScreen>
