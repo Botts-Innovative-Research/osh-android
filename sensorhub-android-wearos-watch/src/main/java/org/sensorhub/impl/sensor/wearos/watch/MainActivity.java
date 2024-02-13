@@ -44,7 +44,6 @@ import java.util.List;
 public class MainActivity extends Activity implements MessageClient.OnMessageReceivedListener, PassiveListenerCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS = 1;
-    private static final int PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND = 2;
     private static final String OUTPUTS_PREFS = "outputs";
     PassiveMonitoringClient passiveMonitoringClient;
     Date lastConfirmationDate = new Date(0);
@@ -97,9 +96,9 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == PERMISSIONS_REQUEST_BODY_SENSORS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSIONS_REQUEST_BODY_SENSORS) {
             if (checkSelfPermission(Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND);
+                requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, 0);
             }
             startMonitoring();
         }
@@ -317,16 +316,21 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
     }
 
     private void requestPermissions() {
+        List<String> permissions = new java.util.ArrayList<>();
         if (checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 0);
+            permissions.add(Manifest.permission.ACTIVITY_RECOGNITION);
         }
-        // Can't request both BODY_SENSORS and BODY_SENSORS_BACKGROUND at the same time
-        if (checkSelfPermission(Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.BODY_SENSORS);
+        }
+
+        if (permissions.isEmpty()) {
+            // Can't request both BODY_SENSORS and BODY_SENSORS_BACKGROUND at the same time
             if (checkSelfPermission(Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, PERMISSIONS_REQUEST_BODY_SENSORS_BACKGROUND);
+                requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, 0);
             }
         } else {
-            requestPermissions(new String[]{Manifest.permission.BODY_SENSORS}, PERMISSIONS_REQUEST_BODY_SENSORS);
+            requestPermissions(permissions.toArray(new String[0]), PERMISSIONS_REQUEST_BODY_SENSORS);
         }
     }
 }
