@@ -3,19 +3,26 @@
     <string name="warning">Not connected</string>
     <string name="heartRateDefault">Heart Rate: --</string>
     <string name="heartRate">Heart Rate: %.0f</string>
+    <string name="heartRateNoPermissions">Heart Rate: No Perms</string>
     <string name="activityStateDefault">Activity: --</string>
     <string name="activityStatePassive">Activity: Passive</string>
     <string name="activityStateAsleep">Activity: Asleep</string>
     <string name="activityStateExercise">Activity: Exercise</string>
     <string name="activityStateUnknown">Activity: Unknown</string>
+    <string name="activityStateNoPermissions">Activity: No Perms</string>
     <string name="stepsDefault">Steps: --</string>
     <string name="steps">Steps: %d</string>
+    <string name="stepsNoPermissions">Steps: No Perms</string>
     <string name="caloriesDefault">Calories: --</string>
     <string name="calories">Calories: %.2f</string>
+    <string name="caloriesNoPermissions">Calories: No Perms</string>
     <string name="distanceDefault">Distance: --</string>
     <string name="distance">Distance: %.2f</string>
+    <string name="distanceNoPermissions">Distance: No Perms</string>
     <string name="floorsDefault">Floors: --</string>
     <string name="floors">Floors: %.2f</string>
+    <string name="floorsNoPermissions">Floors: No Perms</string>
     <string name="elevationDefault">Elevation: --</string>
     <string name="elevation">Elevation: %.2f</string>
+    <string name="elevationNoPermissions">Elevation: No Perms</string>
 </resources>
