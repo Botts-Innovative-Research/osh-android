@@ -230,6 +230,11 @@
     </string-array>
 
     <string-array name="wearos_output_defaults">
-        <item>HeartRate</item>
+        <item>@string/wearos_heartRate</item>
+        <item>@string/wearos_elevationGain</item>
+        <item>@string/wearos_calories</item>
+        <item>@string/wearos_floors</item>
+        <item>@string/wearos_steps</item>
+        <item>@string/wearos_distance</item>
     </string-array>
 </resources>
