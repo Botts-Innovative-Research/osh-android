@@ -36,41 +36,12 @@ public class UIManager {
     }
 
     public void refreshUI() {
-        boolean bodySensorPermission = mainActivity.checkSelfPermission(Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED;
-        boolean activityPermission = mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED;
-
-        if (bodySensorPermission) {
-            if (!mainActivity.getOutputs().getEnableHeartRate()) {
-                heartRateTextView.setText(R.string.heartRateDefault);
-            }
-        } else {
-            heartRateTextView.setText(R.string.heartRateNoPermissions);
-        }
-
-        if (activityPermission) {
-            if (!mainActivity.getOutputs().getEnableElevationGain()) {
-                elevationTextView.setText(R.string.elevationDefault);
-            }
-            if (!mainActivity.getOutputs().getEnableCalories()) {
-                caloriesTextView.setText(R.string.caloriesDefault);
-            }
-            if (!mainActivity.getOutputs().getEnableFloors()) {
-                floorsTextView.setText(R.string.floorsDefault);
-            }
-            if (!mainActivity.getOutputs().getEnableSteps()) {
-                stepsTextView.setText(R.string.stepsDefault);
-            }
-            if (!mainActivity.getOutputs().getEnableDistance()) {
-                distanceTextView.setText(R.string.distanceDefault);
-            }
-        } else {
-            activityStateTextView.setText(R.string.activityStateNoPermissions);
-            elevationTextView.setText(R.string.elevationNoPermissions);
-            caloriesTextView.setText(R.string.caloriesNoPermissions);
-            floorsTextView.setText(R.string.floorsNoPermissions);
-            stepsTextView.setText(R.string.stepsNoPermissions);
-            distanceTextView.setText(R.string.distanceNoPermissions);
-        }
+        setHeartRate();
+        setElevation();
+        setFloors();
+        setSteps();
+        setDistance();
+        setCalories();
     }
 
     public void setWarning(boolean visible) {
@@ -81,8 +52,18 @@ public class UIManager {
         }
     }
 
+    private void setHeartRate() {
+        if (mainActivity.checkSelfPermission(Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED) {
+            if (!PreferencesManager.getEnableHeartRate(mainActivity)) {
+                heartRateTextView.setText(R.string.heartRateDefault);
+            }
+        } else {
+            heartRateTextView.setText(R.string.heartRateNoPermissions);
+        }
+    }
+
     public void setHeartRate(double heartRate) {
-        if (mainActivity.getOutputs().getEnableHeartRate()) {
+        if (PreferencesManager.getEnableHeartRate(mainActivity)) {
             heartRateTextView.setText(mainActivity.getResources().getString(R.string.heartRate, heartRate));
         } else {
             heartRateTextView.setText(R.string.heartRateDefault);
@@ -101,40 +82,90 @@ public class UIManager {
         }
     }
 
+    private void setElevation() {
+        if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+            if (!PreferencesManager.getEnableElevationGain(mainActivity)) {
+                elevationTextView.setText(R.string.elevationDefault);
+            }
+        } else {
+            elevationTextView.setText(R.string.elevationNoPermissions);
+        }
+    }
+
     public void setElevation(double elevation) {
-        if (mainActivity.getOutputs().getEnableElevationGain()) {
+        if (PreferencesManager.getEnableElevationGain(mainActivity)) {
             elevationTextView.setText(mainActivity.getResources().getString(R.string.elevation, elevation));
         } else {
             elevationTextView.setText(R.string.elevationDefault);
         }
     }
 
+    private void setFloors() {
+        if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+            if (!PreferencesManager.getEnableFloors(mainActivity)) {
+                floorsTextView.setText(R.string.floorsDefault);
+            }
+        } else {
+            floorsTextView.setText(R.string.floorsNoPermissions);
+        }
+    }
+
     public void setFloors(double floors) {
-        if (mainActivity.getOutputs().getEnableFloors()) {
+        if (PreferencesManager.getEnableFloors(mainActivity)) {
             floorsTextView.setText(mainActivity.getResources().getString(R.string.floors, floors));
         } else {
             floorsTextView.setText(R.string.floorsDefault);
         }
     }
 
+    private void setSteps() {
+        if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+            if (!PreferencesManager.getEnableSteps(mainActivity)) {
+                stepsTextView.setText(R.string.stepsDefault);
+            }
+        } else {
+            stepsTextView.setText(R.string.stepsNoPermissions);
+        }
+    }
+
     public void setSteps(long steps) {
-        if (mainActivity.getOutputs().getEnableSteps()) {
+        if (PreferencesManager.getEnableSteps(mainActivity)) {
             stepsTextView.setText(mainActivity.getResources().getString(R.string.steps, steps));
         } else {
             stepsTextView.setText(R.string.stepsDefault);
         }
     }
 
+    private void setDistance() {
+        if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+            if (!PreferencesManager.getEnableDistance(mainActivity)) {
+                distanceTextView.setText(R.string.distanceDefault);
+            }
+        } else {
+            distanceTextView.setText(R.string.distanceNoPermissions);
+        }
+    }
+
     public void setDistance(double distance) {
-        if (mainActivity.getOutputs().getEnableDistance()) {
+        if (PreferencesManager.getEnableDistance(mainActivity)) {
             distanceTextView.setText(mainActivity.getResources().getString(R.string.distance, distance));
         } else {
             distanceTextView.setText(R.string.distanceDefault);
         }
     }
 
+    private void setCalories() {
+        if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+            if (!PreferencesManager.getEnableCalories(mainActivity)) {
+                caloriesTextView.setText(R.string.caloriesDefault);
+            }
+        } else {
+            caloriesTextView.setText(R.string.caloriesNoPermissions);
+        }
+    }
+
     public void setCalories(double calories) {
-        if (mainActivity.getOutputs().getEnableCalories()) {
+        if (PreferencesManager.getEnableCalories(mainActivity)) {
             caloriesTextView.setText(mainActivity.getResources().getString(R.string.calories, calories));
         } else {
             caloriesTextView.setText(R.string.caloriesDefault);
