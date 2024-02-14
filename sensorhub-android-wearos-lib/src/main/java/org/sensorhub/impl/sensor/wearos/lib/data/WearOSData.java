@@ -283,7 +283,7 @@ public class WearOSData {
     }
 
     public ElevationGainData getMatchingElevationGainDaily(ElevationGainData data) {
-        if (elevationGain == null || data == null) {
+        if (elevationGainDaily == null || data == null) {
             return null;
         }
         for (ElevationGainData dataDaily : elevationGainDaily) {
@@ -295,7 +295,7 @@ public class WearOSData {
     }
 
     public CaloriesData getMatchingCaloriesDaily(CaloriesData data) {
-        if (calories == null || data == null) {
+        if (caloriesDaily == null || data == null) {
             return null;
         }
         for (CaloriesData dataDaily : caloriesDaily) {
@@ -307,7 +307,7 @@ public class WearOSData {
     }
 
     public FloorsData getMatchingFloorsDaily(FloorsData data) {
-        if (floors == null || data == null) {
+        if (floorsDaily == null || data == null) {
             return null;
         }
         for (FloorsData dataDaily : floorsDaily) {
@@ -319,7 +319,7 @@ public class WearOSData {
     }
 
     public StepsData getMatchingStepsDaily(StepsData data) {
-        if (steps == null || data == null) {
+        if (stepsDaily == null || data == null) {
             return null;
         }
         for (StepsData dataDaily : stepsDaily) {
@@ -331,7 +331,7 @@ public class WearOSData {
     }
 
     public DistanceData getMatchingDistanceDaily(DistanceData data) {
-        if (distance == null || data == null) {
+        if (distanceDaily == null || data == null) {
             return null;
         }
         for (DistanceData dataDaily : distanceDaily) {
