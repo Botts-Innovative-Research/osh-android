@@ -77,6 +77,13 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             String message = new String(data);
 
             Outputs outputs = Outputs.fromJSon(message);
+            boolean changed = (outputs.getEnableHeartRate() != PreferencesManager.getEnableHeartRate(this))
+                    || (outputs.getEnableCalories() != PreferencesManager.getEnableCalories(this))
+                    || (outputs.getEnableDistance() != PreferencesManager.getEnableDistance(this))
+                    || (outputs.getEnableSteps() != PreferencesManager.getEnableSteps(this))
+                    || (outputs.getEnableFloors() != PreferencesManager.getEnableFloors(this))
+                    || (outputs.getEnableElevationGain() != PreferencesManager.getEnableElevationGain(this));
+
             PreferencesManager.setEnableHeartRate(this, outputs.getEnableHeartRate());
             PreferencesManager.setEnableCalories(this, outputs.getEnableCalories());
             PreferencesManager.setEnableDistance(this, outputs.getEnableDistance());
@@ -86,14 +93,15 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
 
             uiManager.refreshUI();
 
-            healthDataService.startMonitoring();
+            if (changed) {
+                healthDataService.startMonitoring();
+            }
         }
     }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         healthDataService = ((HealthDataService.LocalBinder) service).getService();
-        healthDataService.startMonitoring();
         healthDataService.onDataPointReceived(onDataPointReceived);
     }
 
