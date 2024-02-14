@@ -4,12 +4,6 @@
     <string name="heartRateDefault">Heart Rate: --</string>
     <string name="heartRate">Heart Rate: %.0f</string>
     <string name="heartRateNoPermissions">Heart Rate: No Perms</string>
-    <string name="activityStateDefault">Activity: --</string>
-    <string name="activityStatePassive">Activity: Passive</string>
-    <string name="activityStateAsleep">Activity: Asleep</string>
-    <string name="activityStateExercise">Activity: Exercise</string>
-    <string name="activityStateUnknown">Activity: Unknown</string>
-    <string name="activityStateNoPermissions">Activity: No Perms</string>
     <string name="stepsDefault">Steps: --</string>
     <string name="steps">Steps: %d</string>
     <string name="stepsNoPermissions">Steps: No Perms</string>

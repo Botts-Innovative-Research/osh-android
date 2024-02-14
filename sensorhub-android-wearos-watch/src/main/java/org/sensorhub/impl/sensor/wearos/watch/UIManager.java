@@ -5,13 +5,10 @@ import android.content.pm.PackageManager;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.health.services.client.data.UserActivityState;
-
 public class UIManager {
     MainActivity mainActivity;
     TextView warningTextView;
     TextView heartRateTextView;
-    TextView activityStateTextView;
     TextView elevationTextView;
     TextView caloriesTextView;
     TextView floorsTextView;
@@ -26,7 +23,6 @@ public class UIManager {
         // Initialize the UI
         mainActivity.setContentView(R.layout.main);
         warningTextView = mainActivity.findViewById(R.id.warning);
-        activityStateTextView = mainActivity.findViewById(R.id.activityState);
         heartRateTextView = mainActivity.findViewById(R.id.heartRate);
         elevationTextView = mainActivity.findViewById(R.id.elevation);
         caloriesTextView = mainActivity.findViewById(R.id.calories);
@@ -67,18 +63,6 @@ public class UIManager {
             heartRateTextView.setText(mainActivity.getResources().getString(R.string.heartRate, heartRate));
         } else {
             heartRateTextView.setText(R.string.heartRateDefault);
-        }
-    }
-
-    public void setActivityState(UserActivityState activityState) {
-        if (activityState == UserActivityState.USER_ACTIVITY_PASSIVE) {
-            activityStateTextView.setText(R.string.activityStatePassive);
-        } else if (activityState == UserActivityState.USER_ACTIVITY_ASLEEP) {
-            activityStateTextView.setText(R.string.activityStateAsleep);
-        } else if (activityState == UserActivityState.USER_ACTIVITY_EXERCISE) {
-            activityStateTextView.setText(R.string.activityStateExercise);
-        } else {
-            activityStateTextView.setText(R.string.activityStateUnknown);
         }
     }
 

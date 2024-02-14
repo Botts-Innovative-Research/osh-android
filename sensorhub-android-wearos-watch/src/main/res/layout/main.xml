@@ -41,20 +41,12 @@
                 app:layout_constraintTop_toBottomOf="@+id/warning" />
 
             <TextView
-                android:id="@+id/activityState"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/activityStateDefault"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/heartRate" />
-
-            <TextView
                 android:id="@+id/steps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/stepsDefault"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/activityState" />
+                app:layout_constraintTop_toBottomOf="@+id/heartRate" />
 
             <TextView
                 android:id="@+id/calories"
