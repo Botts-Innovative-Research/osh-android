@@ -22,6 +22,7 @@ import androidx.health.services.client.PassiveListenerCallback;
 import androidx.health.services.client.PassiveMonitoringClient;
 import androidx.health.services.client.data.DataPointContainer;
 import androidx.health.services.client.data.DataType;
+import androidx.health.services.client.data.DeltaDataType;
 import androidx.health.services.client.data.PassiveListenerConfig;
 import androidx.health.services.client.data.PassiveMonitoringCapabilities;
 
@@ -45,11 +46,11 @@ import java.util.function.Consumer;
 
 public class HealthDataService extends Service implements PassiveListenerCallback {
     private static final String TAG = HealthDataService.class.getSimpleName();
+    private static final DataType<?, ?> elevationGainDailyType = new DeltaDataType<>("Daily Elevation Gain", DataType.TimeType.INTERVAL, double.class);
     private final IBinder binder = new LocalBinder();
     private final ArrayList<Consumer<HealthDataEventArgs>> eventHandlers = new ArrayList<>();
-    PassiveMonitoringClient passiveMonitoringClient;
-    Set<DataType<?, ?>> supportedDataTypes;
-    DataType<?, ?> elevationGainDailyType;
+    private PassiveMonitoringClient passiveMonitoringClient;
+    private Set<DataType<?, ?>> supportedDataTypes;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -167,11 +168,6 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
                         return;
                     }
                     supportedDataTypes = result.getSupportedDataTypesPassiveMonitoring();
-                    for (DataType<?, ?> supportedDataType : supportedDataTypes) {
-                        if (supportedDataType.getName().equals("Elevation Gain Daily")) {
-                            elevationGainDailyType = supportedDataType;
-                        }
-                    }
                     startMonitoring();
                 }
 
@@ -289,7 +285,7 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
     private void addElevationGainDailyDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableElevationGain(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
-                && elevationGainDailyType != null) {
+                && supportedDataTypes.contains(elevationGainDailyType)) {
             dataTypes.add(elevationGainDailyType);
         }
     }
