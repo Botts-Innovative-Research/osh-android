@@ -1,0 +1,2 @@
+### WearOS Library
+This library contains code used by both the WearOS app and the OpenSensorHub WearOS driver. It is not intended to be used as a standalone app. Within this library are the data structures used to send data from the WearOS device to the Android device, as well as well as the list of enabled outputs from the Android device to the WearOS device.
