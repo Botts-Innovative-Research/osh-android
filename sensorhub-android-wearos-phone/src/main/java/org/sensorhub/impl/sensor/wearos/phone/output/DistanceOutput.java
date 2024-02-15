@@ -10,6 +10,9 @@ import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.sensorhub.impl.sensor.wearos.phone.WearOSDriver;
 import org.vast.swe.SWEHelper;
 
+/**
+ * Output for distance data
+ */
 public class DistanceOutput extends AbstractSensorOutput<WearOSDriver> {
     DataComponent dataComponent;
     DataEncoding dataEncoding;

@@ -10,6 +10,9 @@ import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.sensorhub.impl.sensor.wearos.phone.WearOSDriver;
 import org.vast.swe.SWEHelper;
 
+/**
+ * Output for heart rate data
+ */
 public class HeartRateOutput extends AbstractSensorOutput<WearOSDriver> {
     DataComponent dataComponent;
     DataEncoding dataEncoding;

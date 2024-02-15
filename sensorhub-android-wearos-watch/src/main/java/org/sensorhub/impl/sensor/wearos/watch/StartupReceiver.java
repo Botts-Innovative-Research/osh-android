@@ -6,6 +6,9 @@ import android.content.Intent;
 
 import java.util.Objects;
 
+/**
+ * This class is used to start the HealthDataService when the watch boots up.
+ */
 public class StartupReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -39,8 +39,8 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         super.onCreate(savedInstanceState);
 
         uiManager = new UIManager(this);
-        uiManager.init();
 
+        // Start the health data service and bind to it
         Intent serviceIntent = new Intent(this, HealthDataService.class);
         startForegroundService(serviceIntent);
         bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
@@ -51,6 +51,11 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         Wearable.getMessageClient(this).addListener(this);
     }
 
+    /**
+     * This method is called when the user has responded to a permission request.
+     * Since BODY_SENSORS_BACKGROUND cannot be requested at the same time as BODY_SENSORS,
+     * it will be requested only after BODY_SENSORS has been granted.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -59,20 +64,26 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             if (checkSelfPermission(Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.BODY_SENSORS_BACKGROUND}, 0);
             }
+
+            // Start monitoring health data. Even without background permissions, the watch can still monitor health data.
             healthDataService.startMonitoring();
         }
 
         uiManager.refreshUI();
     }
 
+    /**
+     * This method is called when a message is received from the phone app.
+     */
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(Constants.CONFIRMATION_PATH)) {
-            // Hide the warning
+            // When a confirmation message is received, the watch will stop displaying the warning message.
             uiManager.setWarning(false);
 
             lastConfirmationDate = new Date();
         } else if (messageEvent.getPath().equals(Constants.OUTPUTS_PATH)) {
+            // When an outputs message is received, the watch will update the outputs and refresh the UI.
             byte[] data = messageEvent.getData();
             String message = new String(data);
 
@@ -99,24 +110,40 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         }
     }
 
+    /**
+     * This method is called when the HealthDataService is connected.
+     * It will set the onDataPointReceived callback to the HealthDataService.
+     */
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         healthDataService = ((HealthDataService.LocalBinder) service).getService();
         healthDataService.onDataPointReceived(onDataPointReceived);
     }
 
+    /**
+     * This method is called when the HealthDataService is disconnected.
+     * It will remove the onDataPointReceived callback from the HealthDataService.
+     */
     @Override
     public void onServiceDisconnected(ComponentName name) {
         healthDataService.onDataPointReceived(null);
         healthDataService = null;
     }
 
+    /**
+     * This method is called when the app is closed.
+     * Unbinding the service is necessary to prevent memory leaks.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindService(this);
     }
 
+    /**
+     * This method is the callback for when a data point is received from the HealthDataService.
+     * It will update the UI with the new data.
+     */
     private final Consumer<HealthDataEventArgs> onDataPointReceived = eventArgs -> {
         if (eventArgs.getHeartRate() != null) {
             uiManager.setHeartRate(eventArgs.getHeartRate());
@@ -141,6 +168,9 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         }
     };
 
+    /**
+     * This method requests the outputs from the phone app.
+     */
     private void requestOutputs() {
         Task<List<Node>> nodesTask = Wearable.getNodeClient(this).getConnectedNodes();
         nodesTask.addOnSuccessListener(nodes -> {
@@ -150,6 +180,9 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         });
     }
 
+    /**
+     * Request the necessary permissions for the app.
+     */
     private void requestPermissions() {
         List<String> permissions = new java.util.ArrayList<>();
         if (checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {

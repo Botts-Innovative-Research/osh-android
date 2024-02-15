@@ -29,6 +29,9 @@ import org.sensorhub.impl.sensor.wearos.phone.output.StepsOutput;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * The Wear OS driver module
+ */
 public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements MessageClient.OnMessageReceivedListener {
     private HeartRateOutput heartRateOutput;
     private ElevationGainOutput elevationGainOutput;
@@ -63,9 +66,15 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         Wearable.getMessageClient(context).removeListener(this);
     }
 
+    /**
+     * Called when a message is received from the Wear OS device
+     *
+     * @param messageEvent The message received
+     */
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(Constants.DATA_PATH)) {
+            // Parse the data and set the outputs
             WearOSData data = WearOSData.fromJSon(new String(messageEvent.getData()));
             if (data != null) {
                 setHeartRateData(data);
@@ -76,12 +85,17 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
                 setDistanceData(data);
             }
 
+            // Send a confirmation message
             Wearable.getMessageClient(context).sendMessage(messageEvent.getSourceNodeId(), Constants.CONFIRMATION_PATH, "Received".getBytes(StandardCharsets.UTF_8));
         } else if (messageEvent.getPath().equals(Constants.OUTPUTS_PATH)) {
+            // Send the enabled outputs to the Wear OS device
             broadcastEnabledOutputs();
         }
     }
 
+    /**
+     * Create the outputs based on the configuration
+     */
     public void createOutputs() {
         if (config.getOutputs().getEnableHeartRate()) {
             heartRateOutput = new HeartRateOutput(this);
@@ -132,6 +146,9 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Broadcast the enabled outputs to the Wear OS device
+     */
     public void broadcastEnabledOutputs() {
         Task<List<Node>> nodesTask = Wearable.getNodeClient(context).getConnectedNodes();
         nodesTask.addOnSuccessListener(nodes -> {
@@ -141,6 +158,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         });
     }
 
+    /**
+     * Parse the heart rate data and set the output
+     *
+     * @param data The data from the Wear OS device
+     */
     public void setHeartRateData(@NonNull WearOSData data) {
         if (heartRateOutput == null) {
             return;
@@ -151,6 +173,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Parse the elevation gain data and set the output
+     *
+     * @param data The data from the Wear OS device
+     */
     public void setElevationGainData(@NonNull WearOSData data) {
         if (elevationGainOutput == null) {
             return;
@@ -171,6 +198,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Parse the calories data and set the output
+     *
+     * @param data The data from the Wear OS device
+     */
     public void setCaloriesData(@NonNull WearOSData data) {
         if (caloriesOutput == null) {
             return;
@@ -191,6 +223,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Parse the floors data and set the output
+     *
+     * @param data The data from the Wear OS device
+     */
     public void setFloorsData(@NonNull WearOSData data) {
         if (floorsOutput == null) {
             return;
@@ -211,6 +248,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Parse the steps data and set the output
+     *
+     * @param data The data from the Wear OS device
+     */
     public void setStepsData(@NonNull WearOSData data) {
         if (stepsOutput == null) {
             return;
@@ -231,6 +273,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Parse the distance data and set the output
+     *
+     * @param data The data from the Wear OS device
+     */
     public void setDistanceData(@NonNull WearOSData data) {
         if (distanceOutput == null) {
             return;

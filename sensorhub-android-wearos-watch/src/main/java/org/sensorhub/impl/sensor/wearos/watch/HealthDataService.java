@@ -49,12 +49,10 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
     private static final DataType<?, ?> elevationGainDailyType = new DeltaDataType<>("Daily Elevation Gain", DataType.TimeType.INTERVAL, double.class);
     private final IBinder binder = new LocalBinder();
     private final ArrayList<Consumer<HealthDataEventArgs>> eventHandlers = new ArrayList<>();
-    private PassiveMonitoringClient passiveMonitoringClient;
     private Set<DataType<?, ?>> supportedDataTypes;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        passiveMonitoringClient = HealthServices.getClient(this).getPassiveMonitoringClient();
         startMonitoring();
         return Service.START_STICKY;
     }
@@ -63,6 +61,8 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
     public void onCreate() {
         super.onCreate();
 
+        // Starting a foreground service requires a notification and for startForeground to be called.
+        // Without this, the service will fail to start properly
         String channelID = "osh_channel_id";
         NotificationChannel channel = new NotificationChannel(channelID,
                 "Open Sensor Hub",
@@ -82,14 +82,24 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         return binder;
     }
 
+    /**
+     * Called when new data points are received from the passive monitoring client.
+     *
+     * @param dataPoints The data points received.
+     */
     @Override
     public void onNewDataPointsReceived(@NonNull DataPointContainer dataPoints) {
         PassiveListenerCallback.super.onNewDataPointsReceived(dataPoints);
 
+        // WearOSData is a data class that holds the data points for each data type.
+        // It will be serialized to JSON and sent to the phone.
         WearOSData data = new WearOSData();
+        // HealthDataEventArgs is used to notify the event handlers of the new data.
+        // Data is set, not added, meaning that the event handlers will only receive the latest data point for each data type.
         HealthDataEventArgs eventArgs = new HealthDataEventArgs();
         Instant bootInstant = Instant.ofEpochMilli(System.currentTimeMillis() - SystemClock.elapsedRealtime());
 
+        // Heart rate is a sample data type, so it needs to be handled separately
         dataPoints.getSampleDataPoints().forEach(dataPoint -> {
             if (dataPoint.getDataType().getName().equals("HeartRate")) {
                 data.addHeartRate(dataPoint.getTimeInstant(bootInstant), (double) dataPoint.getValue());
@@ -97,6 +107,7 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
             }
         });
 
+        // The rest of the data types are interval data types
         dataPoints.getIntervalDataPoints().forEach(dataPoint -> {
             switch (dataPoint.getDataType().getName()) {
                 case "Elevation Gain":
@@ -138,8 +149,11 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
                     break;
             }
         });
+
+        // Notify the event handlers of the new data
         notifyEventHandlers(eventArgs);
 
+        // Send the data to the phone
         Task<List<Node>> nodesTask = Wearable.getNodeClient(this).getConnectedNodes();
         nodesTask.addOnSuccessListener(nodes -> {
             for (Node node : nodes) {
@@ -148,17 +162,37 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         });
     }
 
+    /**
+     * Adds a new event handler to be notified when new data points are received.
+     * Subscribers will be notified of the latest data point for each data type.
+     * Note that data may be null if the data type is not supported,
+     * if the user has not granted the necessary permissions,
+     * if the user has disabled the data type by turning off the corresponding output on the phone,
+     * or if data was not received during the last monitoring interval.
+     *
+     * @param handler The event handler to be notified.
+     */
     public void onDataPointReceived(Consumer<HealthDataEventArgs> handler) {
         eventHandlers.add(handler);
     }
 
+    /**
+     * Notifies all event handlers of the new data.
+     *
+     * @param eventArgs The new data.
+     */
     private void notifyEventHandlers(HealthDataEventArgs eventArgs) {
         for (Consumer<HealthDataEventArgs> handler : eventHandlers) {
             handler.accept(eventArgs);
         }
     }
 
+    /**
+     * Starts monitoring health data.
+     * Calling this method after the service has been started will update the data types being monitored, if necessary.
+     */
     public void startMonitoring() {
+        PassiveMonitoringClient passiveMonitoringClient = HealthServices.getClient(this).getPassiveMonitoringClient();
         if (supportedDataTypes == null) {
             ListenableFuture<PassiveMonitoringCapabilities> capabilitiesFuture = passiveMonitoringClient.getCapabilitiesAsync();
             Futures.addCallback(capabilitiesFuture, new FutureCallback<PassiveMonitoringCapabilities>() {
@@ -184,6 +218,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Gets the data types to be monitored.
+     * The data types are determined by the user's settings and the permissions granted by the user.
+     *
+     * @return The data types to be monitored.
+     */
     private Set<DataType<?, ?>> getMonitoredDataTypes() {
         Set<DataType<?, ?>> dataTypes = new HashSet<>();
 
@@ -202,6 +242,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         return dataTypes;
     }
 
+    /**
+     * Adds the heart rate data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addHeartRateDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableHeartRate(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
@@ -210,6 +256,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the calories data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addCaloriesDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableCalories(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -218,6 +270,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the daily calories data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addCaloriesDailyDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableCalories(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -226,6 +284,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the distance data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addDistanceDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableDistance(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -234,6 +298,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the daily distance data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addDistanceDailyDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableDistance(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -242,6 +312,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the steps data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addStepsDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableSteps(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -250,6 +326,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the daily steps data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addStepsDailyDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableSteps(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -258,6 +340,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the floors data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addFloorsDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableFloors(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -266,6 +354,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the daily floors data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addFloorsDailyDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableFloors(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -274,6 +368,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the elevation gain data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addElevationGainDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableElevationGain(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -282,6 +382,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Adds the daily elevation gain data type to the set of data types to be monitored.
+     * Will only be added if enabled, permissions are granted, and the data type is supported.
+     *
+     * @param dataTypes The set of data types to be monitored.
+     */
     private void addElevationGainDailyDataType(Set<DataType<?, ?>> dataTypes) {
         if (PreferencesManager.getEnableElevationGain(this)
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
@@ -290,6 +396,9 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         }
     }
 
+    /**
+     * Local binder for the service. Used to get the service instance from the activity.
+     */
     public class LocalBinder extends Binder {
         HealthDataService getService() {
             return HealthDataService.this;

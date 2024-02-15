@@ -5,6 +5,9 @@ import android.content.pm.PackageManager;
 import android.view.View;
 import android.widget.TextView;
 
+/**
+ * This class is used to manage the UI of the watch app.
+ */
 public class UIManager {
     MainActivity mainActivity;
     TextView warningTextView;
@@ -17,9 +20,7 @@ public class UIManager {
 
     public UIManager(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-    }
 
-    public void init() {
         // Initialize the UI
         mainActivity.setContentView(R.layout.main);
         warningTextView = mainActivity.findViewById(R.id.warning);
@@ -31,6 +32,9 @@ public class UIManager {
         distanceTextView = mainActivity.findViewById(R.id.distance);
     }
 
+    /**
+     * Update the UI. This method should be called whenever outputs are toggled or permissions are granted.
+     */
     public void refreshUI() {
         setHeartRate();
         setElevation();
@@ -40,6 +44,11 @@ public class UIManager {
         setCalories();
     }
 
+    /**
+     * Set the visibility of the warning message.
+     *
+     * @param visible Whether the warning message should be visible
+     */
     public void setWarning(boolean visible) {
         if (visible) {
             warningTextView.setVisibility(View.VISIBLE);
@@ -48,6 +57,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the heart rate text view based on the current permissions and preferences.
+     */
     private void setHeartRate() {
         if (mainActivity.checkSelfPermission(Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED) {
             if (!PreferencesManager.getEnableHeartRate(mainActivity)) {
@@ -58,6 +70,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the heart rate text view with the given value.
+     */
     public void setHeartRate(double heartRate) {
         if (PreferencesManager.getEnableHeartRate(mainActivity)) {
             heartRateTextView.setText(mainActivity.getResources().getString(R.string.heartRate, heartRate));
@@ -66,6 +81,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the elevation text view based on the current permissions and preferences.
+     */
     private void setElevation() {
         if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             if (!PreferencesManager.getEnableElevationGain(mainActivity)) {
@@ -76,6 +94,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the elevation text view with the given value.
+     */
     public void setElevation(double elevation) {
         if (PreferencesManager.getEnableElevationGain(mainActivity)) {
             elevationTextView.setText(mainActivity.getResources().getString(R.string.elevation, elevation));
@@ -84,6 +105,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the floors text view based on the current permissions and preferences.
+     */
     private void setFloors() {
         if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             if (!PreferencesManager.getEnableFloors(mainActivity)) {
@@ -94,6 +118,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the floors text view with the given value.
+     */
     public void setFloors(double floors) {
         if (PreferencesManager.getEnableFloors(mainActivity)) {
             floorsTextView.setText(mainActivity.getResources().getString(R.string.floors, floors));
@@ -102,6 +129,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the steps text view based on the current permissions and preferences.
+     */
     private void setSteps() {
         if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             if (!PreferencesManager.getEnableSteps(mainActivity)) {
@@ -112,6 +142,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the steps text view with the given value.
+     */
     public void setSteps(long steps) {
         if (PreferencesManager.getEnableSteps(mainActivity)) {
             stepsTextView.setText(mainActivity.getResources().getString(R.string.steps, steps));
@@ -120,6 +153,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the distance text view based on the current permissions and preferences.
+     */
     private void setDistance() {
         if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             if (!PreferencesManager.getEnableDistance(mainActivity)) {
@@ -130,6 +166,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the distance text view with the given value.
+     */
     public void setDistance(double distance) {
         if (PreferencesManager.getEnableDistance(mainActivity)) {
             distanceTextView.setText(mainActivity.getResources().getString(R.string.distance, distance));
@@ -138,6 +177,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the calories text view based on the current permissions and preferences.
+     */
     private void setCalories() {
         if (mainActivity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             if (!PreferencesManager.getEnableCalories(mainActivity)) {
@@ -148,6 +190,9 @@ public class UIManager {
         }
     }
 
+    /**
+     * Sets the calories text view with the given value.
+     */
     public void setCalories(double calories) {
         if (PreferencesManager.getEnableCalories(mainActivity)) {
             caloriesTextView.setText(mainActivity.getResources().getString(R.string.calories, calories));

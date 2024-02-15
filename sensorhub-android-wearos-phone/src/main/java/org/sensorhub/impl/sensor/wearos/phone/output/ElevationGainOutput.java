@@ -10,6 +10,9 @@ import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.sensorhub.impl.sensor.wearos.phone.WearOSDriver;
 import org.vast.swe.SWEHelper;
 
+/**
+ * Output for elevation gain data
+ */
 public class ElevationGainOutput extends AbstractSensorOutput<WearOSDriver> {
     DataComponent dataComponent;
     DataEncoding dataEncoding;

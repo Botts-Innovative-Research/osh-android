@@ -10,6 +10,9 @@ import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.sensorhub.impl.sensor.wearos.phone.WearOSDriver;
 import org.vast.swe.SWEHelper;
 
+/**
+ * Output for steps data
+ */
 public class StepsOutput extends AbstractSensorOutput<WearOSDriver> {
     DataComponent dataComponent;
     DataEncoding dataEncoding;
