@@ -26,10 +26,20 @@
 
             <TextView
                 android:id="@+id/warning"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/warning"
                 android:textColor="#B30000"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+            <Button
+                android:id="@+id/radarButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="Radar"
+                android:textSize="11sp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView" />
 
             <TextView

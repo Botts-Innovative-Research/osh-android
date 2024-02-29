@@ -1,8 +1,10 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 /**
@@ -17,6 +19,7 @@ public class UIManager {
     TextView floorsTextView;
     TextView stepsTextView;
     TextView distanceTextView;
+    Button radarButton;
 
     public UIManager(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -30,6 +33,13 @@ public class UIManager {
         floorsTextView = mainActivity.findViewById(R.id.floors);
         stepsTextView = mainActivity.findViewById(R.id.steps);
         distanceTextView = mainActivity.findViewById(R.id.distance);
+        radarButton = mainActivity.findViewById(R.id.radarButton);
+
+        // Set the radar button to open the radar activity
+        radarButton.setOnClickListener(v -> {
+            Intent intent = new Intent(mainActivity, CompassActivity.class);
+            mainActivity.startActivity(intent);
+        });
     }
 
     /**

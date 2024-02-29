@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Open Sensor Hub</string>
     <string name="warning">Not connected</string>
+    <string name="radar">Radar</string>
     <string name="heartRateDefault">Heart Rate: --</string>
     <string name="heartRate">Heart Rate: %.0f</string>
     <string name="heartRateNoPermissions">Heart Rate: No Perms</string>
