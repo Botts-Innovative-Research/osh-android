@@ -15,10 +15,10 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class CompassActivity extends Activity {
-    private static final String TAG = CompassActivity.class.getSimpleName();
     ImageView compassImageView;
     int azimuth;
 
@@ -29,11 +29,15 @@ public class CompassActivity extends Activity {
         setContentView(R.layout.radar);
         compassImageView = findViewById(R.id.compass);
 
-        Map<Integer, Integer> points = new HashMap<>();
-        points.put(100, 100);
-        points.put(-100, -100);
-        drawPoints(points);
+        double centerLatitude = 34.71067672807872;
+        double centerLongitude = -86.73418227527542;
 
+        Map<Double, Double> points = new HashMap<>();
+        points.put(34.71171301403239, -86.73417154644011);
+        points.put(34.71122794562786, -86.7339301476455);
+        points.put(34.71092808373677, -86.73629049141508);
+        points.put(34.71369976390715, -86.73311680904119);
+        drawPoints(centerLatitude, centerLongitude, points);
 
         // Register sensor listeners
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -51,6 +55,7 @@ public class CompassActivity extends Activity {
                 SensorManager.getOrientation(rotationMatrix, orientationValues);
                 azimuth = (int) Math.toDegrees(orientationValues[0]);
 
+                // Rotate the compass image view
                 compassImageView.setRotation(-azimuth);
             }
         }
@@ -63,10 +68,10 @@ public class CompassActivity extends Activity {
 
     /**
      * Draw points on the compass image view.
-     *
-     * @param points The points to draw
      */
-    public void drawPoints(Map<Integer, Integer> points) {
+    public void drawPoints(double centerLatitude, double centerLongitude, Map<Double, Double> points) {
+        final double distancePerPixel = 1;
+
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.compass, options);
@@ -81,11 +86,48 @@ public class CompassActivity extends Activity {
         paint.setColor(Color.BLUE);
         canvas.drawCircle(centerX, centerY, radius, paint);
 
+        // Draw a ring around the center point
+        paint.setColor(Color.GREEN);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(2);
+        canvas.drawCircle(centerX, centerY, (float) bitmap.getWidth() / 4, paint);
+
+        // Add text outside of the ring indicating size in meters
+        paint.setColor(Color.GREEN);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(25);
+
+        String text = String.format(Locale.US, "%.0f m", (double) bitmap.getWidth() / 4 * distancePerPixel);
+        float textX = centerX + (float) bitmap.getWidth() / 4 + 10f;
+        canvas.drawText(text, textX, centerY, paint);
+
         // Draw the points
         paint.setColor(Color.RED);
-        for (Map.Entry<Integer, Integer> point : points.entrySet()) {
-            canvas.drawCircle(centerX + point.getKey(), centerY + point.getValue(), radius, paint);
+        paint.setStyle(Paint.Style.FILL);
+        for (Map.Entry<Double, Double> entry : points.entrySet()) {
+            double latitude = entry.getKey();
+            double longitude = entry.getValue();
+            double latitudeDistance = calculateLatitudeDistance(centerLatitude, latitude);
+            double longitudeDistance = calculateLongitudeDistance(centerLongitude, longitude, centerLatitude);
+            double distance = Math.sqrt(Math.pow(latitudeDistance, 2) + Math.pow(longitudeDistance, 2));
+            double angle = Math.toDegrees(Math.atan2(longitudeDistance, latitudeDistance));
+            float x = (float) (centerX + (distance / distancePerPixel) * Math.sin(Math.toRadians(azimuth + angle)));
+            float y = (float) (centerY - (distance / distancePerPixel) * Math.cos(Math.toRadians(azimuth + angle)));
+            canvas.drawCircle(x, y, radius, paint);
         }
+
         compassImageView.setImageBitmap(bitmap);
+    }
+
+    public static double calculateLatitudeDistance(double lat1, double lat2) {
+        final double earthRadius = 6371000;
+        double deltaPhi = Math.toRadians(lat2 - lat1);
+        return deltaPhi * earthRadius;
+    }
+
+    public static double calculateLongitudeDistance(double lon1, double lon2, double avgLat) {
+        final double earthRadius = 6371000;
+        double deltaLambda = Math.toRadians(lon2 - lon1);
+        return deltaLambda * earthRadius * Math.cos(Math.toRadians(avgLat));
     }
 }
