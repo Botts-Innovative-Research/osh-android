@@ -16,6 +16,10 @@ public class Constants {
      * The path for the outputs message.
      */
     public static final String OUTPUTS_PATH = "/OSH/Outputs";
+    /**
+     * The path for the GPS data message.
+     */
+    public static final String GPS_DATA_PATH = "/OSH/GPSData";
 
     private Constants() {
         // Prevent instantiation

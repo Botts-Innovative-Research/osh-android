@@ -14,11 +14,19 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.ImageView;
 
-import java.util.HashMap;
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Wearable;
+
+import org.sensorhub.impl.sensor.wearos.lib.Constants;
+import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
+
 import java.util.Locale;
 import java.util.Map;
 
-public class CompassActivity extends Activity {
+public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener {
     ImageView compassImageView;
     int azimuth;
 
@@ -29,20 +37,22 @@ public class CompassActivity extends Activity {
         setContentView(R.layout.radar);
         compassImageView = findViewById(R.id.compass);
 
-        double centerLatitude = 34.71067672807872;
-        double centerLongitude = -86.73418227527542;
-
-        Map<Double, Double> points = new HashMap<>();
-        points.put(34.71171301403239, -86.73417154644011);
-        points.put(34.71122794562786, -86.7339301476455);
-        points.put(34.71092808373677, -86.73629049141508);
-        points.put(34.71369976390715, -86.73311680904119);
-        drawPoints(centerLatitude, centerLongitude, points);
-
         // Register sensor listeners
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         Sensor rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         sensorManager.registerListener(sensorEventListener, rotationVector, SensorManager.SENSOR_DELAY_NORMAL);
+
+        Wearable.getMessageClient(this).addListener(this);
+    }
+
+    @Override
+    public void onMessageReceived(@NonNull MessageEvent messageEvent) {
+        if (messageEvent.getPath().equals(Constants.GPS_DATA_PATH)) {
+            byte[] data = messageEvent.getData();
+            String message = new String(data);
+            GPSData gpsData = GPSData.fromJSon(message);
+            drawPoints(gpsData.getCenterLatitude(), gpsData.getCenterLongitude(), gpsData.getPoints());
+        }
     }
 
     private final SensorEventListener sensorEventListener = new SensorEventListener() {
@@ -70,7 +80,7 @@ public class CompassActivity extends Activity {
      * Draw points on the compass image view.
      */
     public void drawPoints(double centerLatitude, double centerLongitude, Map<Double, Double> points) {
-        final double distancePerPixel = 1;
+        final double distancePerPixel = 0.1;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
@@ -111,8 +121,8 @@ public class CompassActivity extends Activity {
             double longitudeDistance = calculateLongitudeDistance(centerLongitude, longitude, centerLatitude);
             double distance = Math.sqrt(Math.pow(latitudeDistance, 2) + Math.pow(longitudeDistance, 2));
             double angle = Math.toDegrees(Math.atan2(longitudeDistance, latitudeDistance));
-            float x = (float) (centerX + (distance / distancePerPixel) * Math.sin(Math.toRadians(azimuth + angle)));
-            float y = (float) (centerY - (distance / distancePerPixel) * Math.cos(Math.toRadians(azimuth + angle)));
+            float x = (float) (centerX + (distance / distancePerPixel) * Math.sin(Math.toRadians(angle)));
+            float y = (float) (centerY - (distance / distancePerPixel) * Math.cos(Math.toRadians(angle)));
             canvas.drawCircle(x, y, radius, paint);
         }
 

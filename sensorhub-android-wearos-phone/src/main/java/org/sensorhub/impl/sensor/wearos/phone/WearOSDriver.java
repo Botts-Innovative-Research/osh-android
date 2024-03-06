@@ -1,8 +1,16 @@
 package org.sensorhub.impl.sensor.wearos.phone;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Handler;
+import android.os.HandlerThread;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.MessageClient;
@@ -17,6 +25,7 @@ import org.sensorhub.impl.sensor.wearos.lib.data.CaloriesData;
 import org.sensorhub.impl.sensor.wearos.lib.data.DistanceData;
 import org.sensorhub.impl.sensor.wearos.lib.data.ElevationGainData;
 import org.sensorhub.impl.sensor.wearos.lib.data.FloorsData;
+import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 import org.sensorhub.impl.sensor.wearos.lib.data.StepsData;
 import org.sensorhub.impl.sensor.wearos.lib.data.WearOSData;
 import org.sensorhub.impl.sensor.wearos.phone.output.CaloriesOutput;
@@ -27,12 +36,14 @@ import org.sensorhub.impl.sensor.wearos.phone.output.HeartRateOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.StepsOutput;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Wear OS driver module
  */
-public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements MessageClient.OnMessageReceivedListener {
+public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements MessageClient.OnMessageReceivedListener, LocationListener {
     private HeartRateOutput heartRateOutput;
     private ElevationGainOutput elevationGainOutput;
     private CaloriesOutput caloriesOutput;
@@ -58,6 +69,16 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     @Override
     public void doStart() {
         Wearable.getMessageClient(context).addListener(this);
+
+        HandlerThread eventThread = new HandlerThread("LocationWatcher");
+        eventThread.start();
+        Handler eventHandler = new Handler(eventThread.getLooper());
+
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, this, eventHandler.getLooper());
+        }
+
         broadcastEnabledOutputs();
     }
 
@@ -91,6 +112,16 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             // Send the enabled outputs to the Wear OS device
             broadcastEnabledOutputs();
         }
+    }
+
+    public void sendGPSData(double centerLatitude, double centerLongitude, Map<Double, Double> points) {
+        GPSData gpsData = new GPSData(centerLatitude, centerLongitude, points);
+        Task<List<Node>> nodesTask = Wearable.getNodeClient(context).getConnectedNodes();
+        nodesTask.addOnSuccessListener(nodes -> {
+            for (Node node : nodes) {
+                Wearable.getMessageClient(context).sendMessage(node.getId(), Constants.GPS_DATA_PATH, gpsData.toJSon().getBytes(StandardCharsets.UTF_8));
+            }
+        });
     }
 
     /**
@@ -296,5 +327,16 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         for (int i = 0; i < data.getDistanceDailySize(); i++) {
             distanceOutput.setData(0, 0, 0, data.getDistanceDaily(i).getStartTime(), data.getDistanceDaily(i).getEndTime(), data.getDistanceDaily(i).getValue());
         }
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        Map<Double, Double> points = new HashMap<>();
+        points.put(34.70584046309542, -86.72904037299796);
+        points.put(34.70583880934057, -86.72894180182348);
+        points.put(34.70565799860993, -86.72904104355015);
+        points.put(34.705667921160284, -86.7289330846448);
+
+        sendGPSData(location.getLatitude(), location.getLongitude(), points);
     }
 }
