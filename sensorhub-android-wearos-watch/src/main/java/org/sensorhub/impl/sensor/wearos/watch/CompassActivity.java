@@ -1,5 +1,6 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,6 +13,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -29,7 +31,15 @@ import java.util.Map;
 public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener {
     ImageView compassImageView;
     int azimuth;
+    boolean isZooming = false;
+    float startDistance;
+    float startDistancePerPixel = 1;
+    float distancePerPixel = 1;
+    double centerLatitude = 0;
+    double centerLongitude = 0;
+    Map<Double, Double> points;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,12 +56,50 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     }
 
     @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_POINTER_DOWN:
+                isZooming = true;
+                startDistance = getFingerSpacing(event);
+                startDistancePerPixel = distancePerPixel;
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                isZooming = false;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (isZooming) {
+                    float newDistance = getFingerSpacing(event);
+                    float scale = newDistance / startDistance;
+                    distancePerPixel = startDistancePerPixel * scale;
+                    if (distancePerPixel < 0.1) {
+                        distancePerPixel = 0.1f;
+                    }
+                    if (distancePerPixel > 10) {
+                        distancePerPixel = 10f;
+                    }
+                    drawPoints();
+                }
+                break;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private float getFingerSpacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
+    }
+
+    @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(Constants.GPS_DATA_PATH)) {
             byte[] data = messageEvent.getData();
             String message = new String(data);
             GPSData gpsData = GPSData.fromJSon(message);
-            drawPoints(gpsData.getCenterLatitude(), gpsData.getCenterLongitude(), gpsData.getPoints());
+            centerLatitude = gpsData.getCenterLatitude();
+            centerLongitude = gpsData.getCenterLongitude();
+            points = gpsData.getPoints();
+            drawPoints();
         }
     }
 
@@ -79,8 +127,10 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     /**
      * Draw points on the compass image view.
      */
-    public void drawPoints(double centerLatitude, double centerLongitude, Map<Double, Double> points) {
-        final double distancePerPixel = 0.1;
+    public void drawPoints() {
+        if (centerLatitude == 0 || centerLongitude == 0 || points == null) {
+            return;
+        }
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
