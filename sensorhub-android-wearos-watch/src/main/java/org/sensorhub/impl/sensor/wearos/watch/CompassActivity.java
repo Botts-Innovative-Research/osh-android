@@ -72,7 +72,7 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
                 if (isZooming) {
                     float newDistance = getFingerSpacing(event);
                     float scale = newDistance / startDistance;
-                    distancePerPixel = startDistancePerPixel * scale;
+                    distancePerPixel = startDistancePerPixel / scale;
                     if (distancePerPixel < 0.1) {
                         distancePerPixel = 0.1f;
                     }
