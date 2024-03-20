@@ -15,6 +15,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
@@ -25,11 +26,11 @@ import com.google.android.gms.wearable.Wearable;
 import org.sensorhub.impl.sensor.wearos.lib.Constants;
 import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 
-import java.util.Locale;
 import java.util.Map;
 
 public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener {
     ImageView compassImageView;
+    TextView compassTextView;
     int azimuth;
     boolean isZooming = false;
     float startDistance;
@@ -46,6 +47,7 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
 
         setContentView(R.layout.radar);
         compassImageView = findViewById(R.id.compass);
+        compassTextView = findViewById(R.id.compassText);
 
         // Register sensor listeners
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -79,6 +81,8 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
                     }
                     drawPoints();
                 }
+                break;
+            default:
                 break;
         }
         return super.onTouchEvent(event);
@@ -152,14 +156,8 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         paint.setStrokeWidth(2);
         canvas.drawCircle(centerX, centerY, (float) bitmap.getWidth() / 4, paint);
 
-        // Add text outside of the ring indicating size in meters
-        paint.setColor(Color.GREEN);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(25);
-
-        String text = String.format(Locale.US, "%.0f m", (double) bitmap.getWidth() / 4 * distancePerPixel);
-        float textX = centerX + (float) bitmap.getWidth() / 4 + 10f;
-        canvas.drawText(text, textX, centerY, paint);
+        // Update the compass text view
+        compassTextView.setText(getResources().getString(R.string.compassZoom, (int) (bitmap.getWidth() / 4d * distancePerPixel)));
 
         // Draw the points
         paint.setColor(Color.RED);

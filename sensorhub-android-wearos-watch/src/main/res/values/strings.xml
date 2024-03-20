@@ -20,4 +20,5 @@
     <string name="elevationDefault">Elevation: --</string>
     <string name="elevation">Elevation: %.2f</string>
     <string name="elevationNoPermissions">Elevation: No Perms</string>
+    <string name="compassZoom">%dm</string>
 </resources>
