@@ -1,8 +1,10 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,12 +14,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
@@ -28,7 +36,8 @@ import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 
 import java.util.Map;
 
-public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener {
+public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener, LocationListener {
+    private static final String TAG = "CompassActivity";
     ImageView compassImageView;
     TextView compassTextView;
     int azimuth;
@@ -55,6 +64,15 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         sensorManager.registerListener(sensorEventListener, rotationVector, SensorManager.SENSOR_DELAY_NORMAL);
 
         Wearable.getMessageClient(this).addListener(this);
+
+        HandlerThread eventThread = new HandlerThread("LocationWatcher");
+        eventThread.start();
+        Handler eventHandler = new Handler(eventThread.getLooper());
+
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, this, eventHandler.getLooper());
+        }
     }
 
     @Override
@@ -187,5 +205,11 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         final double earthRadius = 6371000;
         double deltaLambda = Math.toRadians(lon2 - lon1);
         return deltaLambda * earthRadius * Math.cos(Math.toRadians(avgLat));
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        centerLatitude = location.getLatitude();
+        centerLongitude = location.getLongitude();
     }
 }

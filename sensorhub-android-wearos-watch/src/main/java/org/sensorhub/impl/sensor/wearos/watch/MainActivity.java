@@ -191,6 +191,12 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
         if (checkSelfPermission(Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
             permissions.add(Manifest.permission.BODY_SENSORS);
         }
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
 
         if (permissions.isEmpty()) {
             // Can't request both BODY_SENSORS and BODY_SENSORS_BACKGROUND at the same time
