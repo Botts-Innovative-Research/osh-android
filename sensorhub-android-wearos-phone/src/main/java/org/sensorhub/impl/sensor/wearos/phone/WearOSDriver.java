@@ -28,6 +28,7 @@ import org.sensorhub.impl.sensor.wearos.lib.data.FloorsData;
 import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 import org.sensorhub.impl.sensor.wearos.lib.data.StepsData;
 import org.sensorhub.impl.sensor.wearos.lib.data.WearOSData;
+import org.sensorhub.impl.sensor.wearos.lib.gpsdata.DataContainer;
 import org.sensorhub.impl.sensor.wearos.phone.output.CaloriesOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.DistanceOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.ElevationGainOutput;
@@ -35,7 +36,12 @@ import org.sensorhub.impl.sensor.wearos.phone.output.FloorsOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.HeartRateOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.StepsOutput;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +57,9 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     private StepsOutput stepsOutput;
     private DistanceOutput distanceOutput;
     private Context context;
+    private double latitude;
+    private double longitude;
+    Map<Double, Double> points = new HashMap<>();
 
     @Override
     public boolean isConnected() {
@@ -80,6 +89,8 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
 
         broadcastEnabledOutputs();
+
+        dataRequestThread.start();
     }
 
     @Override
@@ -114,8 +125,45 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
-    public void sendGPSData(double centerLatitude, double centerLongitude, Map<Double, Double> points) {
-        GPSData gpsData = new GPSData(centerLatitude, centerLongitude, points);
+    Thread dataRequestThread = new Thread(() -> {
+        while (true) {
+            try {
+                Thread.sleep(1000);
+                String credentials = "admin:admin";
+                String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+
+                URL url = new URL("http://192.168.1.170:8181/sensorhub/api/datastreams/pvi6hep1h8r64/observations");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Authorization", basicAuth);
+                connection.connect();
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                response.append(System.lineSeparator());
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine).append(System.lineSeparator());
+                }
+                in.close();
+
+                points = new HashMap<>();
+                DataContainer dataContainer = DataContainer.fromJson(response.toString());
+                dataContainer.getItems().forEach(item ->
+                        item.getResult().getGpsData().forEach(gpsData ->
+                                points.put(gpsData.getLatitude(), gpsData.getLongitude())));
+
+                sendGPSData();
+
+            } catch (Exception e) {
+                logger.error("Error", e);
+            }
+        }
+    });
+
+    public void sendGPSData() {
+        GPSData gpsData = new GPSData(latitude, longitude, points);
         Task<List<Node>> nodesTask = Wearable.getNodeClient(context).getConnectedNodes();
         nodesTask.addOnSuccessListener(nodes -> {
             for (Node node : nodes) {
@@ -331,12 +379,8 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        Map<Double, Double> points = new HashMap<>();
-        points.put(34.70584046309542, -86.72904037299796);
-        points.put(34.70583880934057, -86.72894180182348);
-        points.put(34.70565799860993, -86.72904104355015);
-        points.put(34.705667921160284, -86.7289330846448);
-
-        sendGPSData(location.getLatitude(), location.getLongitude(), points);
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+        sendGPSData();
     }
 }
