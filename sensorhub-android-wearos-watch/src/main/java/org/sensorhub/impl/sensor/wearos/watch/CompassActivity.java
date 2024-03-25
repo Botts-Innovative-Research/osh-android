@@ -55,7 +55,7 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.radar);
+        setContentView(R.layout.compass);
         compassImageView = findViewById(R.id.compass);
         compassTextView = findViewById(R.id.compassText);
 
