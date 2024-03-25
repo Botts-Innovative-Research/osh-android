@@ -1,6 +1,7 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.view.MotionEvent;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,7 +42,6 @@ import java.util.List;
 public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener, LocationListener {
     ImageView compassImageView;
     TextView compassTextView;
-    int azimuth;
     boolean isZooming = false;
     float startDistance;
     float startDistancePerPixel = 1;
@@ -133,10 +134,25 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
                 float[] orientationValues = new float[3];
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
                 SensorManager.getOrientation(rotationMatrix, orientationValues);
-                azimuth = (int) Math.toDegrees(orientationValues[0]);
+                double azimuth = -Math.toDegrees(orientationValues[0]);
+                float currentRotation = compassImageView.getRotation();
 
-                // Rotate the compass image view
-                compassImageView.setRotation(-azimuth);
+                // Calculate the shortest rotation direction (clockwise or counterclockwise)
+                float rotationDifference = (float) (azimuth - currentRotation);
+                while (rotationDifference > 180)
+                    rotationDifference -= 360;
+                while (rotationDifference < -180)
+                    rotationDifference += 360;
+
+                // Rotate the compass image view smoothly
+                ValueAnimator animator = ValueAnimator.ofFloat(currentRotation, currentRotation + rotationDifference);
+                animator.setDuration(170);
+                animator.setInterpolator(new LinearInterpolator());
+                animator.addUpdateListener(animation -> {
+                    float animatedValue = (float) animation.getAnimatedValue();
+                    compassImageView.setRotation(animatedValue);
+                });
+                animator.start();
             }
         }
 
