@@ -29,6 +29,7 @@ import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 import org.sensorhub.impl.sensor.wearos.lib.data.StepsData;
 import org.sensorhub.impl.sensor.wearos.lib.data.WearOSData;
 import org.sensorhub.impl.sensor.wearos.lib.gpsdata.DataContainer;
+import org.sensorhub.impl.sensor.wearos.lib.gpsdata.GPSDataPoint;
 import org.sensorhub.impl.sensor.wearos.phone.output.CaloriesOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.DistanceOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.ElevationGainOutput;
@@ -41,10 +42,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The Wear OS driver module
@@ -59,7 +59,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     private Context context;
     private double latitude;
     private double longitude;
-    Map<Double, Double> points = new HashMap<>();
+    List<GPSDataPoint> points = new ArrayList<>();
 
     @Override
     public boolean isConnected() {
@@ -132,7 +132,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
                 String credentials = "admin:admin";
                 String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
 
-                URL url = new URL("http://192.168.1.170:8181/sensorhub/api/datastreams/pvi6hep1h8r64/observations");
+                URL url = new URL("http://192.168.1.170:8181/sensorhub/api/datastreams/ngq04a3rhffjg/observations");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -148,14 +148,13 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
                 }
                 in.close();
 
-                points = new HashMap<>();
+                points = new ArrayList<>();
                 DataContainer dataContainer = DataContainer.fromJson(response.toString());
                 dataContainer.getItems().forEach(item ->
-                        item.getResult().getGpsData().forEach(gpsData ->
-                                points.put(gpsData.getLatitude(), gpsData.getLongitude())));
+                        item.getResult().getGpsDataPoint().forEach(gpsData ->
+                                points.add(new GPSDataPoint(gpsData.getLatitude(), gpsData.getLongitude(), gpsData.getColor()))));
 
                 sendGPSData();
-
             } catch (Exception e) {
                 logger.error("Error", e);
             }

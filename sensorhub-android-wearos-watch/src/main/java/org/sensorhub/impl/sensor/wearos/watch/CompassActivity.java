@@ -33,11 +33,11 @@ import com.google.android.gms.wearable.Wearable;
 
 import org.sensorhub.impl.sensor.wearos.lib.Constants;
 import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
+import org.sensorhub.impl.sensor.wearos.lib.gpsdata.GPSDataPoint;
 
-import java.util.Map;
+import java.util.List;
 
 public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener, LocationListener {
-    private static final String TAG = "CompassActivity";
     ImageView compassImageView;
     TextView compassTextView;
     int azimuth;
@@ -47,7 +47,7 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     float distancePerPixel = 1;
     double centerLatitude = 0;
     double centerLongitude = 0;
-    Map<Double, Double> points;
+    List<GPSDataPoint> points;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -178,17 +178,17 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         compassTextView.setText(getResources().getString(R.string.compassZoom, (int) (bitmap.getWidth() / 4d * distancePerPixel)));
 
         // Draw the points
-        paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.FILL);
-        for (Map.Entry<Double, Double> entry : points.entrySet()) {
-            double latitude = entry.getKey();
-            double longitude = entry.getValue();
+        for (GPSDataPoint point : points) {
+            double latitude = point.getLatitude();
+            double longitude = point.getLongitude();
             double latitudeDistance = calculateLatitudeDistance(centerLatitude, latitude);
             double longitudeDistance = calculateLongitudeDistance(centerLongitude, longitude, centerLatitude);
             double distance = Math.sqrt(Math.pow(latitudeDistance, 2) + Math.pow(longitudeDistance, 2));
             double angle = Math.toDegrees(Math.atan2(longitudeDistance, latitudeDistance));
             float x = (float) (centerX + (distance / distancePerPixel) * Math.sin(Math.toRadians(angle)));
             float y = (float) (centerY - (distance / distancePerPixel) * Math.cos(Math.toRadians(angle)));
+            paint.setColor(parseColor(point.getColor()));
             canvas.drawCircle(x, y, radius, paint);
         }
 
@@ -211,5 +211,22 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     public void onLocationChanged(@NonNull Location location) {
         centerLatitude = location.getLatitude();
         centerLongitude = location.getLongitude();
+    }
+
+    private int parseColor(String colorString) {
+        if (colorString == null || colorString.isEmpty()) {
+            colorString = "B30000"; // Slightly darker red
+        }
+
+        try {
+            int colorInt = Color.parseColor(colorString);
+            // These colors wouldn't be visible on the compass
+            if (colorInt == Color.TRANSPARENT || colorInt == Color.BLACK || Color.alpha(colorInt) == 0) {
+                return Color.DKGRAY;
+            }
+            return colorInt;
+        } catch (IllegalArgumentException e) {
+            return Color.GRAY;
+        }
     }
 }

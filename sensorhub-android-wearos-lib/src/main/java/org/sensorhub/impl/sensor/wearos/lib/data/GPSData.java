@@ -2,14 +2,16 @@ package org.sensorhub.impl.sensor.wearos.lib.data;
 
 import com.google.gson.Gson;
 
-import java.util.Map;
+import org.sensorhub.impl.sensor.wearos.lib.gpsdata.GPSDataPoint;
+
+import java.util.List;
 
 public class GPSData {
     private final double centerLatitude;
     private final double centerLongitude;
-    private final Map<Double, Double> points;
+    private final List<GPSDataPoint> points;
 
-    public GPSData(double centerLatitude, double centerLongitude, Map<Double, Double> points) {
+    public GPSData(double centerLatitude, double centerLongitude, List<GPSDataPoint> points) {
         this.centerLatitude = centerLatitude;
         this.centerLongitude = centerLongitude;
         this.points = points;
@@ -57,7 +59,7 @@ public class GPSData {
      *
      * @return The points.
      */
-    public Map<Double, Double> getPoints() {
+    public List<GPSDataPoint> getPoints() {
         return points;
     }
 }

@@ -1,8 +1,8 @@
 package org.sensorhub.impl.sensor.wearos.lib.gpsdata;
 
-import com.google.gson.Gson;
+import androidx.annotation.NonNull;
 
-import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
+import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -14,6 +14,7 @@ public class DataContainer {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "DataContainer{" +
                 "items=" + items +

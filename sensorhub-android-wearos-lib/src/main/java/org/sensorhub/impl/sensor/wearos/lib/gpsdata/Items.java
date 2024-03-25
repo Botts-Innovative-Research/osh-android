@@ -1,6 +1,6 @@
 package org.sensorhub.impl.sensor.wearos.lib.gpsdata;
 
-import com.google.gson.Gson;
+import androidx.annotation.NonNull;
 
 public class Items {
     private final String id;
@@ -18,6 +18,7 @@ public class Items {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "Items{" +
                 "id='" + id + '\'' +
@@ -44,6 +45,11 @@ public class Items {
         return resultTime;
     }
 
+    /**
+     * Returns the Result object, which contains the actual data.
+     *
+     * @return The Result object.
+     */
     public Result getResult() {
         return result;
     }
