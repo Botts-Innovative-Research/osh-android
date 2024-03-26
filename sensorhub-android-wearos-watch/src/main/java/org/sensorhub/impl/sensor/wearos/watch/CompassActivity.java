@@ -119,8 +119,10 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
             byte[] data = messageEvent.getData();
             String message = new String(data);
             GPSData gpsData = GPSData.fromJSon(message);
-            centerLatitude = gpsData.getCenterLatitude();
-            centerLongitude = gpsData.getCenterLongitude();
+            if (gpsData.getCenterLatitude() != 0 && gpsData.getCenterLongitude() != 0) {
+                centerLatitude = gpsData.getCenterLatitude();
+                centerLongitude = gpsData.getCenterLongitude();
+            }
             points = gpsData.getPoints();
             drawPoints();
         }
