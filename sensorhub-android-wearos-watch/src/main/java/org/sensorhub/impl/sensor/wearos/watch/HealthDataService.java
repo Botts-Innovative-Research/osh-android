@@ -44,6 +44,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Service that monitors health data and sends it to the phone.
+ * The service is started when the watch is booted and runs in the background.
+ */
 public class HealthDataService extends Service implements PassiveListenerCallback {
     private static final String TAG = HealthDataService.class.getSimpleName();
     private static final DataType<?, ?> elevationGainDailyType = new DeltaDataType<>("Daily Elevation Gain", DataType.TimeType.INTERVAL, double.class);
@@ -51,12 +55,23 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
     private final ArrayList<Consumer<HealthDataEventArgs>> eventHandlers = new ArrayList<>();
     private Set<DataType<?, ?>> supportedDataTypes;
 
+    /**
+     * Called when the service is started.
+     *
+     * @param intent  The intent that was used to start the service.
+     * @param flags   Flags indicating how the service was started.
+     * @param startId The start ID of the service.
+     * @return The service's start mode.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startMonitoring();
         return Service.START_STICKY;
     }
 
+    /**
+     * Called when the service is created.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -77,6 +92,12 @@ public class HealthDataService extends Service implements PassiveListenerCallbac
         startForeground(1, notification);
     }
 
+    /**
+     * Called when the service is bound to an activity.
+     *
+     * @param intent The intent that was used to bind the service.
+     * @return The binder for the service.
+     */
     @Override
     public IBinder onBind(Intent intent) {
         return binder;

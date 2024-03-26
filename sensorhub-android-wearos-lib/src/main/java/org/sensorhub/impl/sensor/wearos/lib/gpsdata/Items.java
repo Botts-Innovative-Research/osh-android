@@ -29,22 +29,6 @@ public class Items {
                 '}';
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getDatastreamId() {
-        return datastreamId;
-    }
-
-    public String getPhenomenonTime() {
-        return phenomenonTime;
-    }
-
-    public String getResultTime() {
-        return resultTime;
-    }
-
     /**
      * Returns the Result object, which contains the actual data.
      *

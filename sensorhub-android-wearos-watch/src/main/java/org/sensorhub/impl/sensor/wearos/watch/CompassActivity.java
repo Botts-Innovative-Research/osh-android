@@ -2,7 +2,6 @@ package org.sensorhub.impl.sensor.wearos.watch;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -39,6 +38,10 @@ import org.sensorhub.impl.sensor.wearos.lib.gpsdata.GPSDataPoint;
 
 import java.util.List;
 
+/**
+ * The compass activity displays a compass image view that rotates based on the device's orientation.
+ * The compass image view also displays points around a center point based on GPS data received from the handheld device.
+ */
 public class CompassActivity extends Activity implements MessageClient.OnMessageReceivedListener, LocationListener {
     ImageView compassImageView;
     TextView compassTextView;
@@ -50,7 +53,11 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     double centerLongitude = 0;
     List<GPSDataPoint> points;
 
-    @SuppressLint("ClickableViewAccessibility")
+    /**
+     * Called when the activity is created.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +83,12 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         }
     }
 
+    /**
+     * Handle touch events on the compass image view.
+     *
+     * @param event the motion event
+     * @return true if the event was handled, false otherwise
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
@@ -107,12 +120,23 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         return super.onTouchEvent(event);
     }
 
+    /**
+     * Calculate the distance between two fingers.
+     *
+     * @param event the motion event
+     * @return the distance between two fingers
+     */
     private float getFingerSpacing(MotionEvent event) {
         float x = event.getX(0) - event.getX(1);
         float y = event.getY(0) - event.getY(1);
         return (float) Math.sqrt(x * x + y * y);
     }
 
+    /**
+     * Called when a message is received from the handheld device.
+     *
+     * @param messageEvent the received message event
+     */
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(Constants.GPS_DATA_PATH)) {
@@ -128,6 +152,10 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         }
     }
 
+    /**
+     * The sensor event listener for the rotation vector sensor.
+     * This listener is used to rotate the compass image view based on the device's orientation.
+     */
     private final SensorEventListener sensorEventListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -213,24 +241,50 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
         compassImageView.setImageBitmap(bitmap);
     }
 
-    public static double calculateLatitudeDistance(double lat1, double lat2) {
+    /**
+     * Calculate the distance in meters between two latitudes.
+     *
+     * @param latitude1 The first latitude in degrees.
+     * @param latitude2 The second latitude in degrees.
+     * @return The distance in meters.
+     */
+    public static double calculateLatitudeDistance(double latitude1, double latitude2) {
         final double earthRadius = 6371000;
-        double deltaPhi = Math.toRadians(lat2 - lat1);
+        double deltaPhi = Math.toRadians(latitude2 - latitude1);
         return deltaPhi * earthRadius;
     }
 
-    public static double calculateLongitudeDistance(double lon1, double lon2, double avgLat) {
+    /**
+     * Calculate the distance in meters between two longitudes.
+     *
+     * @param longitude1      The first longitude in degrees.
+     * @param longitude2      The second longitude in degrees.
+     * @param averageLatitude The average latitude in degrees.
+     * @return The distance in meters.
+     */
+    public static double calculateLongitudeDistance(double longitude1, double longitude2, double averageLatitude) {
         final double earthRadius = 6371000;
-        double deltaLambda = Math.toRadians(lon2 - lon1);
-        return deltaLambda * earthRadius * Math.cos(Math.toRadians(avgLat));
+        double deltaLambda = Math.toRadians(longitude2 - longitude1);
+        return deltaLambda * earthRadius * Math.cos(Math.toRadians(averageLatitude));
     }
 
+    /**
+     * Called when the location has changed.
+     *
+     * @param location the updated location
+     */
     @Override
     public void onLocationChanged(@NonNull Location location) {
         centerLatitude = location.getLatitude();
         centerLongitude = location.getLongitude();
     }
 
+    /**
+     * Parse a color string to an integer.
+     *
+     * @param colorString The color string to parse. If null or empty, a default color is used.
+     * @return The color integer.
+     */
     private int parseColor(String colorString) {
         if (colorString == null || colorString.isEmpty()) {
             colorString = "B30000"; // Slightly darker red

@@ -62,11 +62,6 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     List<GPSDataPoint> points = new ArrayList<>();
 
     @Override
-    public boolean isConnected() {
-        return true;
-    }
-
-    @Override
     public void doInit() {
         generateUniqueID("urn:rsi:wearos:", config.getDeviceName());
         generateXmlID("wear-os_", config.getDeviceName());
@@ -98,6 +93,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         Wearable.getMessageClient(context).removeListener(this);
     }
 
+    @Override
+    public boolean isConnected() {
+        return true;
+    }
+
     /**
      * Called when a message is received from the Wear OS device
      *
@@ -125,6 +125,9 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Thread to request GPS data from an OpenSensorHub node
+     */
     Thread dataRequestThread = new Thread(() -> {
         while (true) {
             try {
@@ -161,6 +164,9 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     });
 
+    /**
+     * Send the GPS data to the Wear OS device
+     */
     public void sendGPSData() {
         GPSData gpsData = new GPSData(latitude, longitude, points);
         Task<List<Node>> nodesTask = Wearable.getNodeClient(context).getConnectedNodes();
@@ -376,6 +382,11 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
     }
 
+    /**
+     * Called when the location has changed
+     *
+     * @param location The new location
+     */
     @Override
     public void onLocationChanged(@NonNull Location location) {
         latitude = location.getLatitude();

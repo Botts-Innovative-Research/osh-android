@@ -21,14 +21,21 @@ public class DataContainer {
                 '}';
     }
 
-    public String toJson() {
-        return new Gson().toJson(this);
-    }
-
+    /**
+     * Create a DataContainer object from a JSON string
+     *
+     * @param json the JSON string
+     * @return the DataContainer object
+     */
     public static DataContainer fromJson(String json) {
         return new Gson().fromJson(json, DataContainer.class);
     }
 
+    /**
+     * Get the list of items
+     *
+     * @return the list of items
+     */
     public List<Items> getItems() {
         return items;
     }

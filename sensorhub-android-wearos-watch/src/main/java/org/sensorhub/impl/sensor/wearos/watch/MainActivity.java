@@ -28,6 +28,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * This class is the main activity for the Wear OS watch app.
+ * It is responsible for handling the UI and the communication with the phone app.
+ */
 public class MainActivity extends Activity implements MessageClient.OnMessageReceivedListener, ServiceConnection {
     private static final int PERMISSIONS_REQUEST_BODY_SENSORS = 1;
     Date lastConfirmationDate = new Date(0);
