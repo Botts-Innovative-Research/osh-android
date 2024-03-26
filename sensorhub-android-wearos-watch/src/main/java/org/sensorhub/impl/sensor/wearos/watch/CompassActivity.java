@@ -287,7 +287,7 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
      */
     private int parseColor(String colorString) {
         if (colorString == null || colorString.isEmpty()) {
-            colorString = "B30000"; // Slightly darker red
+            colorString = "#B30000"; // Slightly darker red
         }
 
         try {
