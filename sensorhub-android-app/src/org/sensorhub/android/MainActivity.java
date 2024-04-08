@@ -411,6 +411,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     enabledOutputs.contains(getResources().getString(R.string.wearos_floors)),
                     enabledOutputs.contains(getResources().getString(R.string.wearos_steps)),
                     enabledOutputs.contains(getResources().getString(R.string.wearos_distance)));
+            config.gpsDataLocation.gpsHost = prefs.getString("wearos_address", null);
+            config.gpsDataLocation.user = prefs.getString("wearos_user", null);
+            config.gpsDataLocation.password = prefs.getString("wearos_password", null);
             config.id = "WEAROS_DRIVER";
             config.name = "Wear OS [" + deviceName + "]";
             config.autoStart = true;

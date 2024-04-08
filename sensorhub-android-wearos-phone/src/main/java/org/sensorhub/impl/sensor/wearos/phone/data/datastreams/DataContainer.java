@@ -1,6 +1,4 @@
-package org.sensorhub.impl.sensor.wearos.lib.gpsdata;
-
-import androidx.annotation.NonNull;
+package org.sensorhub.impl.sensor.wearos.phone.data.datastreams;
 
 import com.google.gson.Gson;
 
@@ -14,7 +12,6 @@ public class DataContainer {
     }
 
     @Override
-    @NonNull
     public String toString() {
         return "DataContainer{" +
                 "items=" + items +

@@ -1,40 +1,42 @@
-package org.sensorhub.impl.sensor.wearos.lib.gpsdata;
-
-import androidx.annotation.NonNull;
+package org.sensorhub.impl.sensor.wearos.phone.data.observations;
 
 public class Items {
     private final String id;
-    private final String datastreamId;
     private final String phenomenonTime;
     private final String resultTime;
-    private final Result result;
+    private final Object result;
 
-    public Items(String id, String datastreamId, String phenomenonTime, String resultTime, Result result) {
+    public Items(String id, String phenomenonTime, String resultTime, String result) {
         this.id = id;
-        this.datastreamId = datastreamId;
         this.phenomenonTime = phenomenonTime;
         this.resultTime = resultTime;
         this.result = result;
     }
 
     @Override
-    @NonNull
     public String toString() {
         return "Items{" +
                 "id='" + id + '\'' +
-                ", datastreamId='" + datastreamId + '\'' +
                 ", phenomenonTime='" + phenomenonTime + '\'' +
                 ", resultTime='" + resultTime + '\'' +
                 ", result=" + result +
                 '}';
     }
 
-    /**
-     * Returns the Result object, which contains the actual data.
-     *
-     * @return The Result object.
-     */
-    public Result getResult() {
+    public String getId() {
+        return id;
+    }
+
+    public String getPhenomenonTime() {
+        return phenomenonTime;
+    }
+
+    public String getResultTime() {
+        return resultTime;
+    }
+
+    public Object getResult() {
         return result;
     }
+
 }

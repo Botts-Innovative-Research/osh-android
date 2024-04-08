@@ -1,14 +1,16 @@
-package org.sensorhub.impl.sensor.wearos.lib.gpsdata;
+package org.sensorhub.impl.sensor.wearos.lib.data;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.Gson;
+
 import java.util.List;
 
-public class Result {
+public class GPSFixedLocationResult {
     private final int gpsDataCount;
     private final List<GPSDataPoint> gpsDataPoint;
 
-    public Result(int gpsDataCount, List<GPSDataPoint> gpsDataPoint) {
+    public GPSFixedLocationResult(int gpsDataCount, List<GPSDataPoint> gpsDataPoint) {
         this.gpsDataCount = gpsDataCount;
         this.gpsDataPoint = gpsDataPoint;
     }
@@ -29,5 +31,9 @@ public class Result {
      */
     public List<GPSDataPoint> getGpsDataPoint() {
         return gpsDataPoint;
+    }
+
+    public static GPSFixedLocationResult fromJson(String json) {
+        return new Gson().fromJson(json, GPSFixedLocationResult.class);
     }
 }

@@ -34,7 +34,7 @@ import com.google.android.gms.wearable.Wearable;
 
 import org.sensorhub.impl.sensor.wearos.lib.Constants;
 import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
-import org.sensorhub.impl.sensor.wearos.lib.gpsdata.GPSDataPoint;
+import org.sensorhub.impl.sensor.wearos.lib.data.GPSDataPoint;
 
 import java.util.List;
 

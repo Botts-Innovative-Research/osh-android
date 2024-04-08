@@ -1,5 +1,6 @@
 package org.sensorhub.impl.sensor.wearos.phone;
 
+import org.sensorhub.api.config.DisplayInfo;
 import org.sensorhub.api.sensor.SensorConfig;
 import org.sensorhub.impl.sensor.wearos.lib.Outputs;
 
@@ -41,4 +42,8 @@ public class WearOSConfig extends SensorConfig {
     public Outputs getOutputs() {
         return this.outputs;
     }
+
+    @DisplayInfo.Required
+    @DisplayInfo(label = "GPS Data Location", desc = "Location to pull GPS data from")
+    public WearOSConfigGPSDataLocation gpsDataLocation = new WearOSConfigGPSDataLocation();
 }

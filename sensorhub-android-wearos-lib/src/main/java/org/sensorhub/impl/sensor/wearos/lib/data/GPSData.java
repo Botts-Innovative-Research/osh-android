@@ -2,7 +2,6 @@ package org.sensorhub.impl.sensor.wearos.lib.data;
 
 import com.google.gson.Gson;
 
-import org.sensorhub.impl.sensor.wearos.lib.gpsdata.GPSDataPoint;
 
 import java.util.List;
 

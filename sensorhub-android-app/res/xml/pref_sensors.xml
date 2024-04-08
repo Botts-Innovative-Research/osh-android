@@ -240,5 +240,24 @@
             android:entryValues="@array/wearos_output_values"
             android:defaultValue="@array/wearos_output_defaults" />
 
+        <EditTextPreference
+            android:defaultValue="http://192.168.1.1:8181/sensorhub/api"
+            android:key="wearos_address"
+            android:singleLine="true"
+            android:title="Remote Host"/>
+
+        <EditTextPreference
+            android:defaultValue="admin"
+            android:key="wearos_user"
+            android:singleLine="true"
+            android:title="User Name"/>
+
+        <EditTextPreference
+            android:defaultValue="admin"
+            android:inputType="textPassword"
+            android:key="wearos_password"
+            android:singleLine="true"
+            android:title="Password" />
+
     </PreferenceCategory>
 </PreferenceScreen>

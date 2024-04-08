@@ -1,6 +1,8 @@
-package org.sensorhub.impl.sensor.wearos.lib.gpsdata;
+package org.sensorhub.impl.sensor.wearos.lib.data;
 
 import androidx.annotation.NonNull;
+
+import com.google.gson.Gson;
 
 public class GPSDataPoint {
     private final double latitude;
