@@ -404,7 +404,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 enabledOutputs = new HashSet<>();
             }
 
-            WearOSConfig config = new WearOSConfig(deviceName,
+            WearOSConfig config = new WearOSConfig(deviceName, deviceID,
                     enabledOutputs.contains(getResources().getString(R.string.wearos_heartRate)),
                     enabledOutputs.contains(getResources().getString(R.string.wearos_elevationGain)),
                     enabledOutputs.contains(getResources().getString(R.string.wearos_calories)),

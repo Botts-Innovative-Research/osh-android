@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The Wear OS driver module
@@ -389,7 +390,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
 
         List<SystemsItems> items = getGetSystems();
         for (SystemsItems item : items) {
-            if (item.getProperties().getUid().startsWith("urn:android:device:")) {
+            if (item.getProperties().getUid().startsWith("urn:android:device:") && !Objects.equals(item.getProperties().getUid(), "urn:android:device:" + config.getDeviceID())) {
                 List<DataStreamItems> dataStreams = getGetDataStreams(item.getId());
                 for (DataStreamItems dataStream : dataStreams) {
                     if (dataStream.getOutputName().equals("gps_data")) {
