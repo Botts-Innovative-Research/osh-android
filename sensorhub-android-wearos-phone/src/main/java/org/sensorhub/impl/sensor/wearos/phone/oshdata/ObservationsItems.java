@@ -1,14 +1,14 @@
-package org.sensorhub.impl.sensor.wearos.phone.data.observations;
+package org.sensorhub.impl.sensor.wearos.phone.oshdata;
 
 import androidx.annotation.NonNull;
 
-public class Items {
+public class ObservationsItems {
     private final String id;
     private final String phenomenonTime;
     private final String resultTime;
     private final Object result;
 
-    public Items(String id, String phenomenonTime, String resultTime, String result) {
+    public ObservationsItems(String id, String phenomenonTime, String resultTime, Object result) {
         this.id = id;
         this.phenomenonTime = phenomenonTime;
         this.resultTime = resultTime;
@@ -41,5 +41,4 @@ public class Items {
     public Object getResult() {
         return result;
     }
-
 }

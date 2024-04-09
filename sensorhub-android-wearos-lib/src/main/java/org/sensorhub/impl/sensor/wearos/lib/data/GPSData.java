@@ -2,7 +2,6 @@ package org.sensorhub.impl.sensor.wearos.lib.data;
 
 import com.google.gson.Gson;
 
-
 import java.util.List;
 
 public class GPSData {
@@ -21,7 +20,7 @@ public class GPSData {
      *
      * @return The JSON string.
      */
-    public String toJSon() {
+    public String toJson() {
         return new Gson().toJson(this);
     }
 
@@ -31,7 +30,7 @@ public class GPSData {
      * @param json The JSON string.
      * @return The GPSData object.
      */
-    public static GPSData fromJSon(String json) {
+    public static GPSData fromJson(String json) {
         return new Gson().fromJson(json, GPSData.class);
     }
 

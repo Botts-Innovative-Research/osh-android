@@ -1,16 +1,16 @@
-package org.sensorhub.impl.sensor.wearos.phone.data.systems;
+package org.sensorhub.impl.sensor.wearos.phone.oshdata;
 
 import androidx.annotation.NonNull;
 
 import java.util.Arrays;
 
-public class Properties {
+public class SystemsProperties {
     private final String uid;
     private final String featureType;
     private final String name;
     private final String[] validTime;
 
-    public Properties(String uid, String featureType, String name, String[] validTime) {
+    public SystemsProperties(String uid, String featureType, String name, String[] validTime) {
         this.uid = uid;
         this.featureType = featureType;
         this.name = name;

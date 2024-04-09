@@ -92,7 +92,7 @@ public class Outputs {
      *
      * @return JSON string
      */
-    public String toJSon() {
+    public String toJson() {
         return new Gson().toJson(this);
     }
 
@@ -102,7 +102,7 @@ public class Outputs {
      * @param json JSON string
      * @return Outputs object
      */
-    public static Outputs fromJSon(String json) {
+    public static Outputs fromJson(String json) {
         return new Gson().fromJson(json, Outputs.class);
     }
 }

@@ -91,7 +91,7 @@ public class MainActivity extends Activity implements MessageClient.OnMessageRec
             byte[] data = messageEvent.getData();
             String message = new String(data);
 
-            Outputs outputs = Outputs.fromJSon(message);
+            Outputs outputs = Outputs.fromJson(message);
             boolean changed = (outputs.getEnableHeartRate() != PreferencesManager.getEnableHeartRate(this))
                     || (outputs.getEnableCalories() != PreferencesManager.getEnableCalories(this))
                     || (outputs.getEnableDistance() != PreferencesManager.getEnableDistance(this))

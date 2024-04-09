@@ -1,13 +1,13 @@
-package org.sensorhub.impl.sensor.wearos.phone.data.systems;
+package org.sensorhub.impl.sensor.wearos.phone.oshdata;
 
 import androidx.annotation.NonNull;
 
-public class Items {
+public class SystemsItems {
     private final String type;
     private final String id;
-    private final Properties properties;
+    private final SystemsProperties properties;
 
-    public Items(String type, String id, Properties properties) {
+    public SystemsItems(String type, String id, SystemsProperties properties) {
         this.type = type;
         this.id = id;
         this.properties = properties;
@@ -31,7 +31,7 @@ public class Items {
         return id;
     }
 
-    public Properties getProperties() {
+    public SystemsProperties getProperties() {
         return properties;
     }
 }

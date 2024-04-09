@@ -643,7 +643,7 @@ public class WearOSData {
      * @param json The JSON string.
      * @return The WearOSData object.
      */
-    public static WearOSData fromJSon(String json) {
+    public static WearOSData fromJson(String json) {
         return new Gson().fromJson(json, WearOSData.class);
     }
 }
