@@ -504,7 +504,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         return Collections.emptyList();
     }
 
-    private List<String> getObservationsJSon(String datastreamID) {
+    private List<String> getObservationsJSon(String dataStreamID) {
         List<String> observations = new ArrayList<>();
 
         try {
@@ -512,7 +512,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
             if (auth == null)
                 return Collections.emptyList();
 
-            URL url = new URL(config.gpsDataLocation.gpsHost + "/datastreams/" + datastreamID + "/observations?f=application%2Fjson");
+            URL url = new URL(config.gpsDataLocation.gpsHost + "/datastreams/" + dataStreamID + "/observations?f=application%2Fjson");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
