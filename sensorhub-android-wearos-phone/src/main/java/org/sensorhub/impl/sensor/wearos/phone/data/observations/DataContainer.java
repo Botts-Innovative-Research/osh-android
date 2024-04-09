@@ -1,5 +1,7 @@
 package org.sensorhub.impl.sensor.wearos.phone.data.observations;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.Gson;
 
 import java.util.List;
@@ -12,6 +14,7 @@ public class DataContainer {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "DataContainer{" +
                 "items=" + items +

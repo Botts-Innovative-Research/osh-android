@@ -1,5 +1,9 @@
 package org.sensorhub.impl.sensor.wearos.phone.data.datastreams;
 
+import androidx.annotation.NonNull;
+
+import java.util.Arrays;
+
 public class Items {
     private final String id;
     private final String name;
@@ -14,12 +18,13 @@ public class Items {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "Items{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", outputName='" + outputName + '\'' +
-                ", validTime=" + validTime +
+                ", validTime=" + Arrays.toString(validTime) +
                 '}';
     }
 

@@ -1,5 +1,7 @@
 package org.sensorhub.impl.sensor.wearos.phone.data.systems;
 
+import androidx.annotation.NonNull;
+
 public class Items {
     private final String type;
     private final String id;
@@ -12,6 +14,7 @@ public class Items {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "Items{" +
                 "type='" + type + '\'' +

@@ -1,5 +1,7 @@
 package org.sensorhub.impl.sensor.wearos.phone.data.observations;
 
+import androidx.annotation.NonNull;
+
 public class Items {
     private final String id;
     private final String phenomenonTime;
@@ -14,6 +16,7 @@ public class Items {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "Items{" +
                 "id='" + id + '\'' +

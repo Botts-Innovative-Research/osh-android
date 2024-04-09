@@ -1,5 +1,9 @@
 package org.sensorhub.impl.sensor.wearos.phone.data.systems;
 
+import androidx.annotation.NonNull;
+
+import java.util.Arrays;
+
 public class Properties {
     private final String uid;
     private final String featureType;
@@ -11,6 +15,17 @@ public class Properties {
         this.featureType = featureType;
         this.name = name;
         this.validTime = validTime;
+    }
+
+    @Override
+    @NonNull
+    public String toString() {
+        return "Properties{" +
+                "uid='" + uid + '\'' +
+                ", featureType='" + featureType + '\'' +
+                ", name='" + name + '\'' +
+                ", validTime=" + Arrays.toString(validTime) +
+                '}';
     }
 
     public String getUid() {
