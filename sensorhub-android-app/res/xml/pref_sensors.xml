@@ -244,19 +244,22 @@
             android:defaultValue="http://192.168.1.1:8181/sensorhub/api"
             android:key="wearos_address"
             android:singleLine="true"
-            android:title="Remote Host"/>
+            android:summary="URL of the OSH node to poll for Android GPS Data (optional)"
+            android:title="Remote Host" />
 
         <EditTextPreference
-            android:defaultValue="admin"
+            android:defaultValue=""
             android:key="wearos_user"
             android:singleLine="true"
-            android:title="User Name"/>
+            android:summary="User name for the remote host"
+            android:title="User Name" />
 
         <EditTextPreference
-            android:defaultValue="admin"
+            android:defaultValue=""
             android:inputType="textPassword"
             android:key="wearos_password"
             android:singleLine="true"
+            android:summary="Password for the remote host"
             android:title="Password" />
 
     </PreferenceCategory>
