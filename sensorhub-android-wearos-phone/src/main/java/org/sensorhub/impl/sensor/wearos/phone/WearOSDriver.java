@@ -97,6 +97,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     @Override
     public void doStop() {
         Wearable.getMessageClient(context).removeListener(this);
+        dataRequestThread.interrupt();
     }
 
     @Override
