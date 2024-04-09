@@ -31,7 +31,6 @@ import org.sensorhub.impl.sensor.wearos.lib.data.GPSDataPoint;
 import org.sensorhub.impl.sensor.wearos.lib.data.GPSFixedLocationResult;
 import org.sensorhub.impl.sensor.wearos.lib.data.StepsData;
 import org.sensorhub.impl.sensor.wearos.lib.data.WearOSData;
-import org.sensorhub.impl.sensor.wearos.phone.oshdata.DataContainer;
 import org.sensorhub.impl.sensor.wearos.phone.oshdata.DataStreamItems;
 import org.sensorhub.impl.sensor.wearos.phone.oshdata.ObservationsItems;
 import org.sensorhub.impl.sensor.wearos.phone.oshdata.SystemsItems;
@@ -42,14 +41,9 @@ import org.sensorhub.impl.sensor.wearos.phone.output.FloorsOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.HeartRateOutput;
 import org.sensorhub.impl.sensor.wearos.phone.output.StepsOutput;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,7 +60,8 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     private Context context;
     private double latitude;
     private double longitude;
-    List<GPSDataPoint> points = new ArrayList<>();
+    private List<GPSDataPoint> points = new ArrayList<>();
+    private String auth;
 
     @Override
     public void doInit() {
@@ -91,6 +86,10 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
         }
 
         broadcastEnabledOutputs();
+
+        if (config.gpsDataLocation.user != null && config.gpsDataLocation.password != null) {
+            auth = "Basic " + Base64.getEncoder().encodeToString((config.gpsDataLocation.user + ":" + config.gpsDataLocation.password).getBytes());
+        }
 
         dataRequestThread.start();
     }
@@ -388,20 +387,24 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     private List<GPSDataPoint> getAndroidLocationData() {
         List<GPSDataPoint> locationData = new ArrayList<>();
 
-        List<SystemsItems> items = getGetSystems();
-        for (SystemsItems item : items) {
-            if (item.getProperties().getUid().startsWith("urn:android:device:") && !Objects.equals(item.getProperties().getUid(), "urn:android:device:" + config.getDeviceID())) {
-                List<DataStreamItems> dataStreams = getGetDataStreams(item.getId());
-                for (DataStreamItems dataStream : dataStreams) {
-                    if (dataStream.getOutputName().equals("gps_data")) {
-                        List<String> observations = getObservationsJSon(dataStream.getId());
-                        for (String observation : observations) {
-                            GPSAndroidLocationResult data = GPSAndroidLocationResult.fromJson(observation);
-                            locationData.add(new GPSDataPoint(data.getLat(), data.getLon(), "blue"));
+        try {
+            List<SystemsItems> items = SystemsItems.getGetSystems(auth, config.gpsDataLocation.gpsHost);
+            for (SystemsItems item : items) {
+                if (item.getProperties().getUid().startsWith("urn:android:device:") && !Objects.equals(item.getProperties().getUid(), "urn:android:device:" + config.getDeviceID())) {
+                    List<DataStreamItems> dataStreams = DataStreamItems.getGetDataStreams(auth, config.gpsDataLocation.gpsHost, item.getId());
+                    for (DataStreamItems dataStream : dataStreams) {
+                        if (dataStream.getOutputName().equals("gps_data")) {
+                            List<String> observations = ObservationsItems.getObservationsJSon(auth, config.gpsDataLocation.gpsHost, dataStream.getId());
+                            for (String observation : observations) {
+                                GPSAndroidLocationResult data = GPSAndroidLocationResult.fromJson(observation);
+                                locationData.add(new GPSDataPoint(data.getLat(), data.getLon(), "blue"));
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            logger.error("Error in getAndroidLocationData", e);
         }
 
         return locationData;
@@ -415,131 +418,26 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
     private List<GPSDataPoint> getFixedLocationData() {
         List<GPSDataPoint> locationData = new ArrayList<>();
 
-        List<SystemsItems> items = getGetSystems();
-        for (SystemsItems item : items) {
-            if (item.getProperties().getUid().startsWith("wearos_gps_data_")) {
-                List<DataStreamItems> dataStreams = getGetDataStreams(item.getId());
-                for (DataStreamItems dataStream : dataStreams) {
-                    if (dataStream.getOutputName().equals("GPSDataOutput")) {
-                        List<String> observations = getObservationsJSon(dataStream.getId());
-                        for (String observation : observations) {
-                            GPSFixedLocationResult data = GPSFixedLocationResult.fromJson(observation);
-                            locationData.addAll(data.getGpsDataPoint());
+        try {
+            List<SystemsItems> items = SystemsItems.getGetSystems(auth, config.gpsDataLocation.gpsHost);
+            for (SystemsItems item : items) {
+                if (item.getProperties().getUid().startsWith("wearos_gps_data_")) {
+                    List<DataStreamItems> dataStreams = DataStreamItems.getGetDataStreams(auth, config.gpsDataLocation.gpsHost, item.getId());
+                    for (DataStreamItems dataStream : dataStreams) {
+                        if (dataStream.getOutputName().equals("GPSDataOutput")) {
+                            List<String> observations = ObservationsItems.getObservationsJSon(auth, config.gpsDataLocation.gpsHost, dataStream.getId());
+                            for (String observation : observations) {
+                                GPSFixedLocationResult data = GPSFixedLocationResult.fromJson(observation);
+                                locationData.addAll(data.getGpsDataPoint());
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            logger.error("Error in getFixedLocationData", e);
         }
 
         return locationData;
-    }
-
-    private String getAuth() {
-        if (config.gpsDataLocation.user == null || config.gpsDataLocation.password == null) {
-            return null;
-        }
-        return "Basic " + Base64.getEncoder().encodeToString((config.gpsDataLocation.user + ":" + config.gpsDataLocation.password).getBytes());
-    }
-
-    private List<SystemsItems> getGetSystems() {
-        try {
-            String auth = getAuth();
-            if (auth == null)
-                return Collections.emptyList();
-
-            URL url = new URL(config.gpsDataLocation.gpsHost + "/systems?f=application%2Fjson");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", auth);
-            connection.connect();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            response.append(System.lineSeparator());
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine).append(System.lineSeparator());
-            }
-            in.close();
-            connection.disconnect();
-
-            DataContainer<SystemsItems> dataContainer = DataContainer.fromJson(response.toString(), SystemsItems.class);
-            return dataContainer.getItems();
-        } catch (Exception e) {
-            logger.error("Error in getGetSystems:", e);
-        }
-
-        return Collections.emptyList();
-    }
-
-    private List<DataStreamItems> getGetDataStreams(String systemID) {
-        try {
-            String auth = getAuth();
-            if (auth == null)
-                return Collections.emptyList();
-
-            URL url = new URL(config.gpsDataLocation.gpsHost + "/systems/" + systemID + "/datastreams?f=application%2Fjson");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", auth);
-            connection.connect();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            response.append(System.lineSeparator());
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine).append(System.lineSeparator());
-            }
-            in.close();
-            connection.disconnect();
-
-            DataContainer<DataStreamItems> dataContainer = DataContainer.fromJson(response.toString(), DataStreamItems.class);
-            return dataContainer.getItems();
-        } catch (Exception e) {
-            logger.error("Error in getGetDataStreams:", e);
-        }
-
-        return Collections.emptyList();
-    }
-
-    private List<String> getObservationsJSon(String dataStreamID) {
-        List<String> observations = new ArrayList<>();
-
-        try {
-            String auth = getAuth();
-            if (auth == null)
-                return Collections.emptyList();
-
-            URL url = new URL(config.gpsDataLocation.gpsHost + "/datastreams/" + dataStreamID + "/observations?f=application%2Fjson");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", auth);
-            connection.connect();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            response.append(System.lineSeparator());
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine).append(System.lineSeparator());
-            }
-            in.close();
-            connection.disconnect();
-
-            DataContainer<ObservationsItems> dataContainer = DataContainer.fromJson(response.toString(), ObservationsItems.class);
-            for (ObservationsItems item : dataContainer.getItems()) {
-                observations.add(item.getResult().toString());
-            }
-
-            return observations;
-        } catch (Exception e) {
-            logger.error("Error in getObservations:", e);
-        }
-
-        return Collections.emptyList();
     }
 }
