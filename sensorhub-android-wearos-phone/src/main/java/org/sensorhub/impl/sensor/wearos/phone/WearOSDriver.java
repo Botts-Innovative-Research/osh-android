@@ -82,7 +82,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
 
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, this, eventHandler.getLooper());
+            locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 1000, 0.0f, this, eventHandler.getLooper());
         }
 
         broadcastEnabledOutputs();
