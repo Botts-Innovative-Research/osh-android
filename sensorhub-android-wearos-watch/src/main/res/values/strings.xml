@@ -22,4 +22,5 @@
     <string name="elevationNoPermissions">Elevation: No Perms</string>
     <string name="compassZoom">%dm</string>
     <string name="compass">Compass</string>
+    <string name="map">Map</string>
 </resources>

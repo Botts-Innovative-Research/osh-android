@@ -20,6 +20,7 @@ public class UIManager {
     TextView stepsTextView;
     TextView distanceTextView;
     Button radarButton;
+    Button mapButton;
 
     public UIManager(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -34,10 +35,17 @@ public class UIManager {
         stepsTextView = mainActivity.findViewById(R.id.steps);
         distanceTextView = mainActivity.findViewById(R.id.distance);
         radarButton = mainActivity.findViewById(R.id.radarButton);
+        mapButton = mainActivity.findViewById(R.id.mapButton);
 
         // Set the radar button to open the radar activity
         radarButton.setOnClickListener(v -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
+            mainActivity.startActivity(intent);
+        });
+
+        // Set the map button to open the map activity
+        mapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(mainActivity, MapActivity.class);
             mainActivity.startActivity(intent);
         });
     }

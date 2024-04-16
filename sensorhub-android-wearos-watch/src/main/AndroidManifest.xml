@@ -36,6 +36,9 @@
         <activity android:name="org.sensorhub.impl.sensor.wearos.watch.CompassActivity"
             android:exported="false"
             android:taskAffinity="" />
+        <activity android:name="org.sensorhub.impl.sensor.wearos.watch.MapActivity"
+            android:exported="false"
+            android:taskAffinity="" />
         <receiver
             android:name="org.sensorhub.impl.sensor.wearos.watch.StartupReceiver"
             android:exported="false">

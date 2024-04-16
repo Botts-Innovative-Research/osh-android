@@ -44,6 +44,17 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView" />
 
+            <Button
+                android:id="@+id/mapButton"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:paddingHorizontal="0dp"
+                android:paddingVertical="0dp"
+                android:text="@string/map"
+                android:textSize="9sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/radarButton" />
+
             <TextView
                 android:id="@+id/heartRate"
                 android:layout_width="wrap_content"
