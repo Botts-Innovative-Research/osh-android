@@ -234,7 +234,7 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
             double angle = Math.toDegrees(Math.atan2(longitudeDistance, latitudeDistance));
             float x = (float) (centerX + (distance / distancePerPixel) * Math.sin(Math.toRadians(angle)));
             float y = (float) (centerY - (distance / distancePerPixel) * Math.cos(Math.toRadians(angle)));
-            paint.setColor(parseColor(point.getColor()));
+            paint.setColor(point.getColorValue());
             canvas.drawCircle(x, y, radius, paint);
         }
 
@@ -277,28 +277,5 @@ public class CompassActivity extends Activity implements MessageClient.OnMessage
     public void onLocationChanged(@NonNull Location location) {
         centerLatitude = location.getLatitude();
         centerLongitude = location.getLongitude();
-    }
-
-    /**
-     * Parse a color string to an integer.
-     *
-     * @param colorString The color string to parse. If null or empty, a default color is used.
-     * @return The color integer.
-     */
-    private int parseColor(String colorString) {
-        if (colorString == null || colorString.isEmpty()) {
-            colorString = "#B30000"; // Slightly darker red
-        }
-
-        try {
-            int colorInt = Color.parseColor(colorString);
-            // These colors wouldn't be visible on the compass
-            if (colorInt == Color.TRANSPARENT || colorInt == Color.BLACK || Color.alpha(colorInt) == 0) {
-                return Color.DKGRAY;
-            }
-            return colorInt;
-        } catch (IllegalArgumentException e) {
-            return Color.GRAY;
-        }
     }
 }

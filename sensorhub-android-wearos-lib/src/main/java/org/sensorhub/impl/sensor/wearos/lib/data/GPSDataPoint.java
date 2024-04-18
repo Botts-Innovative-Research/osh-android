@@ -1,18 +1,20 @@
 package org.sensorhub.impl.sensor.wearos.lib.data;
 
-import androidx.annotation.NonNull;
+import android.graphics.Color;
 
-import com.google.gson.Gson;
+import androidx.annotation.NonNull;
 
 public class GPSDataPoint {
     private final double latitude;
     private final double longitude;
     private final String color;
+    private final String pointName;
 
-    public GPSDataPoint(double latitude, double longitude, String color) {
+    public GPSDataPoint(double latitude, double longitude, String color, String pointName) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.color = color;
+        this.pointName = pointName;
     }
 
     @Override
@@ -51,5 +53,32 @@ public class GPSDataPoint {
      */
     public String getColor() {
         return color;
+    }
+
+    /**
+     * Returns the name of the point.
+     *
+     * @return The name of the point.
+     */
+    public String getPointName() {
+        return pointName;
+    }
+
+    /**
+     * Returns the color of the point as an integer.
+     *
+     * @return The color integer.
+     */
+    public int getColorValue() {
+        String colorString = getColor();
+        if (colorString == null || colorString.isEmpty()) {
+            colorString = "#B30000"; // Slightly darker red
+        }
+
+        try {
+            return Color.parseColor(colorString);
+        } catch (IllegalArgumentException e) {
+            return Color.GRAY;
+        }
     }
 }

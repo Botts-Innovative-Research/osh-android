@@ -397,7 +397,7 @@ public class WearOSDriver extends AbstractSensorModule<WearOSConfig> implements 
                             List<String> observations = ObservationsItems.getObservationsJSon(auth, config.gpsDataLocation.gpsHost, dataStream.getId());
                             for (String observation : observations) {
                                 GPSAndroidLocationResult data = GPSAndroidLocationResult.fromJson(observation);
-                                locationData.add(new GPSDataPoint(data.getLat(), data.getLon(), "green"));
+                                locationData.add(new GPSDataPoint(data.getLat(), data.getLon(), "green", item.getProperties().getName()));
                             }
                         }
                     }

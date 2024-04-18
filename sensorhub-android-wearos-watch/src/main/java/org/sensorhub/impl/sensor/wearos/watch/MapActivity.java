@@ -24,6 +24,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.Wearable;
+
+import org.sensorhub.impl.sensor.wearos.lib.Constants;
+import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String TAG = MapActivity.class.getSimpleName();
@@ -33,6 +38,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    private MarkerManager markerManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +59,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         super.onResume();
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
+
+        Wearable.getMessageClient(this).addListener(messageListener);
     }
 
     /**
@@ -62,6 +70,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap = googleMap;
+        markerManager = new MarkerManager(googleMap);
 
         // Prompt the user for permission.
         getLocationPermission();
@@ -72,6 +81,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
     }
+
+    private final MessageClient.OnMessageReceivedListener messageListener = messageEvent -> {
+        if (messageEvent.getPath().equals(Constants.GPS_DATA_PATH)) {
+            byte[] data = messageEvent.getData();
+            String message = new String(data);
+            GPSData gpsData = GPSData.fromJson(message);
+            markerManager.updateMarkers(gpsData.getPoints());
+        }
+    };
 
     /**
      * Listener for the rotation sensor.
@@ -138,10 +156,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         try {
             if (locationPermissionGranted) {
                 googleMap.setMyLocationEnabled(true);
+                googleMap.getUiSettings().setRotateGesturesEnabled(true);
                 googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                googleMap.getUiSettings().setCompassEnabled(true);
+                googleMap.getUiSettings().setScrollGesturesEnabledDuringRotateOrZoom(true);
             } else {
                 googleMap.setMyLocationEnabled(false);
                 googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                googleMap.getUiSettings().setZoomControlsEnabled(false);
                 lastKnownLocation = null;
                 getLocationPermission();
             }
