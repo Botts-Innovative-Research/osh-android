@@ -1,6 +1,11 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Task;
 
@@ -42,6 +48,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             mapFragment.getMapAsync(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
+    }
+
     /**
      * Manipulates the map when it's available.
      * This callback is triggered when the map is ready to be used.
@@ -59,6 +72,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
     }
+
+    /**
+     * Listener for the rotation sensor.
+     * Updates the map's camera bearing based on the device's orientation.
+     */
+    private final SensorEventListener sensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && googleMap != null) {
+                float[] rotationMatrix = new float[9];
+                float[] orientationValues = new float[3];
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+                SensorManager.getOrientation(rotationMatrix, orientationValues);
+                float bearing = (float) Math.toDegrees(orientationValues[0]);
+
+                CameraPosition oldPos = googleMap.getCameraPosition();
+                CameraPosition pos = CameraPosition.builder(oldPos).bearing(bearing).build();
+                googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(pos));
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // Do nothing
+        }
+    };
 
     /**
      * Prompts the user for permission to use the device location.
