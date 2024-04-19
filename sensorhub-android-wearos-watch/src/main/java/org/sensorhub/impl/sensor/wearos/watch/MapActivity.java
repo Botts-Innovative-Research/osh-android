@@ -202,6 +202,8 @@ public class MapActivity extends FragmentActivity implements LocationListener {
         googleMap.getUiSettings().setScrollGesturesEnabled(false);
         googleMap.getUiSettings().setRotateGesturesEnabled(false);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+        googleMap.setOnMarkerClickListener(markerManager.onMarkerClickListener());
 
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.setMyLocationEnabled(true);

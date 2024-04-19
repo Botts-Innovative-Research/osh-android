@@ -24,6 +24,7 @@ import java.util.Map;
 public class MarkerManager {
     private final GoogleMap googleMap;
     private final Map<String, Marker> markers = new HashMap<>();
+    Marker lastOpened = null;
 
     public MarkerManager(GoogleMap googleMap) {
         this.googleMap = googleMap;
@@ -139,5 +140,37 @@ public class MarkerManager {
         canvas.drawCircle(radius, radius, radius - 2f, paint);
 
         return bitmap;
+    }
+
+    /**
+     * Returns a listener that handles marker clicks.
+     * The listener opens and closes the info window for the marker, but prevents the map from
+     * moving to the marker.
+     *
+     * @return The listener.
+     */
+    GoogleMap.OnMarkerClickListener onMarkerClickListener() {
+        return marker -> {
+            // Check if there is an open info window
+            if (lastOpened != null) {
+                // Close the info window
+                lastOpened.hideInfoWindow();
+
+                // Is the marker the same marker that was already open
+                if (lastOpened.equals(marker)) {
+                    // Nullify the lastOpened object
+                    lastOpened = null;
+                    // Return so that the info window isn't opened again
+                    return true;
+                }
+            }
+            // Open the info window for the marker
+            marker.showInfoWindow();
+            // Re-assign the last opened such that we can close it later
+            lastOpened = marker;
+
+            // Event was handled by our code do not launch default behaviour.
+            return true;
+        };
     }
 }
