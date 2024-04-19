@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Manages the markers on a Google Map.
+ */
 public class MarkerManager {
     private final GoogleMap googleMap;
     private final Map<String, Marker> markers = new HashMap<>();
@@ -26,6 +29,12 @@ public class MarkerManager {
         this.googleMap = googleMap;
     }
 
+    /**
+     * Updates the markers on the map.
+     * Adds new markers and removes markers that are no longer in the list.
+     *
+     * @param gpsDataPoints The list of GPS data points to display.
+     */
     public void updateMarkers(List<GPSDataPoint> gpsDataPoints) {
         // Update and add markers
         for (GPSDataPoint gpsDataPoint : gpsDataPoints) {
@@ -56,6 +65,12 @@ public class MarkerManager {
         }
     }
 
+    /**
+     * Updates the position of a marker on the map.
+     *
+     * @param gpsDataPoint The GPS data point to update.
+     * @return True if the marker was updated, false if the marker does not exist.
+     */
     private boolean updateMarker(GPSDataPoint gpsDataPoint) {
         Marker marker = markers.get(gpsDataPoint.getPointName());
         if (marker != null) {
@@ -67,6 +82,11 @@ public class MarkerManager {
         return false;
     }
 
+    /**
+     * Adds a marker to the map.
+     *
+     * @param gpsDataPoint The GPS data point to add.
+     */
     private void addMarker(GPSDataPoint gpsDataPoint) {
         LatLng latLng = new LatLng(gpsDataPoint.getLatitude(), gpsDataPoint.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions()
@@ -77,6 +97,11 @@ public class MarkerManager {
         markers.put(gpsDataPoint.getPointName(), marker);
     }
 
+    /**
+     * Removes a marker from the map.
+     *
+     * @param pointName The name of the marker to remove.
+     */
     private void removeMarker(String pointName) {
         Marker marker = markers.get(pointName);
         if (marker != null) {
@@ -85,6 +110,12 @@ public class MarkerManager {
         }
     }
 
+    /**
+     * Creates a custom marker with the specified color.
+     *
+     * @param color The color of the marker.
+     * @return A bitmap representing the marker.
+     */
     private Bitmap createCustomMarker(int color) {
         int size = 32;
         int radius = size / 2;

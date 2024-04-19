@@ -82,6 +82,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         getDeviceLocation();
     }
 
+    /**
+     * Listener for messages from the Android phone.
+     * Updates the map with the GPS data points received.
+     */
     private final MessageClient.OnMessageReceivedListener messageListener = messageEvent -> {
         if (messageEvent.getPath().equals(Constants.GPS_DATA_PATH)) {
             byte[] data = messageEvent.getData();
