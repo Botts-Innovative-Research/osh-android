@@ -1,5 +1,6 @@
 package org.sensorhub.impl.sensor.wearos.watch;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -7,7 +8,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -30,14 +35,12 @@ import com.google.android.gms.wearable.Wearable;
 import org.sensorhub.impl.sensor.wearos.lib.Constants;
 import org.sensorhub.impl.sensor.wearos.lib.data.GPSData;
 
-public class MapActivity extends FragmentActivity {
+public class MapActivity extends FragmentActivity implements LocationListener {
     private static final String TAG = MapActivity.class.getSimpleName();
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 15;
     private final AutoResetValue<Boolean> userMovedCamera = new AutoResetValue<>(false, 1000);
     private GoogleMap googleMap;
-    private boolean locationPermissionGranted;
-    private Location lastKnownLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private MarkerManager markerManager;
 
@@ -61,6 +64,27 @@ public class MapActivity extends FragmentActivity {
         sensorManager.registerListener(sensorEventListener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
 
         Wearable.getMessageClient(this).addListener(messageListener);
+
+        HandlerThread eventThread = new HandlerThread("LocationWatcher");
+        eventThread.start();
+        Handler eventHandler = new Handler(eventThread.getLooper());
+
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 1000, 0.0f, this, eventHandler.getLooper());
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.unregisterListener(sensorEventListener);
+
+        Wearable.getMessageClient(this).removeListener(messageListener);
+
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(this);
     }
 
     /**
@@ -68,16 +92,15 @@ public class MapActivity extends FragmentActivity {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        locationPermissionGranted = false;
-        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
-            // If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                locationPermissionGranted = true;
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
         updateLocationUI();
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        if (googleMap == null) return;
+
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        runOnUiThread(() -> googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng)));
     }
 
     /**
@@ -165,9 +188,7 @@ public class MapActivity extends FragmentActivity {
      */
     private void getLocationPermission() {
         // The result of the permission request is handled by a callback, onRequestPermissionsResult.
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationPermissionGranted = true;
-        } else {
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
@@ -180,21 +201,10 @@ public class MapActivity extends FragmentActivity {
 
         googleMap.getUiSettings().setScrollGesturesEnabled(false);
         googleMap.getUiSettings().setRotateGesturesEnabled(false);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-        try {
-            if (locationPermissionGranted) {
-                googleMap.setMyLocationEnabled(true);
-                googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-                googleMap.getUiSettings().setZoomControlsEnabled(true);
-            } else {
-                googleMap.setMyLocationEnabled(false);
-                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                googleMap.getUiSettings().setZoomControlsEnabled(false);
-                lastKnownLocation = null;
-                getLocationPermission();
-            }
-        } catch (SecurityException e) {
-            if (e.getMessage() != null) Log.e(TAG, e.getMessage());
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(true);
         }
     }
 
@@ -202,28 +212,20 @@ public class MapActivity extends FragmentActivity {
      * Gets the current location of the device, and positions the map's camera.
      */
     private void getDeviceLocation() {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
+        // Get the best and most recent location of the device,
+        // which may be null in rare cases when a location is not available.
         try {
-            if (locationPermissionGranted) {
-                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Set the map's camera position to the current location of the device.
-                        lastKnownLocation = task.getResult();
-                        if (lastKnownLocation != null) {
-                            LatLng latLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
-                        }
-                    } else {
-                        Log.d(TAG, "Current location is null. Using defaults.");
-                        Log.e(TAG, "Exception: %s", task.getException());
-                        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+            Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+            locationResult.addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    // Set the map's camera position to the current location of the device.
+                    Location lastKnownLocation = task.getResult();
+                    if (lastKnownLocation != null) {
+                        LatLng latLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
                     }
-                });
-            }
+                }
+            });
         } catch (SecurityException e) {
             if (e.getMessage() != null) Log.e(TAG, e.getMessage());
         }
