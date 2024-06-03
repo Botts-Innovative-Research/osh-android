@@ -31,6 +31,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
+import android.hardware.input.InputManager;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
@@ -50,11 +51,9 @@ import android.widget.TextView;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
-import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
-import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.api.module.ModuleEvent;
 import org.sensorhub.api.sensor.SensorConfig;
 import org.sensorhub.impl.SensorHubConfig;
@@ -63,6 +62,7 @@ import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
+//import org.sensorhub.impl.driver.flir.FlirOneCameraConfig;
 import org.sensorhub.impl.event.EventBus;
 import org.sensorhub.impl.module.InMemoryConfigDb;
 import org.sensorhub.impl.module.ModuleClassFinder;
@@ -72,6 +72,7 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+//import org.sensorhub.impl.sensor.controller.helpers.GameControllerObserver;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
@@ -80,6 +81,7 @@ import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.service.sweapi.SWEApiService;
 import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
+import org.sensorhub.impl.sensor.controller.ControllerConfig;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -150,7 +152,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         FlirOne,
         DJIDrone,
         ProxySensor,
-        BLELocation
+        BLELocation,
+        Controller,
     }
 
     
@@ -410,6 +413,22 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             //addSosTConfig(trupulseConfig, sosUser, sosPwd);
         }
 
+        //Universal Android Controller sensor
+
+        enabled = prefs.getBoolean("controller_enabled", false);
+        if(enabled){
+//            ControllerConfig controllerConfig = new ControllerConfig(deviceName, deviceID);
+            ControllerConfig controllerConfig = new ControllerConfig();
+            controllerConfig.id= "CONTROLLER_SENSOR";
+            controllerConfig.name= "Android Controller ["+ deviceName +"]";
+            controllerConfig.autoStart= true;
+            controllerConfig.androidContext = this.getApplicationContext();
+            controllerConfig.lastUpdated= ANDROID_SENSORS_LAST_UPDATED;
+            sensorhubConfig.add(controllerConfig);
+            addSosTConfig(controllerConfig, sosUser, sosPwd);
+        }
+
+
         // AngelSensor
         /*enabled = prefs.getBoolean("angel_enabled", false);
         if (enabled)
@@ -432,21 +451,21 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(angelConfig);
             addSosTConfig(angelConfig, sosUser, sosPwd);
         }
-
+*/
         // FLIR One sensor
-        enabled = prefs.getBoolean("flirone_enabled", false);
-        if (enabled)
-        {
-            FlirOneCameraConfig flironeConfig = new FlirOneCameraConfig();
-            flironeConfig.id = "FLIRONE_SENSOR";
-            flironeConfig.name = "FLIR One Camera [" + deviceName + "]";
-            flironeConfig.autoStart = true;
-            flironeConfig.androidContext = this.getApplicationContext();
-            flironeConfig.camPreviewTexture = boundService.getVideoTexture();
-            showVideo = true;
-            sensorhubConfig.add(flironeConfig);
-            addSosTConfig(flironeConfig, sosUser, sosPwd);
-        }*/
+//        enabled = prefs.getBoolean("flirone_enabled", false);
+//        if (enabled)
+//        {
+//            FlirOneCameraConfig flironeConfig = new FlirOneCameraConfig();
+//            flironeConfig.id = "FLIRONE_SENSOR";
+//            flironeConfig.name = "FLIR One Camera [" + deviceName + "]";
+//            flironeConfig.autoStart = true;
+//            flironeConfig.androidContext = this.getApplicationContext();
+//            flironeConfig.camPreviewTexture = boundService.getVideoTexture();
+//            showVideo = true;
+//            sensorhubConfig.add(flironeConfig);
+//            addSosTConfig(flironeConfig, sosUser, sosPwd);
+//        }
 
         // DJI Drone
         /*enabled = prefs.getBoolean("dji_enabled", false);
@@ -955,6 +974,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.BLELocation.equals(sensor)){
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        } else if(Sensors.Controller.equals(sensor)){
+            return prefs.getBoolean("controller_enabled", false && prefs.getStringSet("controller_options", Collections.emptySet()).contains("PUSH_REMOTE"));
         }
 
         return false;
