@@ -16,6 +16,15 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+        <MultiSelectListPreference
+            android:key="controller_output_options"
+            android:title="Controller Output Options"
+            android:summary="List of available output options"
+            android:entries="@array/controller_outputs"
+            android:entryValues="@array/controller_outputs_values"
+             />
+
+
         <SwitchPreference
             android:defaultValue="false"
             android:key="accel_enabled"

@@ -1,139 +1,140 @@
 package org.sensorhub.impl.sensor.controller.helpers;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
-import android.os.Handler;
-import android.os.Looper;
+import android.text.InputType;
+import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
-import org.sensorhub.impl.sensor.controller.ControllerOutput;
+import org.sensorhub.impl.sensor.controller.ControllerDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 
 public class GameControllerView extends View implements InputDeviceListener{
     private static final Logger logger = LoggerFactory.getLogger(GameControllerView.class);
-    boolean Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode, dpad_up, dpad_left, dpad_right, dpad_down;
-    float x, y, rx, ry;
+    boolean Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode, pov_up, pov_left, pov_right, pov_down;
+    float x, y, rx, ry, pov;
     InputManager inputManager;
-    ControllerOutput output;
-    GameControllerState gamepad;
-    private String StringDpad;
-    private String StringButtons;
-
-    Handler eventHandler;
-
-
-    public GameControllerView(Context context, Handler eventHandler, ControllerOutput output) {
-        super(context);
-        isFocusable();
-        setFocusable(true);
-        setFocusableInTouchMode(true);
+    ControllerData controllerData;
+    public GameControllerView(Context context, AttributeSet attrs) {
+        super(context, attrs);
         requestFocus();
+        setFocusableInTouchMode(true);
 
-        this.output = output;
         inputManager = (InputManager)context.getSystemService(context.INPUT_SERVICE);
-        inputManager.registerInputDeviceListener(this, eventHandler);
-
+        inputManager.registerInputDeviceListener(this, null);
+        controllerData = new ControllerData();
     }
 
     @Override
     public boolean onKeyDown(int keycode, KeyEvent keyEvent){
-        logger.debug("Key down {}", keycode);
-        boolean pressed = true;
-        logger.debug("updating button states: keycode: {}, pressed: {}", keycode, pressed);
-        if(keyEvent.getRepeatCount()==0) {
-            switch (keycode) {
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                    dpad_left = pressed;
-                    StringDpad = "left";
-                    break;
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    dpad_right = pressed;
-                    StringDpad = "right";
-                    break;
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    dpad_up = pressed;
-                    StringDpad = "up";
-                    break;
-                case KeyEvent.KEYCODE_DPAD_DOWN:
-                    dpad_down = pressed;
-                    StringDpad = "down";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_A:
-                    A = pressed;
-                    StringButtons = "A";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_B:
-                    B = pressed;
-                    StringButtons = "B";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_X:
-                    X = pressed;
-                    StringButtons = "X";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_Y:
-                    Y = pressed;
-                    StringButtons = "Y";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_R1:
-                    RightThumb = pressed;
-                    StringButtons = "R1";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_L1:
-                    LeftThumb = pressed;
-                    StringButtons = "L1";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_R2:
-                    RightBumper = pressed;
-                    StringButtons = "R2";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_L2:
-                    LeftBumper = pressed;
-                    StringButtons = "L2";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_MODE:
-                    mode = pressed;
-                    StringButtons = "MODE";
-                    break;
-            }
-        }
-        logger.debug("buttons: {}", StringButtons);
-        logger.debug("dpad: {}", StringDpad);
-//        updateButtonStates(keycode, true, keyEvent);
-        return super.onKeyDown(keycode, keyEvent);
+        return handleKeyEvent(keycode, keyEvent, true);
     }
-
     @Override
     public boolean onKeyUp(int keycode, KeyEvent keyEvent){
-        logger.debug("key up {}", keycode);
-
-        updateButtonStates(keycode,false, keyEvent);
-        return super.onKeyUp(keycode, keyEvent);
+        return handleKeyEvent(keycode, keyEvent, false);
     }
+    public boolean handleKeyEvent(int keycode, KeyEvent keyEvent, boolean pressed){
+        logger.debug("Key {} {}", pressed ? "down": "up", keycode);
+        if((keyEvent.getSource()& InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD){
+            if(keyEvent.getRepeatCount()==0) {
+                updateButtonStates(keycode, pressed);
+            }
+            updateControllerData();
+            ControllerDriver.setButtonData(controllerData);
+        }
+
+        return super.onKeyDown(keycode, keyEvent);
+    }
+    private void updateButtonStates(int keycode, boolean pressed){
+
+        switch (keycode) {
+//            case KeyEvent.KEYCODE_DPAD_LEFT:
+//                pov_left = pressed;
+//                logger.debug("dpad left pressed");
+//                break;
+//            case KeyEvent.KEYCODE_DPAD_RIGHT:
+//                pov_right = pressed;
+//                break;
+//            case KeyEvent.KEYCODE_DPAD_UP:
+//                pov_up = pressed;
+//                break;
+//            case KeyEvent.KEYCODE_DPAD_DOWN:
+//                pov_down = pressed;
+//                break;
+            case KeyEvent.KEYCODE_BUTTON_A:
+                A = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_B:
+                B = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_X:
+                X = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_Y:
+                Y = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_R1:
+                RightThumb = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_L1:
+                LeftThumb = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_R2:
+                RightBumper = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_L2:
+                LeftBumper = pressed;
+                break;
+            case KeyEvent.KEYCODE_BUTTON_MODE:
+                mode = pressed;
+                break;
+        }
+    }
+    private void updateControllerData() {
+        long timestamp = System.currentTimeMillis();
+        controllerData.addButtons(timestamp, mode, A, B, X, Y, LeftThumb, RightThumb, LeftBumper, RightBumper);
+        controllerData.addJoystick(timestamp,x, y, rx, ry, pov);
+    }
+
 
     public void updateJoystickState(MotionEvent event, int historyPos){
         InputDevice inputDevice = event.getDevice();
 
-        float x1 = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos);
-        float x2 = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos);
+        x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos);
+        y= getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos);
+        rx = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos);
+        ry = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos);
 
-        float y1 = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos);
-        float y2 = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos);
 
-//        logger.debug("Setting data: x={}, y={}, rx={}, ry={}", x,y,z,rz);
-        eventHandler.post(this:: updateGamepadOutputs);
-//        updateGamepadOutputs();
-//        output.setJoyStickData(x, y, rx, ry);
+        float xaxis = event.getAxisValue(MotionEvent.AXIS_HAT_X);
+        float yaxis = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
+
+        if(Float.compare(xaxis, -1.0f)==0){
+            //left
+            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_LEFT);
+        }else if(Float.compare(xaxis, 1.0f)==0){
+            //right
+//            pov = event.getAxisValue(MotionEvent.AXIS_HAT_X);
+            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_RIGHT);
+        }else if(Float.compare(yaxis, -1.0f)==0){
+            //up
+//            pov = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
+            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_UP);
+        } else if (Float.compare(yaxis, 1.0f) == 0) {
+            //down
+//            pov = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
+            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_DOWN);
+        }
+//        logger.debug("Setting data: x={}, y={}, rx={}, ry={}", x1,y1,x2,y2);
+        updateControllerData();
+        ControllerDriver.setJoystickData(controllerData);
+
     }
     private static float getCenteredAxis(MotionEvent event, InputDevice device, int axis, int historyPos) {
         final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
@@ -153,84 +154,12 @@ public class GameControllerView extends View implements InputDeviceListener{
         return 0;
     }
 
-    public void updateGamepadOutputs(){
-        output.setDataBlock(mode, A, X, Y, dpad_down, dpad_left, dpad_up, dpad_right, LeftThumb, RightThumb, LeftBumper, RightBumper, x, y, B, rx, ry);
-    }
-    public void updateButtonStates(int keycode, boolean pressed, KeyEvent event){
-        logger.debug("updating button states: keycode: {}, pressed: {}", keycode, pressed);
-        if(event.getRepeatCount()==0){
-            switch (keycode) {
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                    dpad_left = pressed;
-                    StringDpad = "left";
-                    break;
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    dpad_right = pressed;
-                    StringDpad = "right";
-                    break;
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    dpad_up = pressed;
-                    StringDpad = "up";
-                    break;
-                case KeyEvent.KEYCODE_DPAD_DOWN:
-                    dpad_down = pressed;
-                    StringDpad = "down";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_A:
-                    A = pressed;
-                    StringButtons = "A";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_B:
-                    B = pressed;
-                    StringButtons = "B";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_X:
-                    X = pressed;
-                    StringButtons = "X";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_Y:
-                    Y = pressed;
-                    StringButtons = "Y";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_R1:
-                    RightThumb = pressed;
-                    StringButtons = "R1";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_L1:
-                    LeftThumb = pressed;
-                    StringButtons = "L1";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_R2:
-                    RightBumper = pressed;
-                    StringButtons = "R2";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_L2:
-                    LeftBumper = pressed;
-                    StringButtons = "L2";
-                    break;
-                case KeyEvent.KEYCODE_BUTTON_MODE:
-                    mode = pressed;
-                    StringButtons = "MODE";
-                    break;
-            }
-
-        }
-
-        logger.debug("Setting data: mode={}, A={}, X={}, Y={}, dpad_down={}, dpad_left={}, dpad_up={}, dpad_right={}, LeftThumb={}, RightThumb={}, LeftBumper={}, RightBumper={}, B={}",
-                mode, A, X, Y, dpad_down, dpad_left, dpad_up, dpad_right, LeftThumb, RightThumb, LeftBumper, RightBumper, B);
-
-        eventHandler.post(this:: updateGamepadOutputs);
-
-//        updateGamepadOutputs();
-//        output.setGamepadData(mode, A, X, Y, dpad_down, dpad_left, dpad_up, dpad_right, LeftThumb, RightThumb, LeftBumper, RightBumper, B);
-//        output.setData(mode, A, X, Y, dpad_down, dpad_left, dpad_up, dpad_right, LeftThumb, RightThumb, LeftBumper, RightBumper, x, y, B, rx, ry);
-    }
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
+
         if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
             logger.debug("motion event detected");
-
             // Process all historical movement samples in the batch
             final int historySize = event.getHistorySize();
             logger.debug("history size: {}", historySize);
@@ -257,7 +186,6 @@ public class GameControllerView extends View implements InputDeviceListener{
         if (device != null && (device.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
             logger.debug("Gamepad detected: {}", deviceId);
         }
-
     }
 
     @Override
@@ -269,5 +197,6 @@ public class GameControllerView extends View implements InputDeviceListener{
     public void onInputDeviceChanged(int deviceId) {
         logger.debug("device changed: {}", deviceId);
     }
+
 
 }

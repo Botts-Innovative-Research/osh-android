@@ -17,16 +17,15 @@ import android.content.Context;
 import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 
 import net.opengis.sensorml.v20.PhysicalComponent;
 
 import org.sensorhub.android.SensorHubService;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.impl.sensor.android.SensorMLBuilder;
+import org.sensorhub.impl.sensor.controller.helpers.ControllerData;
 import org.sensorhub.impl.sensor.controller.helpers.FindController;
 import org.sensorhub.impl.sensor.controller.helpers.GameControllerState;
-import org.sensorhub.impl.sensor.controller.helpers.GameControllerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,16 +39,18 @@ import java.util.List;
  * @since 05/26/2024
  */
 
-public class ControllerDriver extends AbstractSensorModule<ControllerConfig> {
+public class ControllerDriver extends AbstractSensorModule<ControllerConfig>  {
     private HandlerThread eventThread;
-    ControllerOutput output;
+    static ButtonsOutputs buttonsOutputs;
+    static JoystickOutputs joystickOutputs;
     private final ArrayList<PhysicalComponent> smlComponents;
     private final SensorMLBuilder smlBuilder;
     private Context context;
-    private GameControllerView gameControllerView;
     InputManager inputManager;
     GameControllerState gamepad;
-    boolean Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode, x, y, rx, ry, dpad_up, dpad_left, dpad_right, dpad_down;
+    ControllerData data;
+
+
     public ControllerDriver() {
         this.smlComponents = new ArrayList<PhysicalComponent>();
         this.smlBuilder = new SensorMLBuilder();
@@ -62,9 +63,7 @@ public class ControllerDriver extends AbstractSensorModule<ControllerConfig> {
         context = SensorHubService.getContext();
         inputManager = (InputManager) context.getSystemService(Context.INPUT_SERVICE);
 
-        output = new ControllerOutput(this);
-        output.doInit();
-        addOutput(output, false);
+        createOutputs();
     }
 
     @Override
@@ -82,66 +81,70 @@ public class ControllerDriver extends AbstractSensorModule<ControllerConfig> {
         eventThread.start();
         Handler eventHandler = new Handler(eventThread.getLooper());
 
-        gameControllerView = new GameControllerView(context, eventHandler, output);
-        gameControllerView.onInputDeviceAdded(gamepad.getDevice().getId());
+        data = new ControllerData();
+        if(data!= null){
+            setButtonData(data);
+            setJoystickData(data);
+        }
+
 
     }
+    public void createOutputs(){
+        if(config.getOutputs().getEnabledGamepad()){
+            buttonsOutputs = new ButtonsOutputs(this);
+            buttonsOutputs.doInit();
+            addOutput(buttonsOutputs, false);
 
-//    public void updateButtonStates(int keycode, boolean pressed){
-//        logger.debug("updating button states: keycode: {}, pressed: {}", keycode, pressed);
-//        switch (keycode) {
-//            case KeyEvent.KEYCODE_DPAD_LEFT:
-//                dpad_left = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_RIGHT:
-//                dpad_right = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_UP:
-//                dpad_up = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_DOWN:
-//                dpad_down = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_A:
-//                A = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_B:
-//                B = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_X:
-//                X = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_Y:
-//                Y = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_R1:
-//                RightThumb = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_L1:
-//                LeftThumb = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_R2:
-//                RightBumper = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_L2:
-//                LeftBumper = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_THUMBL:
-//                x = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_THUMBR:
-//                rx = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_BUTTON_MODE:
-//                mode = pressed;
-//                break;
-//        }
-//        logger.debug("Setting data: mode={}, A={}, X={}, Y={}, dpad_down={}, dpad_left={}, dpad_up={}, dpad_right={}, LeftThumb={}, RightThumb={}, LeftBumper={}, RightBumper={}, x={}, y={}, B={}, rx={}, ry={}",
-//                mode, A, X, Y, dpad_down, dpad_left, dpad_up, dpad_right, LeftThumb, RightThumb, LeftBumper, RightBumper, x, y, B, rx, ry);
-//
-//        output.setData(mode, A, X, Y, dpad_down, dpad_left, dpad_up, dpad_right, LeftThumb, RightThumb, LeftBumper, RightBumper, x, y, B, rx, ry);
-//    }
+        }else{
+            buttonsOutputs =null;
+        }
 
+        if(config.getOutputs().getEnabledJoystick()){
+            joystickOutputs = new JoystickOutputs(this);
+            joystickOutputs.doInit();
+            addOutput(joystickOutputs, false);
+        } else{
+            joystickOutputs=null;
+        }
+    }
+    public static void setButtonData(ControllerData data){
+        if(buttonsOutputs==null){
+            return;
+        }
+        for(int i=0; i < data.getButtonSize(); i++){
+            buttonsOutputs.setButtonData(
+                    data.getButtons(i).getTimestamp(),
+                    data.getButtons(i).getMode(),
+                    data.getButtons(i).getA(),
+                    data.getButtons(i).getB(),
+                    data.getButtons(i).getX(),
+                    data.getButtons(i).getY(),
+                    data.getButtons(i).getLeftThumb(),
+                    data.getButtons(i).getRightThumb(),
+                    data.getButtons(i).getLeftBumper(),
+                    data.getButtons(i).getRightBumper()
+//                    data.getButtons(i).getPovUp(),
+//                    data.getButtons(i).getPovDown(),
+//                    data.getButtons(i).getPovLeft(),
+//                    data.getButtons(i).getPovRight()
+                    );
+        }
+    }
+    public static void setJoystickData(ControllerData data){
+        if(joystickOutputs==null){
+            return;
+        }
+        for(int i=0; i < data.getJoystickSize(); i++){
+            joystickOutputs.setJoystickData(
+                    data.getJoystick(i).getTimestamp(),
+                    data.getJoystick(i).get_x(),
+                    data.getJoystick(i).get_y(),
+                    data.getJoystick(i).getRx(),
+                    data.getJoystick(i).getRy(),
+                    data.getJoystick(i).getPov()
+            );
+        }
+    }
     @Override
     public void doStop() {}
 

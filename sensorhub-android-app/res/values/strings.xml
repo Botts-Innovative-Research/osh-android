@@ -15,7 +15,7 @@
     <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
     <string name="sensor_angel">Angel Sensor</string>
     <string name="sensor_flirone">Flirone Sensor</string>
-    <string name="sensor_controller">Android Universal Controller Sensor</string>
+
 
     <string-array name="video_codec_list">
         <item>JPEG</item>
@@ -127,7 +127,6 @@
     <string name="spot_report_action">Action:</string>
     <string name="spot_report_id">Ref. Id:</string>
 
-
     <string name="spot_report_closure_type">Type:</string>
 
     <string-array name="spot_report_flood_feature_type">
@@ -196,8 +195,6 @@
     <string name="spot_report_track_id">Enter resource id</string>
     <string name="spot_report_track_label">Enter resource label</string>
 
-
-
     <string-array name="audio_codec_list">
         <item>AAC</item>
         <item>AMR-NB</item>
@@ -207,4 +204,19 @@
         <item>OPUS</item>
         <item>PCM</item>
     </string-array>
+
+    <string-array name="controller_outputs">
+        <item>Gamepad</item>
+        <item>Joystick</item>
+    </string-array>
+
+    <string name="controller_buttons">Gamepad</string>
+    <string name="controller_joystick">Joystick</string>
+
+    <string-array name="controller_outputs_values">
+        <item>@string/controller_buttons</item>
+        <item>@string/controller_joystick</item>
+    </string-array>
+
+
 </resources>

@@ -31,8 +31,13 @@ import android.provider.Settings;
  */
 public class ControllerConfig extends SensorConfig
 {
+    private final GamepadOutputs output;
     public String deviceName;
     public String deviceID;
+    public GamepadOutputs getOutputs()
+    {
+        return this.output;
+    }
     public transient  Context androidContext;
     public String getDeviceName(){
         return this.deviceName;
@@ -41,15 +46,13 @@ public class ControllerConfig extends SensorConfig
         return this.deviceID;
     }
 
-    public ControllerConfig(){
-        this.moduleClass=ControllerDriver.class.getCanonicalName();
+    public ControllerConfig(String deviceName, String deviceID, boolean enableGamepad, boolean enableJoystick)
+    {
+        this.moduleClass = ControllerDriver.class.getCanonicalName();
+        this.deviceID = deviceID;
+        this.deviceName = deviceName;
+        this.output = new GamepadOutputs(enableGamepad, enableJoystick);
     }
-//    public ControllerConfig(String deviceName, String deviceID)
-//    {
-//        this.moduleClass = ControllerDriver.class.getCanonicalName();
-//        this.deviceID = deviceID;
-//        this.deviceName = deviceName;
-//    }
 
     public static String getUid() {
         Context context = SensorHubService.getContext();

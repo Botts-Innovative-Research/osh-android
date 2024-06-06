@@ -42,9 +42,11 @@ import android.preference.PreferenceManager;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.TextureView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -73,6 +75,7 @@ import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 //import org.sensorhub.impl.sensor.controller.helpers.GameControllerObserver;
+import org.sensorhub.impl.sensor.controller.helpers.GameControllerView;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
@@ -98,7 +101,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Flow;
+import java.util.zip.Inflater;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -417,15 +422,22 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         enabled = prefs.getBoolean("controller_enabled", false);
         if(enabled){
-//            ControllerConfig controllerConfig = new ControllerConfig(deviceName, deviceID);
-            ControllerConfig controllerConfig = new ControllerConfig();
+            Set<String> enabledOutputs = prefs.getStringSet("controller_output_options", null);
+            if(enabledOutputs==null){
+                enabledOutputs= new HashSet<>();
+            }
+            ControllerConfig controllerConfig = new ControllerConfig(deviceName, deviceID,
+                    enabledOutputs.contains(getResources().getString(R.string.controller_buttons)),
+                    enabledOutputs.contains(getResources().getString(R.string.controller_joystick)));
+
+//            ControllerConfig controllerConfig = new ControllerConfig();
             controllerConfig.id= "CONTROLLER_SENSOR";
             controllerConfig.name= "Android Controller ["+ deviceName +"]";
             controllerConfig.autoStart= true;
             controllerConfig.androidContext = this.getApplicationContext();
             controllerConfig.lastUpdated= ANDROID_SENSORS_LAST_UPDATED;
             sensorhubConfig.add(controllerConfig);
-            addSosTConfig(controllerConfig, sosUser, sosPwd);
+//            addSosTConfig(controllerConfig, sosUser, sosPwd);
         }
 
 
@@ -523,6 +535,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         // listen to texture view lifecycle
         TextureView textureView = (TextureView) findViewById(R.id.video);
         textureView.setSurfaceTextureListener(this);
+
+//        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        View view = inflater.inflate(R.layout.activity_main, null);
+
+        GameControllerView gameControllerView = findViewById(R.id.controller);
+
 
         // bind to SensorHub service
         Intent intent = new Intent(this, SensorHubService.class);
