@@ -76,6 +76,8 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 //import org.sensorhub.impl.sensor.controller.helpers.GameControllerObserver;
 import org.sensorhub.impl.sensor.controller.helpers.GameControllerView;
+import org.sensorhub.impl.sensor.sleepMonitor.SleepMonitorConfig;
+import org.sensorhub.impl.sensor.sleepMonitor.helpers.SleepMonitorData;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
@@ -159,6 +161,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         ProxySensor,
         BLELocation,
         Controller,
+        SleepMonitor
     }
 
     
@@ -440,6 +443,24 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 //            addSosTConfig(controllerConfig, sosUser, sosPwd);
         }
 
+        //Sleep Monitor
+        enabled = prefs.getBoolean("sleep_monitor_enabled", false);
+        if(enabled){
+            Set<String> enabledOutputs = prefs.getStringSet("sleep_monitor_output_options", null);
+            if(enabledOutputs==null){
+                enabledOutputs= new HashSet<>();
+            }
+            SleepMonitorConfig sleepMonitorConfig = new SleepMonitorConfig(deviceName, deviceID,
+                    enabledOutputs.contains(getResources().getString(R.string.sleep_monitor_heartrate)),
+                    enabledOutputs.contains(getResources().getString(R.string.sleep_monitor_oxygen)));
+
+            sleepMonitorConfig.id= "SLEEP_MONITOR_SENSOR";
+            sleepMonitorConfig.name= "Android Sleep Monitor ["+ deviceName +"]";
+            sleepMonitorConfig.autoStart= true;
+            sleepMonitorConfig.lastUpdated= ANDROID_SENSORS_LAST_UPDATED;
+            sensorhubConfig.add(sleepMonitorConfig);
+//            addSosTConfig(sleepMonitorConfig, sosUser, sosPwd);
+        }
 
         // AngelSensor
         /*enabled = prefs.getBoolean("angel_enabled", false);
@@ -994,6 +1015,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.Controller.equals(sensor)){
             return prefs.getBoolean("controller_enabled", false && prefs.getStringSet("controller_options", Collections.emptySet()).contains("PUSH_REMOTE"));
+        } else if(Sensors.SleepMonitor.equals(sensor)){
+            return prefs.getBoolean("sleep_monitor_enabled", false && prefs.getStringSet("sleep_monitor_options", Collections.emptySet()).contains("PUSH_REMOTE"));
         }
 
         return false;
@@ -1566,15 +1589,27 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     private void checkForPermissions(){
         List<String> permissions = new ArrayList<>();
 
-        //Check for necessary permissions
-        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED){
+        // Check for necessary permissions
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
-        if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED){
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.CAMERA);
         }
-        if(checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED){
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.BLUETOOTH);
+        }
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
+        }
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+        }
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN);
         }
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
@@ -1583,6 +1618,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             requestPermissions(permARR, 100);
         }
     }
+
 
     @Override
     public void onSubscribe(Flow.Subscription subscription) {

@@ -30,7 +30,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.support.v7.view.menu.ListMenuPresenter;
+//import android.support.v7.view.menu.ListMenuPresenter;
 import android.text.InputType;
 import android.text.PrecomputedText;
 import android.util.Log;
