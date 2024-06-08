@@ -33,12 +33,7 @@ public class ControllerData {
         }
         this.buttons.add(new ButtonData(timestamp,mode, A,B,X,Y,LeftThumb, RightThumb, LeftBumper, RightBumper));
     }
-//    public void addButtons(long timestamp, boolean Y,boolean X, boolean A, boolean B, boolean LeftThumb, boolean RightThumb, boolean LeftBumper, boolean RightBumper, boolean mode, float x, float y,float  rx, float ry, float pov){
-//        if (buttons == null) {
-//          this.buttons= new ArrayList<>();
-//        }
-//        this.buttons.add(new ButtonData(timestamp,  Y, X,  A,  B,  LeftThumb, RightThumb, LeftBumper, RightBumper, mode, x,  y,  rx,  ry,  pov));
-//    }
+
     public ButtonData getButtons(int index) {
         return buttons.get(index);
     }

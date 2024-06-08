@@ -54,19 +54,30 @@ public class GameControllerView extends View implements InputDeviceListener{
     private void updateButtonStates(int keycode, boolean pressed){
 
         switch (keycode) {
-//            case KeyEvent.KEYCODE_DPAD_LEFT:
-//                pov_left = pressed;
-//                logger.debug("dpad left pressed");
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_RIGHT:
-//                pov_right = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_UP:
-//                pov_up = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_DOWN:
-//                pov_down = pressed;
-//                break;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                pov = 1.0f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                pov = 0.5f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                pov = 0.25f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                pov =0.75f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP_LEFT:
+                pov= 0.125f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN_LEFT:
+                pov =0.875f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP_RIGHT:
+                pov= 0.375f;
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN_RIGHT:
+                pov =0.625f;
+                break;
             case KeyEvent.KEYCODE_BUTTON_A:
                 A = pressed;
                 break;
@@ -117,19 +128,16 @@ public class GameControllerView extends View implements InputDeviceListener{
 
         if(Float.compare(xaxis, -1.0f)==0){
             //left
-            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_LEFT);
+            pov = 1.0f;
         }else if(Float.compare(xaxis, 1.0f)==0){
             //right
-//            pov = event.getAxisValue(MotionEvent.AXIS_HAT_X);
-            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_RIGHT);
+            pov =0.5f;
         }else if(Float.compare(yaxis, -1.0f)==0){
             //up
-//            pov = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
-            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_UP);
+            pov = 0.25f;
         } else if (Float.compare(yaxis, 1.0f) == 0) {
             //down
-//            pov = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
-            pov = event.getAxisValue(KeyEvent.KEYCODE_DPAD_DOWN);
+            pov = 0.75f;
         }
 //        logger.debug("Setting data: x={}, y={}, rx={}, ry={}", x1,y1,x2,y2);
         updateControllerData();

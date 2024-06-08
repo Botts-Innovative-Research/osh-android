@@ -23,11 +23,6 @@ public class FindController {
             InputDevice inputDevice = inputManager.getInputDevice(ids);
             if(isGamepadDevice(inputDevice)){
                 gameControllers.add(inputDevice);
-//                logger.debug("controller number: {}", inputDevice.getControllerNumber());
-//                logger.debug("controller name: {}", inputDevice.getName());
-//                logger.debug("controller descriptor: {}", inputDevice.getDescriptor());
-//                logger.debug("controller product id: {}", inputDevice.getProductId());
-//                logger.debug("controller keyboard type: {}", inputDevice.getKeyboardType());
             }
         }
         if(gameControllers.isEmpty()){

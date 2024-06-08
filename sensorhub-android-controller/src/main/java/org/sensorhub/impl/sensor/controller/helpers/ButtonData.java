@@ -33,14 +33,5 @@ public class ButtonData {
     public boolean getRightBumper() {return RightBumper;}
     public boolean getLeftBumper() {return LeftBumper;}
     public boolean getMode() {return mode;}
-//    public boolean getPovUp() {return pov_up;}
-//    public boolean getPovDown() {return pov_down;}
-//    public boolean getPovLeft() {return pov_left;}
-//    public boolean getPovRight() {return pov_right;}
-//    public boolean getRx() {return rx;}
-//    public boolean getRy() {return ry;}
-//    public boolean get_y() {return y;}
-//    public boolean get_x() {return x;}
-
 
 }
