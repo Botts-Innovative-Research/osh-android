@@ -31,7 +31,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
-import android.hardware.input.InputManager;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
@@ -42,11 +41,9 @@ import android.preference.PreferenceManager;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.TextureView;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -74,10 +71,9 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
-//import org.sensorhub.impl.sensor.controller.helpers.GameControllerObserver;
+
 import org.sensorhub.impl.sensor.controller.helpers.GameControllerView;
-import org.sensorhub.impl.sensor.sleepMonitor.SleepMonitorConfig;
-import org.sensorhub.impl.sensor.sleepMonitor.helpers.SleepMonitorData;
+import org.sensorhub.impl.sensor.oximeter.OximeterConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
@@ -105,7 +101,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Flow;
-import java.util.zip.Inflater;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -450,15 +445,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             if(enabledOutputs==null){
                 enabledOutputs= new HashSet<>();
             }
-            SleepMonitorConfig sleepMonitorConfig = new SleepMonitorConfig(deviceName, deviceID,
-                    enabledOutputs.contains(getResources().getString(R.string.sleep_monitor_heartrate)),
-                    enabledOutputs.contains(getResources().getString(R.string.sleep_monitor_oxygen)));
+            OximeterConfig oximeterConfig = new OximeterConfig(deviceName, deviceID);
+//                    enabledOutputs.contains(getResources().getString(R.string.sleep_monitor_heartrate)),
+//                    enabledOutputs.contains(getResources().getString(R.string.sleep_monitor_oxygen)));
 
-            sleepMonitorConfig.id= "SLEEP_MONITOR_SENSOR";
-            sleepMonitorConfig.name= "Android Sleep Monitor ["+ deviceName +"]";
-            sleepMonitorConfig.autoStart= true;
-            sleepMonitorConfig.lastUpdated= ANDROID_SENSORS_LAST_UPDATED;
-            sensorhubConfig.add(sleepMonitorConfig);
+            oximeterConfig.id= "SLEEP_MONITOR_SENSOR";
+            oximeterConfig.name= "Android Sleep Monitor ["+ deviceName +"]";
+            oximeterConfig.autoStart= true;
+            oximeterConfig.lastUpdated= ANDROID_SENSORS_LAST_UPDATED;
+            sensorhubConfig.add(oximeterConfig);
 //            addSosTConfig(sleepMonitorConfig, sosUser, sosPwd);
         }
 
@@ -557,8 +552,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         TextureView textureView = (TextureView) findViewById(R.id.video);
         textureView.setSurfaceTextureListener(this);
 
-//        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//        View view = inflater.inflate(R.layout.activity_main, null);
 
         GameControllerView gameControllerView = findViewById(R.id.controller);
 

@@ -1,4 +1,4 @@
-package org.sensorhub.impl.sensor.sleepMonitor.outputs;
+package org.sensorhub.impl.sensor.oximeter.outputs;
 
 public class SleepMonitorOutputs {
     private final boolean enableHR;

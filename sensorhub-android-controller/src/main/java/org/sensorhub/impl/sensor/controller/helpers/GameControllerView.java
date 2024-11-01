@@ -17,10 +17,13 @@ import org.slf4j.LoggerFactory;
 
 public class GameControllerView extends View implements InputDeviceListener{
     private static final Logger logger = LoggerFactory.getLogger(GameControllerView.class);
-    boolean Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode, pov_up, pov_left, pov_right, pov_down;
+    float Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode;
     float x, y, rx, ry, pov;
     InputManager inputManager;
     ControllerData controllerData;
+    float pressed = 1.0f;
+    float released = 0.0f;
+
     public GameControllerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         requestFocus();
@@ -33,17 +36,17 @@ public class GameControllerView extends View implements InputDeviceListener{
 
     @Override
     public boolean onKeyDown(int keycode, KeyEvent keyEvent){
-        return handleKeyEvent(keycode, keyEvent, true);
+        return handleKeyEvent(keycode, keyEvent, pressed);
     }
     @Override
     public boolean onKeyUp(int keycode, KeyEvent keyEvent){
-        return handleKeyEvent(keycode, keyEvent, false);
+        return handleKeyEvent(keycode, keyEvent, released);
     }
-    public boolean handleKeyEvent(int keycode, KeyEvent keyEvent, boolean pressed){
-        logger.debug("Key {} {}", pressed ? "down": "up", keycode);
+    public boolean handleKeyEvent(int keycode, KeyEvent keyEvent, float pressed){
+//        logger.debug("Key {} {}", pressed ? "down": "up", keycode);
         if((keyEvent.getSource()& InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD){
             if(keyEvent.getRepeatCount()==0) {
-                updateButtonStates(keycode, pressed);
+                updateButtonStates(keycode);
             }
             updateControllerData();
             ControllerDriver.setButtonData(controllerData);
@@ -51,48 +54,35 @@ public class GameControllerView extends View implements InputDeviceListener{
 
         return super.onKeyDown(keycode, keyEvent);
     }
-    private void updateButtonStates(int keycode, boolean pressed){
+    private void updateButtonStates(int keycode){
 
         switch (keycode) {
-//            case KeyEvent.KEYCODE_DPAD_LEFT:
-//                pov_left = pressed;
-//                logger.debug("dpad left pressed");
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_RIGHT:
-//                pov_right = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_UP:
-//                pov_up = pressed;
-//                break;
-//            case KeyEvent.KEYCODE_DPAD_DOWN:
-//                pov_down = pressed;
-//                break;
             case KeyEvent.KEYCODE_BUTTON_A:
-                A = pressed;
+                A = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_B:
-                B = pressed;
+                B = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_X:
-                X = pressed;
+                X = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_Y:
-                Y = pressed;
+                Y = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_R1:
-                RightThumb = pressed;
+                RightThumb = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_L1:
-                LeftThumb = pressed;
+                LeftThumb = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_R2:
-                RightBumper = pressed;
+                RightBumper = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_L2:
-                LeftBumper = pressed;
+                LeftBumper = 1.0f;
                 break;
             case KeyEvent.KEYCODE_BUTTON_MODE:
-                mode = pressed;
+                mode = 1.0f;
                 break;
         }
     }

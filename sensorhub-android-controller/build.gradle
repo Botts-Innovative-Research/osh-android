@@ -9,7 +9,7 @@ dependencies {
   api project(':sensorhub-android-service')
 
 
-  implementation project(path: ':sensorhub-driver-android')
+//  implementation project(path: ':sensorhub-driver-android')
 }
 android {
 

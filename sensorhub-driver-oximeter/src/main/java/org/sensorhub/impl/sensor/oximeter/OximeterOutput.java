@@ -12,15 +12,15 @@
 
  ******************************* END LICENSE BLOCK ***************************/
 
-package org.sensorhub.impl.sensor.sleepMonitor.outputs;
+package org.sensorhub.impl.sensor.oximeter;
 
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataComponent;
 import net.opengis.swe.v20.DataEncoding;
+import net.opengis.swe.v20.DataType;
 
 import org.sensorhub.api.data.DataEvent;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
-import org.sensorhub.impl.sensor.sleepMonitor.SleepMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vast.swe.SWEHelper;
@@ -28,37 +28,44 @@ import org.vast.swe.SWEHelper;
 
 /**
  * <p>
- * Abstract base for data interfaces connecting to Android Controller API
+ * Abstract base for data interfaces connecting to Sleep Oxygen Monitor
  * </p>
  *
  * @author Kalyn Stricklin
- * @since 05/26/2024
+ * @since 06/06/2024
  */
 
-public class OxygenOutput extends AbstractSensorOutput<SleepMonitor>{
+public class OximeterOutput extends AbstractSensorOutput<Oximeter>{
     public static DataComponent dataStruct;
     public static DataEncoding dataEncoding;
-
-    private static final Logger logger = LoggerFactory.getLogger(OxygenOutput.class);
-
-    public OxygenOutput(SleepMonitor parent) {
-        super("Sleep Monitor Oxygen Data", parent);
+    private static final Logger logger = LoggerFactory.getLogger(OximeterOutput.class);
+    public OximeterOutput(Oximeter parent) {
+        super("Sleep Monitor HeartRate Data", parent);
     }
     public void doInit(){
         logger.debug("Initializing Output");
         SWEHelper fac = new SWEHelper();
         dataStruct = fac.createRecord()
                 .name(name)
-                .definition(SWEHelper.getPropertyUri("AndroidController"))
-                .label("AndroidController")
+                .definition(SWEHelper.getPropertyUri("PulseOximeter"))
+                .label("Pulse Oximeter")
+                .description("Oximeter records continuously, and syncs data later!")
                 .addField("sampleTime", fac.createTime()
                         .asSamplingTimeIsoUTC()
                         .label("Sampling Time")
                         .build())
-                .addField("oxygenLevel", fac.createQuantity()
-                        .label("Oxygen Levels")
-                        .definition(SWEHelper.getPropertyUri("OxygenLevels"))
+                .addField("PulseRate", fac.createQuantity()
+                        .label("Pulse Rate")
+                        .definition(SWEHelper.getPropertyUri("PulseRate"))
+                        .description("The number of times the heart beats in 1 minute. ±2 bpm Accuracy")
+                        .dataType(DataType.FLOAT)
+                        .build())
+                .addField("SpO2", fac.createQuantity()
+                        .label("SpO2")
+                        .definition(SWEHelper.getPropertyUri("SpO2"))
+                        .description("Percent oxygen saturation of hemoglobin, as measured by a pulse oximeter.  ±2 % Accuracy")
                         .uom("%")
+                        .dataType(DataType.FLOAT)
                         .build())
                 .build();
 
@@ -78,10 +85,12 @@ public class OxygenOutput extends AbstractSensorOutput<SleepMonitor>{
         return dataEncoding;
     }
 
-    public void setOxygenData(long timestamp, float oxygenLevels){
+
+    public void setData(float pr, float spo2){
         DataBlock dataBlock = dataStruct.createDataBlock();
-        dataBlock.setLongValue(0, timestamp / 1000);
-        dataBlock.setFloatValue(1, oxygenLevels);
+        dataBlock.setLongValue(0, System.currentTimeMillis() / 1000);
+        dataBlock.setFloatValue(1, pr);
+        dataBlock.setFloatValue(2, spo2);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();

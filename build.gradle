@@ -1,5 +1,5 @@
 ext.oshCoreVersion = '2.0.0-beta'
-ext.compileSdkVersion = 31
+ext.compileSdkVersion = 33
 ext.minSdkVersion = 30
 ext.targetSdkVersion = 30
 ext.buildToolsVersion = "30.0.2"
@@ -12,7 +12,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.0.4'
+    classpath 'com.android.tools.build:gradle:7.4.1'
   }
 }
 

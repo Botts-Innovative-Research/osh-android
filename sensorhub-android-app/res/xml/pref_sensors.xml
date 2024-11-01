@@ -38,13 +38,13 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
-        <MultiSelectListPreference
-            android:key="sleep_monitor_output_options"
-            android:title="Sleep Monitor Output Options"
-            android:summary="List of available output options"
-            android:entries="@array/sleep_monitor_outputs"
-            android:entryValues="@array/sleep_monitor_outputs_values"
-            />
+<!--        <MultiSelectListPreference-->
+<!--            android:key="sleep_monitor_output_options"-->
+<!--            android:title="Sleep Monitor Output Options"-->
+<!--            android:summary="List of available output options"-->
+<!--            android:entries="@array/sleep_monitor_outputs"-->
+<!--            android:entryValues="@array/sleep_monitor_outputs_values"-->
+<!--            />-->
 
 
         <SwitchPreference

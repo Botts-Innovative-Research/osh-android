@@ -3,9 +3,9 @@ package org.sensorhub.impl.sensor.controller.helpers;
 
 public class ButtonData {
     private long timestamp;
-    boolean Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode, pov_down, pov_up, pov_left, pov_right, x, y, rx, ry;
+    float Y, X, A, B, LeftThumb, RightThumb, LeftBumper, RightBumper, mode, pov_down, pov_up, pov_left, pov_right, x, y, rx, ry;
 //    float x, y, rx, ry, pov;
-    public ButtonData(long timestamp, boolean mode,boolean A,boolean B, boolean X, boolean Y, boolean LeftThumb, boolean RightThumb, boolean LeftBumper, boolean RightBumper){
+    public ButtonData(long timestamp, float mode,float A,float B, float X, float Y, float LeftThumb, float RightThumb, float LeftBumper, float RightBumper){
         this.timestamp =timestamp;
 //        this.pov_up = pov_up;
 //        this.pov_down = pov_down;
@@ -24,15 +24,15 @@ public class ButtonData {
     }
     public long getTimestamp() {return timestamp;}
 
-    public boolean getA() {return A;}
-    public boolean getB() {return B;}
-    public boolean getX() {return X;}
-    public boolean getY() {return Y;}
-    public boolean getRightThumb() {return RightThumb;}
-    public boolean getLeftThumb() {return LeftThumb;}
-    public boolean getRightBumper() {return RightBumper;}
-    public boolean getLeftBumper() {return LeftBumper;}
-    public boolean getMode() {return mode;}
+    public float getA() {return A;}
+    public float getB() {return B;}
+    public float getX() {return X;}
+    public float getY() {return Y;}
+    public float getRightThumb() {return RightThumb;}
+    public float getLeftThumb() {return LeftThumb;}
+    public float getRightBumper() {return RightBumper;}
+    public float getLeftBumper() {return LeftBumper;}
+    public float getMode() {return mode;}
 //    public boolean getPovUp() {return pov_up;}
 //    public boolean getPovDown() {return pov_down;}
 //    public boolean getPovLeft() {return pov_left;}

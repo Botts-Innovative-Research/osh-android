@@ -27,7 +27,7 @@ public class ControllerData {
         this.joystick.add(new JoystickData(timestamp, x, y, rx, ry, pov));
     }
 
-    public void addButtons(long timestamp, boolean mode, boolean A,boolean B, boolean X, boolean Y, boolean LeftThumb, boolean RightThumb, boolean LeftBumper, boolean RightBumper){
+    public void addButtons(long timestamp, float mode, float A,float B, float X, float Y, float LeftThumb, float RightThumb, float LeftBumper, float RightBumper){
         if (buttons == null) {
             this.buttons= new ArrayList<>();
         }

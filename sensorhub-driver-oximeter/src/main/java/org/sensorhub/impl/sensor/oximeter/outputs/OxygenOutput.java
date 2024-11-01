@@ -12,7 +12,7 @@
 
  ******************************* END LICENSE BLOCK ***************************/
 
-package org.sensorhub.impl.sensor.sleepMonitor.outputs;
+package org.sensorhub.impl.sensor.oximeter.outputs;
 
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataComponent;
@@ -20,7 +20,7 @@ import net.opengis.swe.v20.DataEncoding;
 
 import org.sensorhub.api.data.DataEvent;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
-import org.sensorhub.impl.sensor.sleepMonitor.SleepMonitor;
+import org.sensorhub.impl.sensor.oximeter.Oximeter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vast.swe.SWEHelper;
@@ -28,19 +28,21 @@ import org.vast.swe.SWEHelper;
 
 /**
  * <p>
- * Abstract base for data interfaces connecting to Sleep Oxygen Monitor
+ * Abstract base for data interfaces connecting to Android Controller API
  * </p>
  *
  * @author Kalyn Stricklin
- * @since 06/06/2024
+ * @since 05/26/2024
  */
 
-public class HeartRateOutput extends AbstractSensorOutput<SleepMonitor>{
+public class OxygenOutput extends AbstractSensorOutput<Oximeter>{
     public static DataComponent dataStruct;
     public static DataEncoding dataEncoding;
-    private static final Logger logger = LoggerFactory.getLogger(HeartRateOutput.class);
-    public HeartRateOutput(SleepMonitor parent) {
-        super("Sleep Monitor HeartRate Data", parent);
+
+    private static final Logger logger = LoggerFactory.getLogger(OxygenOutput.class);
+
+    public OxygenOutput(Oximeter parent) {
+        super("Sleep Monitor Oxygen Data", parent);
     }
     public void doInit(){
         logger.debug("Initializing Output");
@@ -53,10 +55,10 @@ public class HeartRateOutput extends AbstractSensorOutput<SleepMonitor>{
                         .asSamplingTimeIsoUTC()
                         .label("Sampling Time")
                         .build())
-                .addField("heartRate", fac.createQuantity()
-                        .label("Heart Rate")
-                        .definition(SWEHelper.getPropertyUri("HeartRate"))
-                        .uom("bpm")
+                .addField("oxygenLevel", fac.createQuantity()
+                        .label("Oxygen Levels")
+                        .definition(SWEHelper.getPropertyUri("OxygenLevels"))
+                        .uom("%")
                         .build())
                 .build();
 
@@ -76,10 +78,10 @@ public class HeartRateOutput extends AbstractSensorOutput<SleepMonitor>{
         return dataEncoding;
     }
 
-    public void setHRData(long timestamp, float hr){
+    public void setOxygenData( float oxygenLevels){
         DataBlock dataBlock = dataStruct.createDataBlock();
-        dataBlock.setLongValue(0, timestamp / 1000);
-        dataBlock.setFloatValue(1, hr);
+        dataBlock.setLongValue(0, System.currentTimeMillis() / 1000);
+        dataBlock.setFloatValue(1, oxygenLevels);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();

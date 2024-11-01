@@ -12,14 +12,14 @@ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
  
 ******************************* END LICENSE BLOCK ***************************/
 
-package org.sensorhub.impl.sensor.sleepMonitor;
+package org.sensorhub.impl.sensor.oximeter;
 
 import android.content.Context;
 import android.provider.Settings;
 
 import org.sensorhub.android.SensorHubService;
 import org.sensorhub.api.sensor.SensorConfig;
-import org.sensorhub.impl.sensor.sleepMonitor.outputs.SleepMonitorOutputs;
+import org.sensorhub.impl.sensor.oximeter.outputs.SleepMonitorOutputs;
 
 
 /**
@@ -30,15 +30,10 @@ import org.sensorhub.impl.sensor.sleepMonitor.outputs.SleepMonitorOutputs;
  * @author Kalyn Stricklin
  * @since 05/26/2024
  */
-public class SleepMonitorConfig extends SensorConfig
+public class OximeterConfig extends SensorConfig
 {
-    private final SleepMonitorOutputs output;
     public String deviceName;
     public String deviceID;
-    public SleepMonitorOutputs getOutputs()
-    {
-        return this.output;
-    }
     public String getDeviceName(){
         return this.deviceName;
     }
@@ -46,13 +41,18 @@ public class SleepMonitorConfig extends SensorConfig
         return this.deviceID;
     }
 
-    public SleepMonitorConfig(String deviceName, String deviceID, boolean enableHR, boolean enableOxygen)
-    {
-        this.moduleClass = SleepMonitor.class.getCanonicalName();
+    public OximeterConfig(String deviceName, String deviceID){
+        this.moduleClass = Oximeter.class.getCanonicalName();
         this.deviceID = deviceID;
         this.deviceName = deviceName;
-        this.output = new SleepMonitorOutputs(enableHR, enableOxygen);
     }
+//    public OximeterConfig(String deviceName, String deviceID, boolean enableHR, boolean enableOxygen)
+//    {
+//        this.moduleClass = Oximeter.class.getCanonicalName();
+//        this.deviceID = deviceID;
+//        this.deviceName = deviceName;
+//        this.output = new SleepMonitorOutputs(enableHR, enableOxygen);
+//    }
 
     public static String getUid() {
         Context context = SensorHubService.getContext();

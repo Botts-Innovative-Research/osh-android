@@ -57,23 +57,15 @@ public class ButtonsOutputs extends AbstractSensorOutput<ControllerDriver>{
                 .addField("gamepadData", fac.createRecord()
                         .definition(SWEHelper.getPropertyUri("GamePad"))
                         .addField("buttons", fac.createRecord()
-                                .addField("Mode", fac.createBoolean().value(false))
-                                .addField("A", fac.createBoolean().value(false))
-                                .addField("B", fac.createBoolean().value(false))
-                                .addField("X", fac.createBoolean().value(false))
-                                .addField("Y",fac.createBoolean().value(false))
-                                .addField("LeftThumb", fac.createBoolean().value(false))
-                                .addField("RightThumb", fac.createBoolean().value(false))
-                                .addField("LeftBumper", fac.createBoolean().value(false))
-                                .addField("RightBumper", fac.createBoolean().value(false))
-                                .addField("pov_up", fac.createBoolean().value(false))
-                                .addField("pov_down", fac.createBoolean().value(false))
-                                .addField("pov_left", fac.createBoolean().value(false))
-                                .addField("pov_right", fac.createBoolean().value(false))
-//                                .addField("x", fac.createBoolean().value(false))
-//                                .addField("y", fac.createBoolean().value(false))
-//                                .addField("rx", fac.createBoolean().value(false))
-//                                .addField("ry", fac.createBoolean().value(false))
+                                .addField("Mode", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("A", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("B", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("X", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("Y", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("LeftThumb",fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("RightThumb", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("LeftThumb2", fac.createQuantity().addAllowedValues(0.0, 1.0))
+                                .addField("RightThumb2",fac.createQuantity().addAllowedValues(0.0, 1.0))
                                 .build())
                 )
                 .build();
@@ -123,18 +115,18 @@ public class ButtonsOutputs extends AbstractSensorOutput<ControllerDriver>{
 //
 //    }
 
-    public void setButtonData(long timestamp, boolean mode, boolean A, boolean B, boolean X, boolean Y,  boolean LeftThumb, boolean RightThumb,boolean LeftBumper, boolean RightBumper){
+    public void setButtonData(long timestamp, float mode, float A, float B, float X, float Y,  float LeftThumb, float RightThumb,float LeftBumper, float RightBumper){
         DataBlock dataBlock = dataStruct.createDataBlock();
         dataBlock.setLongValue(0, timestamp / 1000);
-        dataBlock.setBooleanValue(1, mode);
-        dataBlock.setBooleanValue(2, A);
-        dataBlock.setBooleanValue(3, B);
-        dataBlock.setBooleanValue(4, X);
-        dataBlock.setBooleanValue(5, Y);
-        dataBlock.setBooleanValue(6,LeftThumb);
-        dataBlock.setBooleanValue(7,RightThumb);
-        dataBlock.setBooleanValue(8,LeftBumper);
-        dataBlock.setBooleanValue(9,RightBumper);
+        dataBlock.setFloatValue(1, mode);
+        dataBlock.setFloatValue(2, A);
+        dataBlock.setFloatValue(3, B);
+        dataBlock.setFloatValue(4, X);
+        dataBlock.setFloatValue(5, Y);
+        dataBlock.setFloatValue(6,LeftThumb);
+        dataBlock.setFloatValue(7,RightThumb);
+        dataBlock.setFloatValue(8,LeftBumper);
+        dataBlock.setFloatValue(9,RightBumper);
 //        dataBlock.setBooleanValue(10,pov_up);
 //        dataBlock.setBooleanValue(11,pov_down);
 //        dataBlock.setBooleanValue(12,pov_left);

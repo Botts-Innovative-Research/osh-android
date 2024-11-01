@@ -12,7 +12,7 @@ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
  
 ******************************* END LICENSE BLOCK ***************************/
 
-package org.sensorhub.impl.sensor.sleepMonitor;
+package org.sensorhub.impl.sensor.oximeter;
 
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleProvider;
@@ -28,7 +28,7 @@ import org.sensorhub.api.module.ModuleConfig;
  * @author Kalyn Stricklin
  * @since 06/06/2024
  */
-public class SleepMonitorDescriptor implements IModuleProvider
+public class OximeterDescriptor implements IModuleProvider
 {
     @Override
     public String getModuleName()
@@ -53,12 +53,12 @@ public class SleepMonitorDescriptor implements IModuleProvider
     @Override
     public Class<? extends IModule<?>> getModuleClass()
     {
-        return SleepMonitor.class;
+        return Oximeter.class;
     }
     @Override
     public Class<? extends ModuleConfig> getModuleConfigClass()
     {
-        return SleepMonitorConfig.class;
+        return OximeterConfig.class;
     }
 
 }

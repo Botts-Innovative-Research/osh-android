@@ -22,7 +22,7 @@ import net.opengis.sensorml.v20.PhysicalComponent;
 
 import org.sensorhub.android.SensorHubService;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
-import org.sensorhub.impl.sensor.android.SensorMLBuilder;
+//import org.sensorhub.impl.sensor.android.SensorMLBuilder;
 import org.sensorhub.impl.sensor.controller.helpers.ControllerData;
 import org.sensorhub.impl.sensor.controller.helpers.FindController;
 import org.sensorhub.impl.sensor.controller.helpers.GameControllerState;
@@ -44,7 +44,7 @@ public class ControllerDriver extends AbstractSensorModule<ControllerConfig>  {
     static ButtonsOutputs buttonsOutputs;
     static JoystickOutputs joystickOutputs;
     private final ArrayList<PhysicalComponent> smlComponents;
-    private final SensorMLBuilder smlBuilder;
+//    private final SensorMLBuilder smlBuilder;
     private Context context;
     InputManager inputManager;
     GameControllerState gamepad;
@@ -53,7 +53,7 @@ public class ControllerDriver extends AbstractSensorModule<ControllerConfig>  {
 
     public ControllerDriver() {
         this.smlComponents = new ArrayList<PhysicalComponent>();
-        this.smlBuilder = new SensorMLBuilder();
+//        this.smlBuilder = new SensorMLBuilder();
     }
     @Override
     public void doInit() {

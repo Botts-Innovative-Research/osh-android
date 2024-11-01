@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="org.sensorhub.impl.sensor.sleepMonitor"
+    package="org.sensorhub.impl.sensor.oximeter"
     android:versionCode="1"
     android:versionName="1.0" >
     <uses-permission android:name="android.permission.BODY_SENSORS" />

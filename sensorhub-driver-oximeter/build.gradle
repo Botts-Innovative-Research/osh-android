@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 
-description = 'Android Sensors'
+description = 'Android Oxygen Monitor Sensors'
 ext.details = 'Driver for sensors accessible through Android API'
 
 dependencies {
@@ -11,15 +11,8 @@ dependencies {
   api project(':sensorhub-driver-videocam')
   api project(':sensorhub-process-vecmath')
   api project(':sensorhub-android-service')
-
-
-
-  implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
-  implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
-  implementation 'androidx.appcompat:appcompat:1.6.1'
-  implementation project(path: ':sensorhub-driver-android')
-  implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-  implementation 'androidx.core:core:1.5.0'
+  implementation project(':sensorhub-driver-android')
+  implementation 'androidx.appcompat:appcompat:1.7.0'
 
 }
 

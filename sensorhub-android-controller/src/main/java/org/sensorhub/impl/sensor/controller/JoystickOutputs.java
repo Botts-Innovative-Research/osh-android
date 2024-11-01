@@ -35,7 +35,9 @@ public class JoystickOutputs extends AbstractSensorOutput<ControllerDriver> {
                                 .addField("y", fac.createQuantity())
                                 .addField("rx",fac.createQuantity())
                                 .addField("ry",fac.createQuantity())
-                                .addField("pov", fac.createQuantity().addAllowedValues(0.0, 0.125, 0.250, 0.375, 0.500, 0.625, 0.750, 0.875, 1.0).value(0.0))
+                                .addField("pov", fac.createQuantity()
+                                        .addAllowedValues(0.0, 0.125, 0.250, 0.375, 0.500, 0.625, 0.750, 0.875, 1.0)
+                                        .value(0.0))
                                 .build())
 
                 )
