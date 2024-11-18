@@ -1,0 +1,53 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue="MyDevice"
+        android:inputType="text"
+        android:key="device_name"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Device Name" />
+
+    <Preference
+        android:enabled="true"
+        android:key="nop_ipAddress"
+        android:selectable="false"
+        android:summary=""
+        android:title="Current IP Address" />
+
+    <PreferenceCategory android:title="@string/enrollment_settings">
+        <EditTextPreference
+            android:defaultValue="http://127.0.0.1:8585/sensorhub/modules/search"
+            android:inputType="textUri"
+            android:key="enrollment_uri"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Sensor Enrollment Endpoint URL" />
+
+        <EditTextPreference
+            android:inputType="text"
+            android:key="enrollment_username"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="Enter your username or leave blank"
+            android:title="Username" />
+
+        <EditTextPreference
+            android:inputType="textPassword"
+            android:key="enrollment_password"
+            android:selectAllOnFocus="true"
+            android:summary="Enter your password or leave blank"
+            android:title="Password" />
+    </PreferenceCategory>
+
+
+<!--    <SwitchPreference-->
+<!--        android:defaultValue="false"-->
+<!--        android:key="sos_disable_ssl_check"-->
+<!--        android:summary="Disable SSL certificate validation"-->
+<!--        android:title="Disable SSL check" />-->
+
+</PreferenceScreen>

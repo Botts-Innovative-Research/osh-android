@@ -12,5 +12,7 @@
     <header
         android:fragment="org.sensorhub.android.UserSettingsActivity$AudioPreferenceFragment"
         android:title="Audio Settings" />
-    
+    <header
+        android:fragment="org.sensorhub.android.UserSettingsActivity$SensorEnrollmentPreferenceFragment"
+        android:title="@string/pref_header_sensor_enrollment" />
 </preference-headers>

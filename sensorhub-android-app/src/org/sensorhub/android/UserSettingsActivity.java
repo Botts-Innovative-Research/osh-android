@@ -26,17 +26,12 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.support.v7.view.menu.ListMenuPresenter;
 import android.text.InputType;
-import android.text.PrecomputedText;
 import android.util.Log;
 import android.widget.BaseAdapter;
-
-import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -45,10 +40,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
-import java.util.prefs.Preferences;
-
 
 public class UserSettingsActivity extends PreferenceActivity
 {
@@ -164,6 +156,43 @@ public class UserSettingsActivity extends PreferenceActivity
             bindPreferenceSummaryToValue(findPreference("device_name"));
             bindPreferenceSummaryToValue(findPreference("sos_uri"));
             bindPreferenceSummaryToValue(findPreference("sos_username"));
+
+            WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+            int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
+
+            // Convert little-endian to big-endianif needed
+            if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+                ipAddress = Integer.reverseBytes(ipAddress);
+            }
+
+            byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
+
+            String ipAddressString;
+            try {
+                ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
+            } catch (UnknownHostException ex) {
+                ipAddressString = "Unable to get IP Address";
+            }
+
+            Preference ipAddressLabel = getPreferenceScreen().findPreference("nop_ipAddress");
+            ipAddressLabel.setSummary(ipAddressString);
+        }
+    }
+
+    /**
+     * Fragment for sensor enrollment, it takes the pref_enrollment and binds them together
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class SensorEnrollmentPreferenceFragment extends PreferenceFragment
+    {
+        @Override
+        public void onCreate(Bundle savedInstanceState)
+        {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_enrollment);
+            bindPreferenceSummaryToValue(findPreference("device_name"));
+            bindPreferenceSummaryToValue(findPreference("enrollment_uri"));
+            bindPreferenceSummaryToValue(findPreference("enrollment_username"));
 
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             int ipAddress = wifiManager.getConnectionInfo().getIpAddress();

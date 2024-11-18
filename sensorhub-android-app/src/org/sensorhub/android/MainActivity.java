@@ -30,6 +30,9 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+
+
 import android.graphics.SurfaceTexture;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -38,6 +41,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
@@ -46,7 +50,14 @@ import android.view.MenuItem;
 import android.view.TextureView;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
@@ -57,6 +68,7 @@ import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.api.module.ModuleEvent;
 import org.sensorhub.api.sensor.SensorConfig;
+import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
@@ -70,8 +82,10 @@ import org.sensorhub.impl.module.ModuleRegistry;
 import org.sensorhub.impl.sensor.android.AndroidSensorsConfig;
 import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
+import org.sensorhub.impl.sensor.android.video.AndroidCameraOutput;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
@@ -80,7 +94,7 @@ import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.service.sweapi.SWEApiService;
 import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
-import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
+//import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -129,11 +143,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     ArrayList<SOSTClient> sostClients = new ArrayList<SOSTClient>();
     AndroidSensorsDriver androidSensors;
     URL sosUrl = null;
+    URL enrollmentUrl = null;
     boolean showVideo;
 
     String deviceID;
     String deviceName;
     String runName;
+
+    boolean requestSensorEnrollment;
+    String sensorEnrollmentContents = null;
 
     private Flow.Subscription subscription;
     Flow.Subscriber mainActivity = this;
@@ -155,6 +173,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         STERadPager,
     }
 
+    private static final int CAMERA_PIC_REQUEST = 1888;
     
     private ServiceConnection sConn = new ServiceConnection()
     {
@@ -170,6 +189,35 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }
     };
 
+
+//    this is the enrollment config where we will use the enrollment settings to create and send push requests from the UId and config
+    protected void updateEnrollmentConfig(SharedPreferences prefs, String name){
+        deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+        sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
+
+        // get SOS URL from config
+        String enrollmentUriConfig = prefs.getString("enrollment_uri", "http://127.0.0.1:8585");
+        String enrollmentUser = prefs.getString("enrollment_username", null);
+        String enrollmentPwd = prefs.getString("enrollment_password", null);
+        if (enrollmentUriConfig != null && enrollmentUriConfig.trim().length() > 0)
+        {
+            try
+            {
+               enrollmentUrl = new URL(enrollmentUriConfig);
+            }
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        // get device name
+        String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+        String deviceName = prefs.getString("device_name", null);
+        if (deviceName == null || deviceName.length() < 2)
+            deviceName = deviceID;
+
+    }
 
     protected void updateConfig(SharedPreferences prefs, String runName)
     {
@@ -413,16 +461,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }
 
         // STE Rad Pager sensor
-        enabled = prefs.getBoolean("ste_radpager_enabled", false);
-        if(enabled){
-            STERadPagerConfig steRadPagerConfig = new STERadPagerConfig();
-            steRadPagerConfig.id = "STE_RADPAGER_SENSOR";
-            steRadPagerConfig.name = "STE Rad Pager [" + deviceName + "]";
-            steRadPagerConfig.autoStart = true;
-            steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+//        enabled = prefs.getBoolean("ste_radpager_enabled", false);
+//        if(enabled){
+//            STERadPagerConfig steRadPagerConfig = new STERadPagerConfig();
+//            steRadPagerConfig.id = "STE_RADPAGER_SENSOR";
+//            steRadPagerConfig.name = "STE Rad Pager [" + deviceName + "]";
+//            steRadPagerConfig.autoStart = true;
+//            steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+//
+//            sensorhubConfig.add(steRadPagerConfig);
+//        }
 
-            sensorhubConfig.add(steRadPagerConfig);
-        }
+
 
         // AngelSensor
         /*enabled = prefs.getBoolean("angel_enabled", false);
@@ -579,6 +629,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             showAboutPopup();
         }
+        else if (id == R.id.action_enrollment) {
+            scanQRCode();
+
+
+        }
         else if(id == R.id.action_status)
         {
             Intent statusIntent = new Intent(this, AppStatusActivity.class);
@@ -607,7 +662,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     }
 
                 }
-            }else{
+            } else{
                 statusIntent.putExtra("sosService", "N/A");
                 statusIntent.putExtra("httpStatus", "N/A");
                 statusIntent.putExtra("androidSensorStatus", "N/A");
@@ -623,6 +678,59 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    protected synchronized void showSensorEnrollmentPopup(){
+        // Send QR Code data if requestQr is true
+        if(requestSensorEnrollment && sensorEnrollmentContents != null){
+
+        }
+    }
+
+
+    /**
+     * this function will open the camera on osh android app and allow the user to scan a qr code
+     */
+    protected void scanQRCode(){
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.setPrompt("Scan the Sensor's QR Code");
+        integrator.setBeepEnabled(true);
+        integrator.setOrientationLocked(true);
+        integrator.initiateScan();
+    }
+
+
+    /**
+     *  This is for the sensor enrollment where it scans the QR code and the results are then sent in an http request
+     *  to the node that is et up under settings> sensor enrollment
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param intent An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+
+        if(result != null){
+            if(result.getContents() != null){
+                Log.d("QR Code", "Scanned: " + result.getContents());
+                requestSensorEnrollment = true;
+                sensorEnrollmentContents = result.getContents();
+
+
+            }else{
+                Log.d("QR Code", "Failed");
+            }
+        }else{
+            super.onActivityResult(requestCode, resultCode, intent);
+        }
+    }
+
 
 
     protected synchronized void showRunNamePopup()
@@ -752,7 +860,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         });
         alert.show();
     }
-    
+
     
     protected void startRefreshingStatus()
     {
@@ -964,14 +1072,20 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             if(prefs.getBoolean("audio_enabled", false)
                     && prefs.getStringSet("audio_options", Collections.emptySet()).contains("PUSH_REMOTE"))
                 return true;
-        } else if (Sensors.TruPulse.equals(sensor) || Sensors.TruPulseSim.equals(sensor)) {
+        }
+        else if (Sensors.TruPulse.equals(sensor) || Sensors.TruPulseSim.equals(sensor)) {
             return prefs.getBoolean("trupulse_enabled", false)
                     && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
-        } else if(Sensors.BLELocation.equals(sensor)){
+        }
+        else if(Sensors.BLELocation.equals(sensor)){
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
-        } else if(Sensors.STERadPager.equals(sensor)){
+        }
+        else if(Sensors.STERadPager.equals(sensor)){
             return prefs.getBoolean("ste_radpager_enabled", false) && prefs.getStringSet("radpager_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
+//        else if(Sensors.SensorEnrollment.equals(sensor)){
+//            return prefs.getBoolean("sensor_enrollment_enabled", false) && prefs.getStringSet("sensor_enrollment_options", Collections.emptySet()).contains("PUSH_REMOTE");
+//        }
 
         return false;
     }
@@ -1558,6 +1672,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
         }if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+        }
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_RC);
         }
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
