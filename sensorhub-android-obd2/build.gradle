@@ -1,0 +1,15 @@
+apply plugin: 'com.android.library'
+
+description = 'OBD2 Sensor'
+ext.details = 'Driver for OBD2 sensors'
+
+dependencies {
+    api project(':sensorhub-core')
+    implementation "com.android.support:appcompat-v7:28.0.0"
+    implementation project(':sensorhub-android-service')
+    implementation project(':sensorhub-driver-android')
+}
+
+android {
+    compileSdk = 28
+}
