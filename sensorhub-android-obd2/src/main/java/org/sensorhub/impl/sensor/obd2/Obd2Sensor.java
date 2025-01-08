@@ -1,38 +1,30 @@
 package org.sensorhub.impl.sensor.obd2;
 
-import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
 
 import org.sensorhub.android.SensorHubService;
 import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.api.common.SensorHubException;
+import org.sensorhub.impl.sensor.obd2.utils.ConnectionThread;
 
 import java.util.Set;
 import java.util.UUID;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private String deviceName;
     private Context context;
+
+    private ConnectionThread connectionThread;
     private BluetoothAdapter btAdapter;
-    private BluetoothSocket btSocket; // TODO Should this be an attribute?
-    // private BluetoothGatt btGatt;
     Obd2Output output;
     private boolean btConnected = false;
 
@@ -58,7 +50,9 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         }
 
         BluetoothDevice device = null;
+        // TODO What if the device isn't bonded? Do I need to make calls to discover it? Sounds like I might.
         Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
+
 
         // find the bluetooth device
         for (BluetoothDevice d : devices) {
@@ -71,13 +65,8 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
             throw new SensorException("Could not find bluetooth device, unable to start.");
         }
 
-        // create a bluetooth socket
-        try {
-            btSocket = device.createRfcommSocketToServiceRecord(SPP_UUID);
-        } catch (IOException e) {
-            // TODO Is this what I want to happen if creating the socket fails?
-            throw new SensorException("Could not create client socket", e);
-        }
+        // create a bluetooth socket via a thread
+        connectionThread = new ConnectionThread(btAdapter, device);
 
         // TODO Do I need to use location data?
 
@@ -91,19 +80,9 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
     protected void doStart() throws SensorHubException {
         // TODO Do I need to call super.doStart()?
 
-        btAdapter.cancelDiscovery();
-
-        // connect to the bluetooth device
-        try {
-            btSocket.connect();
-        } catch (IOException connectException) {
-            try {
-                btSocket.close();
-            } catch (IOException e) {
-                // TODO Is this what I want to happen if connecting to the socket fails?
-                throw new SensorException("Could not close the client socket", e);
-            }
-        }
+        // connect to the bluetooth device via a thread
+        // TODO How/when should I close the thread?
+        connectionThread.start();
     }
 
     @Override
@@ -128,24 +107,6 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
 
     @Override
     public boolean isConnected() {
-        return btConnected;
+        return connectionThread.isConnected();
     }
-
-    private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                btConnected = true;
-                gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                btConnected = false;
-                // TODO What should I do if connection is lost?
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-
-        }
-    };
 }
