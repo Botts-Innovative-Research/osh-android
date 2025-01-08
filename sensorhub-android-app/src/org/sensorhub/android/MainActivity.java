@@ -81,6 +81,7 @@ import org.sensorhub.impl.service.sweapi.SWEApiService;
 import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
+import org.sensorhub.impl.sensor.obd2.Obd2Config;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -153,6 +154,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         ProxySensor,
         BLELocation,
         STERadPager,
+        Obd2Sensor,
     }
 
     
@@ -422,6 +424,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
 
             sensorhubConfig.add(steRadPagerConfig);
+        }
+
+        // OBD2 sensor
+        enabled = prefs.getBoolean("obd2_enabled", false);
+        if(enabled){
+            Obd2Config obd2Config = new Obd2Config();
+            obd2Config.id = "OBD2_SENSOR";
+            obd2Config.name = "OBD2 [" + deviceName + "]";
+            obd2Config.autoStart = true;
+            obd2Config.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+
+            sensorhubConfig.add(obd2Config);
         }
 
         // AngelSensor
@@ -971,6 +985,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.STERadPager.equals(sensor)){
             return prefs.getBoolean("ste_radpager_enabled", false) && prefs.getStringSet("radpager_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        } else if(Sensors.Obd2Sensor.equals(sensor)){
+            return prefs.getBoolean("obd2_enabled", false) && prefs.getStringSet("obd2_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;

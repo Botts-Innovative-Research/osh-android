@@ -15,7 +15,7 @@ public class Obd2Output extends AbstractSensorOutput<Obd2Sensor> {
         super("obd2Data", parentSensor);
     }
 
-    protected void init() {
+    protected void doInit() {
     }
 
     @Override
