@@ -22,10 +22,9 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
 
     private String deviceName;
     private Context context;
-
     private ConnectionThread connectionThread;
     private BluetoothAdapter btAdapter;
-    Obd2Output output;
+    private Obd2Output output;
     private boolean btConnected = false;
 
     public Obd2Sensor(String deviceName) {
@@ -81,13 +80,14 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         // TODO Do I need to call super.doStart()?
 
         // connect to the bluetooth device via a thread
-        // TODO How/when should I close the thread?
         connectionThread.start();
+
+        // and then what? i think we'll need a command class to send commands to read data. where do we interface with the driver? android? computer? api?
     }
 
     @Override
-    protected void doStop() throws SensorHubException {
-        // TODO Close the socket. Here and/or elsewhere too?
+    protected void doStop() {
+        connectionThread.cancel();
     }
 
     @Override

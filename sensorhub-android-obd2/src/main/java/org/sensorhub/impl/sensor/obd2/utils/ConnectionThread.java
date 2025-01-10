@@ -12,17 +12,15 @@ import java.io.IOException;
 public class ConnectionThread extends Thread {
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private final BluetoothSocket btSocket;
-    private final BluetoothDevice btDevice;
     private final BluetoothAdapter btAdapter;
     volatile boolean active = true;
 
-    public ConnectionThread(BluetoothAdapter adapter, BluetoothDevice device) throws SensorException {
+    public ConnectionThread(BluetoothAdapter adapter, BluetoothDevice btDevice) throws SensorException {
         btAdapter = adapter;
-        btDevice = device;
         BluetoothSocket tmpSocket = null;
 
         try {
-            tmpSocket = device.createRfcommSocketToServiceRecord(SPP_UUID);
+            tmpSocket = btDevice.createRfcommSocketToServiceRecord(SPP_UUID);
         } catch (IOException e) {
             // TODO Is this what I want to happen if creating the socket fails?
             throw new SensorException("Could not create client socket", e);
@@ -48,8 +46,13 @@ public class ConnectionThread extends Thread {
         }
     }
 
-    public void stopThread() {
-        active = false;
+    public void cancel() {
+        try {
+            active = false;
+            btSocket.close();
+        } catch (IOException e) {
+            // TODO What should I do if I can't close the socket?
+        }
     }
 
     public boolean isConnected() {
