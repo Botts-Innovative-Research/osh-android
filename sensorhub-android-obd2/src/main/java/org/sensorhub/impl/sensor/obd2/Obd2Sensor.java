@@ -31,6 +31,10 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         this.deviceName = deviceName;
     }
 
+    public BluetoothSocket getBtSocket() {
+        return connectionThread.getBtSocket();
+    }
+
     @Override
     protected void doInit() throws SensorHubException {
         // TODO Do I to call super.doInit()?
@@ -82,7 +86,7 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         // connect to the bluetooth device via a thread
         connectionThread.start();
 
-        // and then what? i think we'll need a command class to send commands to read data. where do we interface with the driver? android? computer? api?
+        // TODO and then what? i think we'll need a command class to send commands to read data. where do we interface with the driver? android? computer? api?
     }
 
     @Override

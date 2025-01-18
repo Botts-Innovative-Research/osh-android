@@ -1,0 +1,12 @@
+{
+  "DistanceMILOn": {
+    "name": "DistanceMILOn",
+    "description": "Distance traveled (km) with the malfunction indicator lamp (MIL) on",
+    "function": "DistanceMILOnCommand"
+  },
+  "DistanceSinceCC": {
+    "name": "DistanceSinceCC",
+    "description": "Distance traveled (km) since codes cleared-up",
+    "function": "DistanceSinceCCCommand"
+  }
+}

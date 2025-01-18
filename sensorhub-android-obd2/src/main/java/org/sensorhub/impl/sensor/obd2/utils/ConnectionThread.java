@@ -29,6 +29,10 @@ public class ConnectionThread extends Thread {
         btSocket = tmpSocket;
     }
 
+    public BluetoothSocket getBtSocket() {
+        return btSocket;
+    }
+
     public void run() {
         while (active) {
             btAdapter.cancelDiscovery();
