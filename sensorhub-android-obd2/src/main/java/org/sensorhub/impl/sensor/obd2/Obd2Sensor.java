@@ -12,7 +12,6 @@ import org.sensorhub.android.SensorHubService;
 import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.api.common.SensorHubException;
-import org.sensorhub.impl.sensor.obd2.utils.ConnectionThread;
 
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +21,7 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
 
     private String deviceName;
     private Context context;
-    private ConnectionThread connectionThread;
+    private Obd2Connect connectionThread;
     private BluetoothAdapter btAdapter;
     private Obd2Output output;
     private boolean btConnected = false;
@@ -69,7 +68,7 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         }
 
         // create a bluetooth socket via a thread
-        connectionThread = new ConnectionThread(btAdapter, device);
+        connectionThread = new Obd2Connect(btAdapter, device);
 
         // TODO Do I need to use location data?
 
@@ -112,5 +111,10 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
     @Override
     public boolean isConnected() {
         return connectionThread.isConnected();
+    }
+
+    // TODO Is this an ok pattern?
+    public Obd2Output getOutput() {
+        return output;
     }
 }

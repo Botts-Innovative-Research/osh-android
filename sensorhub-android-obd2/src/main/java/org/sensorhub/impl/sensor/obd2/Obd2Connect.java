@@ -1,4 +1,4 @@
-package org.sensorhub.impl.sensor.obd2.utils;
+package org.sensorhub.impl.sensor.obd2;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -9,13 +9,13 @@ import org.sensorhub.api.sensor.SensorException;
 import java.util.UUID;
 import java.io.IOException;
 
-public class ConnectionThread extends Thread {
+public class Obd2Connect extends Thread {
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private final BluetoothSocket btSocket;
     private final BluetoothAdapter btAdapter;
     volatile boolean active = true;
 
-    public ConnectionThread(BluetoothAdapter adapter, BluetoothDevice btDevice) throws SensorException {
+    public Obd2Connect(BluetoothAdapter adapter, BluetoothDevice btDevice) throws SensorException {
         btAdapter = adapter;
         BluetoothSocket tmpSocket = null;
 

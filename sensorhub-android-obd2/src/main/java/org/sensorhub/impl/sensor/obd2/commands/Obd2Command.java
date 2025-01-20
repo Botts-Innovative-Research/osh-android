@@ -4,24 +4,40 @@ import net.opengis.swe.v20.DataRecord;
 
 import org.vast.swe.SWEHelper;
 
-public class Obd2Command {
-    private DataRecord commandRecord;
-    private String function;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-    public Obd2Command(String name, String description, String function) {
+public class Obd2Command extends Thread {
+    private DataRecord record;
+    private int index;
+    private String classRef;
+
+    public Obd2Command(String name, String description, int index, String classRef) {
         SWEHelper swe = new SWEHelper();
-
-        this.function = function;
-        this.commandRecord = swe.createRecord()
+        this.record = swe.createRecord()
                 .name(name)
                 .updatable(true)
                 .label(name)
                 .description(description)
                 .definition(SWEHelper.getPropertyUri(name))
                 .build();
+
+        this.index = index;
+        this.classRef = classRef;
     }
 
-    public DataRecord getCommandRecord() {
-        return commandRecord;
+    public DataRecord getRecord() {
+        return record;
     }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getClassRef() {
+        return classRef;
+    }
+
+    // TODO Does this need a hashcode method since im storing these elsewhere in a Map?
+    // TODO What about toString()?
 }
