@@ -14,11 +14,15 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation project(':sensorhub-datastore-h2')
     implementation project(':sensorhub-service-sweapi')
-//    implementation project(':sensorhub-android-ste')
+
 
 //    QR code dependencies
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.google.zxing:core:3.4.1'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.2'
+//    implementation 'com.google.android.material:material:1.7.0'
+
 
 }
 

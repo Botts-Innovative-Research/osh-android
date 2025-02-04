@@ -1,0 +1,27 @@
+{
+  "objClass": "com.botts.impl.sensor.rapiscan.RapiscanConfig",
+  "serialNumber": "rpm001",
+  "positionConfig": {
+    "objClass": "org.sensorhub.api.sensor.PositionConfig"
+  },
+  "laneID": 0,
+  "setupGammaConfig": {
+    "objClass": "com.botts.impl.sensor.rapiscan.SetupGammaConfig",
+    "intervals": 5,
+    "occupancyHoldin": 10,
+    "nsigma": 7.0
+  },
+  "emlConfig": {
+    "objClass": "com.botts.impl.sensor.rapiscan.EMLConfig",
+    "emlEnabled": false,
+    "isCollimated": false,
+    "laneWidth": 4.820000171661377
+  },
+  "lastUpdated": "2025-01-16T08:45:43.435-0600",
+  "id": "9f3c390c-e22d-4ace-8991-40863ad819b2",
+  "moduleClass": "com.botts.impl.sensor.rapiscan.RapiscanSensor",
+  "name": "New Rapiscan Sensor Driver",
+  "autoStart": false
+}
+
+

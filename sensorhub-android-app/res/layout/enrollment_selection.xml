@@ -1,0 +1,57 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/enrollment_selection"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select one of the options to begin Sensor Enrollment"
+        android:textColor="#000"
+        android:textSize="16sp"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp" />
+
+
+    <com.journeyapps.barcodescanner.BarcodeView
+        android:id="@+id/qr_code_scanner"
+        android:layout_width="225dp"
+        android:layout_height="225dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/enrollment_scan_config"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/scan"
+
+        android:layout_marginBottom="8dp"
+        android:contentDescription="Scan to begin sensor enrollment" />
+
+    <Button
+        android:id="@+id/enrollment_manual"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="Enter Module Manually"
+        android:contentDescription="Enter sensor module manually" />
+
+</LinearLayout>
+
+    <!--    <Button-->
+    <!--        android:id="@+id/enrollment_scan"-->
+    <!--        android:layout_width="250dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:text="Find QR Code and Module" />-->
+
+
+
+

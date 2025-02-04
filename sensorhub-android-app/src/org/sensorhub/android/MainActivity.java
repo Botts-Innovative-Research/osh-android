@@ -30,10 +30,8 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-
-
 import android.graphics.SurfaceTexture;
+import android.graphics.Typeface;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
@@ -41,34 +39,37 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.provider.Settings.Secure;
 import android.text.Html;
+import android.text.InputType;
+import android.util.JsonWriter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.TextureView;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.journeyapps.barcodescanner.BarcodeView;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
-import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
-import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.api.module.ModuleEvent;
 import org.sensorhub.api.sensor.SensorConfig;
-import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
@@ -82,10 +83,9 @@ import org.sensorhub.impl.module.ModuleRegistry;
 import org.sensorhub.impl.sensor.android.AndroidSensorsConfig;
 import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
-import org.sensorhub.impl.sensor.android.video.AndroidCameraOutput;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
-
+import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
@@ -93,16 +93,23 @@ import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.service.sweapi.SWEApiService;
 import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
-import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
-//import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -111,6 +118,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -143,15 +152,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     ArrayList<SOSTClient> sostClients = new ArrayList<SOSTClient>();
     AndroidSensorsDriver androidSensors;
     URL sosUrl = null;
-    URL enrollmentUrl = null;
+    URL getEnrollmentUrl = null;
+    URL postEnrollmentUrl = null;
+    String credentials;
     boolean showVideo;
 
     String deviceID;
     String deviceName;
     String runName;
 
-    boolean requestSensorEnrollment;
-    String sensorEnrollmentContents = null;
 
     private Flow.Subscription subscription;
     Flow.Subscriber mainActivity = this;
@@ -172,8 +181,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         BLELocation,
         STERadPager,
     }
-
-    private static final int CAMERA_PIC_REQUEST = 1888;
     
     private ServiceConnection sConn = new ServiceConnection()
     {
@@ -190,34 +197,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     };
 
 
-//    this is the enrollment config where we will use the enrollment settings to create and send push requests from the UId and config
-    protected void updateEnrollmentConfig(SharedPreferences prefs, String name){
-        deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
-
-        // get SOS URL from config
-        String enrollmentUriConfig = prefs.getString("enrollment_uri", "http://127.0.0.1:8585");
-        String enrollmentUser = prefs.getString("enrollment_username", null);
-        String enrollmentPwd = prefs.getString("enrollment_password", null);
-        if (enrollmentUriConfig != null && enrollmentUriConfig.trim().length() > 0)
-        {
-            try
-            {
-               enrollmentUrl = new URL(enrollmentUriConfig);
-            }
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        // get device name
-        String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        String deviceName = prefs.getString("device_name", null);
-        if (deviceName == null || deviceName.length() < 2)
-            deviceName = deviceID;
-
-    }
 
     protected void updateConfig(SharedPreferences prefs, String runName)
     {
@@ -297,6 +276,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorsConfig.activateNetworkLocation = prefs.getBoolean("netloc_enabled", false);
         sensorsConfig.enableCamera = prefs.getBoolean("cam_enabled", false);
         sensorsConfig.selectedCameraId = Integer.parseInt(prefs.getString("camera_select", "0"));
+
         /*if (sensorsConfig.activateBackCamera || sensorsConfig.activateFrontCamera)
             showVideo = true;*/
         if (sensorsConfig.enableCamera)
@@ -565,6 +545,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         mainInfoArea = (TextView) findViewById(R.id.main_info);
         videoInfoArea = (TextView) findViewById(R.id.video_info);
 
+
         // listen to texture view lifecycle
         TextureView textureView = (TextureView) findViewById(R.id.video);
         textureView.setSurfaceTextureListener(this);
@@ -630,7 +611,40 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             showAboutPopup();
         }
         else if (id == R.id.action_enrollment) {
-            scanQRCode();
+
+            //set enrollment layout
+            setContentView(R.layout.enrollment_selection);
+            Log.d("LayoutSwitch", "Switched to enrollment_conf layout.");
+
+
+            BarcodeView qrCodeView = findViewById(R.id.qr_code_scanner);
+            qrCodeView.decodeContinuous(result ->{
+
+                String scannedResults = result.getText();
+
+                JsonParser parser = new JsonParser();
+                JsonObject sensorObj = parser.parse(scannedResults).getAsJsonObject();
+
+                String uidValue = sensorObj.get("uid").getAsString();
+                String getPath = getEnrollmentUrl + uidValue;
+
+                sendGet(getPath);
+            });
+
+            //if enrollment button clicked it will open the camera to a qr code scanner
+            Button qrBtnCfg = findViewById(R.id.enrollment_scan_config);
+            qrBtnCfg.setOnClickListener(v -> {
+//                scanQRCode();
+                qrCodeView.resume();
+            });
+
+            Button manualBtnCfg = findViewById(R.id.enrollment_manual);
+            manualBtnCfg.setOnClickListener(v -> {
+
+            });
+
+
+            updateEnrollmentConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this));
 
 
         }
@@ -679,59 +693,379 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         return super.onOptionsItemSelected(item);
     }
 
-
-    protected synchronized void showSensorEnrollmentPopup(){
-        // Send QR Code data if requestQr is true
-        if(requestSensorEnrollment && sensorEnrollmentContents != null){
-
-        }
-    }
-
-
     /**
-     * this function will open the camera on osh android app and allow the user to scan a qr code
+     * flow for sensor enrollment
+     * 1. fill out the enrollment form for the node ur pushing ur sensor enrollment to
+     * 2. scan qr code -> extract the sensor name and uid
+     * 3. sends request to endpoint
+     * 4. create fields -> allow user to edit config
+     * 5. collect edited values in config -> send back to endpoint
      */
-    protected void scanQRCode(){
-        IntentIntegrator integrator = new IntentIntegrator(this);
-        integrator.setPrompt("Scan the Sensor's QR Code");
-        integrator.setBeepEnabled(true);
-        integrator.setOrientationLocked(true);
-        integrator.initiateScan();
-    }
 
+    // this is the enrollment config where we will use the enrollment settings to create and send push requests from the UId and config
+    protected void updateEnrollmentConfig(SharedPreferences prefs){
+        deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+        sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
-    /**
-     *  This is for the sensor enrollment where it scans the QR code and the results are then sent in an http request
-     *  to the node that is et up under settings> sensor enrollment
-     * @param requestCode The integer request code originally supplied to
-     *                    startActivityForResult(), allowing you to identify who this
-     *                    result came from.
-     * @param resultCode The integer result code returned by the child activity
-     *                   through its setResult().
-     * @param intent An Intent, which can return result data to the caller
-     *               (various data can be attached to Intent "extras").
-     *
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        // get URLs from config
+        String getEnrollmentUrlConfig = prefs.getString("enrollment_get_url", "http://127.0.0.1:8585/sensorhub/moduleapi/templates/");
+        String postEnrollmentUrlConfig = prefs.getString("enrollment_post_url", "http://127.0.0.1:8585/sensorhub/moduleapi/modules/");
 
-        if(result != null){
-            if(result.getContents() != null){
-                Log.d("QR Code", "Scanned: " + result.getContents());
-                requestSensorEnrollment = true;
-                sensorEnrollmentContents = result.getContents();
+        String enrollmentUser = prefs.getString("enrollment_username", null);
+        String enrollmentPwd = prefs.getString("enrollment_password", null);
 
-
-            }else{
-                Log.d("QR Code", "Failed");
+        credentials = enrollmentUser + ":" + enrollmentPwd;
+        if (getEnrollmentUrlConfig != null && getEnrollmentUrlConfig.trim().length() > 0)
+        {
+            try
+            {
+                getEnrollmentUrl = new URL(getEnrollmentUrlConfig);
+                Toast.makeText(this, getEnrollmentUrl.toString(), Toast.LENGTH_SHORT).show();
             }
-        }else{
-            super.onActivityResult(requestCode, resultCode, intent);
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+
+        if (postEnrollmentUrlConfig != null && postEnrollmentUrlConfig.trim().length() > 0)
+        {
+
+            try
+            {
+                postEnrollmentUrl = new URL(postEnrollmentUrlConfig);
+                Toast.makeText(this, postEnrollmentUrl.toString(), Toast.LENGTH_SHORT).show();
+            }
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+            }
+
         }
     }
 
 
+
+    /**
+     * function to fetch the config from the endpoint and then call the function to parse the
+     * config into dynamic fields to edit
+     **/
+    public void sendGet(String path){
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executorService.execute(() ->{
+            HttpURLConnection httpURLConnection = null;
+
+            try{
+                URL reqURL = new URL (path);
+                httpURLConnection = (HttpURLConnection) reqURL.openConnection();
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.setDoOutput(false);
+
+                //auth header
+                String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+                httpURLConnection.setRequestProperty("Authorization", basicAuth);
+
+
+                //Get response code
+                int responseCode = httpURLConnection.getResponseCode();
+                Log.d("Response Code:", String.valueOf(responseCode));
+
+
+                if(responseCode == HttpURLConnection.HTTP_OK){
+
+                    Log.d("Success", "GET Request was successful: " + responseCode);
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                    StringBuilder responseString = new StringBuilder();
+                    String line;
+                    while((line = reader.readLine()) != null){
+                        responseString.append(line);
+                    }
+                    reader.close();
+
+                    JsonParser parser = new JsonParser();
+                    JsonObject jsonObject = parser.parse(responseString.toString()).getAsJsonObject();
+
+                    Log.d("Response: ", jsonObject.toString());
+
+
+                    handler.post(()->{
+                        Toast.makeText(this, "Successful Response received from node: ", Toast.LENGTH_SHORT).show();
+
+
+                        //set enrollment layout
+                        setContentView(R.layout.enrollment_conf);
+                        Log.d("LayoutSwitch", "Switched to enrollment_conf layout.");
+
+                        // init the layout for the config form to be added to
+                        LinearLayout layout = findViewById(R.id.enrollment_layout_container);
+
+
+                        //create config fields from response
+                        readJsonToFields(jsonObject.toString(), layout);
+
+                        //handle send button for sending config back to endpoint
+                        Button btnCfg = findViewById(R.id.enrollment_btn_config);
+                        btnCfg.setOnClickListener(v -> {
+
+
+                            try {
+                                String configJson = toJsonWriter(layout);
+//                                String configJson = json.toString();
+                                Log.d("Config json: ", configJson);
+                                sendPost(configJson);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            //switch back to main layout
+                            setContentView(R.layout.activity_main);
+                        });
+                    });
+
+
+                }else{
+                    handler.post(()->{
+//                        Toast.makeText(this, "Failed response received from node: ", Toast.LENGTH_SHORT).show();
+                        Log.d("Failed", "Request returned from GET was bad." + responseCode);
+                    });
+
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }finally {
+                if(httpURLConnection != null){
+                    httpURLConnection.disconnect();
+                }
+            }
+        });
+
+    }
+
+    /** function to post a request to the osh admin panel with the updated sensor configuration file
+     *
+     * @param config
+     * @throws IOException
+     */
+    public void sendPost(String config) throws IOException{
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executorService.execute(() ->{
+            HttpURLConnection httpURLConnection = null;
+
+            try{
+
+                httpURLConnection = (HttpURLConnection) postEnrollmentUrl.openConnection();
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                httpURLConnection.setRequestProperty("Accept", "application/json");
+                httpURLConnection.setDoOutput(true);
+
+                //auth header
+                String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+                httpURLConnection.setRequestProperty("Authorization", basicAuth);
+
+                //output body
+                OutputStream outputStream = httpURLConnection.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+                writer.write(config);
+                writer.close();
+                outputStream.close();
+
+                //Get response code
+                int responseCode = httpURLConnection.getResponseCode();
+                Log.d("Response Code:", String.valueOf(responseCode));
+
+                if(responseCode == HttpURLConnection.HTTP_OK){
+
+                    handler.post(()->{
+                        Toast.makeText(this, "Successful POST Response received from node: ", Toast.LENGTH_SHORT).show();
+                        Log.d("Success", "Successful POST Response received from node." + responseCode);
+                    });
+
+                }else{
+                    handler.post(()->{
+                        Toast.makeText(this, "Failed response received from node: ", Toast.LENGTH_SHORT).show();
+                        Log.d("Failed", "POST Request returned was bad." + responseCode);
+                    });
+
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }finally {
+                if(httpURLConnection != null){
+                    httpURLConnection.disconnect();
+                }
+            }
+        });
+
+    }
+
+
+    /**
+     * Find the layout,
+     * @param sensorConfigJson
+     */
+    public void readJsonToFields(String sensorConfigJson, LinearLayout layout){
+
+        //create a new gson instance
+        Gson gson = new Gson();
+
+        //create new instance of json objects and instantiate it from json fields to objects
+        JsonObject jsonObject = gson.fromJson(sensorConfigJson, JsonObject.class);
+        System.out.println("Printing all Json Objects:" + jsonObject);
+
+        //check if json object and layout have values and call the method to create the config form based on the json object and add them to the layer
+        if(jsonObject != null && layout != null){
+            createConfigFields(layout, jsonObject);
+        }
+
+    }
+
+    /**
+     * dynamically adds fields based on the config json that is received from request
+     *
+     * @param layout
+     * @param jsonObject
+     */
+    public void createConfigFields(LinearLayout layout, JsonObject jsonObject) {
+        System.out.println("JSON obj before: " + jsonObject);
+        for (String key : jsonObject.keySet()) {
+            JsonElement element = jsonObject.get(key);
+
+            // Section layout for each field
+            LinearLayout sectionLayout = new LinearLayout(this);
+            sectionLayout.setOrientation(LinearLayout.VERTICAL);
+            sectionLayout.setPadding(16, 16, 16, 16);
+
+            // If the element is a nested JSON object
+            if (element.isJsonObject()) {
+                // Add section heading
+                TextView sectionLabelHeading = new TextView(this);
+                sectionLabelHeading.setText(key);
+                sectionLabelHeading.setTextSize(14);
+                sectionLabelHeading.setTypeface(null, Typeface.BOLD);
+                sectionLabelHeading.setPadding(8, 8, 8, 8);
+
+                // Add heading to layout
+                sectionLayout.addView(sectionLabelHeading);
+
+                // Create nested fields for the nested JSON object
+                LinearLayout nestedSectionLayout = new LinearLayout(this);
+                nestedSectionLayout.setOrientation(LinearLayout.VERTICAL);
+                nestedSectionLayout.setPadding(32, 16, 32, 16);
+                nestedSectionLayout.setTag(key);
+
+                createConfigFields(nestedSectionLayout, element.getAsJsonObject());
+                sectionLayout.addView(nestedSectionLayout);
+            } else {
+                TextView label = new TextView(this);
+                label.setText(key);
+                label.setTextSize(12);
+                label.setTypeface(null, Typeface.BOLD);
+                label.setPadding(8, 8, 8, 8);
+
+                if (element.getAsJsonPrimitive().isString()) {
+                    EditText editText = new EditText(this);
+                    editText.setText(element.getAsString());
+                    editText.setTag(key);
+                    editText.setTextSize(12);
+                    sectionLayout.addView(label);
+                    sectionLayout.addView(editText);
+                } else if (element.getAsJsonPrimitive().isNumber()) {
+                    EditText editText = new EditText(this);
+                    editText.setText(element.getAsString());
+                    editText.setTag(key);
+                    editText.setTextSize(12);
+                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                    sectionLayout.addView(label);
+                    sectionLayout.addView(editText);
+                } else if (element.getAsJsonPrimitive().isBoolean()) {
+                    CheckBox checkBox = new CheckBox(this);
+                    checkBox.setText(key);
+                    checkBox.setChecked(element.getAsBoolean());
+                    checkBox.setTag(key);
+                    sectionLayout.addView(checkBox);
+                }
+            }
+
+            layout.addView(sectionLayout);
+        }
+    }
+
+    public String toJsonWriter(LinearLayout layout)throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriter writer = new JsonWriter(stringWriter);
+
+        writer.setIndent("  ");
+    
+        writeLayoutToJson(writer, layout);
+
+        writer.close();
+        writer.flush();
+
+        return stringWriter.toString();
+    }
+
+    public void writeLayoutToJson(JsonWriter writer, ViewGroup viewGroup) throws IOException{
+       writer.beginObject();
+
+       for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View view = viewGroup.getChildAt(i);
+
+            //android elements that are not nested
+            if(view instanceof EditText || view instanceof CheckBox){
+                if(view.getTag() != null){
+                    if(view instanceof EditText){
+                        writer.name(view.getTag().toString()).value(((EditText) view).getText().toString());
+                    }else if(view instanceof CheckBox){
+                        writer.name(view.getTag().toString()).value(((CheckBox) view).isChecked());
+                    }
+                }
+            }
+            //nested elements
+            else if(view instanceof ViewGroup){
+                ViewGroup childGroup = (ViewGroup) view;
+                if(view.getTag() != null){
+                    writer.name(view.getTag().toString());
+                    writeLayoutToJson(writer, childGroup);
+            
+                }else{
+                    //instead of recursively calling the function its easier to just repeat what we already have done
+                    for (int j = 0; j < childGroup.getChildCount(); j++) {
+                        View childView = childGroup.getChildAt(j);
+                        //check if its nested again
+                        if (childView instanceof ViewGroup) {
+                            if (childView.getTag() != null) {
+                                writer.name(childView.getTag().toString());
+                                writeLayoutToJson(writer, (ViewGroup) childView);
+                            } else {
+                                writeLayoutToJson(writer, (ViewGroup) childView);
+                            }
+                        } else if (childView instanceof EditText || childView instanceof CheckBox) {
+                            if (childView.getTag() != null) {
+                                if (childView instanceof EditText) {
+                                    writer.name(childView.getTag().toString())
+                                          .value(((EditText) childView).getText().toString());
+                                } else {
+                                    writer.name(childView.getTag().toString())
+                                          .value(((CheckBox) childView).isChecked());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+       }
+
+       writer.endObject();
+    }
 
     protected synchronized void showRunNamePopup()
     {
@@ -753,7 +1087,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 String runName = input.getText().toString();
-
 
                 updateConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this), runName);
 
@@ -791,8 +1124,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
                     // Spawn future to wait for event bus to be initialized
 //                    CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
-//
-//
 //                        return true;
 //                    });
 
@@ -1083,10 +1414,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         else if(Sensors.STERadPager.equals(sensor)){
             return prefs.getBoolean("ste_radpager_enabled", false) && prefs.getStringSet("radpager_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
-//        else if(Sensors.SensorEnrollment.equals(sensor)){
-//            return prefs.getBoolean("sensor_enrollment_enabled", false) && prefs.getStringSet("sensor_enrollment_options", Collections.emptySet()).contains("PUSH_REMOTE");
-//        }
-
         return false;
     }
 
@@ -1564,7 +1891,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         super.onResume();
 
         TextureView textureView = (TextureView) findViewById(R.id.video);
-        textureView.setSurfaceTextureListener(this);
+        if (textureView != null) {
+            textureView.setSurfaceTextureListener(this);
+        }
 
         if (oshStarted)
         {

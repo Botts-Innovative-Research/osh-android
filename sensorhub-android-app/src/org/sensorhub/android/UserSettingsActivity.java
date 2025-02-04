@@ -191,7 +191,8 @@ public class UserSettingsActivity extends PreferenceActivity
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_enrollment);
             bindPreferenceSummaryToValue(findPreference("device_name"));
-            bindPreferenceSummaryToValue(findPreference("enrollment_uri"));
+            bindPreferenceSummaryToValue(findPreference("enrollment_get_url"));
+            bindPreferenceSummaryToValue(findPreference("enrollment_post_url"));
             bindPreferenceSummaryToValue(findPreference("enrollment_username"));
 
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);

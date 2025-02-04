@@ -16,9 +16,20 @@
     <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
     <string name="sensor_angel">Angel Sensor</string>
     <string name="sensor_flirone">Flirone Sensor</string>
+    <string name="send">Send</string>
 
-    <string name="action_enrollment">Start Sensor Enrollment</string>
+
+    <string name="submit">Submit</string>
+    <string name="zeroConf">Use ZeroConf</string>
+    <string name="scan">Scan QR Code</string>
+
+    <string name="manual_module">Manually Enter Module</string>
+    <string name="action_enrollment">Sensor Enrollment</string>
     <string name="enrollment_settings">Sensor Enrollment Settings (Required)</string>
+    <string name="username_summary">Enter your username or leave blank</string>
+    <string name="username">Username</string>
+    <string name="password_summary">Enter your password or leave blank</string>
+    <string name="password">Password</string>
 
     <string-array name="video_codec_list">
         <item>JPEG</item>
@@ -208,7 +219,4 @@
         <item>OPUS</item>
         <item>PCM</item>
     </string-array>
-
-
-
 </resources>

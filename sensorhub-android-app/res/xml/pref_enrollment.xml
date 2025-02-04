@@ -16,15 +16,28 @@
         android:summary=""
         android:title="Current IP Address" />
 
+
+
     <PreferenceCategory android:title="@string/enrollment_settings">
         <EditTextPreference
-            android:defaultValue="http://127.0.0.1:8585/sensorhub/modules/search"
+            android:defaultValue= "http://127.0.0.1:8585/sensorhub/moduleapi/templates/"
             android:inputType="textUri"
-            android:key="enrollment_uri"
+            android:key="enrollment_get_url"
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Sensor Enrollment Endpoint URL" />
+            android:title="Enrollment Get Endpoint URL"
+            android:summary="Only modify the host and port (e.g 127.0.0.1:8585)"/>
+
+        <EditTextPreference
+            android:defaultValue= "http://127.0.0.1:8585/sensorhub/moduleapi/modules/"
+            android:inputType="textUri"
+            android:key="enrollment_post_url"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Enrollment Post Endpoint URL"
+            android:summary="Only modify the host and port (e.g 127.0.0.1:8585)" />
 
         <EditTextPreference
             android:inputType="text"
@@ -32,15 +45,15 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="Enter your username or leave blank"
-            android:title="Username" />
+            android:summary="@string/username_summary"
+            android:title="@string/username" />
 
         <EditTextPreference
             android:inputType="textPassword"
             android:key="enrollment_password"
             android:selectAllOnFocus="true"
-            android:summary="Enter your password or leave blank"
-            android:title="Password" />
+            android:summary="@string/password_summary"
+            android:title="@string/password" />
     </PreferenceCategory>
 
 
