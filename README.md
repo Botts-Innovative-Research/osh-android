@@ -51,7 +51,7 @@ You'll also have to enable transactional operations on the server side so the ph
 
 
 ### Rapid Sensor Enrollment
-    The Sensor Enrollment process enables rapid deployment of modules, including sensors, services, and databases, to the OSH Admin panel. This is achieved using the QR code scanner in the OSH Android App and the Module API service.
+The Sensor Enrollment process enables rapid deployment of modules, including sensors, services, and databases, to the OSH Admin panel. This is achieved using the QR code scanner in the OSH Android App and the Module API service.
 
     Requirements:
         - Running OSH Node
