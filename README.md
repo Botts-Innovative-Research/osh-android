@@ -4,11 +4,11 @@ This repo contains modules specific to Android, including:
 
 - A demo Android app
 - A SensorHub service usable by other Android apps
-- Drivers for sensors accessible through the Android 
+- Drivers for sensors accessible through the Android
   [Sensor API](http://developer.android.com/guide/topics/sensors/sensors_overview.html),
   [Camera API](http://developer.android.com/guide/topics/media/camera.html) and
   [Location API](http://developer.android.com/guide/topics/location/index.html)
-  
+
 The demo app allows a phone or tablet running Android 5.0 (Lollipop) or later to send sensor data to a remote OSH node using the SOS-T standard.
 
 Supported sensors include the ones that are on-board the phone:
@@ -51,15 +51,16 @@ You'll also have to enable transactional operations on the server side so the ph
 
 
 ### Rapid Sensor Enrollment
-    The Sensor Enrollment process enables rapid deployment of modules, including sensors, services, and databases, to the OSH Admin panel. This is achieved using the QR code scanner in the OSH Android App and the Module API service.
+The Sensor Enrollment process enables rapid deployment of modules, including sensors, services, and databases, to the OSH Admin panel. This is achieved using the QR code scanner in the OSH Android App and the Module API service.
 
     Requirements:
         - Running OSH Node
         - Android Device
         - QR Code containing Sensors Module Class ID
-    
-    
+
+
 ### Configuring the OSH Android App
+
     Android Setup
     1. Open the OSH Android App.
     2. Tap the three dots in the top right corner to open the menu.
@@ -79,14 +80,15 @@ You'll also have to enable transactional operations on the server side so the ph
     4. Modify any necessary settings for the sensor.
     5. Tap the Send button to post the updated configuration.
 
-    
+
 ### Configuring the Admin Panel
-    Before building the project, ensure the required sensors are included in the settings.gradle and build.gradle files.
-    1. Build the project
+Before building the project, ensure the required sensors are included in the settings.gradle and build.gradle files. 
+        
+    Building the Node
         - Open the project files in your directory
-        - lcoate and extract the build module
-        - click the launch script to start the node
-    2. Access the Admin Panel
+        - Locate and extract the build module
+        - Click the launch script to start the node
+    Accessing the Admin Panel
         - Open a supported browser and go to 'http://ip:port/sensorhub/admin/'
         - Type in the user and pw
         - Click on the 'Services tab'
