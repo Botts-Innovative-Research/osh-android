@@ -60,7 +60,7 @@ The Sensor Enrollment process enables rapid deployment of modules, including sen
     
     
 ### Configuring the OSH Android App
-Android Setup
+    Android Setup
     1. Open the OSH Android App.
     2. Tap the three dots in the top right corner to open the menu.
     3. Navigate to Settings > Sensor Enrollment:
@@ -70,7 +70,7 @@ Android Setup
     4. Exit the Sensor Enrollment settings and return to the main Settings page.
     5. Return to the app's home screen.
 
-Enrolling a Sensor
+    Enrolling a Sensor
     1. Tap the three dots in the top right corner and select Sensor Enrollment.
     2. The Sensor Enrollment page provides two options:
         - Scan a QR Code: Uses the back camera to scan a QR code, automatically initiating the fetch request.
@@ -81,12 +81,12 @@ Enrolling a Sensor
 
     
 ### Configuring the Admin Panel
-Before building the project, ensure the required sensors are included in the settings.gradle and build.gradle files.
-    1. Build the project
+  Before building the project, ensure the required sensors are included in the settings.gradle and build.gradle files.
+      Build the project
         - Open the project files in your directory
         - lcoate and extract the build module
         - click the launch script to start the node
-    2. Access the Admin Panel
+      Access the Admin Panel
         - Open a supported browser and go to 'http://ip:port/sensorhub/admin/'
         - Type in the user and pw
         - Click on the 'Services tab'
