@@ -1,5 +1,8 @@
 package org.sensorhub.impl.sensor.obd2.commands;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import net.opengis.swe.v20.DataRecord;
 
 import org.vast.swe.SWEHelper;
@@ -12,7 +15,15 @@ public class Obd2Command extends Thread {
     private int index;
     private String classRef;
 
-    public Obd2Command(String name, String description, int index, String classRef) {
+    public Obd2Command() {}
+
+    @JsonCreator
+    public Obd2Command(
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("index") int index,
+            @JsonProperty("classRef") String classRef
+    ) {
         SWEHelper swe = new SWEHelper();
         this.record = swe.createRecord()
                 .name(name)

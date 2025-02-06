@@ -9,7 +9,9 @@ import org.sensorhub.impl.sensor.obd2.commands.Obd2Commands;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.vast.swe.SWEHelper;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Array;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,7 +21,7 @@ public class Obd2Output extends AbstractSensorOutput<Obd2Sensor> {
     private static final String SENSOR_OUTPUT_DESCRIPTION = "Output data from the OBD2 Sensors";
     DataComponent dataStruct;
     DataEncoding dataEnc;
-    DataRecord dataRecord;
+//    DataRecord dataRecord;
 
     public Obd2Output(Obd2Sensor parentSensor) {
         super(SENSOR_OUTPUT_NAME, parentSensor);
@@ -32,7 +34,7 @@ public class Obd2Output extends AbstractSensorOutput<Obd2Sensor> {
         DataRecord distanceMILOn = commands.get("DistanceMILOn").getRecord();
         DataRecord DistanceSinceCC = commands.get("DistanceSinceCC").getRecord();
 
-        dataRecord = sweHelper.createRecord()
+        dataStruct = sweHelper.createRecord()
                 .name(SENSOR_OUTPUT_NAME)
                 .label(SENSOR_OUTPUT_LABEL)
                 .description(SENSOR_OUTPUT_DESCRIPTION)
@@ -49,13 +51,15 @@ public class Obd2Output extends AbstractSensorOutput<Obd2Sensor> {
                 .build();
 
         dataEnc = sweHelper.newTextEncoding(",", "\n");
+
+        System.out.println("*** COMPLETED OBD2 OUTPUT INIT");
     }
 
     // TODO Order of results is not guaranteed so i can't rely on the index
     public void setData(ArrayList<HashMap<Integer, String>> results) {
         long timestamp = System.currentTimeMillis();
 
-        DataBlock dataBlock = latestRecord == null ? dataRecord.createDataBlock() : latestRecord.renew();
+        DataBlock dataBlock = latestRecord == null ? dataStruct.createDataBlock() : latestRecord.renew();
         dataBlock.setDoubleValue(0, timestamp / 1000d);
 
         for (HashMap<Integer, String> result: results) {

@@ -1,0 +1,14 @@
+{
+  "DistanceMILOn": {
+    "name": "DistanceMILOn",
+    "description": "Distance traveled (km) with the malfunction indicator lamp (MIL) on",
+    "index": 1,
+    "classRef": "com.github.pires.obd.commands.control.DistanceMILOnCommand"
+  },
+  "DistanceSinceCC": {
+    "name": "DistanceSinceCC",
+    "description": "Distance traveled (km) since codes cleared-up",
+    "index": 2,
+    "classRef": "com.github.pires.obd.commands.control.DistanceSinceCCCommand"
+  }
+}

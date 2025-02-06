@@ -1,25 +1,40 @@
 package org.sensorhub.impl.sensor.obd2.commands;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Map;
+import java.io.InputStream;
+import java.io.FileNotFoundException;
 
 public final class Obd2Commands {
     private static volatile Obd2Commands instance;
     private Map<String, Obd2Command> commands;
 
     private Obd2Commands() {
-        File file = new File("/commands.json");
-        ObjectMapper objectMapper = new ObjectMapper();
+        String fileName = "commands.json";
 
-        // TODO Test that this works as expected
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName);
+        if (inputStream == null) {
+            throw new RuntimeException("File not found: " + fileName);
+        }
+
+        System.out.println("*** RESOURCE: " + inputStream);
+
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            commands = objectMapper.readValue(file, objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Obd2Command.class));
+            commands = objectMapper.readValue(inputStream, new TypeReference<Map<String, Obd2Command>>() {});
         } catch (IOException e) {
             // TODO
+            System.out.println("*** ERROR READING FILE OBJECT: " + e);
         }
+
+        System.out.println("*** COMMANDS: " + commands);
+
     }
 
     public static Obd2Commands getInstance() {
@@ -40,6 +55,8 @@ public final class Obd2Commands {
     }
 
     public Obd2Command get(String name) {
+        System.out.println("*** COMMAND NAME: " + name);
+        System.out.println(commands);
         return commands.get(name);
     }
 }

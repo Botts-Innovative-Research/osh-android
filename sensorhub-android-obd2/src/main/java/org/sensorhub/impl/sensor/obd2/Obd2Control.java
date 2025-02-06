@@ -15,10 +15,12 @@ import org.vast.swe.SWEHelper;
 import com.github.pires.obd.commands.control.DistanceMILOnCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +46,7 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
 
     @Override
     protected boolean execCommand(DataBlock commandBlock) throws CommandException {
+        System.out.println("*** EXECUTE COMMAND");
         try {
             DataRecord commandData = commandStruct.copy();
             commandData.setData(commandBlock);
@@ -85,6 +88,7 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
     }
 
     public void init() {
+        System.out.println("*** INITIALIZING OBD2 CONTROL");
         commands = Obd2Commands.getInstance();
         SWEHelper swe = new SWEHelper();
 
@@ -101,6 +105,8 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
                                 .definition(SWEHelper.getPropertyUri("TriggerControl"))
                                 .description("Triggers the OBD-II sensor to read all available data"))
                 .build();
+
+        System.out.println("*** INITIALIZED OBD2 CONTROL");
     }
 
     public void stop() {

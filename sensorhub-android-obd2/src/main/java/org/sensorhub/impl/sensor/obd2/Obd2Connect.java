@@ -16,6 +16,8 @@ public class Obd2Connect extends Thread {
     volatile boolean active = true;
 
     public Obd2Connect(BluetoothAdapter adapter, BluetoothDevice btDevice) throws SensorException {
+        System.out.println("*** STARTING OBD2CONNECT");
+
         btAdapter = adapter;
         BluetoothSocket tmpSocket = null;
 
@@ -27,6 +29,8 @@ public class Obd2Connect extends Thread {
         }
 
         btSocket = tmpSocket;
+
+        System.out.println("*** COMPLETED OBD2CONNECT");
     }
 
     public BluetoothSocket getBtSocket() {
@@ -34,20 +38,22 @@ public class Obd2Connect extends Thread {
     }
 
     public void run() {
-        while (active) {
-            btAdapter.cancelDiscovery();
+        System.out.println("*** RUNNING OBD2CONNECT");
 
-            // connect to the bluetooth device
-            try {
-                btSocket.connect();
-            } catch (IOException connectException) {
-                try {
-                    btSocket.close();
-                } catch (IOException e) {
-                    // TODO What should I do if I can't close the socket?
-                }
-            }
-        }
+//        while (active) {
+//            btAdapter.cancelDiscovery();
+//
+//            // connect to the bluetooth device
+//            try {
+//                btSocket.connect();
+//            } catch (IOException connectException) {
+//                try {
+//                    btSocket.close();
+//                } catch (IOException e) {
+//                    // TODO What should I do if I can't close the socket?
+//                }
+//            }
+//        }
     }
 
     public void cancel() {

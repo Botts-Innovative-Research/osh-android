@@ -24,19 +24,21 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
     private Obd2Connect connectionThread;
     private BluetoothAdapter btAdapter;
     private Obd2Output output;
+    private Obd2Control control;
     private boolean btConnected = false;
 
-    public Obd2Sensor(String deviceName) {
-        this.deviceName = deviceName;
-    }
+    public Obd2Sensor() {}
 
     public BluetoothSocket getBtSocket() {
         return connectionThread.getBtSocket();
     }
 
     @Override
-    protected void doInit() throws SensorHubException {
+    public void doInit() throws SensorHubException {
+        System.out.println("*** INITIALIZING OBD2 SENSOR ***");
+
         // TODO Do I to call super.doInit()?
+        super.doInit();
 
         // set IDs
         this.xmlID = "OBD2_" + Build.SERIAL;
@@ -52,13 +54,12 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         }
 
         BluetoothDevice device = null;
-        // TODO What if the device isn't bonded? Do I need to make calls to discover it? Sounds like I might.
         Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
-
 
         // find the bluetooth device
         for (BluetoothDevice d : devices) {
-            if (d.getName().equals(deviceName)) {
+            // TODO Get device name from config
+            if (d.getName().equals("VEEPEAK")) {
                 device = d;
             }
         }
@@ -76,14 +77,23 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         output = new Obd2Output(this);
         output.doInit();
         addOutput(output, false);
+
+        control = new Obd2Control(this);
+        addControlInput(control);
+        control.init();
+
+        System.out.println("*** COMPLETED OBD2 SENSOR INIT");
     }
 
     @Override
     protected void doStart() throws SensorHubException {
         // TODO Do I need to call super.doStart()?
+        System.out.println("*** STARTING OBD2 SENSOR...");
+        super.doStart();
 
         // connect to the bluetooth device via a thread
-        connectionThread.start();
+        // TODO I think we're already connected so there's no point in doing this unless i want to connect via osh and not the device
+        //  connectionThread.start();
 
         // TODO and then what? i think we'll need a command class to send commands to read data. where do we interface with the driver? android? computer? api?
     }
