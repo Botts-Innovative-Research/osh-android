@@ -35,8 +35,6 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
 
     @Override
     public void doInit() throws SensorHubException {
-        System.out.println("*** INITIALIZING OBD2 SENSOR ***");
-
         // TODO Do I to call super.doInit()?
         super.doInit();
 
@@ -70,6 +68,7 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
 
         // create a bluetooth socket via a thread
         connectionThread = new Obd2Connect(btAdapter, device);
+//        connectionThread.start();
 
         // TODO Do I need to use location data?
 
@@ -81,19 +80,15 @@ public class Obd2Sensor extends AbstractSensorModule<Obd2Config> {
         control = new Obd2Control(this);
         addControlInput(control);
         control.init();
-
-        System.out.println("*** COMPLETED OBD2 SENSOR INIT");
     }
 
     @Override
     protected void doStart() throws SensorHubException {
         // TODO Do I need to call super.doStart()?
-        System.out.println("*** STARTING OBD2 SENSOR...");
         super.doStart();
 
         // connect to the bluetooth device via a thread
-        // TODO I think we're already connected so there's no point in doing this unless i want to connect via osh and not the device
-        //  connectionThread.start();
+          connectionThread.start();
 
         // TODO and then what? i think we'll need a command class to send commands to read data. where do we interface with the driver? android? computer? api?
     }

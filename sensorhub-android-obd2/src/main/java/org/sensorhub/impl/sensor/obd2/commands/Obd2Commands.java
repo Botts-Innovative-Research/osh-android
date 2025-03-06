@@ -23,8 +23,6 @@ public final class Obd2Commands {
             throw new RuntimeException("File not found: " + fileName);
         }
 
-        System.out.println("*** RESOURCE: " + inputStream);
-
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             commands = objectMapper.readValue(inputStream, new TypeReference<Map<String, Obd2Command>>() {});
@@ -32,9 +30,6 @@ public final class Obd2Commands {
             // TODO
             System.out.println("*** ERROR READING FILE OBJECT: " + e);
         }
-
-        System.out.println("*** COMMANDS: " + commands);
-
     }
 
     public static Obd2Commands getInstance() {
@@ -55,8 +50,6 @@ public final class Obd2Commands {
     }
 
     public Obd2Command get(String name) {
-        System.out.println("*** COMMAND NAME: " + name);
-        System.out.println(commands);
         return commands.get(name);
     }
 }

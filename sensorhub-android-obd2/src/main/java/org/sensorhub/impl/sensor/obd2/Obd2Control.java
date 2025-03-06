@@ -1,5 +1,6 @@
 package org.sensorhub.impl.sensor.obd2;
 
+import net.opengis.swe.v20.CategoryOrRange;
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataChoice;
 import net.opengis.swe.v20.DataRecord;
@@ -32,7 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
-    DataChoice commandData;    DataRecord commandStruct;
+    DataChoice commandData;
+    DataRecord commandStruct;
     Obd2Commands commands;
 
     public Obd2Control(Obd2Sensor parentSensor) {
@@ -46,7 +48,6 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
 
     @Override
     protected boolean execCommand(DataBlock commandBlock) throws CommandException {
-        System.out.println("*** EXECUTE COMMAND");
         try {
             DataRecord commandData = commandStruct.copy();
             commandData.setData(commandBlock);
@@ -57,12 +58,14 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
             InputStream in = parentSensor.getBtSocket().getInputStream();
             OutputStream out = parentSensor.getBtSocket().getOutputStream();
 
+            // TODO check boolean value of the trigger control
+
             try {
                 ArrayList<HashMap<Integer, String>> results = new ArrayList<>();
                 ExecutorService executor = Executors.newFixedThreadPool(commands.getCommands().size());
 
                 for (Obd2Command command: commands.getCommands().values()) {
-                    Obd2Command obd2Command = commands.get(command.getName());
+                    Obd2Command obd2Command = commands.get(command.getCommandName());
                     Callable<HashMap<Integer, String>> task = new Obd2CommandTask(obd2Command, in, out);
                     Future<HashMap<Integer, String>> future = executor.submit(task);
 
@@ -88,7 +91,6 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
     }
 
     public void init() {
-        System.out.println("*** INITIALIZING OBD2 CONTROL");
         commands = Obd2Commands.getInstance();
         SWEHelper swe = new SWEHelper();
 
@@ -105,8 +107,6 @@ public class Obd2Control extends AbstractSensorControl<Obd2Sensor> {
                                 .definition(SWEHelper.getPropertyUri("TriggerControl"))
                                 .description("Triggers the OBD-II sensor to read all available data"))
                 .build();
-
-        System.out.println("*** INITIALIZED OBD2 CONTROL");
     }
 
     public void stop() {

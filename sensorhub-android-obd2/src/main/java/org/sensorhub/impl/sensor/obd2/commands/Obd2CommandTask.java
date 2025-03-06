@@ -37,6 +37,7 @@ public class Obd2CommandTask implements Callable<HashMap<Integer, String>> {
         } catch (NoSuchMethodException e) {
             System.err.println("Method 'run' not found in class: " + classRef);
         } catch (Exception e) {
+            System.out.println("*** ERROR: " + e);
             e.printStackTrace();
         }
 

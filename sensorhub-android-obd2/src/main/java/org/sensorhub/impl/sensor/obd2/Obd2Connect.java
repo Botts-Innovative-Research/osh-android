@@ -8,6 +8,7 @@ import org.sensorhub.api.sensor.SensorException;
 
 import java.util.UUID;
 import java.io.IOException;
+import java.util.Set;
 
 public class Obd2Connect extends Thread {
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -16,8 +17,6 @@ public class Obd2Connect extends Thread {
     volatile boolean active = true;
 
     public Obd2Connect(BluetoothAdapter adapter, BluetoothDevice btDevice) throws SensorException {
-        System.out.println("*** STARTING OBD2CONNECT");
-
         btAdapter = adapter;
         BluetoothSocket tmpSocket = null;
 
@@ -29,8 +28,6 @@ public class Obd2Connect extends Thread {
         }
 
         btSocket = tmpSocket;
-
-        System.out.println("*** COMPLETED OBD2CONNECT");
     }
 
     public BluetoothSocket getBtSocket() {
@@ -38,7 +35,18 @@ public class Obd2Connect extends Thread {
     }
 
     public void run() {
-        System.out.println("*** RUNNING OBD2CONNECT");
+        btAdapter.cancelDiscovery();
+
+        try {
+            btSocket.connect();
+        } catch (IOException connectException) {
+            try {
+                btSocket.close();
+            } catch (IOException closeException) {
+                // TODO
+            }
+        }
+
 
 //        while (active) {
 //            btAdapter.cancelDiscovery();
@@ -47,6 +55,7 @@ public class Obd2Connect extends Thread {
 //            try {
 //                btSocket.connect();
 //            } catch (IOException connectException) {
+//                System.out.println("*** CONNECTION ERROR: " + connectException);
 //                try {
 //                    btSocket.close();
 //                } catch (IOException e) {
@@ -58,7 +67,6 @@ public class Obd2Connect extends Thread {
 
     public void cancel() {
         try {
-            active = false;
             btSocket.close();
         } catch (IOException e) {
             // TODO What should I do if I can't close the socket?

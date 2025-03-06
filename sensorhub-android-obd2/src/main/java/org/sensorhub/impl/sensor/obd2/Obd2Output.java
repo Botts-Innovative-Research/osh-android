@@ -51,8 +51,6 @@ public class Obd2Output extends AbstractSensorOutput<Obd2Sensor> {
                 .build();
 
         dataEnc = sweHelper.newTextEncoding(",", "\n");
-
-        System.out.println("*** COMPLETED OBD2 OUTPUT INIT");
     }
 
     // TODO Order of results is not guaranteed so i can't rely on the index

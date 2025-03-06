@@ -10,10 +10,11 @@ import org.vast.swe.SWEHelper;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class Obd2Command extends Thread {
+public class  Obd2Command extends Thread {
     private DataRecord record;
     private int index;
     private String classRef;
+    private String name;
 
     public Obd2Command() {}
 
@@ -35,6 +36,7 @@ public class Obd2Command extends Thread {
 
         this.index = index;
         this.classRef = classRef;
+        this.name = name; // TODO Is this necessary or can i get it from the record?
     }
 
     public DataRecord getRecord() {
@@ -48,6 +50,8 @@ public class Obd2Command extends Thread {
     public String getClassRef() {
         return classRef;
     }
+
+    public String getCommandName() { return name; }
 
     // TODO Does this need a hashcode method since im storing these elsewhere in a Map?
     // TODO What about toString()?
