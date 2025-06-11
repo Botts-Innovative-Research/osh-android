@@ -1,10 +1,10 @@
 rootProject.name = 'osh-android'
 def includeBaseDir = "$rootDir/submodules"
-gradle.ext.oshCoreDir = "$includeBaseDir/osh-core-11-backport"
+gradle.ext.oshCoreDir = "$includeBaseDir/osh-core"
 
 // include builds from other repos
 def repos = [
-    'osh-core-11-backport': [
+    'osh-core': [
         'lib-ogc/swe-common-core',
         'lib-ogc/swe-common-om',
         'lib-ogc/sensorml-core',
