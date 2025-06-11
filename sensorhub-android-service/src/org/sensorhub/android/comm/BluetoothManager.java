@@ -17,6 +17,7 @@ package org.sensorhub.android.comm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -114,10 +115,16 @@ public class BluetoothManager
     public BluetoothDevice findDevice(String deviceNameRegex) throws IOException
     {
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if(btAdapter == null || !btAdapter.isEnabled()) throw new IOException("Bluetooth is not available or not enabled");
+
         for (BluetoothDevice dev: btAdapter.getBondedDevices())
         {
-            if (dev.getName().matches(deviceNameRegex))
+            if(dev.getName() != null && dev.getName().startsWith(deviceNameRegex)){
                 return dev;
+            }
+//            if (dev.getName().matches(deviceNameRegex))
+//              return dev;
         }
         
         throw new IOException("Cannot find device " + deviceNameRegex);

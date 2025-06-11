@@ -399,7 +399,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             trupulseConfig.lastUpdated = TRUPULSE_SENSOR_LAST_UPDATED;
             trupulseConfig.serialNumber = deviceID;
             BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
-            btConf.protocol.deviceName = "TP360RB.*";
+            btConf.protocol.deviceName = "TP360";
             if (prefs.getBoolean("trupulse_simu", false))
                 btConf.moduleClass = SimulatedDataStream.class.getCanonicalName();
             else
@@ -591,7 +591,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     var moduleConf = module.getConfiguration();
                     String status = module.getCurrentState().name();
 
-                    switch (moduleConf.id){
+                    switch (((ModuleConfig)moduleConf).id){
                         case "HTTP_SERVER_0":
                             statusIntent.putExtra("httpStatus", status);
                             break;
