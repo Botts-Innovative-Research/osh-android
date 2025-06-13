@@ -331,14 +331,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             addSosTConfig(androidSensorsConfig, sosUser, sosPwd);
         }
 
-        SWEApiServiceConfig sweApiServiceConfig = new SWEApiServiceConfig();
-        sweApiServiceConfig.moduleClass = SWEApiService.class.getCanonicalName();
-        sweApiServiceConfig.id = "SWEAPI_SERVICE";
-        sweApiServiceConfig.name = "SWE API Service";
-        sweApiServiceConfig.autoStart = true;
-        sweApiServiceConfig.enableHttpGET = true;
-
-        sensorhubConfig.add(sweApiServiceConfig);
+//        SWEApiServiceConfig sweApiServiceConfig = new SWEApiServiceConfig();
+//        sweApiServiceConfig.moduleClass = SWEApiService.class.getCanonicalName();
+//        sweApiServiceConfig.id = "SWEAPI_SERVICE";
+//        sweApiServiceConfig.name = "SWE API Service";
+//        sweApiServiceConfig.autoStart = true;
+//        sweApiServiceConfig.enableHttpGET = true;
+//
+//        sensorhubConfig.add(sweApiServiceConfig);
 
 
         //Storage Configuration
@@ -393,13 +393,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
             }
 
+
             trupulseConfig.id = "TRUPULSE_SENSOR";
             trupulseConfig.name = "TruPulse Range Finder [" + deviceName + "]";
             trupulseConfig.autoStart = true;
             trupulseConfig.lastUpdated = TRUPULSE_SENSOR_LAST_UPDATED;
             trupulseConfig.serialNumber = deviceID;
             BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
-            btConf.protocol.deviceName = "TP360";
+            btConf.protocol.deviceName = prefs.getString("trupulse_device_name", "TP360");
             if (prefs.getBoolean("trupulse_simu", false))
                 btConf.moduleClass = SimulatedDataStream.class.getCanonicalName();
             else

@@ -286,13 +286,17 @@ public class UserSettingsActivity extends PreferenceActivity
             Preference trupulseEnabled = getPreferenceScreen().findPreference("trupulse_enabled");
             Preference trupulseOptions = getPreferenceScreen().findPreference("trupulse_options");
             Preference trupulseDatasource = getPreferenceScreen().findPreference("trupulse_datasource");
+            Preference trupulseDeviceName = getPreferenceScreen().findPreference("trupulse_device_name");
             trupulseOptions.setEnabled(prefs.getBoolean(trupulseEnabled.getKey(), false));
             trupulseDatasource.setEnabled(prefs.getBoolean(trupulseEnabled.getKey(), false));
             trupulseEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 trupulseOptions.setEnabled((boolean) newValue);
                 trupulseDatasource.setEnabled((boolean) newValue);
+                trupulseDeviceName.setEnabled((boolean) newValue);
                 return true;
             });
+
+
 
 //            Preference bleEnable = getPreferenceScreen().findPreference("ble_enabled");
 //            Preference bleLocationMethod = getPreferenceScreen().findPreference("ble_loc_method");

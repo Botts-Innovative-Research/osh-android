@@ -61,6 +61,7 @@
         <item>PUSH_REMOTE</item>
     </string-array>
 
+    <string name="trupulse_device_name">Trupulse Device Name</string>
     <string-array name="trupulse_datasource_list">
         <item>Streaming Physical Device</item>
         <item>Simulate Virtual Device</item>

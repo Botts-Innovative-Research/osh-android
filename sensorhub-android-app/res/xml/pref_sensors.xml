@@ -176,11 +176,20 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+        <EditTextPreference
+            android:key="trupulse_device_name"
+            android:title="Trupulse Bluetooth Device Name"
+            android:summary="Enter the Trupulse Bluetooth Device Name"
+            android:defaultValue="TP360i-000207"
+            />
+
         <SwitchPreference
             android:defaultValue="false"
             android:key="trupulse_simu"
             android:summary="Use simulated TruPulse data instead of the actual sensor data"
             android:title="Use Simulated TruPulse Data" />
+
+
 
         <SwitchPreference
             android:defaultValue="false"
@@ -231,6 +240,7 @@
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
+
 
     </PreferenceCategory>
 
