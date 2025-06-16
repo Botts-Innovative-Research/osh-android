@@ -162,8 +162,11 @@ public class UserSettingsActivity extends PreferenceActivity
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             bindPreferenceSummaryToValue(findPreference("device_name"));
-            bindPreferenceSummaryToValue(findPreference("sos_uri"));
-            bindPreferenceSummaryToValue(findPreference("sos_username"));
+            bindPreferenceSummaryToValue(findPreference("ip_address"));
+            bindPreferenceSummaryToValue(findPreference("port"));
+            bindPreferenceSummaryToValue(findPreference("username"));
+            bindPreferenceSummaryToValue(findPreference("password"));
+
 
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             int ipAddress = wifiManager.getConnectionInfo().getIpAddress();

@@ -75,15 +75,20 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
+import org.sensorhub.impl.service.consys.ConSysApiService;
+import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
+import org.sensorhub.impl.service.consys.client.ConSysApiClient;
+import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
+import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
-import org.sensorhub.impl.service.sweapi.SWEApiService;
-import org.sensorhub.impl.service.sweapi.SWEApiServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -127,10 +132,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     StringBuffer videoInfoText = new StringBuffer();
     boolean oshStarted = false;
     ArrayList<SOSTClient> sostClients = new ArrayList<SOSTClient>();
+    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList< ConSysApiClientModule>();
+
     AndroidSensorsDriver androidSensors;
     URL sosUrl = null;
     boolean showVideo;
-
+    URI clientUri = null;
     String deviceID;
     String deviceName;
     String runName;
@@ -176,21 +183,38 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
-        // get SOS URL from config
-        String sosUriConfig = prefs.getString("sos_uri", "http://127.0.0.1:8585");
-        String sosUser = prefs.getString("sos_username", null);
-        String sosPwd = prefs.getString("sos_password", null);
-        if (sosUriConfig != null && sosUriConfig.trim().length() > 0)
-        {
-            try
-            {
-                sosUrl = new URL(sosUriConfig);
-            }
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-            }
+        //get ip, port, user, password
+        String ip_address = prefs.getString("ip_address", "").trim();
+        String port = prefs.getString("port", "").trim();
+        String user = prefs.getString("username", null);
+        String password = prefs.getString("password", null);
+
+        Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
+        Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
+        Boolean isClientEnabled = prefs.getBoolean("enable_client", true);
+        Boolean isTLSEnabled = prefs.getBoolean("enable_tls", false);
+
+        if(ip_address.isEmpty()){
+            ip_address = "127.0.0.1";
         }
+
+        if(port.isEmpty()){
+            port = "8585";
+        }
+
+        String sensorhubEndpoint = "/sensorhub";
+
+        String newUrl = (isTLSEnabled ? "https://" : "http://") + ip_address + ":" + port + sensorhubEndpoint;
+
+        try{
+            clientUri = new URI(newUrl);
+
+            System.out.println("CLIENT URI" + clientUri);
+
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
 
         // disable SSL check if requested
         boolean disableSslCheck = prefs.getBoolean("sos_disable_ssl_check", false);
@@ -296,24 +320,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorsConfig.audioConfig.bitRate = Integer.parseInt(prefs.getString("audio_bitrate", "64"));
 
         sensorsConfig.runName = runName;
-//        sensorhubConfig.add(sensorsConfig);
-//        addSosTConfig(sensorsConfig, sosUser, sosPwd);
+
 
         // START SOS Config ************************************************************************
-//        if(prefs.getBoolean("hub_enable", true)) {
-//        if(shouldServe(prefs)) {
             // Setup HTTPServerConfig for enabling more complete node functionality
-            HttpServerConfig serverConfig = new HttpServerConfig();
-            serverConfig.proxyBaseUrl = "";
-            serverConfig.httpPort = 8585;
-            serverConfig.autoStart = true;
-            sensorhubConfig.add(serverConfig);
-//        }
-
-        // SOS Config
-//        SOSServiceConfig sosConfig = new SOSServiceWithIPCConfig();
-//        sosConfig.moduleClass = SOSServiceWithIPC.class.getCanonicalName();
-//        ((SOSServiceWithIPCConfig) sosConfig).androidContext = this.getApplicationContext();
+        HttpServerConfig serverConfig = new HttpServerConfig();
+        serverConfig.proxyBaseUrl = "";
+        serverConfig.httpPort = 8585;
+        serverConfig.autoStart = true;
+        sensorhubConfig.add(serverConfig);
 
         // We don't need android context unless we're doing IPC things
         SOSServiceConfig sosConfig = new SOSServiceConfig();
@@ -324,22 +339,30 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sosConfig.enableTransactional = true;
         sosConfig.exposedResources = new ObsSystemDatabaseViewConfig();
 
+
+        //Connected systems service
+        ConSysApiServiceConfig conSysApiService = new ConSysApiServiceConfig();
+        conSysApiService.moduleClass = ConSysApiService.class.getCanonicalName();
+        conSysApiService.id = "CON_SYS_SERVICE";
+        conSysApiService.name= "Connected Systems API Service";
+        conSysApiService.autoStart = true;
+        conSysApiService.enableTransactional = true;
+        conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
+
         // Push Sensors Config
         AndroidSensorsConfig androidSensorsConfig = sensorsConfig;
         sensorhubConfig.add(androidSensorsConfig);
+
         if (isPushingSensor(Sensors.Android)) {
-            addSosTConfig(androidSensorsConfig, sosUser, sosPwd);
+            if(isClientEnabled){
+                System.out.println("Connected Systems Client enabled");
+                addCSApiConfig(androidSensorsConfig, user, password);
+            }else {
+                System.out.println("SOST Client enabled");
+                addSosTConfig(androidSensorsConfig, user, password);
+            }
+
         }
-
-//        SWEApiServiceConfig sweApiServiceConfig = new SWEApiServiceConfig();
-//        sweApiServiceConfig.moduleClass = SWEApiService.class.getCanonicalName();
-//        sweApiServiceConfig.id = "SWEAPI_SERVICE";
-//        sweApiServiceConfig.name = "SWE API Service";
-//        sweApiServiceConfig.autoStart = true;
-//        sweApiServiceConfig.enableHttpGET = true;
-//
-//        sensorhubConfig.add(sweApiServiceConfig);
-
 
         //Storage Configuration
 //        if(prefs.getBoolean("hub_enable", true) && prefs.getBoolean("hub_enable_local_storage", true)) {
@@ -478,8 +501,16 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             addSosTConfig(djiConfig, sosUser, sosPwd);
         }*/
 
-        // TODO add missing SOS SERVICE config to sensorhub
-        sensorhubConfig.add(sosConfig);
+        if(isApiServiceEnabled){
+            //add connected sys service
+            System.out.println("Connected Systems Service enabled");
+            sensorhubConfig.add(conSysApiService);
+        }
+        if(isSosServiceEnabled){
+            //if off add sos service
+            System.out.println("SOS Service enabled");
+            sensorhubConfig.add(sosConfig);
+        }
     }
 
 
@@ -506,6 +537,35 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorhubConfig.add(sosConfig);
     }
 
+    protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd)
+    {
+        URL apiUrl;
+
+        if (clientUri == null)
+            return;
+
+        try {
+            apiUrl = clientUri.resolve("/sensorhub/api").toURL();
+            System.out.println("API URL"+ apiUrl);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+        ConSysApiClientConfig consysConfig = new ConSysApiClientConfig();
+        consysConfig.id = sensorConf.id + "_CONSYS";
+        consysConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");
+        consysConfig.autoStart = true;
+        consysConfig.conSys.remoteHost = apiUrl.getHost();
+        consysConfig.conSys.remotePort = apiUrl.getPort() < 0 ? apiUrl.getDefaultPort() : apiUrl.getPort();
+        consysConfig.conSys.resourcePath = apiUrl.getPath();
+        consysConfig.conSys.enableTLS = apiUrl.getProtocol().equals("https");
+        consysConfig.conSys.user = apiUser;
+        consysConfig.conSys.password = apiPwd;
+        consysConfig.connection.connectTimeout = 10000;
+        consysConfig.connection.reconnectAttempts = 9;
+        consysConfig.dataSourceSelector = new ObsSystemDatabaseViewConfig();
+        sensorhubConfig.add(consysConfig);
+    }
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -568,6 +628,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             stopListeningForEvents();
             stopRefreshingStatus();
             sostClients.clear();
+            conSysClients.clear();
             if (boundService != null)
                 boundService.stopSensorHub();
             mainInfoArea.setBackgroundColor(0xFFFFFFFF);
@@ -588,7 +649,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 Collection<IModule<?>> modules = moduleRegistry.getLoadedModules();
 
                 for (IModule module: modules) {
-//                    IModule module = null;
                     var moduleConf = module.getConfiguration();
                     String status = module.getCurrentState().name();
 
@@ -598,6 +658,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                             break;
                         case "SOS_SERVICE":
                             statusIntent.putExtra("sosService", status);
+                            break;
+                        case "CON_SYS_SERVICE":
+                            statusIntent.putExtra("conSysService", status);
                             break;
                         case "ANDROID_SENSORS":
                             statusIntent.putExtra("androidSensorStatus", status);
@@ -610,6 +673,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 }
             }else{
                 statusIntent.putExtra("sosService", "N/A");
+                statusIntent.putExtra("conSysService", "N/A");
                 statusIntent.putExtra("httpStatus", "N/A");
                 statusIntent.putExtra("androidSensorStatus", "N/A");
                 statusIntent.putExtra("sensorStorageStatus", "N/A");
@@ -662,32 +726,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 } else {
                     newStatusMessage("Starting SensorHub...");
                     sostClients.clear();
+                    conSysClients.clear();
                     boundService.startSensorHub(sensorhubConfig, showVideo);
 
                     if (boundService.hasVideo())
                         mainInfoArea.setBackgroundColor(0x80FFFFFF);
-
-                    /*SOSServiceCapabilities caps = null;
-                    try {
-                        GetCapabilitiesRequest getCap = new GetCapabilitiesRequest();
-                        getCap.setService(SOSUtils.SOS);
-                        getCap.setVersion("V2.0");
-                        getCap.setGetServer(PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getString("sos_uri", ""));
-                        OWSUtils owsUtils = new OWSUtils();
-                        caps = owsUtils.<SOSServiceCapabilities>sendRequest(getCap, false);
-                    } catch (OWSException e) {
-//                        throw new SensorHubException("Cannot retrieve SOS capabilities", e);
-                        Log.e(TAG, "ERR: Cannot retrieve SOS Capabilities", e);
-                    }*/
-
-                    // TODO: try to get event bus and status
-
-                    // Spawn future to wait for event bus to be initialized
-//                    CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
-//
-//
-//                        return true;
-//                    });
 
                     while(boundService.getSensorHub() == null){
                         System.out.println("Waiting for BoundService Hub to start...");
@@ -815,7 +858,31 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 mainInfoText.append("</p>");
             }
         }
-        
+
+        for(ConSysApiClientModule client: conSysClients){
+            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+
+            boolean showError = (client.getCurrentError() != null);
+            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
+            if (showError || showMsg)
+            {
+                mainInfoText.append("<p>" + client.getName() + ":<br/>");
+                if (showMsg)
+                    mainInfoText.append(client.getStatusMessage() + "<br/>");
+                if (showError)
+                {
+                    Throwable errorObj = client.getCurrentError();
+                    String errorMsg = errorObj.getMessage().trim();
+                    if (!errorMsg.endsWith("."))
+                        errorMsg += ". ";
+                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
+                        errorMsg += errorObj.getCause().getMessage();
+                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
+                }
+                mainInfoText.append("</p>");
+            }
+
+        }
         // then display streams status
         mainInfoText.append("<p>");
         for (SOSTClient client: sostClients)
@@ -842,6 +909,36 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     mainInfoText.append(stream.getValue().errorCount);
                     mainInfoText.append(")</font>");
                 }
+
+                mainInfoText.append("<br/>");
+            }
+        }
+        mainInfoText.append("<p>");
+        for (ConSysApiClientModule client: conSysClients)
+        {
+            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+            long now = System.currentTimeMillis();
+
+
+            for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
+            {
+                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
+
+//                long lastEventTime = stream.getValue().lastEventTime;
+//                long dt = now - lastEventTime;
+//                if (lastEventTime == Long.MIN_VALUE)
+//                    mainInfoText.append("<font color='red'>NO OBS</font>");
+//                else if (dt > stream.getValue().measPeriodMs)
+//                    mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
+//                else
+//                    mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
+//
+//                if (stream.getValue().errorCount > 0)
+//                {
+//                    mainInfoText.append("<font color='red'> (");
+//                    mainInfoText.append(stream.getValue().errorCount);
+//                    mainInfoText.append(")</font>");
+//                }
 
                 mainInfoText.append("<br/>");
             }
@@ -1603,6 +1700,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 {
                     case INITIALIZING:
                         sostClients.add((SOSTClient)e.getSource());
+                        break;
+                }
+            }
+            else if (e.getSource() instanceof ConSysApiClientModule && ((ModuleEvent)e).getType() == ModuleEvent.Type.STATE_CHANGED)
+            {
+                switch (((ModuleEvent)e).getNewState())
+                {
+                    case INITIALIZING:
+                        conSysClients.add((ConSysApiClientModule)e.getSource());
                         break;
                 }
             }

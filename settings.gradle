@@ -17,6 +17,7 @@ def repos = [
         'sensorhub-core',
         'sensorhub-service-swe',
         'sensorhub-service-sweapi',
+        'sensorhub-service-consys',
         'sensorhub-utils-kryo',
         'sensorhub-datastore-h2',
     ],

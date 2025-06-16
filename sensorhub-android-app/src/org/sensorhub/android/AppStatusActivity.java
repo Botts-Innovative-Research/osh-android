@@ -18,16 +18,19 @@ public class AppStatusActivity extends AppCompatActivity {
         Context appContext = getApplicationContext();
 
         String sosStatus = intent.getStringExtra("sosService");
+        String consSysStatus = intent.getStringExtra("conSysService");
         String httpStatus = intent.getStringExtra("httpStatus");
         String sensorStatus = intent.getStringExtra("androidSensorStatus");
         String sensorStorageStatus = intent.getStringExtra("sensorStorageStatus");
 
         TextView sosStatusView = (TextView) findViewById(R.id.sos_service_state);
+        TextView conSysStatusView = (TextView) findViewById(R.id.consys_service_state);
         TextView httpStatusView = (TextView) findViewById(R.id.http_service_state);
         TextView sensorStatusView = (TextView) findViewById(R.id.sensor_service_state);
         TextView storageStatusView = (TextView) findViewById(R.id.storage_service_state);
 
         sosStatusView.setText(sosStatus);
+        conSysStatusView.setText(consSysStatus);
         httpStatusView.setText(httpStatus);
         sensorStatusView.setText(sensorStatus);
         storageStatusView.setText(sensorStorageStatus);

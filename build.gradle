@@ -58,9 +58,9 @@ subprojects {
       substitute module('org.sensorhub:sensorhub-core') with project(':sensorhub-core')
       substitute module('org.sensorhub:sensorhub-comm-ble') with project(':sensorhub-comm-ble')
       substitute module('org.sensorhub:sensorhub-service-swe') with project(':sensorhub-service-swe')
+      substitute module('org.sensorhub:sensorhub-service-consys') with project(':sensorhub-service-consys')
       substitute module('org.sensorhub:sensorhub-service-video') with project(':sensorhub-service-video')
 //      substitute module('org.vast.opengis:ogc-services-sps') with project(':ogc-services-sps')
-      substitute module('org.sensorhub:sensorhub-service-sweapi') with project(':sensorhub-service-sweapi')
 
       // override objenesis version to get new android instantiators
       substitute module('uk.com.robust-it:cloning:1.9.1') with module('uk.com.robust-it:cloning:1.9.10')
