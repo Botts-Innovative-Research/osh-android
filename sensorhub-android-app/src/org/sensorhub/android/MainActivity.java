@@ -1,16 +1,16 @@
 /*************************** BEGIN LICENSE BLOCK ***************************
 
-The contents of this file are subject to the Mozilla Public License, v. 2.0.
-If a copy of the MPL was not distributed with this file, You can obtain one
-at http://mozilla.org/MPL/2.0/.
+ The contents of this file are subject to the Mozilla Public License, v. 2.0.
+ If a copy of the MPL was not distributed with this file, You can obtain one
+ at http://mozilla.org/MPL/2.0/.
 
-Software distributed under the License is distributed on an "AS IS" basis,
-WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-for the specific language governing rights and limitations under the License.
- 
-Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
- 
-******************************* END LICENSE BLOCK ***************************/
+ Software distributed under the License is distributed on an "AS IS" basis,
+ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ for the specific language governing rights and limitations under the License.
+
+ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
+
+ ******************************* END LICENSE BLOCK ***************************/
 
 package org.sensorhub.android;
 
@@ -162,7 +162,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         STERadPager,
     }
 
-    
+
     private ServiceConnection sConn = new ServiceConnection()
     {
         public void onServiceConnected(ComponentName className, IBinder service)
@@ -323,7 +323,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
 
         // START SOS Config ************************************************************************
-            // Setup HTTPServerConfig for enabling more complete node functionality
+        // Setup HTTPServerConfig for enabling more complete node functionality
         HttpServerConfig serverConfig = new HttpServerConfig();
         serverConfig.proxyBaseUrl = "";
         serverConfig.httpPort = 8585;
@@ -545,7 +545,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return;
 
         try {
-            apiUrl = clientUri.resolve("/sensorhub/api").toURL();
+            apiUrl = clientUri.resolve("/sensorhub/api/").toURL();
             System.out.println("API URL"+ apiUrl);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -796,8 +796,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         });
         alert.show();
     }
-    
-    
+
+
     protected void startRefreshingStatus()
     {
         if (displayCallback != null)
@@ -817,8 +817,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         displayHandler.post(displayCallback);
     }
-    
-    
+
+
     protected void stopRefreshingStatus()
     {
         if (displayCallback != null)
@@ -827,19 +827,19 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             displayCallback = null;
         }
     }
-    
-    
+
+
     protected synchronized void displayStatus()
     {
         mainInfoText.setLength(0);
-        
+
         // first display error messages if any
         for (SOSTClient client: sostClients)
         {
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
             boolean showError = (client.getCurrentError() != null);
             boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
-            
+
             if (showError || showMsg)
             {
                 mainInfoText.append("<p>" + client.getName() + ":<br/>");
@@ -889,7 +889,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
             long now = System.currentTimeMillis();
-            
+
             for (Entry<String, StreamInfo> stream : dataStreams.entrySet())
             {
                 mainInfoText.append("<b>" + stream.getKey() + " : </b>");
@@ -973,15 +973,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         }
     }
-    
-    
+
+
     protected synchronized void newStatusMessage(String msg)
     {
         mainInfoText.setLength(0);
         appendStatusMessage(msg);
     }
-    
-    
+
+
     protected synchronized void appendStatusMessage(String msg)
     {
         mainInfoText.append(msg);
@@ -1004,8 +1004,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 //        boundService.getSensorHub().getModuleRegistry().registerListener(this);
 
     }
-    
-    
+
+
     protected void stopListeningForEvents()
     {
         if (boundService == null || boundService.getSensorHub() == null)
@@ -1074,7 +1074,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         return false;
     }
 
-//    private SensorDataProviderConfig createDataProviderConfig(AndroidSensorsConfig sensorConfig) {
+    //    private SensorDataProviderConfig createDataProviderConfig(AndroidSensorsConfig sensorConfig) {
     private SensorConfig createDataProviderConfig(AndroidSensorsConfig sensorConfig) {
         Context androidContext = SensorHubService.getContext();
         SensorConfig dataProviderConfig = new SensorConfig();
@@ -1631,8 +1631,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         for(Map.Entry<String,?> pref : prefMap.entrySet()){
             if(pref.getValue() instanceof HashSet) {
                 if(((HashSet) pref.getValue()).contains("STORE_LOCAL")) {
-                Log.d(TAG, "shouldStore: TRUE");
-                return true;}
+                    Log.d(TAG, "shouldStore: TRUE");
+                    return true;}
             }
         }
         return false;
