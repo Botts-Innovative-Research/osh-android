@@ -72,25 +72,29 @@ You'll also have to enable transactional operations on the server side so the ph
 
 ## App Configuration
 
-General Settings
+**General Settings**
 - Click the three dots to open a menu
 - Select **Settings** > **General** and enter the following details:
-    - `IP Address`, `Port`, and optional `User` and `Password`
+  - `IP Address`, `Port`, and optional `User` and `Password`
 - Enable services:
-    - **ConSysApi Service**
-    - **SOS Service**
+  - **ConSysApi Service**
+  - **SOS Service**
 - Select client
-    - `SOS-T Client` or `Connected Systems Client`
+  - `SOS-T Client` or `Connected Systems Client`
 
-Sensors
+**Configuring Sensors**
 - Swipe right or go back to the main Settings menu
 - Click on the **Sensors** tab to enable/disable the sensors
 
 > **Note**: You must enable **Network Location Data**
 - If using video or audio, configure:
-    - **Video Settings**
-    - **Audio Settings**
+  - **Video Settings**
+  - **Audio Settings**
 
+**Start SmartHub**
+- Swipe right or go back to the main screen
+- Click the three dots to open a menu
+- Select **Start SmartHub**
 
 ### Streaming Video from Android Device
 To stream video data from the Android Device:
@@ -108,11 +112,10 @@ To stream video data from the Android Device:
 **Creating a Video Preset:**
 - Choose a **Video Preset #1 - #5**
 - Set:
-    - **Frame Size** (e.g., 1920x1080)
-    - **Min BitRate** (e.g., 3000)
-    - **Max BitRate** (e.g., 3000)
+  - **Frame Size** (e.g., 1920x1080)
+  - **Min BitRate** (e.g., 3000)
+  - **Max BitRate** (e.g., 3000)
 - Assign the preset to **Selected Preset**
-- Test with "Camera Index" (values may vary from device)
 
 ### Streaming Audio from Android Device
 todo
