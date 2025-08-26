@@ -4,5 +4,5 @@
 	branch = v2
 [submodule "include/osh-core"]
 	path = submodules/osh-core
-	url = https://github.com/Botts-Innovative-Research/osh-core-11-backport.git
+	url = git@github.com:Botts-Innovative-Research/osh-core-11-backport.git
 	branch = main

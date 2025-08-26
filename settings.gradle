@@ -29,7 +29,8 @@ def repos = [
         'sensors/positioning/sensorhub-driver-trupulse',
         'sensors/health/sensorhub-driver-angelsensor',
         'processing/sensorhub-process-vecmath',
-        'processing/sensorhub-process-geoloc'
+        'processing/sensorhub-process-geoloc',
+        'services/sensorhub-service-discovery'
     ]
 ]
 

@@ -16,6 +16,8 @@ package org.sensorhub.android;
 
 import static android.content.ContentValues.TAG;
 
+import static org.sensorhub.android.SensorHubService.context;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -33,6 +35,7 @@ import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -48,9 +51,11 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.botts.impl.service.discovery.DiscoveryService;
+import com.botts.impl.service.discovery.DiscoveryServiceConfig;
+
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
-import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
@@ -77,7 +82,6 @@ import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
-import org.sensorhub.impl.service.consys.client.ConSysApiClient;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 import org.sensorhub.impl.service.sos.SOSService;
@@ -86,6 +90,11 @@ import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -188,6 +197,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         String port = prefs.getString("port", "").trim();
         String user = prefs.getString("username", null);
         String password = prefs.getString("password", null);
+
+        Boolean isDiscoveryServiceEnabled = prefs.getBoolean("enable_discovery", true);
 
         Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
         Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
@@ -348,6 +359,33 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         conSysApiService.autoStart = true;
         conSysApiService.enableTransactional = true;
         conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
+
+        DiscoveryServiceConfig discoveryService = new DiscoveryServiceConfig();
+        discoveryService.moduleClass = DiscoveryService.class.getCanonicalName();
+        discoveryService.id = "DISCOVERY_SERVICE";
+        discoveryService.name= "Discovery Service";
+        discoveryService.autoStart = true;
+
+        InputStream inputStream = context.getResources().openRawResource(R.raw.rules);
+
+        File outFile = new File(context.getFilesDir(), "rules.txt");
+
+        try (OutputStream outputStream = new FileOutputStream(outFile)) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+            outputStream.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        discoveryService.rulesFilePath = outFile.getAbsolutePath();
+
 
         // Push Sensors Config
         AndroidSensorsConfig androidSensorsConfig = sensorsConfig;
@@ -511,7 +549,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             System.out.println("SOS Service enabled");
             sensorhubConfig.add(sosConfig);
         }
+
+        if (isDiscoveryServiceEnabled) {
+            System.out.println("Discovery  Service enabled");
+            sensorhubConfig.add(discoveryService);
+        }
     }
+
 
 
     protected void addSosTConfig(SensorConfig sensorConf, String sosUser, String sosPwd)
@@ -859,30 +903,30 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         }
 
-        for(ConSysApiClientModule client: conSysClients){
-            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
-
-            boolean showError = (client.getCurrentError() != null);
-            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
-            if (showError || showMsg)
-            {
-                mainInfoText.append("<p>" + client.getName() + ":<br/>");
-                if (showMsg)
-                    mainInfoText.append(client.getStatusMessage() + "<br/>");
-                if (showError)
-                {
-                    Throwable errorObj = client.getCurrentError();
-                    String errorMsg = errorObj.getMessage().trim();
-                    if (!errorMsg.endsWith("."))
-                        errorMsg += ". ";
-                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
-                        errorMsg += errorObj.getCause().getMessage();
-                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
-                }
-                mainInfoText.append("</p>");
-            }
-
-        }
+//        for(ConSysApiClientModule client: conSysClients){
+//            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+//
+//            boolean showError = (client.getCurrentError() != null);
+//            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
+//            if (showError || showMsg)
+//            {
+//                mainInfoText.append("<p>" + client.getName() + ":<br/>");
+//                if (showMsg)
+//                    mainInfoText.append(client.getStatusMessage() + "<br/>");
+//                if (showError)
+//                {
+//                    Throwable errorObj = client.getCurrentError();
+//                    String errorMsg = errorObj.getMessage().trim();
+//                    if (!errorMsg.endsWith("."))
+//                        errorMsg += ". ";
+//                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
+//                        errorMsg += errorObj.getCause().getMessage();
+//                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
+//                }
+//                mainInfoText.append("</p>");
+//            }
+//
+//        }
         // then display streams status
         mainInfoText.append("<p>");
         for (SOSTClient client: sostClients)
@@ -914,16 +958,16 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         }
         mainInfoText.append("<p>");
-        for (ConSysApiClientModule client: conSysClients)
-        {
-            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
-            long now = System.currentTimeMillis();
-
-
-            for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
-            {
-                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
-
+//        for (ConSysApiClientModule client: conSysClients)
+//        {
+//            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+//            long now = System.currentTimeMillis();
+//
+//
+//            for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
+//            {
+//                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
+//
 //                long lastEventTime = stream.getValue().lastEventTime;
 //                long dt = now - lastEventTime;
 //                if (lastEventTime == Long.MIN_VALUE)
@@ -939,10 +983,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 //                    mainInfoText.append(stream.getValue().errorCount);
 //                    mainInfoText.append(")</font>");
 //                }
-
-                mainInfoText.append("<br/>");
-            }
-        }
+//
+//                mainInfoText.append("<br/>");
+//            }
+//        }
 
         if (mainInfoText.length() > 5)
             mainInfoText.setLength(mainInfoText.length()-5); // remove last </br>

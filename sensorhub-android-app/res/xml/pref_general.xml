@@ -69,8 +69,23 @@
             android:defaultValue="true"
             android:key="sos_service"
             android:summary="Host SOS Service at /sos"
-            android:title="SOS Service"
-            />
+            android:title="SOS Service" />
+
+        <CheckBoxPreference
+            android:id="@+id/discovery_service_check"
+            android:defaultValue="true"
+            android:key="enable_discovery"
+            android:summary="Host Discovery Service at /discovery"
+            android:title="Discovery Service" />
+
+<!--        <EditTextPreference-->
+<!--            android:defaultValue="file.txt"-->
+<!--            android:inputType="textUri"-->
+<!--            android:key="rules_file_path"-->
+<!--            android:maxLines="2"-->
+<!--            android:selectAllOnFocus="true"-->
+<!--            android:singleLine="true"-->
+<!--            android:title="Rules File Path" />-->
 
         <SwitchPreference
             android:id="@+id/client_switch"
