@@ -563,6 +563,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (sosUrl == null)
             return;
 
+        URL sosUrl;
+
+        if(clientUri == null) return;
+        try{
+            sosUrl = clientUri.resolve("/sensorhub/sos").toURL();
+        }catch(MalformedURLException e){
+            throw new RuntimeException(e);
+        }
+
         SOSTClientConfig sosConfig = new SOSTClientConfig();
         sosConfig.id = sensorConf.id + "_SOST";
         sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");// + "SOS-T Client";

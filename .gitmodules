@@ -1,7 +1,7 @@
 [submodule "include/osh-addons"]
 	path = submodules/osh-addons
 	url = https://github.com/Botts-Innovative-Research/osh-addons.git
-	branch = v2
+	branch = master
 [submodule "include/osh-core"]
 	path = submodules/osh-core
 	url = git@github.com:Botts-Innovative-Research/osh-core-11-backport.git
