@@ -78,10 +78,13 @@ import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
+import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig;
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -118,13 +121,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     public static final Date ANDROID_SENSORS_LAST_UPDATED = new Date(Instant.parse("2023-05-28T12:00:00Z").toEpochMilli());
     public static final Date TRUPULSE_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
+    private static final Logger log = LoggerFactory.getLogger(MainActivity.class);
 
     TextView mainInfoArea;
     TextView videoInfoArea;
     SensorHubService boundService;
     IModuleConfigRepository sensorhubConfig;
-    SensorHubConfig shCfg;
-    ObsSystemDatabaseViewConfig obsSystemDatabaseViewConfig;
     Handler displayHandler;
     Runnable displayCallback;
     StringBuffer mainInfoText = new StringBuffer();
@@ -137,7 +139,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     boolean showVideo;
     URI clientUri = null;
     String deviceID;
-    String deviceName;
     String runName;
 
     private Flow.Subscription subscription;
@@ -156,8 +157,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         FlirOne,
         DJIDrone,
         ProxySensor,
-        BLELocation,
-        STERadPager,
+        BLELocation
     }
 
 
@@ -193,19 +193,17 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         Boolean isClientEnabled = prefs.getBoolean("enable_client", true);
         Boolean isTLSEnabled = prefs.getBoolean("enable_tls", false);
 
-        if(ip_address.isEmpty()){
+        if (ip_address.isEmpty())
             ip_address = "127.0.0.1";
-        }
 
-        if(port.isEmpty()){
+        if (port.isEmpty())
             port = "8585";
-        }
 
         String sensorhubEndpoint = "/sensorhub";
 
         String newUrl = (isTLSEnabled ? "https://" : "http://") + ip_address + ":" + port + sensorhubEndpoint;
 
-        try{
+        try {
             clientUri = new URI(newUrl);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -246,6 +244,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             } catch (Exception e) {
             }
         }
+
+        // OAuth
+        Boolean isOAuthEnabled = prefs.getBoolean("o_auth_enabled", false);
+        String clientId = prefs.getString("client_id", "").trim();
+        String tokenEndpoint = prefs.getString("token_endpoint", "").trim();
+        String clientSecret = prefs.getString("client_secret", "").trim();
+
+
 
         // get device name
         String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
@@ -345,13 +351,32 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         conSysApiService.enableTransactional = true;
         conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
 
+        ConSysOAuthConfig conSysOAuthConfig = new ConSysOAuthConfig();
+
+        if (isOAuthEnabled
+                && clientId != null && !clientId.isEmpty()
+                && tokenEndpoint != null && !tokenEndpoint.isEmpty()
+                && clientSecret != null && !clientSecret.isEmpty())
+        {
+            conSysOAuthConfig.oAuthEnabled = true;
+            conSysOAuthConfig.tokenEndpoint = tokenEndpoint;
+            conSysOAuthConfig.clientID = clientId;
+            conSysOAuthConfig.clientSecret = clientSecret;
+        }
+
+
+
         // Push Sensors Config
         sensorhubConfig.add(sensorsConfig);
 
         if (isPushingSensor(Sensors.Android)) {
             if (isClientEnabled) {
                 System.out.println("Connected Systems Client enabled");
-                addCSApiConfig(sensorsConfig, user, password);
+                if (isOAuthEnabled)
+                    addCSApiConfig(sensorsConfig, user, password, conSysOAuthConfig);
+                else
+                    addCSApiConfig(sensorsConfig, user, password, null);
+
             } else {
                 System.out.println("SOST Client enabled");
                 addSosTConfig(sensorsConfig, user, password);
@@ -368,6 +393,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             basicStorageConfig.moduleClass = "org.sensorhub.impl.persistence.h2.MVObsStorageImpl";
             basicStorageConfig.storagePath = dbFile.getAbsolutePath() + "/${STORAGE_ID}.dat";
             basicStorageConfig.autoStart = true;
+
 //            sosConfig.newStorageConfig = basicStorageConfig;
 
 //            StreamStorageConfig androidStreamStorageConfig = createStreamStorageConfig(androidSensorsConfig);
@@ -427,8 +453,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 trupulseConfig.connection.reconnectAttempts = 10;
             }
             trupulseConfig.commSettings = btConf;
-
-
 
 
             sensorhubConfig.add(trupulseConfig);
@@ -548,7 +572,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorhubConfig.add(sosConfig);
     }
 
-    protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd)
+    protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd, ConSysOAuthConfig oAuthConfig)
     {
         URL apiUrl;
 
@@ -556,7 +580,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return;
 
         try {
-            apiUrl = clientUri.resolve("/sensorhub/api/").toURL();
+            apiUrl = clientUri.resolve("/sensorhub/api").toURL();
             System.out.println("API URL"+ apiUrl);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -575,6 +599,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         consysConfig.connection.connectTimeout = 10000;
         consysConfig.connection.reconnectAttempts = 9;
         consysConfig.dataSourceSelector = new ObsSystemDatabaseViewConfig();
+
+        if (oAuthConfig != null)
+            consysConfig.conSysOAuth = oAuthConfig;
+
+
         sensorhubConfig.add(consysConfig);
     }
 
@@ -885,36 +914,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 }
                 mainInfoText.append("</p>");
 
-                if(!client.isConnected()){
-                    needsRestart = true;
-                }
-            }
-        }
-
-        for(ConSysApiClientModule client: conSysClients){
-            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
-
-            boolean showError = (client.getCurrentError() != null);
-            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
-            if (showError || showMsg)
-            {
-                mainInfoText.append("<p>" + client.getName() + ":<br/>");
-                if (showMsg)
-                    mainInfoText.append(client.getStatusMessage() + "<br/>");
-                if (showError)
-                {
-                    Throwable errorObj = client.getCurrentError();
-                    String errorMsg = errorObj.getMessage().trim();
-                    if (!errorMsg.endsWith("."))
-                        errorMsg += ". ";
-                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
-                        errorMsg += errorObj.getCause().getMessage();
-                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
-                }
-                mainInfoText.append("</p>");
             }
 
+            log.debug("[SENSOR RESTART]", client.isConnected());
+
+//            if(!client.isConnected()){
+//                mainInfoText.setLength(0);
+//                mainInfoText.append("Attempting to restart SensorHub");
+//                needsRestart = true;
+//            }
         }
+
+
         // then display streams status
         mainInfoText.append("<p>");
         for (SOSTClient client: sostClients)
@@ -944,37 +955,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
                 mainInfoText.append("<br/>");
             }
+
         }
         mainInfoText.append("<p>");
-        for (ConSysApiClientModule client: conSysClients)
-        {
-            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
-            long now = System.currentTimeMillis();
 
-
-            for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
-            {
-                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
-
-//                long lastEventTime = stream.getValue().lastEventTime;
-//                long dt = now - lastEventTime;
-//                if (lastEventTime == Long.MIN_VALUE)
-//                    mainInfoText.append("<font color='red'>NO OBS</font>");
-//                else if (dt > stream.getValue().measPeriodMs)
-//                    mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
-//                else
-//                    mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-//
-//                if (stream.getValue().errorCount > 0)
-//                {
-//                    mainInfoText.append("<font color='red'> (");
-//                    mainInfoText.append(stream.getValue().errorCount);
-//                    mainInfoText.append(")</font>");
-//                }
-
-                mainInfoText.append("<br/>");
-            }
-        }
 
         if (mainInfoText.length() > 5)
             mainInfoText.setLength(mainInfoText.length()-5); // remove last </br>
@@ -986,41 +970,46 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             mainInfoText.append("No Sensors Set to Push Remotely");
         }
 
-        // show video info (kalyn commented out
-//        if (androidSensors != null && boundService.hasVideo())
-//        {
-            // TODO: Fix crash resulting from this (620)
-//            try {
-//                VideoEncoderConfig config = androidSensors.getConfiguration().videoConfig;
-//                VideoPreset preset = config.presets[config.selectedPreset];
-//                videoInfoText.setLength(0);
-//                videoInfoText.append("")
-//                        .append(config.codec).append(", ")
-//                        .append(preset.width).append("x").append(preset.height).append(", ")
-//                        .append(config.frameRate).append(" fps, ")
-//                        .append(preset.selectedBitrate).append(" kbits/s")
-//                        .append("");
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//        }
-
-        if(needsRestart){
-
-            displayHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    restartSensorHubService();
-                }
-            }, 5000);
+        // show video info (kalyn commented out)
+        if (androidSensors != null && boundService.hasVideo())
+        {
+//             TODO: Fix crash resulting from this (620)
+            try {
+                VideoEncoderConfig config = androidSensors.getConfiguration().videoConfig;
+                VideoPreset preset = config.presets[config.selectedPreset];
+                videoInfoText.setLength(0);
+                videoInfoText.append("")
+                        .append(config.codec).append(", ")
+                        .append(preset.width).append("x").append(preset.height).append(", ")
+                        .append(config.frameRate).append(" fps, ")
+                        .append(preset.selectedBitrate).append(" kbits/s")
+                        .append("");
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
+
+//        if(needsRestart){
+//
+//            mainInfoArea.clearComposingText();
+//
+//           restartService();
+//        }
 
     }
 
+    private void restartService(){
+        displayHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                restartSensorHubService();
+            }
+        }, 5000);
+    }
 
     private void restartSensorHubService() {
         try {
-            newStatusMessage("Restarting SensorHub...");
+            mainInfoText.append("Restarting OSH Service");
 
             stopListeningForEvents();
             stopRefreshingStatus();
@@ -1047,8 +1036,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             newStatusMessage("Starting SensorHub...");
 
-//            sostClients.clear();
-//            conSysClients.clear();
+
             boundService.startSensorHub(sensorhubConfig, showVideo);
 
             if (boundService.hasVideo()) {
@@ -1181,8 +1169,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.BLELocation.equals(sensor)){
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
-        } else if(Sensors.STERadPager.equals(sensor)){
-            return prefs.getBoolean("ste_radpager_enabled", false) && prefs.getStringSet("radpager_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;
@@ -1219,7 +1205,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     try {
                         boundService.stopSensorHub();
                         Thread.sleep(2000);
-                        Log.d("OSHApp", "Starting Sensorhub Again");
+                        Log.d("OSHApp", "Starting SensorHub Again");
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                         updateConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this), runName);
                         sostClients.clear();

@@ -187,6 +187,25 @@ public class UserSettingsActivity extends PreferenceActivity
 
             Preference ipAddressLabel = getPreferenceScreen().findPreference("nop_ipAddress");
             ipAddressLabel.setSummary(ipAddressString);
+
+
+            SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
+
+            Preference oAuthEnabled = getPreferenceScreen().findPreference("o_auth_enabled");
+            Preference tokenEndpoint = getPreferenceScreen().findPreference("token_endpoint");
+            Preference clientID = getPreferenceScreen().findPreference("client_id");
+            Preference clientSecret = getPreferenceScreen().findPreference("client_secret");
+
+            tokenEndpoint.setEnabled(prefs.getBoolean(oAuthEnabled.getKey(), false));
+            clientID.setEnabled(prefs.getBoolean(oAuthEnabled.getKey(), false));
+            clientSecret.setEnabled(prefs.getBoolean(oAuthEnabled.getKey(), false));
+
+            oAuthEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                tokenEndpoint.setEnabled((boolean) newValue);
+                clientID.setEnabled((boolean) newValue);
+                clientSecret.setEnabled((boolean) newValue);
+                return true;
+            });
         }
     }
     
