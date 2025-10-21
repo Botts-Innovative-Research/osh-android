@@ -318,6 +318,15 @@ public class UserSettingsActivity extends PreferenceActivity
                 return true;
             });
 
+            Preference meshtasticEnabled = getPreferenceScreen().findPreference("meshtastic_enabled");
+            Preference meshtasticOptions = getPreferenceScreen().findPreference("meshtastic_options");
+            Preference meshtasticDatasource = getPreferenceScreen().findPreference("meshtastic_datasource");
+            meshtasticOptions.setEnabled(prefs.getBoolean(meshtasticEnabled.getKey(), false));
+            meshtasticEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                meshtasticOptions.setEnabled((boolean) newValue);
+                return true;
+            });
+
 
 
 //            Preference bleEnable = getPreferenceScreen().findPreference("ble_enabled");

@@ -48,6 +48,8 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.botts.impl.driver.meshtastic.MeshtasticConfig;
+
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.api.event.Event;
@@ -121,6 +123,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     public static final Date ANDROID_SENSORS_LAST_UPDATED = new Date(Instant.parse("2023-05-28T12:00:00Z").toEpochMilli());
     public static final Date TRUPULSE_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
+    public static final Date MESHTASTIC_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
     private static final Logger log = LoggerFactory.getLogger(MainActivity.class);
 
     TextView mainInfoArea;
@@ -157,7 +160,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         FlirOne,
         DJIDrone,
         ProxySensor,
-        BLELocation
+        BLELocation,
+        Meshtastic
     }
 
 
@@ -456,10 +460,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
 
             sensorhubConfig.add(trupulseConfig);
-
-            // don't add it to SOS-T here since it's already configured with a wildcard
-            // meaning it will forward data from all systems by default
-            //addSosTConfig(trupulseConfig, sosUser, sosPwd);
         }
 
         // STE Rad Pager sensor
@@ -473,6 +473,33 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             sensorhubConfig.add(steRadPagerConfig);
         }
+
+
+        // Meshtastic Sensor
+        enabled = prefs.getBoolean("meshtastic_enabled", false);
+        if (enabled)
+        {
+            MeshtasticConfig meshtasticConfig = new MeshtasticConfig();
+
+            meshtasticConfig.id = "MESHTASTIC_SENSOR";
+            meshtasticConfig.name = "Meshtastic [" + deviceName + "]";
+            meshtasticConfig.autoStart = true;
+            meshtasticConfig.lastUpdated = MESHTASTIC_SENSOR_LAST_UPDATED;
+            meshtasticConfig.serialNumber = deviceID;
+            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
+            btConf.protocol.deviceName = prefs.getString("meshtastic_device_name", "");
+
+            btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
+            meshtasticConfig.connection.connectTimeout = 100000;
+            meshtasticConfig.connection.reconnectAttempts = 10;
+
+            meshtasticConfig.commSettings = btConf;
+
+
+            sensorhubConfig.add(meshtasticConfig);
+        }
+
+
 
         // AngelSensor
         /*enabled = prefs.getBoolean("angel_enabled", false);
@@ -1169,6 +1196,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.BLELocation.equals(sensor)){
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        }  else if (Sensors.Meshtastic.equals(sensor)) {
+            return prefs.getBoolean("meshtastic_enabled", false)
+                    && prefs.getStringSet("meshtastic_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;
