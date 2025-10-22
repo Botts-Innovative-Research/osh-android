@@ -41,13 +41,14 @@ import android.preference.PreferenceManager;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.TextureView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
-
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.api.event.Event;
@@ -76,7 +77,6 @@ import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
-import org.sensorhub.impl.service.consys.client.ConSysApiClient;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig;
@@ -87,8 +87,14 @@ import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -96,6 +102,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -131,9 +138,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     StringBuffer mainInfoText = new StringBuffer();
     StringBuffer videoInfoText = new StringBuffer();
     boolean oshStarted = false;
-    ArrayList<SOSTClient> sostClients = new ArrayList<SOSTClient>();
-    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<ConSysApiClientModule>();
+    ArrayList<SOSTClient> sostClients = new ArrayList<>();
+    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<>();
 
+    URL url;
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
     URI clientUri = null;
@@ -161,7 +169,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     }
 
 
-    private ServiceConnection sConn = new ServiceConnection()
+    private final ServiceConnection sConn = new ServiceConnection()
     {
         public void onServiceConnected(ComponentName className, IBinder service)
         {
@@ -216,18 +224,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             // Create a trust manager that does not validate certificate chains
             TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            X509Certificate[] myTrustedAnchors = new X509Certificate[0];
-                            return myTrustedAnchors;
-                        }
-                        public void checkClientTrusted(
-                                java.security.cert.X509Certificate[] certs, String authType) {
-                        }
-                        public void checkServerTrusted(
-                                java.security.cert.X509Certificate[] certs, String authType) {
-                        }
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        X509Certificate[] myTrustedAnchors = new X509Certificate[0];
+                        return myTrustedAnchors;
                     }
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
             };
 
             // Install the all-trusting trust manager
@@ -242,6 +250,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     }
                 });
             } catch (Exception e) {
+                log.error(e.getMessage());
             }
         }
 
@@ -353,11 +362,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         ConSysOAuthConfig conSysOAuthConfig = new ConSysOAuthConfig();
 
-        if (isOAuthEnabled
-                && clientId != null && !clientId.isEmpty()
-                && tokenEndpoint != null && !tokenEndpoint.isEmpty()
-                && clientSecret != null && !clientSecret.isEmpty())
-        {
+        if (isOAuthEnabled && !clientId.isEmpty() && !tokenEndpoint.isEmpty() && !clientSecret.isEmpty()) {
             conSysOAuthConfig.oAuthEnabled = true;
             conSysOAuthConfig.tokenEndpoint = tokenEndpoint;
             conSysOAuthConfig.clientID = clientId;
@@ -444,7 +449,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             trupulseConfig.lastUpdated = TRUPULSE_SENSOR_LAST_UPDATED;
             trupulseConfig.serialNumber = deviceID;
             BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
-            btConf.protocol.deviceName = prefs.getString("trupulse_device_name", "TP360");
+            btConf.protocol.deviceName = prefs.getString("trupulse_device_address", "");
             if (prefs.getBoolean("trupulse_simu", false))
                 btConf.moduleClass = SimulatedDataStream.class.getCanonicalName();
             else{
@@ -593,7 +598,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return;
 
         try {
-            apiUrl = clientUri.resolve("/sensorhub/api").toURL();
+            apiUrl = clientUri.resolve("/sensorhub/api/").toURL();
             System.out.println("API URL"+ apiUrl);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -626,11 +631,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mainInfoArea = (TextView) findViewById(R.id.main_info);
-        videoInfoArea = (TextView) findViewById(R.id.video_info);
+        mainInfoArea =  findViewById(R.id.main_info);
+        videoInfoArea = findViewById(R.id.video_info);
 
         // listen to texture view lifecycle
-        TextureView textureView = (TextureView) findViewById(R.id.video);
+        TextureView textureView = findViewById(R.id.video);
         textureView.setSurfaceTextureListener(this);
 
         // bind to SensorHub service
@@ -698,14 +703,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             showAboutPopup();
         }
+        else if (id == R.id.action_meshtastic) {
+
+            showMeshtasticDialog();
+        }
 //        else if (id == R.id.action_restart){
-////            stopListeningForEvents();
-////            stopRefreshingStatus();
+//            stopListeningForEvents();
+//            stopRefreshingStatus();
 //
-////            if (boundService != null)
-////                boundService.stopSensorHub();
+//            if (boundService != null)
+//              boundService.stopSensorHub();
 //
-////            restartSensorHub();
+//            restartSensorHub();
 //
 //        }
         else if(id == R.id.action_status)
@@ -715,11 +724,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 ModuleRegistry moduleRegistry = boundService.sensorhub.getModuleRegistry();
                 Collection<IModule<?>> modules = moduleRegistry.getLoadedModules();
 
-                for (IModule module: modules) {
+                for (IModule module : modules) {
                     var moduleConf = module.getConfiguration();
                     String status = module.getCurrentState().name();
 
-                    switch (((ModuleConfig)moduleConf).id){
+                    switch (((ModuleConfig) moduleConf).id) {
                         case "HTTP_SERVER_0":
                             statusIntent.putExtra("httpStatus", status);
                             break;
@@ -736,9 +745,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                             statusIntent.putExtra("sensorStorageStatus", status);
                             break;
                     }
-
                 }
-            }else{
+            }
+            else {
                 statusIntent.putExtra("sosService", "N/A");
                 statusIntent.putExtra("conSysService", "N/A");
                 statusIntent.putExtra("httpStatus", "N/A");
@@ -756,6 +765,60 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         return super.onOptionsItemSelected(item);
     }
 
+    protected void showMeshtasticDialog() {
+
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_meshtastic, null);
+
+        EditText messageInput = dialogView.findViewById(R.id.msg_input);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Send Meshtastic Message");
+        builder.setView(dialogView);
+
+        EditText destinationIdText = dialogView.findViewById(R.id.destination_nodeId);
+        String destinationId = destinationIdText.getText().toString();
+
+        builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String msg = messageInput.getText().toString();
+
+                try {
+                    sendMeshtasticMessage(msg, destinationId);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void sendMeshtasticMessage(String message, String nodeId) throws IOException {
+        log.debug("sending mesh node");
+        // todo think ab how we want to send the commands
+
+//        HttpURLConnection httpURLConnection = null;
+//
+//        httpURLConnection = (HttpURLConnection) clientUri.toURL().openConnection();
+//        httpURLConnection.setRequestMethod("POST");
+//        httpURLConnection.setRequestProperty("Content-Type", "application/json");
+//        httpURLConnection.setRequestProperty("Accept", "application/json");
+//        httpURLConnection.setDoOutput(true);
+//
+//
+//        OutputStream outputStream = httpURLConnection.getOutputStream();
+//        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+//        writer.write();
+//        writer.close();
+//        outputStream.close();
+
+//        String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+//        httpURLConnection.setRequestProperty("Authorization", basicAuth);
+    }
 
     protected synchronized void showRunNamePopup()
     {
@@ -817,9 +880,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         });
 
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
+        alert.setNegativeButton("Cancel", (dialog, whichButton) -> {
         });
 
         alert.show();
@@ -856,10 +917,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("OpenSensorHub");
         alert.setMessage(message);
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int id){
-                // user accepted
-            }
+        alert.setPositiveButton("OK", (dialog, id) -> {
+            // user accepted
         });
         alert.show();
     }
@@ -908,7 +967,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
             boolean showError = (client.getCurrentError() != null);
-            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
+            boolean showMsg = (dataStreams.isEmpty()) && (client.getStatusMessage() != null);
 
             if (showError || showMsg)
             {
@@ -943,7 +1002,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
             boolean showError = (client.getCurrentError() != null);
-            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
+            boolean showMsg = (dataStreams.isEmpty()) && (client.getStatusMessage() != null);
 
             if (showError || showMsg)
             {
@@ -1040,11 +1099,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         // Notify we are running when no data is being pushed
         boolean serveOrStore = shouldServe(PreferenceManager.getDefaultSharedPreferences(MainActivity.this)) || shouldStore(PreferenceManager.getDefaultSharedPreferences(MainActivity.this));
-        if(sostClients.size() == 0 && serveOrStore){
+        if(sostClients.isEmpty() && serveOrStore){
             mainInfoText.append("No Sensors Set to Push Remotely");
         }
 
-        if(conSysClients.size() == 0 && serveOrStore){
+        if(conSysClients.isEmpty() && serveOrStore){
             mainInfoText.append("No Sensors Set to Push Remotely");
         }
 
@@ -1063,7 +1122,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                         .append(preset.selectedBitrate).append(" kbits/s")
                         .append("");
             }catch (Exception e){
-                e.printStackTrace();
+                log.error("Exception thrown trying to disaply video", e.getMessage());
             }
         }
 
@@ -1176,8 +1235,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
 
     protected void startListeningForEvents() {
-        if (boundService == null || boundService.getSensorHub() == null)
-            return;
+        if (boundService == null || boundService.getSensorHub() == null){
+
+        }
 
         // TODO: Implement a listener that can sub to the status of the hub
 //        boundService.getSensorHub().getModuleRegistry().registerListener(this);
@@ -1187,8 +1247,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void stopListeningForEvents()
     {
-        if (boundService == null || boundService.getSensorHub() == null)
-            return;
+        if (boundService == null || boundService.getSensorHub() == null){
+
+        }
 
         // TODO: Unsub the listener here
 //        boundService.getSensorHub().getModuleRegistry().unregisterListener(this);
@@ -1312,7 +1373,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         registerReceiver(receiver, filter);
     }
 
-
     @Override
     protected void onStart()
     {
@@ -1364,7 +1424,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 //        stopService(new Intent(this, SensorHubService.class));
 //        super.onDestroy();
 
-
+        // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
         if (boundService != null) {
             unbindService(sConn);
             boundService = null;
@@ -1444,8 +1504,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
-
-
 
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];

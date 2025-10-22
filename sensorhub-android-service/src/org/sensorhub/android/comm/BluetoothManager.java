@@ -32,7 +32,7 @@ public class BluetoothManager
 {
 
     
-    public List<BluetoothDevice> discoverDevices(Context context, final String deviceNameRegex)
+    public List<BluetoothDevice> discoverDevices(Context context, final String macAddress)
     {
         final ArrayList<BluetoothDevice> foundDevices = new ArrayList<BluetoothDevice>();
         
@@ -50,9 +50,9 @@ public class BluetoothManager
                 if (BluetoothDevice.ACTION_FOUND.equals(action))
                 {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    System.out.println("  Device: " + device.getName() + ", " + device);
+                    System.out.println("  Device: " + device.getAddress() + ", " + device);
                     
-                    if (device.getName().matches(deviceNameRegex))
+                    if (device.getAddress().matches(macAddress))
                         foundDevices.add(device);
                 }
                 else
@@ -108,11 +108,11 @@ public class BluetoothManager
     
     /**
      * Returns the first paired device whose name matches the given pattern
-     * @param deviceNameRegex regular expression to match device names
+     * @param macAddress regular expression to match device names
      * @return first matching device
      * @throws IOException if a paired device with a matching name cannot be found
      */
-    public BluetoothDevice findDevice(String deviceNameRegex) throws IOException
+    public BluetoothDevice findDevice(String macAddress) throws IOException
     {
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -120,20 +120,23 @@ public class BluetoothManager
 
         for (BluetoothDevice dev: btAdapter.getBondedDevices())
         {
-            if(dev.getName() != null && dev.getName().startsWith(deviceNameRegex)){
+            if (dev.getAddress() != null && dev.getAddress().startsWith(macAddress)) {
                 return dev;
             }
+//            if(dev.getName() != null && dev.getName().startsWith(deviceNameRegex)){
+//                return dev;
+//            }
 //            if (dev.getName().matches(deviceNameRegex))
 //              return dev;
         }
         
-        throw new IOException("Cannot find device " + deviceNameRegex);
+        throw new IOException("Cannot find device " + macAddress);
     }
     
     
-    public BluetoothSocket connectToSerialDevice(String deviceNameRegex) throws IOException
+    public BluetoothSocket connectToSerialDevice(String macAddress) throws IOException
     {
-        BluetoothDevice dev = findDevice(deviceNameRegex);
+        BluetoothDevice dev = findDevice(macAddress);
         UUID spp = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         BluetoothSocket socket = dev.createRfcommSocketToServiceRecord(spp);
         return socket;

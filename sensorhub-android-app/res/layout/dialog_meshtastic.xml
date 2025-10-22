@@ -1,0 +1,28 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/destination_nodeId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Type in destination node"
+        android:minLines="3"
+        android:gravity="top"
+        android:inputType="textShortMessage"
+    />
+
+    <EditText
+        android:id="@+id/msg_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Type message here..."
+        android:minLines="3"
+        android:gravity="top"
+        android:inputType="textShortMessage" />
+
+
+</LinearLayout>

@@ -314,13 +314,14 @@ public class UserSettingsActivity extends PreferenceActivity
             Preference trupulseEnabled = getPreferenceScreen().findPreference("trupulse_enabled");
             Preference trupulseOptions = getPreferenceScreen().findPreference("trupulse_options");
             Preference trupulseDatasource = getPreferenceScreen().findPreference("trupulse_datasource");
-            Preference trupulseDeviceName = getPreferenceScreen().findPreference("trupulse_device_name");
+            ListPreference trupulseListPref = (ListPreference) getPreferenceScreen().findPreference("trupulse_device_address");
+
             trupulseOptions.setEnabled(prefs.getBoolean(trupulseEnabled.getKey(), false));
             trupulseDatasource.setEnabled(prefs.getBoolean(trupulseEnabled.getKey(), false));
             trupulseEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 trupulseOptions.setEnabled((boolean) newValue);
                 trupulseDatasource.setEnabled((boolean) newValue);
-                trupulseDeviceName.setEnabled((boolean) newValue);
+                trupulseListPref.setEnabled((boolean) newValue);
                 return true;
             });
 
@@ -349,10 +350,14 @@ public class UserSettingsActivity extends PreferenceActivity
 
                 if (!entries.isEmpty()) {
                     deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
                     deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+                    trupulseListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                 } else {
                     deviceListPref.setEnabled(false);
+                    trupulseListPref.setEnabled(false);
                     deviceListPref.setSummary("No paired Bluetooth devices found");
+                    trupulseListPref.setSummary("No paired Bluetooth devices found");
                 }
             }
 

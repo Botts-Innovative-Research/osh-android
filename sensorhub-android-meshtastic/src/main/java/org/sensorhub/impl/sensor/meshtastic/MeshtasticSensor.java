@@ -2,15 +2,6 @@ package org.sensorhub.impl.sensor.meshtastic;
 
 import android.Manifest;
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -20,6 +11,15 @@ import android.support.v4.app.ActivityCompat;
 import net.opengis.sensorml.v20.PhysicalComponent;
 import org.meshtastic.proto.MeshProtos;
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.android.comm.ble.BleConfig;
+import org.sensorhub.android.comm.ble.BleNetwork;
+import org.sensorhub.api.comm.ble.GattCallback;
+import org.sensorhub.api.comm.ble.IGattCharacteristic;
+import org.sensorhub.api.comm.ble.IGattClient;
+import org.sensorhub.api.comm.ble.IGattDescriptor;
+import org.sensorhub.api.comm.ble.IGattField;
+import org.sensorhub.api.comm.ble.IGattService;
+import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.data.IStreamingDataInterface;
 import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
@@ -31,50 +31,43 @@ import org.sensorhub.impl.sensor.meshtastic.outputs.NodeInfoOutput;
 import org.sensorhub.impl.sensor.meshtastic.outputs.PositionPacketOutput;
 import org.sensorhub.impl.sensor.meshtastic.outputs.TextMessagePacketOutput;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
-    private static final UUID DEVICE_INFORMATION_SERVICE = UUID.fromString("0000180A-0000-1000-8000-00805F9B34FB");
-    private static final UUID MODEL_NUMBER_CHARACTERISTIC = UUID.fromString("00002A24-0000-1000-8000-00805F9B34FB");
     private static final UUID FROMRADIO_CHARACTERISTIC_UUID = UUID.fromString("2c55e69e-4993-11ed-b878-0242ac120002");
     private static final UUID TORADIO_CHARACTERISTIC_UUID = UUID.fromString("f75c76d2-129e-4dad-a1dd-7866124401e7");
     private static final UUID MESHTASTIC_SERVICE_UUID = UUID.fromString("6ba1b218-15a8-461f-9fa8-5dcae273eafd");
     private static final UUID FROMNUM_CHARACTERISTIC_UUID = UUID.fromString("ed9da18c-a800-4f66-a670-aa7547e34453");
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
-    AtomicBoolean isProcessing = new AtomicBoolean(false);
     AtomicBoolean readFromRadio = new AtomicBoolean(false);
-
-    private static final byte START1 = (byte) 0x94;
-    private static final byte START2 = (byte) 0xC3;
 
     private final ArrayList<PhysicalComponent> smlComponents;
     private final SensorMLBuilder smlBuilder;
-
-    private BluetoothGatt btGatt;
-    private BluetoothAdapter btAdapter;
     private Context context;
-    private BluetoothGattService deviceInformationService;
-    private BluetoothGattService service;
-    private BluetoothGattCharacteristic modelNumberChar;
-    private BluetoothGattCharacteristic toRadioChar;
-    private BluetoothGattCharacteristic fromRadioChar;
-    private BluetoothGattCharacteristic fromNumChar;
+
+    private boolean btConnected = false;
+    private HandlerThread eventThread;
+
+    // try using osh gatt api instead
+    private BleNetwork bleNetwork;
+    private IGattClient gattClient;
+    private IGattCharacteristic toRadioChar;
+    private IGattCharacteristic fromRadioChar;
+    private IGattCharacteristic fromNumChar;
+
+    // outputs
     NodeInfoOutput nodeInfoOutput;
     MyNodeInfoOutput myNodeInfoOutput;
     PositionPacketOutput positionPacketOutput;
     TextMessagePacketOutput textMessagePacketOutput;
     TextMessageControl textMessageControl;
 
-    private boolean btConnected = false;
-    private HandlerThread eventThread;
 
     public MeshtasticSensor() {
         this.smlComponents = new ArrayList<PhysicalComponent>();
@@ -93,14 +86,23 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
 
         context = SensorHubService.getContext();
 
-        final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Activity.BLUETOOTH_SERVICE);
-        btAdapter = bluetoothManager.getAdapter();
 
-        if (btAdapter == null || !btAdapter.isEnabled()) {
-            logger.debug("Bluetooth is not enabled");
+        BleConfig bleConfig = new BleConfig();
+        bleConfig.androidContext = context;
+
+        bleNetwork = new BleNetwork();
+        try {
+            bleNetwork.init(bleConfig);
+            bleNetwork.start();
+        } catch (SensorHubException e) {
+            throw new RuntimeException(e);
         }
 
+        addOutputs();
+        addControls();
+    }
 
+    private void addOutputs() {
         nodeInfoOutput = new NodeInfoOutput(this);
         myNodeInfoOutput = new MyNodeInfoOutput(this);
         positionPacketOutput = new PositionPacketOutput(this);
@@ -110,77 +112,96 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
         addOutput(myNodeInfoOutput, false);
         addOutput(positionPacketOutput, false);
         addOutput(textMessagePacketOutput, false);
+    }
 
+    private void addControls() {
         textMessageControl = new TextMessageControl(this);
         addControlInput(textMessageControl);
     }
 
     @Override
     public void doStart() throws SensorException {
-        Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
-        BluetoothDevice device = null;
-        for (BluetoothDevice d : devices) {
-            if (d.getAddress().equals(config.device_name)) {
-                device = d;
-            }
-        }
-        if (null == device) {
-            reportError("Could not find Bluetooth device, unable to start.", new Throwable());
+        if (bleNetwork == null) {
+            logger.error("BLE network is not initialized");
         }
 
         if (context.checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
-            // request permission
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH}, 1);
         }
 
-        btGatt = device.connectGatt(context, true, gattCallback);
-
+        bleNetwork.connectGatt(config.device_name, gattCallback);
 
         eventThread = new HandlerThread("MeshtasticNodeEventThread");
         eventThread.start();
         Handler eventHandler = new Handler(eventThread.getLooper());
-
     }
 
     @Override
     public void doStop() {
-        btGatt.disconnect();
-        btGatt.close();
+        if (gattClient != null) {
+            gattClient.disconnect();
+            gattClient.close();
+            gattClient = null;
+        }
+
+        if (bleNetwork != null) {
+            try {
+                bleNetwork.stop();
+            } catch (SensorHubException e) {
+                logger.error("Error stopping BLE network");
+            }
+            bleNetwork = null;
+        }
     }
 
-    private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+
+    private GattCallback gattCallback = new GattCallback() {
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                btConnected = true;
-                boolean discoveryStarted = gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            }
+        public void onConnected(IGattClient gatt, int status) {
+//            super.onConnected(gatt, status);
+
+            gattClient = gatt;
+            btConnected = true;
+
+            logger.info("Meshtastic node is connected");
+            gattClient.discoverServices();
         }
 
         @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            if (characteristic.getUuid().equals(TORADIO_CHARACTERISTIC_UUID)) {
-                byte[] data = characteristic.getValue();
-                onMessage(data);
-            } else if (characteristic.getUuid().equals(FROMRADIO_CHARACTERISTIC_UUID)) {
-                byte[] data = characteristic.getValue();
-                onMessage(data);
-            } else if (characteristic.getUuid().equals(FROMNUM_CHARACTERISTIC_UUID)) {
-                byte[] data = characteristic.getValue();
-                onMessage(data);
-            }
+        public void onDisconnected(IGattClient gatt, int status) {
+//            super.onDisconnected(gatt, status);
+            btConnected = false;
+            logger.info("Meshtastic node is disconnected");
         }
 
         @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+        public void onServicesDiscovered(IGattClient gatt, int status) {
+//            super.onServicesDiscovered(gatt, status);
 
             // set MTU size to 512
-            gatt.requestMtu(512);
+//            gatt.requestMtu(512);
 
-            // request handshake
+            IGattService meshtasticService = null;
+            for (IGattService service : gattClient.getServices()) {
+                if (service.getType().equals(MESHTASTIC_SERVICE_UUID)) {
+                    meshtasticService = service;
+                }
+            }
+
+
+            for (IGattCharacteristic characteristic : meshtasticService.getCharacteristics()) {
+                UUID uuid = characteristic.getType();
+
+                if (uuid.equals(FROMNUM_CHARACTERISTIC_UUID)){
+                    fromNumChar = characteristic;
+                } else if (uuid.equals(FROMRADIO_CHARACTERISTIC_UUID)){
+                    fromRadioChar = characteristic;
+                } else if (uuid.equals(TORADIO_CHARACTERISTIC_UUID)){
+                    toRadioChar = characteristic;
+                }
+            }
+
             MeshProtos.ToRadio handshake = MeshProtos.ToRadio.newBuilder()
-                    // TODO: Verify response ID in future if needed
                     .setWantConfigId(0)
                     .build();
             try {
@@ -190,88 +211,83 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
             }
 
 
-            deviceInformationService = btGatt.getService((DEVICE_INFORMATION_SERVICE));
-            service = btGatt.getService(MESHTASTIC_SERVICE_UUID);
-
-            fromNumChar = service.getCharacteristic(FROMNUM_CHARACTERISTIC_UUID);
-            fromRadioChar = service.getCharacteristic(FROMRADIO_CHARACTERISTIC_UUID);
-            toRadioChar = service.getCharacteristic(TORADIO_CHARACTERISTIC_UUID);
-
+            readFromRadioUntilEmpty();
 
             if (fromNumChar != null) {
-                logger.debug("BluetoothDeviceManager", "Found FROMNUM characteristic");
-            }
-            if (fromRadioChar != null) {
-                logger.debug("BluetoothDeviceManager", "Found FROMRADIO characteristic");
-            }
-            if (toRadioChar != null) {
-                logger.debug("BluetoothDeviceManager", "Found TORADIO characteristic");
-            }
-
-            // read fromRadio until you get empty buffer
-
-            while (!readFromRadio.get()) {
-                gatt.readCharacteristic(fromRadioChar);
-            }
-
-
-
-
-            gatt.setCharacteristicNotification(fromNumChar, true);
-
-            BluetoothGattDescriptor descriptor = fromNumChar.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            gatt.writeDescriptor(descriptor);
-
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                logger.info("Failed to write to characteristic");
+                gattClient.setCharacteristicNotification(fromNumChar, true);
             }
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        public void onCharacteristicChanged(IGattClient gatt, IGattField characteristic) {
+//            super.onCharacteristicChanged(gatt, characteristic);
 
-            if (status == BluetoothGatt.GATT_SUCCESS) {
+            UUID uuid = characteristic.getType();
 
-                if (characteristic.getUuid().equals(FROMNUM_CHARACTERISTIC_UUID)) {
-//                   boolean isDone = false;
-//                   while (!isDone) {
-                      gatt.readCharacteristic(fromRadioChar);
-//
-//                   }
-
-                }
-                if (characteristic.getUuid().equals(FROMRADIO_CHARACTERISTIC_UUID)) {
-                    byte[] data = characteristic.getValue();
-//                    onMessage(data);
-                    if (data.length == 0) {
-                        readFromRadio.set(true);
-                    }
-                }
+            if (uuid.equals(FROMRADIO_CHARACTERISTIC_UUID) || uuid.equals(FROMNUM_CHARACTERISTIC_UUID)) {
+                byte[] data = characteristic.getValue().array();
+                onMessage(data);
             }
         }
 
         @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
+        public void onCharacteristicRead(IGattClient gatt, IGattField characteristic, int status) {
+//            super.onCharacteristicRead(gatt, characteristic, status);
+           UUID uuid = characteristic.getType();
+
+           if (uuid.equals(FROMRADIO_CHARACTERISTIC_UUID)) {
+               byte[] data = characteristic.getValue().array();
+               if (data.length == 0) {
+                   readFromRadio.set(true);
+               } else {
+                   onMessage(data);
+
+                   if (!readFromRadio.get()) {
+                       gattClient.setCharacteristicNotification(fromRadioChar, true);
+                   }
+               }
+           }
+        }
+
+        @Override
+        public void onCharacteristicWrite(IGattClient gatt, IGattField characteristic, int status) {
+//            super.onCharacteristicWrite(gatt, characteristic, status);
+        }
+
+        @Override
+        public void onDescriptorRead(IGattClient gatt, IGattDescriptor descriptor, int status) {
+//            super.onDescriptorRead(gatt, descriptor, status);
+        }
+
+        @Override
+        public void onDescriptorWrite(IGattClient gatt, IGattDescriptor descriptor, int status) {
+//            super.onDescriptorWrite(gatt, descriptor, status);
+            if (status == 0) {
 
             }
         }
     };
 
+    private void readFromRadioUntilEmpty() {
+        if (fromRadioChar != null && gattClient != null) {
+            readFromRadio.set(false);
+            gattClient.readCharacteristic(fromRadioChar);
+        }
+    }
 
     public void sendMessage(MeshProtos.ToRadio message) throws IOException {
+        if (toRadioChar == null || gattClient == null) {
+
+        }
+
         byte[] bytes = message.toByteArray();
 
-        toRadioChar.setValue(bytes);
+        toRadioChar.setValue(ByteBuffer.wrap(bytes));
 
-        boolean ok = btGatt.writeCharacteristic(toRadioChar);
+        boolean ok = gattClient.writeCharacteristic(toRadioChar);
+
         if (!ok) {
-            logger.debug("error");
+            logger.debug("failed to send message");
         }
     }
 
@@ -289,11 +305,4 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
             getLogger().error("Invalid protobuf: " + e.getMessage());
         }
     }
-
-    private void startProcessing() {
-//        executor.scheduleWithFixedDelay(() -> {
-//               btGatt.readCharacteristic(fromNumChar);
-//        }, 1, 1, TimeUnit.SECONDS);
-    }
-
 }

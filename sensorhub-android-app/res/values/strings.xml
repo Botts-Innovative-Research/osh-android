@@ -9,6 +9,7 @@
     <string name="action_about">About</string>
     <string name="action_proxy">Start Proxy</string>
     <string name="action_stop_proxy">Stop Proxy</string>
+    <string name="action_meshtastic">Meshtastic Msg</string>
     <string name="sos_settings">SOS Settings (Required)</string>
     <string name="sost_settings">SOS-T Settings (Optional)</string>
     <string name="sensor_android">Android Sensor</string>
@@ -209,4 +210,6 @@
     <string-array name="bluetooth_mac_address_list">
         <item></item>
     </string-array>
+
+    <string name="meshtastic_msg">Enter a message!</string>
 </resources>
