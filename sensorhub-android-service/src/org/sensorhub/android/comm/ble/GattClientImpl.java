@@ -26,6 +26,8 @@ import org.sensorhub.api.comm.ble.IGattClient;
 import org.sensorhub.api.comm.ble.IGattDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
