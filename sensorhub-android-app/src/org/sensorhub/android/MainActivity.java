@@ -48,8 +48,6 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.botts.impl.driver.meshtastic.MeshtasticConfig;
-
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.api.event.Event;
@@ -58,7 +56,6 @@ import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.api.module.ModuleEvent;
 import org.sensorhub.api.sensor.SensorConfig;
-import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
@@ -73,18 +70,20 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
+import org.sensorhub.impl.service.consys.client.ConSysApiClient;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig;
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
-import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
+import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,7 +105,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -120,10 +118,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 {
     public static final String ACTION_BROADCAST_RECEIVER = "org.sensorhub.android.BROADCAST_RECEIVER";
     public static final String ANDROID_SENSORS_MODULE_ID = "ANDROID_SENSORS";
-
-    public static final Date ANDROID_SENSORS_LAST_UPDATED = new Date(Instant.parse("2023-05-28T12:00:00Z").toEpochMilli());
+    public static final Date ANDROID_SENSORS_LAST_UPDATED = new Date(Instant.now().toEpochMilli());
     public static final Date TRUPULSE_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
-    public static final Date MESHTASTIC_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
     private static final Logger log = LoggerFactory.getLogger(MainActivity.class);
 
     TextView mainInfoArea;
@@ -136,7 +132,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     StringBuffer videoInfoText = new StringBuffer();
     boolean oshStarted = false;
     ArrayList<SOSTClient> sostClients = new ArrayList<SOSTClient>();
-    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList< ConSysApiClientModule>();
+    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<ConSysApiClientModule>();
 
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
@@ -480,21 +476,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (enabled)
         {
             MeshtasticConfig meshtasticConfig = new MeshtasticConfig();
-
             meshtasticConfig.id = "MESHTASTIC_SENSOR";
             meshtasticConfig.name = "Meshtastic [" + deviceName + "]";
             meshtasticConfig.autoStart = true;
-            meshtasticConfig.lastUpdated = MESHTASTIC_SENSOR_LAST_UPDATED;
-            meshtasticConfig.serialNumber = deviceID;
-            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
-            btConf.protocol.deviceName = prefs.getString("meshtastic_device_name", "");
-
-            btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
-            meshtasticConfig.connection.connectTimeout = 100000;
-            meshtasticConfig.connection.reconnectAttempts = 10;
-
-            meshtasticConfig.commSettings = btConf;
-
+            meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
 
             sensorhubConfig.add(meshtasticConfig);
         }
@@ -943,7 +929,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             }
 
-            log.debug("[SENSOR RESTART]", client.isConnected());
+//            log.debug("[SENSOR RESTART]", client.isConnected());
 
 //            if(!client.isConnected()){
 //                mainInfoText.setLength(0);
@@ -953,10 +939,40 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }
 
 
+        for (ConSysApiClientModule client: conSysClients)
+        {
+            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+            boolean showError = (client.getCurrentError() != null);
+            boolean showMsg = (dataStreams.size() == 0) && (client.getStatusMessage() != null);
+
+            if (showError || showMsg)
+            {
+                mainInfoText.append("<p>" + client.getName() + ":<br/>");
+                if (showMsg)
+                    mainInfoText.append(client.getStatusMessage() + "<br/>");
+                if (showError)
+                {
+                    Throwable errorObj = client.getCurrentError();
+                    String errorMsg = errorObj.getMessage().trim();
+                    if (!errorMsg.endsWith("."))
+                        errorMsg += ". ";
+                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
+                        errorMsg += errorObj.getCause().getMessage();
+                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
+                }
+                mainInfoText.append("</p>");
+            }
+
+            log.debug("[CONSYS CLIENT CONNECTION]", client.isConnected());
+        }
+
         // then display streams status
         mainInfoText.append("<p>");
         for (SOSTClient client: sostClients)
         {
+            mainInfoText.append("SOS-T Client");
+            mainInfoText.append("<p>");
+
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
             long now = System.currentTimeMillis();
 
@@ -984,8 +1000,39 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
 
         }
-        mainInfoText.append("<p>");
 
+        for (ConSysApiClientModule client: conSysClients)
+        {
+            mainInfoText.append("ConSysApi Client");
+            mainInfoText.append("<p>");
+
+            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+            long now = System.currentTimeMillis();
+
+            for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
+            {
+                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
+
+                long lastEventTime = stream.getValue().lastEventTime;
+                long dt = now - lastEventTime;
+                if (lastEventTime == Long.MIN_VALUE)
+                    mainInfoText.append("<font color='red'>NO OBS</font>");
+                else if (dt > stream.getValue().measPeriodMs)
+                    mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
+                else
+                    mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
+
+                if (stream.getValue().errorCount > 0)
+                {
+                    mainInfoText.append("<font color='red'> (");
+                    mainInfoText.append(stream.getValue().errorCount);
+                    mainInfoText.append(")</font>");
+                }
+
+                mainInfoText.append("<br/>");
+            }
+        }
+        mainInfoText.append("<p>");
 
         if (mainInfoText.length() > 5)
             mainInfoText.setLength(mainInfoText.length()-5); // remove last </br>
@@ -997,7 +1044,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             mainInfoText.append("No Sensors Set to Push Remotely");
         }
 
-        // show video info (kalyn commented out)
+        if(conSysClients.size() == 0 && serveOrStore){
+            mainInfoText.append("No Sensors Set to Push Remotely");
+        }
+
+        // show video info
         if (androidSensors != null && boundService.hasVideo())
         {
 //             TODO: Fix crash resulting from this (620)
@@ -1025,82 +1076,82 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     }
 
-    private void restartService(){
-        displayHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                restartSensorHubService();
-            }
-        }, 5000);
-    }
-
-    private void restartSensorHubService() {
-        try {
-            mainInfoText.append("Restarting OSH Service");
-
-            stopListeningForEvents();
-            stopRefreshingStatus();
-
-            if (boundService != null) {
-                boundService.stopSensorHub();
-            }
-
-            Thread.sleep(10000);
-
-            updateConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this), runName);
-
-            AndroidSensorsConfig androidSensorConfig = (AndroidSensorsConfig) sensorhubConfig.get("ANDROID_SENSORS");
-            VideoEncoderConfig videoConfig = androidSensorConfig.videoConfig;
-
-            boolean cameraInUse = (androidSensorConfig.activateBackCamera || androidSensorConfig.activateFrontCamera);
-            boolean improperVideoSettings = (videoConfig.selectedPreset < 0 || videoConfig.selectedPreset >= videoConfig.presets.length);
-
-            if (cameraInUse && improperVideoSettings) {
-                showVideoConfigErrorPopup();
-                newStatusMessage("Video Config Error: Check Settings");
-                return;
-            }
-
-            newStatusMessage("Starting SensorHub...");
-
-
-            boundService.startSensorHub(sensorhubConfig, showVideo);
-
-            if (boundService.hasVideo()) {
-                mainInfoArea.setBackgroundColor(0x80FFFFFF);
-            }
-
-            while(boundService.getSensorHub() == null) {
-                newStatusMessage("Waiting for BoundService Hub to start...");
-                Thread.sleep(1000);
-            }
-
-            if (boundService.getSensorHub() == null) {
-                appendStatusMessage("Failed to start SensorHub after restart");
-                return;
-            }
-
-            while(boundService.getSensorHub().getEventBus() == null) {
-                newStatusMessage("Waiting for BoundService Hub EventBus to start...");
-                Thread.sleep(1000);
-            }
-
-            if (boundService.getSensorHub().getEventBus() != null) {
-                EventBus shEvtBus = (EventBus) boundService.getSensorHub().getEventBus();
-                shEvtBus.newSubscription()
-                        .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
-                        .subscribe(mainActivity);
-
-                newStatusMessage("SensorHub restarted successfully");
-            }
-
-        } catch (InterruptedException e) {
-            newStatusMessage("Restart interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            newStatusMessage("Restart failed: " + e.getMessage());
-        }
-    }
+//    private void restartService(){
+//        displayHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                restartSensorHubService();
+//            }
+//        }, 5000);
+//    }
+//
+//    private void restartSensorHubService() {
+//        try {
+//            mainInfoText.append("Restarting OSH Service");
+//
+//            stopListeningForEvents();
+//            stopRefreshingStatus();
+//
+//            if (boundService != null) {
+//                boundService.stopSensorHub();
+//            }
+//
+//            Thread.sleep(10000);
+//
+//            updateConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this), runName);
+//
+//            AndroidSensorsConfig androidSensorConfig = (AndroidSensorsConfig) sensorhubConfig.get("ANDROID_SENSORS");
+//            VideoEncoderConfig videoConfig = androidSensorConfig.videoConfig;
+//
+//            boolean cameraInUse = (androidSensorConfig.activateBackCamera || androidSensorConfig.activateFrontCamera);
+//            boolean improperVideoSettings = (videoConfig.selectedPreset < 0 || videoConfig.selectedPreset >= videoConfig.presets.length);
+//
+//            if (cameraInUse && improperVideoSettings) {
+//                showVideoConfigErrorPopup();
+//                newStatusMessage("Video Config Error: Check Settings");
+//                return;
+//            }
+//
+//            newStatusMessage("Starting SensorHub...");
+//
+//
+//            boundService.startSensorHub(sensorhubConfig, showVideo);
+//
+//            if (boundService.hasVideo()) {
+//                mainInfoArea.setBackgroundColor(0x80FFFFFF);
+//            }
+//
+//            while(boundService.getSensorHub() == null) {
+//                newStatusMessage("Waiting for BoundService Hub to start...");
+//                Thread.sleep(1000);
+//            }
+//
+//            if (boundService.getSensorHub() == null) {
+//                appendStatusMessage("Failed to start SensorHub after restart");
+//                return;
+//            }
+//
+//            while(boundService.getSensorHub().getEventBus() == null) {
+//                newStatusMessage("Waiting for BoundService Hub EventBus to start...");
+//                Thread.sleep(1000);
+//            }
+//
+//            if (boundService.getSensorHub().getEventBus() != null) {
+//                EventBus shEvtBus = (EventBus) boundService.getSensorHub().getEventBus();
+//                shEvtBus.newSubscription()
+//                        .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
+//                        .subscribe(mainActivity);
+//
+//                newStatusMessage("SensorHub restarted successfully");
+//            }
+//
+//        } catch (InterruptedException e) {
+//            newStatusMessage("Restart interrupted: " + e.getMessage());
+//            Thread.currentThread().interrupt();
+//        } catch (Exception e) {
+//            newStatusMessage("Restart failed: " + e.getMessage());
+//        }
+//    }
 
 
     protected synchronized void newStatusMessage(String msg)
@@ -1196,7 +1247,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
         } else if(Sensors.BLELocation.equals(sensor)){
             return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
-        }  else if (Sensors.Meshtastic.equals(sensor)) {
+        }
+        else if (Sensors.Meshtastic.equals(sensor)) {
             return prefs.getBoolean("meshtastic_enabled", false)
                     && prefs.getStringSet("meshtastic_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
@@ -1309,7 +1361,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     protected void onDestroy()
     {
-        stopService(new Intent(this, SensorHubService.class));
+//        stopService(new Intent(this, SensorHubService.class));
+//        super.onDestroy();
+
+
+        if (boundService != null) {
+            unbindService(sConn);
+            boundService = null;
+        }
         super.onDestroy();
     }
 
@@ -1368,25 +1427,30 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         List<String> permissions = new ArrayList<>();
 
         //Check for necessary permissions
-        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED){
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-        if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED){
+
+        if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.CAMERA);
-        }
-        if(checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED){
+
+        if(checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.RECORD_AUDIO);
-        }if(checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED){
+
+        if(checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.BLUETOOTH);
-        }if(checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_DENIED) {
+
+        if(checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
-        }if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
+
+        if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
-        }
+
+
+
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
         permARR = permissions.toArray(permARR);
-        if(permARR.length >0) {
+        if (permARR.length > 0) {
             requestPermissions(permARR, 100);
         }
     }

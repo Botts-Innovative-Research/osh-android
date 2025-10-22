@@ -14,10 +14,14 @@ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
 
 package org.sensorhub.android;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -30,6 +34,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.view.menu.ListMenuPresenter;
 import android.text.InputType;
 import android.text.PrecomputedText;
@@ -47,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 
 
@@ -320,7 +326,36 @@ public class UserSettingsActivity extends PreferenceActivity
 
             Preference meshtasticEnabled = getPreferenceScreen().findPreference("meshtastic_enabled");
             Preference meshtasticOptions = getPreferenceScreen().findPreference("meshtastic_options");
-            Preference meshtasticDatasource = getPreferenceScreen().findPreference("meshtastic_datasource");
+
+            ListPreference deviceListPref = (ListPreference) getPreferenceScreen().findPreference("meshtastic_device_address");
+
+            BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (btAdapter != null && btAdapter.isEnabled()) {
+
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                Set<BluetoothDevice> bondedDevices = btAdapter.getBondedDevices();
+
+                List<CharSequence> entries = new ArrayList<>();
+                List<CharSequence> entryValues = new ArrayList<>();
+
+                for (BluetoothDevice device : bondedDevices) {
+                    String name = device.getName();
+                    String mac = device.getAddress();
+                    entries.add(name != null ? name + " (" + mac + ")" : mac);
+                    entryValues.add(mac);
+                }
+
+                if (!entries.isEmpty()) {
+                    deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+                } else {
+                    deviceListPref.setEnabled(false);
+                    deviceListPref.setSummary("No paired Bluetooth devices found");
+                }
+            }
+
             meshtasticOptions.setEnabled(prefs.getBoolean(meshtasticEnabled.getKey(), false));
             meshtasticEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 meshtasticOptions.setEnabled((boolean) newValue);

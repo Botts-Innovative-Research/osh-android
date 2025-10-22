@@ -205,4 +205,8 @@
         <item>OPUS</item>
         <item>PCM</item>
     </string-array>
+
+    <string-array name="bluetooth_mac_address_list">
+        <item></item>
+    </string-array>
 </resources>

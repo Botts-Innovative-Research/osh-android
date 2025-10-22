@@ -1,4 +1,4 @@
-ext.oshCoreVersion = '3.0.0'
+ext.oshCoreVersion = '2.0.0-beta'
 ext.compileSdkVersion = 31
 ext.minSdkVersion = 30
 ext.targetSdkVersion = 30
@@ -60,6 +60,7 @@ subprojects {
       substitute module('org.sensorhub:sensorhub-service-swe') with project(':sensorhub-service-swe')
       substitute module('org.sensorhub:sensorhub-service-consys') with project(':sensorhub-service-consys')
       substitute module('org.sensorhub:sensorhub-service-video') with project(':sensorhub-service-video')
+      substitute module('org.sensorhub:sensorhub-datastore-h2') with project(':sensorhub-datastore-h2')
 //      substitute module('org.vast.opengis:ogc-services-sps') with project(':ogc-services-sps')
 
       // override objenesis version to get new android instantiators
