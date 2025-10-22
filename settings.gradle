@@ -27,7 +27,7 @@ def repos = [
         'services/sensorhub-service-video',
         'sensors/video/sensorhub-driver-videocam',
         'sensors/positioning/sensorhub-driver-trupulse',
-        'sensors/others/sensorhub-driver-meshtastic',
+//        'sensors/others/sensorhub-driver-meshtastic',
         'sensors/health/sensorhub-driver-angelsensor',
         'processing/sensorhub-process-vecmath',
         'processing/sensorhub-process-geoloc'
