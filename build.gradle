@@ -1,9 +1,9 @@
 ext.oshCoreVersion = '2.0.0-beta'
 ext.compileSdkVersion = 31
-ext.minSdkVersion = 30
+ext.minSdkVersion = 31
 ext.targetSdkVersion = 30
 ext.buildToolsVersion = "30.0.2"
-version = oshCoreVersion
+version = '3.1.0-alpha'
 
 buildscript {
   repositories {

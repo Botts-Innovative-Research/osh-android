@@ -14,7 +14,7 @@
         android:key="nop_ipAddress"
         android:selectable="false"
         android:summary=""
-        android:title="Current IP Address" />
+        android:title="Device IP Address" />
 
     <PreferenceCategory android:title="Settings Required">
         <EditTextPreference
@@ -24,7 +24,7 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Endpoint IP Address" />
+            android:title="Destination IP Address" />
 
         <EditTextPreference
             android:defaultValue="8585"
@@ -33,13 +33,17 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Endpoint Port" />
+            android:title="Destination Port" />
 
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="enable_tls"
-            android:title="Enable TLS " />
-
+        <EditTextPreference
+            android:inputType="text"
+            android:defaultValue="/sensorhub/api"
+            android:key="endpoint_path"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="Enter the destination endpoint (e.g. /sensorhub/sos)"
+            android:title="Resource Path" />
 
         <EditTextPreference
             android:inputType="text"
@@ -56,6 +60,12 @@
             android:selectAllOnFocus="true"
             android:summary="Enter your password or leave blank"
             android:title="Endpoint Password" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="enable_tls"
+            android:title="Enable TLS " />
+
 
         <CheckBoxPreference
             android:id="@+id/api_service_switch"

@@ -11,6 +11,8 @@ dependencies {
   api project(':sensorhub-comm-ble')
   api project(':sensorhub-service-swe')
   api 'javax.xml.stream:stax-api:1.0-2'
+//  implementation 'androidx.core:core:1.12.0'
+
 }
 
 android {

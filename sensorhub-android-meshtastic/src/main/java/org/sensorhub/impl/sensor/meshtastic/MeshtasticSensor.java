@@ -7,7 +7,11 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
+
+import com.google.protobuf.CodedInputStream;
+
 import net.opengis.sensorml.v20.PhysicalComponent;
 import org.meshtastic.proto.MeshProtos;
 import org.sensorhub.android.SensorHubService;
@@ -30,7 +34,11 @@ import org.sensorhub.impl.sensor.meshtastic.outputs.MyNodeInfoOutput;
 import org.sensorhub.impl.sensor.meshtastic.outputs.NodeInfoOutput;
 import org.sensorhub.impl.sensor.meshtastic.outputs.PositionPacketOutput;
 import org.sensorhub.impl.sensor.meshtastic.outputs.TextMessagePacketOutput;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
@@ -45,24 +53,18 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
     private static final UUID TORADIO_CHARACTERISTIC_UUID = UUID.fromString("f75c76d2-129e-4dad-a1dd-7866124401e7");
     private static final UUID MESHTASTIC_SERVICE_UUID = UUID.fromString("6ba1b218-15a8-461f-9fa8-5dcae273eafd");
     private static final UUID FROMNUM_CHARACTERISTIC_UUID = UUID.fromString("ed9da18c-a800-4f66-a670-aa7547e34453");
-    private static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
     AtomicBoolean readFromRadio = new AtomicBoolean(false);
 
     private final ArrayList<PhysicalComponent> smlComponents;
     private final SensorMLBuilder smlBuilder;
     private Context context;
-
     private boolean btConnected = false;
     private HandlerThread eventThread;
-
-    // try using osh gatt api instead
     private BleNetwork bleNetwork;
     private IGattClient gattClient;
     private IGattCharacteristic toRadioChar;
     private IGattCharacteristic fromRadioChar;
     private IGattCharacteristic fromNumChar;
-
-    // outputs
     NodeInfoOutput nodeInfoOutput;
     MyNodeInfoOutput myNodeInfoOutput;
     PositionPacketOutput positionPacketOutput;
@@ -165,7 +167,29 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
             btConnected = true;
 
             logger.info("Meshtastic node is connected");
-            gattClient.discoverServices();
+
+
+
+            // set MTU size to 512
+            boolean isRequest = gatt.requestMtu(512);
+
+            if (isRequest)
+                gattClient.discoverServices();
+//            try {
+//
+//                Method refresh = gatt.getClass().getMethod("refresh");
+//                refresh.invoke(gatt);
+//            } catch (IllegalAccessException e) {
+//                throw new RuntimeException(e);
+//            } catch (InvocationTargetException e) {
+//                throw new RuntimeException(e);
+//            } catch (NoSuchMethodException e) {
+//                throw new RuntimeException(e);
+//            }
+
+//            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                gattClient.discoverServices();
+//            }, 500);
         }
 
         @Override
@@ -179,11 +203,11 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
         public void onServicesDiscovered(IGattClient gatt, int status) {
 //            super.onServicesDiscovered(gatt, status);
 
-            // set MTU size to 512
-//            gatt.requestMtu(512);
             IGattService meshtasticService = null;
             for (IGattService service : gattClient.getServices()) {
-                if (service.getType().equals(MESHTASTIC_SERVICE_UUID)) {
+
+                UUID uuid = service.getType();
+                if (uuid.equals(MESHTASTIC_SERVICE_UUID)) {
                     meshtasticService = service;
                 }
             }
@@ -207,6 +231,7 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
                     .build();
             try {
                 sendMessage(handshake);
+                readFromRadioUntilEmpty();
             } catch (IOException e) {
                 getLogger().error("Failed to send handshake message", e);
             }
@@ -229,11 +254,14 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
 
         @Override
         public void onCharacteristicChanged(IGattClient gatt, IGattField characteristic) {
-//            super.onCharacteristicChanged(gatt, characteristic);
 
             UUID uuid = characteristic.getType();
 
-            if (uuid.equals(FROMRADIO_CHARACTERISTIC_UUID) || uuid.equals(FROMNUM_CHARACTERISTIC_UUID)) {
+            if (uuid.equals(FROMNUM_CHARACTERISTIC_UUID)) {
+                readFromRadioUntilEmpty();
+                return;
+            }
+            if (uuid.equals(FROMRADIO_CHARACTERISTIC_UUID)) {
                 byte[] data = characteristic.getValue().array();
                 onMessage(data);
             }
@@ -241,38 +269,40 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
 
         @Override
         public void onCharacteristicRead(IGattClient gatt, IGattField characteristic, int status) {
-//            super.onCharacteristicRead(gatt, characteristic, status);
            UUID uuid = characteristic.getType();
 
            if (status == 0) {
                if (uuid.equals(FROMRADIO_CHARACTERISTIC_UUID)) {
                    byte[] data = characteristic.getValue().array();
-                   if (data.length == 0) {
-                       readFromRadio.set(true);
-                   } else {
+                   if (data.length > 0) {
                        onMessage(data);
-
-                       if (!readFromRadio.get()) {
-                           gattClient.setCharacteristicNotification(fromRadioChar, true);
-                       }
+                       gattClient.readCharacteristic(fromRadioChar); // keep reading until empty
+                   } else {
+                       readFromRadio.set(true);
                    }
+//                   if (data.length == 0) {
+//                       readFromRadio.set(true);
+//                   } else {
+//                       onMessage(data);
+//
+//                       if (!readFromRadio.get()) {
+//                           gattClient.setCharacteristicNotification(fromRadioChar, true);
+//                       }
+//                   }
                }
            }
         }
 
         @Override
         public void onCharacteristicWrite(IGattClient gatt, IGattField characteristic, int status) {
-//            super.onCharacteristicWrite(gatt, characteristic, status);
         }
 
         @Override
         public void onDescriptorRead(IGattClient gatt, IGattDescriptor descriptor, int status) {
-//            super.onDescriptorRead(gatt, descriptor, status);
         }
 
         @Override
         public void onDescriptorWrite(IGattClient gatt, IGattDescriptor descriptor, int status) {
-//            super.onDescriptorWrite(gatt, descriptor, status);
             if (status == 0) {
 
             }
@@ -281,7 +311,7 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
 
     private void readFromRadioUntilEmpty() {
         if (fromRadioChar != null && gattClient != null) {
-            readFromRadio.set(false);
+//            readFromRadio.set(false);
             gattClient.readCharacteristic(fromRadioChar);
         }
     }
@@ -303,22 +333,23 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
     }
 
     private void onMessage(byte[] bytes) {
-
         try {
+
+
             MeshProtos.FromRadio msg = MeshProtos.FromRadio.parseFrom(bytes);
-            logger.debug("MESSAGE", msg);
             for (Map.Entry<String, ? extends IStreamingDataInterface> entry : getOutputs().entrySet()) {
                 AbstractMeshtasticOutput output = (AbstractMeshtasticOutput) entry.getValue();
                 if (output.canHandle(msg))
                     output.onMessage(msg);
             }
-            getLogger().info("New message: " + msg);
         } catch (Exception e) {
             getLogger().error("Invalid protobuf: " + e.getMessage());
         }
     }
 
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+    private final AtomicBoolean bleBusy = new AtomicBoolean(false);
 
     private void startProcessing() {
         executor.scheduleWithFixedDelay(() -> {

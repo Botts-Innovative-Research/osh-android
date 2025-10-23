@@ -242,7 +242,19 @@ public class GattClientImpl implements IGattClient
         
         return true;
     }
-    
+
+    @Override
+    public boolean requestMtu(int mtu) {
+        bleCmdExec.submit(new Runnable() {
+            public void run()
+            {
+                aGatt.requestMtu(mtu);
+                waitForCommandExecuted(mtu);
+            }
+        });
+
+        return true;
+    }
     
     protected IGattCharacteristic getCharObject(BluetoothGattCharacteristic aChar)
     {

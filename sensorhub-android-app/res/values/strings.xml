@@ -212,4 +212,7 @@
     </string-array>
 
     <string name="meshtastic_msg">Enter a message!</string>
+    <string name="message_hint">Enter a message!</string>
+    <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>
+    <string name="destination_node_hint">Enter the destination Node ID (integer)</string>
 </resources>

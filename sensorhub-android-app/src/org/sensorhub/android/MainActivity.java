@@ -33,11 +33,15 @@ import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
@@ -49,8 +53,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import net.opengis.swe.v20.DataBlock;
+
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
+import org.sensorhub.api.command.CommandData;
+import org.sensorhub.api.command.IStreamingControlInterface;
+import org.sensorhub.api.common.BigId;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
@@ -71,6 +81,8 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
+import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
@@ -87,22 +99,17 @@ import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -111,6 +118,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -145,6 +153,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
     URI clientUri = null;
+    URL clientURL = null;
+
     String deviceID;
     String runName;
 
@@ -191,25 +201,26 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
         //get ip, port, user, password
-        String ip_address = prefs.getString("ip_address", "").trim();
+        String host = prefs.getString("ip_address", "").trim();
         String port = prefs.getString("port", "").trim();
         String user = prefs.getString("username", null);
         String password = prefs.getString("password", null);
+        String endpointPath = prefs.getString("endpoint_path", null);
 
         Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
         Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
         Boolean isClientEnabled = prefs.getBoolean("enable_client", true);
         Boolean isTLSEnabled = prefs.getBoolean("enable_tls", false);
 
-        if (ip_address.isEmpty())
-            ip_address = "127.0.0.1";
+        if (host.isEmpty())
+            host = "127.0.0.1";
 
         if (port.isEmpty())
             port = "8585";
 
-        String sensorhubEndpoint = "/sensorhub";
+//        String sensorhubEndpoint = "/sensorhub";
 
-        String newUrl = (isTLSEnabled ? "https://" : "http://") + ip_address + ":" + port + sensorhubEndpoint;
+        String newUrl = (isTLSEnabled ? "https://" : "http://") + host + ":" + port + endpointPath;
 
         try {
             clientUri = new URI(newUrl);
@@ -217,6 +228,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             throw new RuntimeException(e);
         }
 
+        try {
+            clientURL = clientUri.toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
 
         // disable SSL check if requested
         boolean disableSslCheck = prefs.getBoolean("sos_disable_ssl_check", false);
@@ -560,26 +576,34 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
     {
 
-        URL sosUrl;
 
-        if (clientUri == null)
+        if (clientURL == null)
             return;
 
-        try {
-            sosUrl = clientUri.resolve("/sensorhub/sos").toURL();
-            System.out.println("SOS URL"+ sosUrl);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+//        URL sosUrl = null;
+//        try {
+//            sosUrl = clientUri.toURL();
+//        } catch (MalformedURLException e) {
+//            throw new RuntimeException(e);
+//        }
+
+
+//        try {
+////            sosUrl = clientUri.resolve("/sensorhub/sos").toURL();
+//            sosUrl = clientUri.toURL();
+//            System.out.println("SOS URL"+ sosUrl);
+//        } catch (MalformedURLException e) {
+//            throw new RuntimeException(e);
+//        }
 
         SOSTClientConfig sosConfig = new SOSTClientConfig();
         sosConfig.id = sensorConf.id + "_SOST";
         sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");// + "SOS-T Client";
         sosConfig.autoStart = true;
-        sosConfig.sos.remoteHost = sosUrl.getHost();
-        sosConfig.sos.remotePort = sosUrl.getPort() < 0 ? sosUrl.getDefaultPort() : sosUrl.getPort();
-        sosConfig.sos.resourcePath = sosUrl.getPath();
-        sosConfig.sos.enableTLS = sosUrl.getProtocol().equals("https");
+        sosConfig.sos.remoteHost = clientURL.getHost();
+        sosConfig.sos.remotePort = clientURL.getPort() < 0 ? clientURL.getDefaultPort() : clientURL.getPort();
+        sosConfig.sos.resourcePath = clientURL.getPath();
+        sosConfig.sos.enableTLS = clientURL.getProtocol().equals("https");
         sosConfig.sos.user = user;
         sosConfig.sos.password = pwd;
         sosConfig.connection.connectTimeout = 10000;
@@ -592,30 +616,35 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd, ConSysOAuthConfig oAuthConfig)
     {
-        URL apiUrl;
+//        URL apiUrl;
+//
+//        if (clientUri == null)
+//            return;
+//
+//        try {
+//            apiUrl = clientUri.resolve("/sensorhub/api/").toURL();
+//            System.out.println("API URL"+ apiUrl);
+//        } catch (MalformedURLException e) {
+//            throw new RuntimeException(e);
+//        }
 
-        if (clientUri == null)
+        System.out.println("client URL: " + clientURL);
+        if (clientURL == null)
             return;
-
-        try {
-            apiUrl = clientUri.resolve("/sensorhub/api/").toURL();
-            System.out.println("API URL"+ apiUrl);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
 
         ConSysApiClientConfig consysConfig = new ConSysApiClientConfig();
         consysConfig.id = sensorConf.id + "_CONSYS";
         consysConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");
         consysConfig.autoStart = true;
-        consysConfig.conSys.remoteHost = apiUrl.getHost();
-        consysConfig.conSys.remotePort = apiUrl.getPort() < 0 ? apiUrl.getDefaultPort() : apiUrl.getPort();
-        consysConfig.conSys.resourcePath = apiUrl.getPath();
-        consysConfig.conSys.enableTLS = apiUrl.getProtocol().equals("https");
+        consysConfig.conSys.remoteHost = clientURL.getHost();
+        consysConfig.conSys.remotePort = clientURL.getPort() < 0 ? clientURL.getDefaultPort() : clientURL.getPort();
+        consysConfig.conSys.resourcePath = clientURL.getPath();
+        consysConfig.conSys.enableTLS = clientURL.getProtocol().equals("https");
         consysConfig.conSys.user = apiUser;
         consysConfig.conSys.password = apiPwd;
         consysConfig.connection.connectTimeout = 10000;
         consysConfig.connection.reconnectAttempts = 9;
+
         consysConfig.dataSourceSelector = new ObsSystemDatabaseViewConfig();
 
         if (oAuthConfig != null)
@@ -625,6 +654,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorhubConfig.add(consysConfig);
     }
 
+
+    private void requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            }
+        }
+
+    }
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -640,14 +681,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         // bind to SensorHub service
         Intent intent = new Intent(this, SensorHubService.class);
+        startService(intent);  // ADD THIS LINE
         bindService(intent, sConn, Context.BIND_AUTO_CREATE);
 
         // handler to refresh sensor status in UI
         displayHandler = new Handler(Looper.getMainLooper());
 
         setupBroadcastReceivers();
-
         checkForPermissions();
+        requestBatteryOptimizationExemption();
 
         // Due to changes with OSH, it may be best to create and start the hub immediately
         // This allows us access to the module registry created by default
@@ -778,12 +820,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         builder.setView(dialogView);
 
         EditText destinationIdText = dialogView.findViewById(R.id.destination_nodeId);
-        String destinationId = destinationIdText.getText().toString();
+
 
         builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String msg = messageInput.getText().toString();
-
+                String destinationId = destinationIdText.getText().toString();
                 try {
                     sendMeshtasticMessage(msg, destinationId);
                 } catch (IOException e) {
@@ -800,28 +842,25 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     private void sendMeshtasticMessage(String message, String nodeId) throws IOException {
         log.debug("sending mesh node");
         // todo think ab how we want to send the commands
+        ModuleRegistry reg = boundService.getSensorHub().getModuleRegistry();
+        MeshtasticSensor meshy = reg.getModuleByType(MeshtasticSensor.class);
 
-//        HttpURLConnection httpURLConnection = null;
-//
-//        httpURLConnection = (HttpURLConnection) clientUri.toURL().openConnection();
-//        httpURLConnection.setRequestMethod("POST");
-//        httpURLConnection.setRequestProperty("Content-Type", "application/json");
-//        httpURLConnection.setRequestProperty("Accept", "application/json");
-//        httpURLConnection.setDoOutput(true);
-//
-//
-//        OutputStream outputStream = httpURLConnection.getOutputStream();
-//        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
-//        writer.write();
-//        writer.close();
-//        outputStream.close();
+        IStreamingControlInterface textMessageControl = meshy.getCommandInputs().get(TextMessageControl.NAME);
 
-//        String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-//        httpURLConnection.setRequestProperty("Authorization", basicAuth);
-    }
+        DataBlock cmdData = textMessageControl.getCommandDescription().createDataBlock();
+        cmdData.setStringValue(0, message);
+        cmdData.setIntValue(1, Integer.parseInt(nodeId));
 
-    protected synchronized void showRunNamePopup()
-    {
+        var cmd = new CommandData.Builder()
+                .withCommandStream(BigId.NONE)
+                .withSender(deviceID)
+                .withParams(cmdData)
+                .build();
+
+        textMessageControl.submitCommand(cmd);
+     }
+
+    protected synchronized void showRunNamePopup() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert.setTitle("Run Name");
@@ -887,8 +926,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     }
 
 
-    protected void showAboutPopup()
-    {
+    protected void showAboutPopup() {
         String version = "?";
 
         try
@@ -910,8 +948,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         alert.show();
     }
 
-    protected void showVideoConfigErrorPopup()
-    {
+    protected void showVideoConfigErrorPopup() {
         String message = "Check Video Settings and ensure the resolution for the selected preset has been set.";
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -924,8 +961,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     }
 
 
-    protected void startRefreshingStatus()
-    {
+    protected void startRefreshingStatus() {
         if (displayCallback != null)
             return;
 
@@ -955,8 +991,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     }
 
 
-    protected synchronized void displayStatus()
-    {
+    protected synchronized void displayStatus() {
 
         boolean needsRestart = false;
 
