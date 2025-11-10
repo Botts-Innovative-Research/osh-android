@@ -1,9 +1,9 @@
 ext.oshCoreVersion = '2.0.0-beta'
-ext.compileSdkVersion = 33
-ext.minSdkVersion = 30
+ext.compileSdkVersion = 31
+ext.minSdkVersion = 31
 ext.targetSdkVersion = 30
 ext.buildToolsVersion = "30.0.2"
-version = oshCoreVersion
+version = '3.1.0-alpha'
 
 buildscript {
   repositories {
@@ -60,9 +60,10 @@ subprojects {
       substitute module('org.sensorhub:sensorhub-core') with project(':sensorhub-core')
       substitute module('org.sensorhub:sensorhub-comm-ble') with project(':sensorhub-comm-ble')
       substitute module('org.sensorhub:sensorhub-service-swe') with project(':sensorhub-service-swe')
+      substitute module('org.sensorhub:sensorhub-service-consys') with project(':sensorhub-service-consys')
       substitute module('org.sensorhub:sensorhub-service-video') with project(':sensorhub-service-video')
-      substitute module('org.vast.opengis:ogc-services-sps') with project(':ogc-services-sps')
-      substitute module('org.sensorhub:sensorhub-service-sweapi') with project(':sensorhub-service-sweapi')
+      substitute module('org.sensorhub:sensorhub-datastore-h2') with project(':sensorhub-datastore-h2')
+//      substitute module('org.vast.opengis:ogc-services-sps') with project(':ogc-services-sps')
 
       // override objenesis version to get new android instantiators
       substitute module('uk.com.robust-it:cloning:1.9.1') with module('uk.com.robust-it:cloning:1.9.10')

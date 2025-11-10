@@ -26,6 +26,8 @@ import org.sensorhub.api.comm.ble.IGattClient;
 import org.sensorhub.api.comm.ble.IGattDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -240,7 +242,19 @@ public class GattClientImpl implements IGattClient
         
         return true;
     }
-    
+
+    @Override
+    public boolean requestMtu(int mtu) {
+        bleCmdExec.submit(new Runnable() {
+            public void run()
+            {
+                aGatt.requestMtu(mtu);
+                waitForCommandExecuted(mtu);
+            }
+        });
+
+        return true;
+    }
     
     protected IGattCharacteristic getCharObject(BluetoothGattCharacteristic aChar)
     {

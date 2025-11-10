@@ -68,6 +68,8 @@ public class AndroidSensorsConfig extends SensorConfig
     {
         Context androidContext = SensorHubService.getContext();
         String deviceID = Settings.Secure.getString(androidContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+
         return "urn:android:device:" + deviceID;
     }
 }

@@ -1,52 +1,34 @@
-/***************************** BEGIN LICENSE BLOCK ***************************
-
-The contents of this file are subject to the Mozilla Public License, v. 2.0.
-If a copy of the MPL was not distributed with this file, You can obtain one
-at http://mozilla.org/MPL/2.0/.
-
-Software distributed under the License is distributed on an "AS IS" basis,
-WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-for the specific language governing rights and limitations under the License.
- 
-Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
- 
-******************************* END LICENSE BLOCK ***************************/
-
 package org.sensorhub.android;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationRequest;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.Process;
 
+import org.sensorhub.android.service.R;
 import org.sensorhub.api.common.SensorHubException;
-import org.sensorhub.api.event.IEventListener;
 import org.sensorhub.api.module.IModuleConfigRepository;
-import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.impl.SensorHub;
 import org.sensorhub.impl.SensorHubConfig;
-import org.sensorhub.impl.event.EventBus;
-import org.sensorhub.impl.module.ModuleRegistry;
 import org.vast.xml.XMLImplFinder;
-
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-
-/**
- * <p>
- * Android Service wrapping the sensorhub instance
- * </p>
- *
- * @author Alex Robin <alex.robin@sensiasoftware.com>
- * @since Jan 24, 2015
- */
 public class SensorHubService extends Service
 {
     final IBinder binder = new LocalBinder();
@@ -56,20 +38,26 @@ public class SensorHubService extends Service
     boolean hasVideo;
     static Context context;
     static SurfaceTexture videoTex;
-    String serverId;
 
+    private PowerManager.WakeLock wakeLock;
+    private WifiManager.WifiLock wifiLock;
 
-    public class LocalBinder extends Binder
-    {
+    private static final String CHANNEL_ID = "sensorhub_service_channel";
+    private static final int NOTIFICATION_ID = 1001;
+
+    private LocationManager locationManager;
+    private LocationListener locationListener;
+
+    public class LocalBinder extends Binder {
         SensorHubService getService() {
             return SensorHubService.this;
         }
     }
 
-        
+
     @Override
     public void onCreate() {
-        
+
         try
         {
             // keep handle to Android context so it can be retrieved by OSH components
@@ -81,11 +69,11 @@ public class SensorHubService extends Service
 
             // load external dex file containing stax API
             //Dexter.loadFromAssets(this.getApplicationContext(), "stax-api-1.0-2.dex");
-            
+
             // set default StAX implementation
             XMLImplFinder.setStaxInputFactory(com.ctc.wstx.stax.WstxInputFactory.class.newInstance());
             XMLImplFinder.setStaxOutputFactory(com.ctc.wstx.stax.WstxOutputFactory.class.newInstance());
-            
+
             // set default DOM implementation
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
@@ -95,14 +83,88 @@ public class SensorHubService extends Service
             msgThread = new HandlerThread("SensorHubService", Process.THREAD_PRIORITY_BACKGROUND);
             msgThread.start();
             msgHandler = new Handler(msgThread.getLooper());
+
+            // Start as foreground service with notification
+            startForegroundService();
         }
         catch (Exception e)
         {
             e.printStackTrace();
-        }        
+        }
     }
-    
-    
+
+//    private void startLocationManager() {
+//        LocationRequest request = new LocationRequest.Builder(
+//                Priority.PRIORITY_HIGH_ACCURACY,
+//                5000 // update interval (ms)
+//        ).build();
+//
+//    }
+    private void startForegroundService() {
+        // Create notification channel for Android O and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "SensorHub Service",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Keeps sensor data collection running");
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+
+        // Create pending intent to open app when notification is tapped
+        Intent notificationIntent = new Intent();
+        notificationIntent.setClassName(
+                getApplicationContext(),
+                "org.sensorhub.android.MainActivity"  // CHANGE THIS to your actual package path
+        );
+
+        PendingIntent pendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pendingIntent = PendingIntent.getActivity(
+                    this,
+                    0,
+                    notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+            );
+        } else {
+            pendingIntent = PendingIntent.getActivity(
+                    this,
+                    0,
+                    notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+            );
+        }
+
+        // Create notification
+        Notification notification;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notification = new Notification.Builder(this, CHANNEL_ID)
+                    .setContentTitle("SensorHub Running")
+                    .setContentText("Collecting and transmitting sensor data")
+                    .setContentIntent(pendingIntent)
+                    .setOngoing(true)
+                    .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+                    .build();
+        } else {
+            notification = new Notification.Builder(this)
+                    .setContentTitle("SensorHub Running")
+                    .setContentText("Collecting and transmitting sensor data")
+                    .setContentIntent(pendingIntent)
+                    .setOngoing(true)
+                    .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+                    .setPriority(Notification.PRIORITY_LOW)
+                    .build();
+        }
+
+        // Start foreground
+        startForeground(NOTIFICATION_ID, notification);
+    }
+
     public synchronized void startSensorHub(final IModuleConfigRepository config, final boolean hasVideo)
     {
         if (sensorhub != null)
@@ -110,8 +172,10 @@ public class SensorHubService extends Service
 
         this.hasVideo = hasVideo;
 
-        msgHandler.post(new Runnable() {
+        // Acquire wake locks BEFORE starting the hub
+        acquireWakeLocks();
 
+        msgHandler.post(new Runnable() {
             public void run() {
                 // create and start sensorhub instance
                 sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
@@ -119,12 +183,50 @@ public class SensorHubService extends Service
                     sensorhub.start();
                 } catch (SensorHubException e) {
                     e.printStackTrace();
+                    // Release locks if startup fails
+                    releaseWakeLocks();
                 }
             }
         });
     }
-    
-    
+
+    private void acquireWakeLocks() {
+        // Acquire partial wake lock to keep CPU active
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (powerManager != null && wakeLock == null) {
+            wakeLock = powerManager.newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK,
+                    "SensorHub::DataCollection"
+            );
+            wakeLock.acquire();
+        }
+
+        // Acquire WiFi lock to keep WiFi active
+        WifiManager wifiManager = (WifiManager) getApplicationContext()
+                .getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager != null && wifiLock == null) {
+            wifiLock = wifiManager.createWifiLock(
+                    WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                    "SensorHub::WiFiLock"
+            );
+            wifiLock.acquire();
+        }
+    }
+
+    private void releaseWakeLocks() {
+        // Release wake lock
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+            wakeLock = null;
+        }
+
+        // Release WiFi lock
+        if (wifiLock != null && wifiLock.isHeld()) {
+            wifiLock.release();
+            wifiLock = null;
+        }
+    }
+
     public synchronized void stopSensorHub()
     {
         if (sensorhub == null)
@@ -136,37 +238,33 @@ public class SensorHubService extends Service
             public void run() {
                 sensorhub.stop();
                 sensorhub = null;
-
-               /* // Make sure the server gets cleaned up
-                try {
-                    // Check modules for an HTTPServer
-                    ModuleRegistry reg = sensorhub.getModuleRegistry();
-                    if (serverId != null) {
-                        reg.stopModule(serverId);
-                    }
-                } catch (SensorHubException e) {
-                    e.printStackTrace();
-                }*/
             }
         });
-    }    
-    
+
+        // Release wake locks
+        releaseWakeLocks();
+    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
-    {        
+    {
+        // START_STICKY ensures service is restarted if killed by system
         return START_STICKY;
     }
-    
+
 
     @Override
     public void onDestroy()
     {
         stopSensorHub();
         msgThread.quitSafely();
-        SensorHubService.videoTex.release();
-        SensorHubService.videoTex = null;
+        if (SensorHubService.videoTex != null) {
+            SensorHubService.videoTex.release();
+            SensorHubService.videoTex = null;
+        }
         SensorHubService.context = null;
+        super.onDestroy();
     }
 
 
@@ -199,5 +297,4 @@ public class SensorHubService extends Service
     {
         return context;
     }
-    
 }

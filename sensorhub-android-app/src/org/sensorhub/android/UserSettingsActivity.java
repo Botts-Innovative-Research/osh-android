@@ -14,10 +14,14 @@ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
 
 package org.sensorhub.android;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -30,7 +34,8 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-//import android.support.v7.view.menu.ListMenuPresenter;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.view.menu.ListMenuPresenter;
 import android.text.InputType;
 import android.text.PrecomputedText;
 import android.util.Log;
@@ -47,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 
 
@@ -162,8 +168,12 @@ public class UserSettingsActivity extends PreferenceActivity
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             bindPreferenceSummaryToValue(findPreference("device_name"));
-            bindPreferenceSummaryToValue(findPreference("sos_uri"));
-            bindPreferenceSummaryToValue(findPreference("sos_username"));
+            bindPreferenceSummaryToValue(findPreference("ip_address"));
+            bindPreferenceSummaryToValue(findPreference("port"));
+            bindPreferenceSummaryToValue(findPreference("endpoint_path"));
+            bindPreferenceSummaryToValue(findPreference("username"));
+            bindPreferenceSummaryToValue(findPreference("password"));
+
 
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
@@ -184,6 +194,25 @@ public class UserSettingsActivity extends PreferenceActivity
 
             Preference ipAddressLabel = getPreferenceScreen().findPreference("nop_ipAddress");
             ipAddressLabel.setSummary(ipAddressString);
+
+
+            SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
+
+            Preference oAuthEnabled = getPreferenceScreen().findPreference("o_auth_enabled");
+            Preference tokenEndpoint = getPreferenceScreen().findPreference("token_endpoint");
+            Preference clientID = getPreferenceScreen().findPreference("client_id");
+            Preference clientSecret = getPreferenceScreen().findPreference("client_secret");
+
+            tokenEndpoint.setEnabled(prefs.getBoolean(oAuthEnabled.getKey(), false));
+            clientID.setEnabled(prefs.getBoolean(oAuthEnabled.getKey(), false));
+            clientSecret.setEnabled(prefs.getBoolean(oAuthEnabled.getKey(), false));
+
+            oAuthEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                tokenEndpoint.setEnabled((boolean) newValue);
+                clientID.setEnabled((boolean) newValue);
+                clientSecret.setEnabled((boolean) newValue);
+                return true;
+            });
         }
     }
     
@@ -286,13 +315,60 @@ public class UserSettingsActivity extends PreferenceActivity
             Preference trupulseEnabled = getPreferenceScreen().findPreference("trupulse_enabled");
             Preference trupulseOptions = getPreferenceScreen().findPreference("trupulse_options");
             Preference trupulseDatasource = getPreferenceScreen().findPreference("trupulse_datasource");
+            ListPreference trupulseListPref = (ListPreference) getPreferenceScreen().findPreference("trupulse_device_address");
+
             trupulseOptions.setEnabled(prefs.getBoolean(trupulseEnabled.getKey(), false));
             trupulseDatasource.setEnabled(prefs.getBoolean(trupulseEnabled.getKey(), false));
             trupulseEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 trupulseOptions.setEnabled((boolean) newValue);
                 trupulseDatasource.setEnabled((boolean) newValue);
+                trupulseListPref.setEnabled((boolean) newValue);
                 return true;
             });
+
+            Preference meshtasticEnabled = getPreferenceScreen().findPreference("meshtastic_enabled");
+            Preference meshtasticOptions = getPreferenceScreen().findPreference("meshtastic_options");
+
+            ListPreference deviceListPref = (ListPreference) getPreferenceScreen().findPreference("meshtastic_device_address");
+
+            BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (btAdapter != null && btAdapter.isEnabled()) {
+
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                Set<BluetoothDevice> bondedDevices = btAdapter.getBondedDevices();
+
+                List<CharSequence> entries = new ArrayList<>();
+                List<CharSequence> entryValues = new ArrayList<>();
+
+                for (BluetoothDevice device : bondedDevices) {
+                    String name = device.getName();
+                    String mac = device.getAddress();
+                    entries.add(name != null ? name + " (" + mac + ")" : mac);
+                    entryValues.add(mac);
+                }
+
+                if (!entries.isEmpty()) {
+                    deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+                    trupulseListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+                } else {
+                    deviceListPref.setEnabled(false);
+                    trupulseListPref.setEnabled(false);
+                    deviceListPref.setSummary("No paired Bluetooth devices found");
+                    trupulseListPref.setSummary("No paired Bluetooth devices found");
+                }
+            }
+
+            meshtasticOptions.setEnabled(prefs.getBoolean(meshtasticEnabled.getKey(), false));
+            meshtasticEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                meshtasticOptions.setEnabled((boolean) newValue);
+                return true;
+            });
+
+
 
 //            Preference bleEnable = getPreferenceScreen().findPreference("ble_enabled");
 //            Preference bleLocationMethod = getPreferenceScreen().findPreference("ble_loc_method");

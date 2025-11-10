@@ -154,6 +154,39 @@
 
         <SwitchPreference
             android:defaultValue="false"
+            android:key="meshtastic_enabled"
+            android:summary="Enable streaming of Meshtastic data (sensor must be connected via Bluetooth on startup)"
+            android:title="Meshtastic Data" />
+
+        <ListPreference
+            android:key="meshtastic_device_address"
+            android:title="Select Meshtastic Device"
+            android:entries="@array/bluetooth_mac_address_list"
+            android:entryValues="@array/bluetooth_mac_address_list"
+            android:summary="Choose a paired Meshtastic Bluetooth device"
+            android:dialogTitle="Select Device"
+            />
+
+<!--        <EditTextPreference-->
+<!--            android:key="meshtastic_device_name"-->
+<!--            android:title="Meshtastic Bluetooth Device Name"-->
+<!--            android:summary="Enter the Meshtastic Bluetooth Device Name"-->
+<!--            android:defaultValue="LowMesh_9c5d"-->
+<!--        />-->
+
+
+
+        <MultiSelectListPreference
+            android:key="meshtastic_options"
+            android:enabled="false"
+            android:title="Meshtastic Output Options"
+            android:summary="Options for pushing data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
+        <SwitchPreference
+            android:defaultValue="false"
             android:key="trupulse_enabled"
             android:summary="Enable streaming of TruPulse range finder data (sensor must be connected via Bluetooth on startup)"
             android:title="TruPulse Range Finder Data" />
@@ -176,18 +209,28 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
 
+
+        <ListPreference
+            android:key="trupulse_device_address"
+            android:title="Select TruPulse Device"
+            android:entries="@array/bluetooth_mac_address_list"
+            android:entryValues="@array/bluetooth_mac_address_list"
+            android:summary="Choose a paired TruPulse LRF  device"
+            android:dialogTitle="Select Device"
+        />
+
         <SwitchPreference
             android:defaultValue="false"
             android:key="trupulse_simu"
             android:summary="Use simulated TruPulse data instead of the actual sensor data"
             android:title="Use Simulated TruPulse Data" />
 
+
         <SwitchPreference
             android:defaultValue="false"
             android:key="angel_enabled"
             android:summary="Enable streaming of Angel Sensor health data (sensor must be connected via Bluetooth LE on startup)"
             android:title="Angel Sensor Health Data" />
-
 
         <EditTextPreference
             android:defaultValue="00:07:80:03:0E:0A"
@@ -238,6 +281,21 @@
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
+
+        <SwitchPreference
+            android:key="ste_radpager_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of STE RadPager data (sensor must be connected via Bluetooth LE on startup)"
+            android:title="STE RadPager Data" />
+
+        <MultiSelectListPreference
+            android:key="ste_radpager_options"
+            android:title="STE RadPager Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
 
     </PreferenceCategory>
 

@@ -9,10 +9,12 @@
     <string name="action_about">About</string>
     <string name="action_proxy">Start Proxy</string>
     <string name="action_stop_proxy">Stop Proxy</string>
+    <string name="action_meshtastic">Meshtastic Msg</string>
     <string name="sos_settings">SOS Settings (Required)</string>
     <string name="sost_settings">SOS-T Settings (Optional)</string>
     <string name="sensor_android">Android Sensor</string>
     <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
+    <string name="sensor_meshtastic">Meshtastic Sensor</string>
     <string name="sensor_angel">Angel Sensor</string>
     <string name="sensor_flirone">Flirone Sensor</string>
     <string-array name="video_codec_list">
@@ -61,6 +63,7 @@
         <item>PUSH_REMOTE</item>
     </string-array>
 
+    <string name="trupulse_device_name">Trupulse Device Name</string>
     <string-array name="trupulse_datasource_list">
         <item>Streaming Physical Device</item>
         <item>Simulate Virtual Device</item>
@@ -194,8 +197,6 @@
     <string name="spot_report_track_id">Enter resource id</string>
     <string name="spot_report_track_label">Enter resource label</string>
 
-
-
     <string-array name="audio_codec_list">
         <item>AAC</item>
         <item>AMR-NB</item>
@@ -205,4 +206,13 @@
         <item>OPUS</item>
         <item>PCM</item>
     </string-array>
+
+    <string-array name="bluetooth_mac_address_list">
+        <item></item>
+    </string-array>
+
+    <string name="meshtastic_msg">Enter a message!</string>
+    <string name="message_hint">Enter a message!</string>
+    <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>
+    <string name="destination_node_hint">Enter the destination Node ID (integer)</string>
 </resources>

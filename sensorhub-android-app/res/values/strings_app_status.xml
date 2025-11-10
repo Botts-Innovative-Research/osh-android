@@ -16,6 +16,7 @@
     </string-array>
 
     <string name="sosServiceStatusLabel">SOS Service Status</string>
+    <string name="conSysServiceStatusLabel">ConSys Service Status</string>
     <string name="httpServerStatusLabel">HTTP Server Status</string>
     <string name="sensorServiceStatusLabel">Android Sensor Status</string>
     <string name="storageServiceStatusLabel">Android Sensor Storage Status</string>

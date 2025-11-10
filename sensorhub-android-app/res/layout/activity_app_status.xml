@@ -29,16 +29,42 @@
         app:layout_constraintStart_toEndOf="@+id/sos_service_status_label"
         app:layout_constraintTop_toTopOf="@+id/sos_service_status_label" />
 
+
+    <TextView
+        android:id="@+id/consys_service_status_label"
+        android:layout_width="215dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:padding="10dp"
+        android:text="@string/conSysServiceStatusLabel"
+        app:layout_constraintEnd_toEndOf="@+id/sos_service_status_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sos_service_status_label" />
+
+    <TextView
+        android:id="@+id/consys_service_state"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="10dp"
+        android:text="TextView"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/consys_service_status_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/consys_service_status_label"
+        app:layout_constraintTop_toTopOf="@+id/consys_service_status_label"
+        />
+
     <TextView
         android:id="@+id/http_server_status_label"
-        android:layout_width="0dp"
+        android:layout_width="215dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:padding="10dp"
         android:text="@string/httpServerStatusLabel"
-        app:layout_constraintEnd_toEndOf="@+id/sos_service_status_label"
+        app:layout_constraintEnd_toEndOf="@+id/consys_service_status_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sos_service_status_label" />
+        app:layout_constraintTop_toBottomOf="@+id/consys_service_status_label" />
 
     <TextView
         android:id="@+id/http_service_state"

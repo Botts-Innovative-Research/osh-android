@@ -1,0 +1,20 @@
+package org.sensorhub.impl.sensor.meshtastic;
+
+import android.content.Context;
+import android.provider.Settings;
+
+import org.sensorhub.android.SensorHubService;
+import org.sensorhub.api.sensor.SensorConfig;
+
+public class MeshtasticConfig extends SensorConfig {
+    public MeshtasticConfig() {
+        this.moduleClass = MeshtasticSensor.class.getCanonicalName();
+    }
+
+    public static String getUid() {
+        Context context = SensorHubService.getContext();
+        return "urn:android:meshtastic:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public String device_name;
+}

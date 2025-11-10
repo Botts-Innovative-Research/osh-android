@@ -17,6 +17,7 @@ def repos = [
         'sensorhub-core',
         'sensorhub-service-swe',
         'sensorhub-service-sweapi',
+        'sensorhub-service-consys',
         'sensorhub-utils-kryo',
         'sensorhub-datastore-h2',
     ],
@@ -26,6 +27,7 @@ def repos = [
         'services/sensorhub-service-video',
         'sensors/video/sensorhub-driver-videocam',
         'sensors/positioning/sensorhub-driver-trupulse',
+//        'sensors/others/sensorhub-driver-meshtastic',
         'sensors/health/sensorhub-driver-angelsensor',
         'processing/sensorhub-process-vecmath',
         'processing/sensorhub-process-geoloc'

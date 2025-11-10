@@ -1,0 +1,42 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+<!--    <TextView-->
+<!--        android:id="@+id/nodeId_label"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:padding="10dp"-->
+<!--        android:background="#FFFFFF"-->
+<!--        android:text="@string/meshtastic_nodeId" />-->
+
+    <EditText
+        android:id="@+id/destination_nodeId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/destination_node_hint"
+        android:minLines="3"
+        android:gravity="top"
+        android:inputType="textMultiLine" />
+
+<!--    <TextView-->
+<!--        android:id="@+id/message_label"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:padding="10dp"-->
+<!--        android:background="#FFFFFF"-->
+<!--        android:text="@string/meshtastic_msg" />-->
+
+    <EditText
+        android:id="@+id/msg_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/message_hint"
+        android:minLines="3"
+        android:gravity="top"
+        android:inputType="textMultiLine" />
+
+</LinearLayout>
