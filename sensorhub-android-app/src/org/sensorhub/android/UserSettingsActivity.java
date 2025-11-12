@@ -34,15 +34,11 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.view.menu.ListMenuPresenter;
+import androidx.core.app.ActivityCompat;
 import android.text.InputType;
 import android.text.PrecomputedText;
 import android.util.Log;
 import android.widget.BaseAdapter;
-
-import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
-
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URL;
@@ -331,6 +327,16 @@ public class UserSettingsActivity extends PreferenceActivity
 
             ListPreference deviceListPref = (ListPreference) getPreferenceScreen().findPreference("meshtastic_device_address");
 
+
+            Preference polarEnabled = getPreferenceScreen().findPreference("polar_enabled");
+            Preference polarOptions = getPreferenceScreen().findPreference("polar_options");
+            ListPreference polarDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("polar_device_address");
+            polarEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                polarOptions.setEnabled((boolean) newValue);
+                polarDeviceListPref.setEnabled((boolean) newValue);
+                return true;
+            });
+
             BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
             if (btAdapter != null && btAdapter.isEnabled()) {
 
@@ -352,13 +358,17 @@ public class UserSettingsActivity extends PreferenceActivity
                 if (!entries.isEmpty()) {
                     deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
                     trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    polarDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
                     deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                     trupulseListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+                    polarDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                 } else {
                     deviceListPref.setEnabled(false);
                     trupulseListPref.setEnabled(false);
+                    polarDeviceListPref.setEnabled(false);
                     deviceListPref.setSummary("No paired Bluetooth devices found");
                     trupulseListPref.setSummary("No paired Bluetooth devices found");
+                    polarDeviceListPref.setSummary("No paired Bluetooth devices found");
                 }
             }
 

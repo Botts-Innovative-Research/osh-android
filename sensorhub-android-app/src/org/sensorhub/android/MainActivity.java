@@ -83,6 +83,8 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
+import org.sensorhub.impl.sensor.polar.Polar;
+import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
@@ -175,7 +177,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         DJIDrone,
         ProxySensor,
         BLELocation,
-        Meshtastic
+        Meshtastic,
+        PolarHRMonitor
     }
 
 
@@ -504,6 +507,21 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
 
             sensorhubConfig.add(meshtasticConfig);
+        }
+
+
+
+        // polar heart Sensor
+        enabled = prefs.getBoolean("polar_enabled", false);
+        if (enabled) {
+            PolarConfig polarConfig = new PolarConfig();
+            polarConfig.id = "POLAR_HEART_SENSOR";
+            polarConfig.name = "Polar Heart [" + deviceName + "]";
+            polarConfig.autoStart = true;
+            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            polarConfig.device_name = prefs.getString("polar_device_address", "");
+
+            sensorhubConfig.add(polarConfig);
         }
 
 
@@ -1347,6 +1365,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         else if (Sensors.Meshtastic.equals(sensor)) {
             return prefs.getBoolean("meshtastic_enabled", false)
                     && prefs.getStringSet("meshtastic_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        }
+        else if (Sensors.PolarHRMonitor.equals(sensor)) {
+            return prefs.getBoolean("polar_enabled", false)
+                    && prefs.getStringSet("polar_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;
