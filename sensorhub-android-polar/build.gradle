@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 
-description = 'Polar H9'
-ext.details = 'Driver for Polar H9 Sensors'
-version = '2.0.0'
+description = 'Polar HeartRate Monitors'
+ext.details = 'Driver for Polar H0/H10 HeartRate Monitors'
+version = '2.0.1'
 
 dependencies {
   //api 'org.sensorhub:sensorhub-core:' + oshCoreVersion
