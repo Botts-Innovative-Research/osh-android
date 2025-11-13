@@ -29,58 +29,47 @@ import java.io.IOException;
 
 
 /**
- * <p>
- * Abstract base for data interfaces connecting to Android sensor API
- * </p>
  *
- * @author Alex Robin <alex.robin@sensiasoftware.com>
- * @since Jan 18, 2015
+ * @author Kalyn Stricklin
+ * @since Jan 13, 2023
  */
 public class PolarOutput extends AbstractSensorOutput<Polar>
 {
     DataComponent dataStruct;
     DataEncoding dataEncoding;
-    String name = "Polar H9";
     private static final String SENSOR_OUTPUT_NAME = "POLAR_HEART_RATE";
-    private static final String SENSOR_OUTPUT_LABEL = "POLAR HEART MONITOR DATA";
-    private static final String SENSOR_OUTPUT_DESCRIPTION = "[DESCRIPTION]";
+    private static final String SENSOR_OUTPUT_LABEL = "Polar HeartRate Monitor";
+    private static final String SENSOR_OUTPUT_DESCRIPTION = "Wearable sensor to monitor heartrate";
     private static final Logger logger = LoggerFactory.getLogger(PolarOutput.class);
-
-    BufferedReader bufferedReader;
 
     protected PolarOutput(Polar parent) {
         super("Polar Heart Monitor Data", parent);
     }
     public void doInit(){
-        logger.debug("Initializing Output");
         SWEHelper fac = new SWEHelper();
         dataStruct = fac.createRecord()
-                .name(name)
+                .name(SENSOR_OUTPUT_NAME)
                 .definition(SWEHelper.getPropertyUri(SENSOR_OUTPUT_NAME))
                 .label(SENSOR_OUTPUT_LABEL)
                 .description(SENSOR_OUTPUT_DESCRIPTION)
-                .addField("time", fac.createTime().asSamplingTimeIsoUTC()
-                        .label("Time Stamp")
-                        .build()
-                )
-                .addField("HeartRate", fac.createQuantity()
+                .addField("samplingTime", fac.createTime().asSamplingTimeIsoUTC())
+                .addField("heartRate", fac.createQuantity()
                         .label("Heart Rate")
-                        .definition("http://qudt.org/vocab/quantitykind/HeartRate")
+                        .definition(SWEHelper.getPropertyUri("HeartRate"))
                         .description("heart rate")
                         .uom("/min")
                         .build())
-//                .addField("batteryLevel", fac.createQuantity()
-//                        .label("Battery Status")
-//                        .definition("http://sensorml.com/ont/isa/property/Reserve_Capacity")
-//                        .description("Polar H9 battery level")
-//                        .uom("%")
-//                        .build())
+                .addField("batteryLevel", fac.createQuantity()
+                        .label("Battery Level")
+                        .definition(SWEHelper.getPropertyUri("BatteryLevel"))
+                        .description("Heart rate monitors battery level")
+                        .uom("%")
+                        .build())
                 .build();
 
         dataEncoding = fac.newTextEncoding(",", "\n");
-
-        logger.debug("Initializing Output Complete");
     }
+
     @Override
     public double getAverageSamplingPeriod() {
         return 0;
@@ -96,12 +85,12 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
         return dataEncoding;
     }
 
-    public void setData(int hr) {
+    public void setData(int hr, int batteryLevel) {
         DataBlock dataBlock = dataStruct.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
         dataBlock.setIntValue(1, hr);
-//        dataBlock.setDoubleValue(2, batteryLevel);
+        dataBlock.setIntValue(2, batteryLevel);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();

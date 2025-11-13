@@ -2,17 +2,18 @@ apply plugin: 'com.android.library'
 
 description = 'Polar H9'
 ext.details = 'Driver for Polar H9 Sensors'
+version = '2.0.0'
 
-ext {
-  sdk_version = '5.0.0' //sdk version
-}
 dependencies {
   //api 'org.sensorhub:sensorhub-core:' + oshCoreVersion
   api project(':sensorhub-core')
   api project(':sensorhub-android-service')
 
   //Polar SDK requirements
-  implementation "com.github.polarofficial:polar-ble-sdk:$sdk_version"
+//  implementation 'com.github.polarofficial:polar-ble-sdk:5.1.0'
+  implementation ('com.github.polarofficial:polar-ble-sdk:5.1.0') {
+    exclude group: 'com.google.protobuf', module: 'protobuf-javalite'
+  }
   implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
   implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
   implementation 'androidx.appcompat:appcompat:1.6.1'

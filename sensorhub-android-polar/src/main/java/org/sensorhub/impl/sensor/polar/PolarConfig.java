@@ -22,16 +22,12 @@ import android.provider.Settings;
 
 
 /**
- * <p>
- * Configuration class for the generic Android sensors driver
- * </p>
  *
- * @author Alex Robin <alex.robin@sensiasoftware.com>
- * @since Sep 6, 2013
+ * @author Kalyn Stricklin
+ * @since Jan 13, 2023
  */
 public class PolarConfig extends SensorConfig
 {
-    public String deviceName;
 
     public PolarConfig()
     {
@@ -39,10 +35,10 @@ public class PolarConfig extends SensorConfig
     }
 
 
-    public static String getAndroidSensorsUid()
-    {
-        Context androidContext = SensorHubService.getContext();
-        String deviceID = Settings.Secure.getString(androidContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-        return "urn:android:device:" + deviceID;
+    public String device_name;
+
+    public static String getUid() {
+        Context context = SensorHubService.getContext();
+        return "urn:android:polar:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 }

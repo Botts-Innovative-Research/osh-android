@@ -18,7 +18,7 @@ import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v4.app.ActivityCompat;
+import androidx.core.app.ActivityCompat;
 import android.widget.Toast;
 
 import net.opengis.sensorml.v20.PhysicalComponent;

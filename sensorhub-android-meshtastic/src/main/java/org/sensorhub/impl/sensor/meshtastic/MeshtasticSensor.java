@@ -8,8 +8,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.support.v4.app.ActivityCompat;
-
+import androidx.core.app.ActivityCompat;
 import com.google.protobuf.CodedInputStream;
 
 import net.opengis.sensorml.v20.PhysicalComponent;
@@ -334,8 +333,6 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
 
     private void onMessage(byte[] bytes) {
         try {
-
-
             MeshProtos.FromRadio msg = MeshProtos.FromRadio.parseFrom(bytes);
             for (Map.Entry<String, ? extends IStreamingDataInterface> entry : getOutputs().entrySet()) {
                 AbstractMeshtasticOutput output = (AbstractMeshtasticOutput) entry.getValue();

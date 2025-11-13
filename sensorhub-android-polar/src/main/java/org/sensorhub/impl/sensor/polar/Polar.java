@@ -16,16 +16,9 @@ package org.sensorhub.impl.sensor.polar;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
@@ -34,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+
 
 import com.polar.sdk.api.PolarBleApi;
 import com.polar.sdk.api.PolarBleApiCallback;
@@ -44,6 +38,14 @@ import com.polar.sdk.api.model.PolarHrData;
 import net.opengis.sensorml.v20.PhysicalComponent;
 
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.android.comm.ble.BleConfig;
+import org.sensorhub.android.comm.ble.BleNetwork;
+import org.sensorhub.api.comm.ble.GattCallback;
+import org.sensorhub.api.comm.ble.IGattCharacteristic;
+import org.sensorhub.api.comm.ble.IGattClient;
+import org.sensorhub.api.comm.ble.IGattField;
+import org.sensorhub.api.comm.ble.IGattService;
+import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.impl.sensor.android.SensorMLBuilder;
@@ -56,37 +58,32 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-
+/**
+ *
+ * @author Kalyn Stricklin
+ * @since Jan 13, 2023
+ */
 public class Polar extends AbstractSensorModule<PolarConfig> {
     private final ArrayList<PhysicalComponent> smlComponents;
     private final SensorMLBuilder smlBuilder;
     static final Logger logger = LoggerFactory.getLogger(Polar.class.getSimpleName());
-    private static final UUID BODY_SENSOR_LOCATION = UUID.fromString("00002a38-0000-1000-8000-00805f9b34fb"); //GATT Characteristic and Object Type 0x2A38 Body Sensor Location
-    private static final UUID HEART_RATE_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
+    private static final UUID HEARTRATE_CHARACTERISTIC_UUID = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
+    private static final UUID BATTERY_LEVEL_CHARACTERISTIC_UUID = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
     private static final UUID DEVICE_INFORMATION_SERVICE = UUID.fromString("0000180A-0000-1000-8000-00805F9B34FB");
     private static final UUID HEART_RATE_SERVICE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
-    private static final UUID BATTERY_LEVEL = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");  //GATT Characteristic and Object Type 0x2A19 Battery Level
-    private static final UUID BATTERY_SERVICE = UUID.fromString("000180F-0000-1000-8000-00805f9b34fb");  //GATT Characteristic and Object Type 0x2A19 Battery Level
-    private static final UUID MODEL_NUMBER = UUID.fromString("00002A24-0000-1000-8000-00805F9B34FB"); //GATT Characteristic and Object Type 0x2A24 Model Number String
-    private static final UUID SERIAL_NUMBER = UUID.fromString("00002a25-0000-1000-8000-00805f9b34fb");
-    private static final UUID MANUFACTURER_NAME = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb");
-    private static final String SENSOR_DEVICE_NAME = "Polar H10 CA34FA28";
-    private BluetoothGattCharacteristic heartRate;
-    private BluetoothGattCharacteristic batteryLevel;
-    private BluetoothGattCharacteristic serialNumber;
-    private BluetoothGattCharacteristic modelNumber;
-    private BluetoothGattCharacteristic manufacturerName;
-    private BluetoothGattCharacteristic bodyLocation;
-    private BluetoothGattService deviceInformation;
-    private BluetoothGattService heartRateService;
-    private BluetoothGattService batteryService;
-    private BluetoothGatt btGatt;
+    private static final UUID BATTERY_SERVICE = UUID.fromString("0000180F-0000-1000-8000-00805f9b34fb");
+
     private Context context;
     private BluetoothAdapter btAdapter;
     PolarOutput output;
     private HandlerThread eventThread;
     PolarBleApi api;
 
+    private boolean btConnected = false;
+    private BleNetwork bleNetwork;
+    private IGattClient gattClient;
+    private IGattCharacteristic heartRateChar;
+    private IGattCharacteristic batteryLevelChar;
 
     public Polar() {
         this.smlComponents = new ArrayList<PhysicalComponent>();
@@ -95,20 +92,23 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
 
     @Override
     public void doInit() {
-        logger.info("Initializing Polar heart monitor Sensor");
-        this.xmlID = "POLAR-H9" + Build.SERIAL;
-        this.uniqueID = PolarConfig.getAndroidSensorsUid();
-        context = SensorHubService.getContext();
-        polarApi();
+        logger.info("Initializing Polar heart monitor sensor");
+        this.xmlID = "POLAR_" + Build.SERIAL;
+        this.uniqueID = PolarConfig.getUid();
 
-        final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Activity.BLUETOOTH_SERVICE);
-        btAdapter = bluetoothManager.getAdapter();
-        if (btAdapter == null) {
-            Toast.makeText(context, "Device does not support bluetooth", Toast.LENGTH_LONG).show();
-        }
-        if (!btAdapter.isEnabled()) {
-            Toast.makeText(context, "Device does not have bluetooth enabled", Toast.LENGTH_LONG).show();
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        context = SensorHubService.getContext();
+
+        PolarApiCallback();
+
+        BleConfig bleConfig = new BleConfig();
+        bleConfig.androidContext = context;
+
+        bleNetwork = new BleNetwork();
+        try {
+            bleNetwork.init(bleConfig);
+            bleNetwork.start();
+        } catch (SensorHubException e) {
+            throw new RuntimeException(e);
         }
 
         output = new PolarOutput(this);
@@ -118,49 +118,37 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
 
     @Override
     public void doStart() throws SensorException {
-        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-            }
-        }
-        // set of currently paired devices
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-        BluetoothDevice polarDevice = null;
-        if (pairedDevices.size() > 0) {
-            // there are paired devices
-            //get name of device and address
-            for (BluetoothDevice device : pairedDevices) {
-                String device_name = device.getName();
-                String device_address = device.getAddress();
-
-                //code if you have the specific name hard coded but not probable or reusable
-//            if (device.getName().equals(SENSOR_DEVICE_NAME)) {
-                polarDevice = device;
-                btAdapter.cancelDiscovery();
-//            }
-            }
+        if (bleNetwork == null) {
+            logger.error("BLE network is not initialized");
         }
 
-        if (polarDevice == null) {
-            throw new SensorException("No ble device found, cannot start module");
+        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH}, 1);
         }
-        btGatt = polarDevice.connectGatt(context, true, gattCallback);
-        logger.info("device found: " + polarDevice.getName() + " " + polarDevice.getAddress());
 
-        eventThread = new HandlerThread("Polar_Event");
+        bleNetwork.connectGatt(config.device_name, gattCallback);
+
+        eventThread = new HandlerThread("PolarMonitorThread");
         eventThread.start();
         Handler eventHandler = new Handler(eventThread.getLooper());
     }
 
     @Override
     public void doStop() {
-        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-            }
+        if (gattClient != null) {
+            gattClient.disconnect();
+            gattClient.close();
+            gattClient = null;
         }
-        btGatt.disconnect();
-        btGatt.close();
+
+        if (bleNetwork != null) {
+            try {
+                bleNetwork.stop();
+            } catch (SensorHubException e) {
+                logger.error("Error stopping BLE network");
+            }
+            bleNetwork = null;
+        }
     }
 
     @Override
@@ -168,7 +156,111 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
         return true;
     }
 
-    public void polarApi() {
+
+    private GattCallback gattCallback = new GattCallback() {
+        @Override
+        public void onConnected(IGattClient gatt, int status) {
+            gattClient = gatt;
+            btConnected = true;
+
+            logger.info("Polar HR Monitor is connected");
+
+            gattClient.discoverServices();
+
+        }
+
+        @Override
+        public void onDisconnected(IGattClient gatt, int status) {
+            btConnected = false;
+            logger.info("Polar HR Monitor is disconnected");
+        }
+
+
+        @Override
+        public void onServicesDiscovered(IGattClient gatt, int status) {
+            IGattService hrService = null;
+            IGattService batteryService = null;
+
+            for (IGattService service : gattClient.getServices()) {
+
+                UUID uuid = service.getType();
+                if (uuid.equals(HEART_RATE_SERVICE)) {
+                    hrService = service;
+                } else if (uuid.equals(BATTERY_SERVICE)) {
+                    batteryService = service;
+                }
+            }
+
+            for (IGattCharacteristic characteristic : hrService.getCharacteristics()) {
+                UUID uuid = characteristic.getType();
+
+                if (uuid.equals(HEARTRATE_CHARACTERISTIC_UUID)) {
+                    heartRateChar = characteristic;
+                }
+            }
+
+            for (IGattCharacteristic characteristic : batteryService.getCharacteristics()) {
+                UUID uuid = characteristic.getType();
+
+                if (uuid.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
+                    batteryLevelChar = characteristic;
+                }
+            }
+
+            if (heartRateChar != null) {
+                gattClient.setCharacteristicNotification(heartRateChar, true);
+            }
+
+            if (batteryLevelChar != null) {
+                gattClient.setCharacteristicNotification(batteryLevelChar, true);
+            }
+
+            if (batteryLevelChar != null) {
+                gattClient.readCharacteristic(batteryLevelChar);
+            }
+        }
+
+        @Override
+        public void onCharacteristicChanged(IGattClient gatt, IGattField characteristic) {
+
+            UUID uuid = characteristic.getType();
+
+            int hr = 0;
+            int battery = 0;
+
+            if (uuid.equals(HEARTRATE_CHARACTERISTIC_UUID)) {
+                byte[] data = characteristic.getValue().array();
+                hr = parseHeartRate(data);
+            }
+
+            if (uuid.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
+                byte[] data = characteristic.getValue().array();
+                battery = data[0] & 0xFF;
+            }
+
+            output.setData(hr, battery);
+
+        }
+
+    };
+
+    private int parseHeartRate(byte[] data) {
+        if (data == null || data.length == 0)
+            return 0;
+
+        int heartRate = 0;
+        int format = data[0] & 0x01;
+
+        if (format == 0) {
+            heartRate = data[1] & 0xFF;
+        } else {
+            heartRate = (data[1] & 0xFF) | ((data[2] & 0xFF) << 8);
+        }
+
+        return heartRate;
+    }
+
+    public void PolarApiCallback() {
         //set all desired features
         Set<PolarBleApi.PolarBleSdkFeature> features = new HashSet<>(Arrays.asList(
                 PolarBleApi.PolarBleSdkFeature.FEATURE_HR,
@@ -271,78 +363,4 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
         });
     }
 
-    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                boolean discoveryStarting = gatt.discoverServices();
-            }
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            logger.debug("characteristic changed");
-            if (characteristic.getUuid().equals(HEART_RATE_MEASUREMENT)) {
-                byte[] data = characteristic.getValue();
-                logger.debug("parsing hr data");
-                int hr = data[1] & 0xFF;
-                //watch index 2
-                output.setData(hr);
-
-            }
-//            else if (characteristic.getUuid().equals(BATTERY_LEVEL)) {
-//                parse(characteristic.getValue());
-////                byte[] data = characteristic.getValue();
-////                batLevel = data[1] & 0xFF;
-////                logger.debug("bat level data received: " + batLevel);
-//            }
-
-//            output.setData(hr, batLevel);
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            logger.debug("on services discovered");
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                deviceInformation = btGatt.getService(DEVICE_INFORMATION_SERVICE);
-                heartRateService = btGatt.getService(HEART_RATE_SERVICE);
-                batteryService = btGatt.getService(BATTERY_SERVICE);
-                //device info service
-                modelNumber = deviceInformation.getCharacteristic(MODEL_NUMBER);
-                manufacturerName = deviceInformation.getCharacteristic(MANUFACTURER_NAME);
-                serialNumber = deviceInformation.getCharacteristic(SERIAL_NUMBER);
-                //hr service
-                heartRate = heartRateService.getCharacteristic(HEART_RATE_MEASUREMENT);
-                bodyLocation = heartRateService.getCharacteristic(BODY_SENSOR_LOCATION);
-                //battery service
-                batteryLevel = batteryService.getCharacteristic(BATTERY_LEVEL);
-
-                if (context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-                    }
-                }
-                gatt.setCharacteristicNotification(modelNumber, true); //device info service
-                gatt.setCharacteristicNotification(manufacturerName, true); //device info service
-                gatt.setCharacteristicNotification(serialNumber, true); //device info service
-                gatt.setCharacteristicNotification(heartRate, true); //hr service
-                gatt.setCharacteristicNotification(batteryLevel, true); //bat service
-                gatt.setCharacteristicNotification(bodyLocation, true); //hr service
-
-                BluetoothGattDescriptor descriptor = heartRate.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                gatt.writeDescriptor(descriptor);
-            }
-
-        }
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (status != BluetoothGatt.GATT_SUCCESS) {
-                logger.info("Failed to write to characteristic");
-            }
-        }
-    };
 }
