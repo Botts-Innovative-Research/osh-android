@@ -17,15 +17,12 @@ package org.sensorhub.impl.sensor.polar;
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataComponent;
 import net.opengis.swe.v20.DataEncoding;
-import net.opengis.swe.v20.DataRecord;
 
 import org.sensorhub.api.data.DataEvent;
 import org.sensorhub.impl.sensor.AbstractSensorOutput;
 import org.vast.swe.SWEHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.BufferedReader;
-import java.io.IOException;
 
 
 /**
@@ -33,17 +30,16 @@ import java.io.IOException;
  * @author Kalyn Stricklin
  * @since Jan 13, 2023
  */
-public class PolarOutput extends AbstractSensorOutput<Polar>
+public class BatteryOutput extends AbstractSensorOutput<Polar>
 {
     DataComponent dataStruct;
     DataEncoding dataEncoding;
-    private static final String SENSOR_OUTPUT_NAME = "POLAR_HEART_RATE";
-    private static final String SENSOR_OUTPUT_LABEL = "Polar HeartRate Monitor";
-    private static final String SENSOR_OUTPUT_DESCRIPTION = "Wearable sensor to monitor heartrate";
-    private static final Logger logger = LoggerFactory.getLogger(PolarOutput.class);
+    private static final String SENSOR_OUTPUT_NAME = "batteryLevel";
+    private static final String SENSOR_OUTPUT_LABEL = "Battery Level";
+    private static final Logger logger = LoggerFactory.getLogger(BatteryOutput.class);
 
-    protected PolarOutput(Polar parent) {
-        super("Polar Heart Monitor Data", parent);
+    protected BatteryOutput(Polar parent) {
+        super(SENSOR_OUTPUT_NAME, parent);
     }
     public void doInit(){
         SWEHelper fac = new SWEHelper();
@@ -51,14 +47,7 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
                 .name(SENSOR_OUTPUT_NAME)
                 .definition(SWEHelper.getPropertyUri(SENSOR_OUTPUT_NAME))
                 .label(SENSOR_OUTPUT_LABEL)
-                .description(SENSOR_OUTPUT_DESCRIPTION)
                 .addField("samplingTime", fac.createTime().asSamplingTimeIsoUTC())
-                .addField("heartRate", fac.createQuantity()
-                        .label("Heart Rate")
-                        .definition(SWEHelper.getPropertyUri("HeartRate"))
-                        .description("heart rate")
-                        .uom("/min")
-                        .build())
                 .addField("batteryLevel", fac.createQuantity()
                         .label("Battery Level")
                         .definition(SWEHelper.getPropertyUri("BatteryLevel"))
@@ -85,12 +74,11 @@ public class PolarOutput extends AbstractSensorOutput<Polar>
         return dataEncoding;
     }
 
-    public void setData(int hr, int batteryLevel) {
+    public void setData(int batteryLevel) {
         DataBlock dataBlock = dataStruct.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
-        dataBlock.setIntValue(1, hr);
-        dataBlock.setIntValue(2, batteryLevel);
+        dataBlock.setIntValue(1, batteryLevel);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();

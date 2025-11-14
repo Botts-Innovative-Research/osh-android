@@ -16,7 +16,6 @@ package org.sensorhub.impl.sensor.polar;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -75,7 +74,8 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
 
     private Context context;
     private BluetoothAdapter btAdapter;
-    PolarOutput output;
+    BatteryOutput batteryOutput;
+    HeartRateOutput heartRateOutput;
     private HandlerThread eventThread;
     PolarBleApi api;
 
@@ -111,9 +111,13 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
             throw new RuntimeException(e);
         }
 
-        output = new PolarOutput(this);
-        output.doInit();
-        addOutput(output, false);
+        batteryOutput = new BatteryOutput(this);
+        batteryOutput.doInit();
+        addOutput(batteryOutput, false);
+
+        heartRateOutput = new HeartRateOutput(this);
+        heartRateOutput.doInit();
+        addOutput(heartRateOutput, false);
     }
 
     @Override
@@ -225,23 +229,18 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
 
             UUID uuid = characteristic.getType();
 
-            int hr = 0;
-            int battery = 0;
-
             if (uuid.equals(HEARTRATE_CHARACTERISTIC_UUID)) {
                 byte[] data = characteristic.getValue().array();
-                hr = parseHeartRate(data);
+                int hr = parseHeartRate(data);
+                heartRateOutput.setData(hr);
             }
 
             if (uuid.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
                 byte[] data = characteristic.getValue().array();
-                battery = data[0] & 0xFF;
+                int battery = data[0] & 0xFF;
+                batteryOutput.setData(battery);
             }
-
-            output.setData(hr, battery);
-
         }
-
     };
 
     private int parseHeartRate(byte[] data) {
