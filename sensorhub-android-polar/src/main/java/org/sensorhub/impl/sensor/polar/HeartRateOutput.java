@@ -52,7 +52,7 @@ public class HeartRateOutput extends AbstractSensorOutput<Polar>
                         .label("Heart Rate")
                         .definition(SWEHelper.getPropertyUri("HeartRate"))
                         .description("heart rate")
-                        .uom("bpm")
+                        .uom("1/min")
                         .build())
                 .build();
 
