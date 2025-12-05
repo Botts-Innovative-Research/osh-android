@@ -82,7 +82,7 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
-import org.sensorhub.impl.sensor.kestrel.KestrelBallisticsConfig;
+import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
@@ -523,17 +523,17 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         // Kestrel Ballistics Weather
         enabled = prefs.getBoolean("kestrel_enabled", false);
         if (enabled) {
-            KestrelBallisticsConfig ballisticsConfig = new KestrelBallisticsConfig();
-            ballisticsConfig.id = "KESTREL_BALLISTICS";
-            ballisticsConfig.name = "Kestrel Ballistics Weather [" + deviceName + "]";
-            ballisticsConfig.autoStart = true;
-            ballisticsConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-//            ballisticsConfig.device_name = "FE:BB:D9:8B:53:23";
+            KestrelConfig kestrelConfig = new KestrelConfig();
+            kestrelConfig.id = "KESTREL_WEATHER";
+            kestrelConfig.name = "Kestrel Weather [" + deviceName + "]";
+            kestrelConfig.autoStart = true;
+            kestrelConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+//            kestrelConfig.device_name = "FE:BB:D9:8B:53:23";
 
-            ballisticsConfig.serialNumber = prefs.getString("kestrel_serial", null);
+            kestrelConfig.serialNumber = prefs.getString("kestrel_serial", null);
 //                    prefs.getString("kestrel_device_address", "");
 
-            sensorhubConfig.add(ballisticsConfig);
+            sensorhubConfig.add(kestrelConfig);
         }
 
 

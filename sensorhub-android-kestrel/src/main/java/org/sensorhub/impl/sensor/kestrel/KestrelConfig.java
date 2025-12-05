@@ -26,10 +26,10 @@ import android.provider.Settings;
  * @author Kalyn Stricklin
  * @since Dec 1, 2025
  */
-public class KestrelBallisticsConfig extends SensorConfig
+public class KestrelConfig extends SensorConfig
 {
 
-    public KestrelBallisticsConfig()
+    public KestrelConfig()
     {
         this.moduleClass = Kestrel.class.getCanonicalName();
     }

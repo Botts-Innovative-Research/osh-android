@@ -27,7 +27,7 @@ import org.sensorhub.api.module.ModuleConfig;
  * @author Kalyn Stricklin
  * @since Dec 1, 2025
  */
-public class KestrelBallisticsDescriptor implements IModuleProvider
+public class KestrelDescriptor implements IModuleProvider
 {
 
     @Override
@@ -68,7 +68,7 @@ public class KestrelBallisticsDescriptor implements IModuleProvider
     @Override
     public Class<? extends ModuleConfig> getModuleConfigClass()
     {
-        return KestrelBallisticsConfig.class;
+        return KestrelConfig.class;
     }
 
 }

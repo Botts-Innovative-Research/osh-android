@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import org.vast.sensorML.SMLHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -60,7 +59,7 @@ import java.util.UUID;
  * @author Kalyn Stricklin
  * @since Dec 1, 2025
  */
-public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
+public class Kestrel extends AbstractSensorModule<KestrelConfig> {
     private final ArrayList<PhysicalComponent> smlComponents;
     private final SensorMLBuilder smlBuilder;
     static final Logger logger = LoggerFactory.getLogger(Kestrel.class.getSimpleName());
@@ -98,7 +97,7 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
     public void doInit() {
         logger.info("Initializing sensor");
         this.xmlID = "KESTREL_WEATHER" + Build.SERIAL;
-        this.uniqueID = KestrelBallisticsConfig.getUid();
+        this.uniqueID = KestrelConfig.getUid();
 
         context = SensorHubService.getContext();
 
