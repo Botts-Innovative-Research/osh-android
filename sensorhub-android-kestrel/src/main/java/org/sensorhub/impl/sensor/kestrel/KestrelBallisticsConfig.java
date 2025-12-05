@@ -34,8 +34,6 @@ public class KestrelBallisticsConfig extends SensorConfig
         this.moduleClass = Kestrel.class.getCanonicalName();
     }
 
-
-    public String device_name;
     public String serialNumber;
 
     public static String getUid() {

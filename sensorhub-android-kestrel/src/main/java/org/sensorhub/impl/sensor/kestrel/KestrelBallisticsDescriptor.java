@@ -33,14 +33,14 @@ public class KestrelBallisticsDescriptor implements IModuleProvider
     @Override
     public String getModuleName()
     {
-        return "Kestrel Ballistics Driver";
+        return "Kestrel Driver";
     }
 
 
     @Override
     public String getModuleDescription()
     {
-        return "Driver supporting Kestrel Ballistics Meter";
+        return "Driver supporting Kestrel Weather Meter";
     }
 
 

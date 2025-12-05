@@ -55,30 +55,6 @@ import java.util.Queue;
 import java.util.UUID;
 
 
-// Char: 03290310-eab4-dea1-b24e-44ec023874db sensor measure
-// Char: 03290370-eab4-dea1-b24e-44ec023874db sensor measure 2
-// Char: 03290360-eab4-dea1-b24e-44ec023874db derived measure 5
-// Char: 03290320-eab4-dea1-b24e-44ec023874db derived measure 1
-// Char: 03290330-eab4-dea1-b24e-44ec023874db derived measure 2
-// Char: 03290340-eab4-dea1-b24e-44ec023874db derived measure 3
-// Char: 03290350-eab4-dea1-b24e-44ec023874db derived measure 4
-// Char: 03290300-eab4-dea1-b24e-44ec023874db measurement status
-// Char: 03290380-eab4-dea1-b24e-44ec023874db measurement status 2
-// Char: 03290101-eab4-dea1-b24e-44ec023874db kestrel settings 1
-// Char: 03290105-eab4-dea1-b24e-44ec023874db kestrel settings 2
-// Char: 03290102-eab4-dea1-b24e-44ec023874db commands 1
-// Char: 03290106-eab4-dea1-b24e-44ec023874db commands 2
-// Char: 03290107-eab4-dea1-b24e-44ec023874db kestrel events
-// Char: 03290104-eab4-dea1-b24e-44ec023874db date/time
-// Char: 03290103-eab4-dea1-b24e-44ec023874db kestrel name
-// Char: 03290200-eab4-dea1-b24e-44ec023874db ble profile version
-
-//    private static final UUID NK_SERVICE = UUID.fromString("85920000-0338-4b83-ae4a-ac1d217adb03");
-//    private static final UUID RX_CHARACTERISTIC = UUID.fromString("85920100-0338-4b83-ae4a-ac1d217adb03");
-//    private static final UUID TX_CHARACTERISTIC = UUID.fromString("85920200-0338-4b83-ae4a-ac1d217adb03");
-//    private BluetoothGattService environmentalService;
-//    private BluetoothGattService ballisticsService;
-
 /**
  *
  * @author Kalyn Stricklin
@@ -94,8 +70,6 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
     private BluetoothAdapter btAdapter;
     private BluetoothLeScanner scanner;
     private boolean btConnected = false;
-//    BallisticsOutput ballisticsOutput;
-//    DeviceOutput deviceOutput;
     EnvironmentalOutput environmentalOutput;
     private HandlerThread eventThread;
     private static final UUID ENVIRONMENTAL_SERVICE = UUID.fromString("03290000-eab4-dea1-b24e-44ec023874db");
@@ -104,23 +78,13 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
     private static final UUID DERIVED_MEASUREMENTS_2_CHAR = UUID.fromString("03290330-eab4-dea1-b24e-44ec023874db");
     private static final UUID DERIVED_MEASUREMENTS_3_CHAR = UUID.fromString("03290340-eab4-dea1-b24e-44ec023874db");
     private static final UUID DERIVED_MEASUREMENTS_4_CHAR = UUID.fromString("03290350-eab4-dea1-b24e-44ec023874db");
-//    private static final UUID MEASUREMENT_STATUS = UUID.fromString("03290300-eab4-dea1-b24e-44ec023874db");
-
     private static final UUID CLIENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-//    private static final UUID KESTREL_EVENTS_CHAR = UUID.fromString("03290107-eab4-dea1-b24e-44ec023874db");
-
-//    private static final UUID BALLISTIC_SERVICE = UUID.fromString("85920000-0338-4b83-ae4a-ac1d217adb03");
-//    private static final UUID BALLISTIC_CHAR = UUID.fromString("85920100-0338-4b83-ae4a-ac1d217adb03");
-
-
-//    private BluetoothGattCharacteristic measurementStatus;
     private BluetoothGattCharacteristic sensorMeasurements;
     private BluetoothGattCharacteristic derivedMeasurementsOne;
     private BluetoothGattCharacteristic derivedMeasurementsTwo;
     private BluetoothGattCharacteristic derivedMeasurementsThree;
     private BluetoothGattCharacteristic derivedMeasurementsFour;
-//    private BluetoothGattCharacteristic kestrelEvents;
-//    private BluetoothGattCharacteristic ballisticsChar;
+
 
     KestrelEnvData env = new KestrelEnvData();
 
@@ -133,7 +97,7 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
     @Override
     public void doInit() {
         logger.info("Initializing sensor");
-        this.xmlID = "KESTREL_BALLISTICS" + Build.SERIAL;
+        this.xmlID = "KESTREL_WEATHER" + Build.SERIAL;
         this.uniqueID = KestrelBallisticsConfig.getUid();
 
         context = SensorHubService.getContext();
@@ -149,14 +113,6 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
     }
 
     private void addOutputs() {
-//        ballisticsOutput = new BallisticsOutput(this);
-//        ballisticsOutput.doInit();
-//        addOutput(ballisticsOutput, false);
-//
-//        deviceOutput = new DeviceOutput(this);
-//        deviceOutput.doInit();
-//        addOutput(deviceOutput, false);
-
         environmentalOutput = new EnvironmentalOutput(this);
         environmentalOutput.doInit();
         addOutput(environmentalOutput, false);
@@ -231,16 +187,9 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
                 }
             }
 
-            // environmental data
             BluetoothGattService env = gatt.getService(ENVIRONMENTAL_SERVICE);
             if ( env != null ) {
-                for ( BluetoothGattCharacteristic ch : env.getCharacteristics() ) {
-
-//                    if (ch.equals(KESTREL_EVENTS_CHAR)) {
-//                        kestrelEvents = ch;
-//                        if (kestrelEvents != null)
-//                            enableNotification(gatt, kestrelEvents);
-//                    }
+                for (BluetoothGattCharacteristic ch : env.getCharacteristics()) {
 
                     if (ch.equals(SENSOR_MEASUREMENTS_CHAR)) {
                         sensorMeasurements = ch;
@@ -262,46 +211,10 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
                         derivedMeasurementsFour = ch;
                         if (derivedMeasurementsFour != null)
                             enableNotification(gatt, derivedMeasurementsFour);
-                    }
-//                    else if (ch.equals(MEASUREMENT_STATUS)) {
-//                        measurementStatus = ch;
-//                        if (measurementStatus != null)
-//                            enableNotification(gatt, measurementStatus);
-//                    }
-                    else
+                    } else
                         enableNotification(gatt, ch);
                 }
             }
-
-            // ballistic solutions
-//            BluetoothGattService sol = gatt.getService(BALLISTIC_SERVICE);
-//            if ( sol != null ) {
-//                for (BluetoothGattCharacteristic solChar : sol.getCharacteristics()) {
-//                    // Char: 85920100-0338-4b83-ae4a-ac1d217adb03
-//                    // Char: 85920200-0338-4b83-ae4a-ac1d217adb03
-//                    gatt.setCharacteristicNotification(solChar, true);
-//
-//                    if (solChar.equals(BALLISTIC_CHAR)) {
-//                        ballisticsChar = solChar;
-//
-//                        if (ballisticsChar != null)
-//                            enableNotification(gatt, ballisticsChar);
-//                    }
-
-
-//                    if ( solChar.equals(BALLISTIC_DATA) )
-//                        ballisticsChar = solChar;
-//
-//                    if ( ballisticsChar != null )
-//                        gatt.setCharacteristicNotification(ballisticsChar, true);
-//
-//                    BluetoothGattDescriptor cccd = solChar.getDescriptor(CLIENT_CONFIG);
-//                    if (cccd != null) {
-//                        cccd.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-//                        gatt.writeDescriptor(cccd);
-//                    }
-//                }
-//            }
 
         }
 
@@ -342,48 +255,7 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
     };
 
     private void handleCharacteristicBytes(UUID uuid, byte[] raw) {
-//        System.out.println("Kestrel --"+  "UUID: " + uuid + " len=" + raw.length + " raw=" + Arrays.toString(raw));
-//        if (uuid.equals(MEASUREMENT_STATUS)) {
-//            System.out.println("measurement status found: "+ Arrays.toString(raw));
-//            env.windSpeed = raw[0];
-//            env.dryBulbTemp = raw[1];
-//            env.globeTemp = raw[2];
-//            env.relativeHumidity = raw[3];
-//            env.stationPress = raw[4];
-//            env.magDirection = raw[5];
-//            env.trueDirection = raw[6];
-//            env.airDensity = raw[7];
-//            env.altitude = raw[8];
-//            env.pressure = raw[9];
-//            env.crosswind = raw[10];
-//            env.headwind = raw[11];
-//            env.densityAlt = raw[12];
-//            env.relativeAirDensity = raw[13];
-//            env.dewPoint = raw[14];
-//            env.heatIndex = raw[15];
-//            env.evaporatationRate = raw[16];
-//            env.moistureContent = raw[17];
-//            env.twl = raw[18];
-//            env.wgbt = raw[19];
-//            env.nawgbt = raw[20];
-//            env.psychroWbt = raw[21];
-//            env.chill = raw[22];
-//            env.airSpeed = raw[23];
-//            env.airFlow = raw[24];
-//            env.deltaT = raw[25];
-//            env.humdityRatio = raw[26];
-//            env.heatLoadIndex = raw[27];
-//            env.predictiveIgnitionIndex = raw[28];
-//            env.ahlu1 = raw[29];
-//            env.ahlu2 = raw[30];
-//            env.ahlu3 = raw[31];
-//
-//        }
-//
-
         if (uuid.equals(SENSOR_MEASUREMENTS_CHAR)) {
-            System.out.println("sensor measurements -- raw: "+ Arrays.toString(raw));
-
             double windSpeedRaw = (raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8);
             env.windSpeed = (windSpeedRaw == (short)0xFFFF) ? 0.0 : windSpeedRaw / 1000.0;
 
@@ -402,10 +274,7 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
             env.magDirection = (raw[10] & 0xFF) | ((raw[11] & 0xFF) << 8);
             env.airSpeed = ((raw[12] & 0xFF) | ((raw[13] & 0xFF) << 8)) / 1000.0;
             env.markSensorMeasurementsReceived();
-        }
-        else if (uuid.equals(DERIVED_MEASUREMENTS_1_CHAR)) {
-            System.out.println("derivedMeasurementsOne measurements -- raw: "+ Arrays.toString(raw));
-
+        } else if (uuid.equals(DERIVED_MEASUREMENTS_1_CHAR)) {
             double trueDirectionRaw =  (raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8);
             env.trueDirection = (trueDirectionRaw == (short)0xFFFF) ? 0.0 : trueDirectionRaw;
 
@@ -434,9 +303,7 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
             env.relativeAirDensity = (relAirDensityRaw == (short)0xFFFF) ? 0.0 : relAirDensityRaw / 10.0;
 
             env.markDerived1Received();
-        }
-        else if (uuid.equals(DERIVED_MEASUREMENTS_2_CHAR)) {
-            System.out.println("derivedMeasurementsTwo measurements -- raw: "+ Arrays.toString(raw));
+        } else if (uuid.equals(DERIVED_MEASUREMENTS_2_CHAR)) {
 
             double dewPointRaw = (raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8);
             env.dewPoint = (dewPointRaw == (short)0x8001) ? 0.0 : dewPointRaw / 100.0;
@@ -445,13 +312,6 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
             heatIndexRaw = (heatIndexRaw << 8) >> 8;
             env.heatIndex = (heatIndexRaw == 0x80001) ? 0.0 : heatIndexRaw / 100.0;
 
-//            double evaporationRateRaw = (raw[5] & 0xFF) | ((raw[6] & 0xFF) << 8);
-//            double evaporationRate = (evaporationRateRaw == 0xFFFF) ? 0.0 : evaporationRateRaw / 100.0;
-
-//            int moistureContentRaw = (raw[7] & 0xFF) | ((raw[8] & 0xFF) << 8) | ((raw[9] & 0xFF) << 16);
-//            moistureContentRaw = (moistureContentRaw << 8) >> 8;
-//            double moistureContent = (moistureContentRaw == 0xFFFFFF) ? 0.0 : moistureContentRaw / 100.0;
-//
             double wetBulb = (raw[16] & 0xFF) | ((raw[17] & 0xFF) << 8);
             env.wetBulb = (wetBulb == (short)0x8001) ? 0.0 : wetBulb / 100.0;
 
@@ -460,37 +320,6 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
 
             env.markDerived2Received();
         }
-//        else if (uuid.equals(DERIVED_MEASUREMENTS_3_CHAR)) {
-//            System.out.println("derivedMeasurementsThree measurements -- raw: "+ Arrays.toString(raw));
-
-//            double airflow = (raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8) | ((raw[2] & 0xFF) << 16);
-//            double deltaT = (raw[3] & 0xFF) | ((raw[4] & 0xFF) << 8);
-//
-//            double humidityRatio = (raw[5] & 0xFF) | ((raw[6] & 0xFF) << 8) | ((raw[7] & 0xFF) << 16);
-//            double heatLoadIndex = (raw[8] & 0xFF) | ((raw[9] & 0xFF) << 8);
-//            double predictiveIgnitionIndex = (raw[10] & 0xFF) | ((raw[11] & 0xFF) << 8);
-//            double accumulatedHeatLoadIndex = (raw[12] & 0xFF) | ((raw[13] & 0xFF) << 8);
-
-//        }
-//        else if (uuid.equals(DERIVED_MEASUREMENTS_4_CHAR)) {
-//            System.out.println("derivedMeasurementsFour measurements -- raw: "+ Arrays.toString(raw));
-
-//            double thiYousef = (((raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8))) / 100.0;
-//            double thiNRC = (((raw[2] & 0xFF) | ((raw[3] & 0xFF) << 8))) / 100.0;
-//        }
-
-//        if (KESTREL_EVENTS_CHAR.equals(uuid)) {
-//            // events table 12
-//            System.out.println("Kestrel events raw: " + Arrays.toString(raw));
-//        }
-
-//        if (BALLISTIC_CHAR.equals(uuid)) {
-//            // ballistic solution notifications (indications) — log raw and decode later
-//            System.out.println("Ballistic raw: " + Arrays.toString(raw));
-//            // TODO: parse according to ballistic packet spec
-//        }
-
-
 
         if (env.isComplete()) {
             System.out.println("env snapshot: "+ env.snapshot());
@@ -574,22 +403,8 @@ public class Kestrel extends AbstractSensorModule<KestrelBallisticsConfig> {
                             .add("pressure_range", helper.capabilities.measurementRange(700.0, 1100.0, "hPa")) // Typical barometric range
                             .add("pressure_accuracy", helper.capabilities.absoluteAccuracy(1.5, "hPa")) // ±1.5 hPa typical
                             .add("pressure_resolution", helper.capabilities.resolution(0.1, "hPa"))
-                    )
-
-                    .addCapabilityList("data_capabilities", helper.capabilities.systemCapabilities()
-                            .add("update_rate", helper.capabilities.reportingFrequency(1.0))    // 1 Hz in live mode
-//                            .add("wireless", helper.capabilities.)
-//                            .add("data_storage", helper.capabilities.("10,000+ data points"))
-//                            .add("wireless", helper.capabilities.operatingCharacteristic("Bluetooth Low Energy (LiNK)"))
-//                            .add("gun_profiles", helper.capabilities.operatingCharacteristic("Up to 3 gun/bullet profiles"))
-//                            .add("targets", helper.capabilities.operatingCharacteristic("1 target (Elite: 10 targets)")))
                     );
-//                    .addCapabilityList("ballistics_capabilities", helper.capabilities.systemCapabilities()
-//                            .add("drag_models", helper.capabilities.operatingCharacteristic("G1/G7 (Elite: +Custom)"))
-//                            .add("corrections", helper.capabilities.operatingCharacteristic("Coriolis, Spin Drift, Aerodynamic Jump"))
-//                            .add("solution_units", helper.capabilities.operatingCharacteristic("Mil, MOA, SMOA, Clicks, Inches, Centimeters"))
-//                            .add("muzzle_velocity_cal", helper.capabilities.operatingCharacteristic("Supported")));
-//                    );
+
         }
     }
 
