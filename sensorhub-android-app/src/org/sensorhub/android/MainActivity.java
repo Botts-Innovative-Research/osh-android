@@ -1381,7 +1381,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return prefs.getBoolean("polar_enabled", false)
                     && prefs.getStringSet("polar_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
-
         else if (Sensors.KestrelBallistics.equals(sensor)) {
             return prefs.getBoolean("kestrel_enabled", false)
                     && prefs.getStringSet("kestrel_options", Collections.emptySet()).contains("PUSH_REMOTE");
@@ -1581,6 +1580,37 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.BLUETOOTH_SCAN);
         }
+        if (checkSelfPermission(Manifest.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND);
+        }
+        if (checkSelfPermission(Manifest.permission.CHANGE_WIFI_STATE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.CHANGE_WIFI_STATE);
+        }
+        if (checkSelfPermission(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        }
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        if (checkSelfPermission(Manifest.permission.FOREGROUND_SERVICE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
+        if (checkSelfPermission(Manifest.permission.WAKE_LOCK) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.WAKE_LOCK);
+        }
+        if (checkSelfPermission(Manifest.permission.INTERNET) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.INTERNET);
+        }
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.READ_PHONE_STATE);
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        }
+
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
         permARR = permissions.toArray(permARR);

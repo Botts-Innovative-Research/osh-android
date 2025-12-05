@@ -204,8 +204,8 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="kestrel_enabled"
-            android:summary="Enable streaming of Kestrel Ballistics Meter(sensor must be connected via Bluetooth LE)"
-            android:title="Kestrel Ballistics Data" />
+            android:summary="Enable streaming of Kestrel Weather Meter"
+            android:title="Kestrel Weather Data" />
 
         <EditTextPreference
             android:defaultValue=""
@@ -214,18 +214,9 @@
             android:singleLine="true"
             android:title="Kestrel Device Serial Number" />
 
-        <!--        <ListPreference-->
-<!--            android:key="kestrel_device_address"-->
-<!--            android:title="Select Kestrel Ballistics Meter"-->
-<!--            android:entries="@array/bluetooth_mac_address_list"-->
-<!--            android:entryValues="@array/bluetooth_mac_address_list"-->
-<!--            android:summary="Choose a paired Kestrel Ballistics Meter Bluetooth device"-->
-<!--            android:dialogTitle="Select Device"-->
-<!--            />-->
-
         <MultiSelectListPreference
             android:key="kestrel_options"
-            android:title="Kestrel Ballistics Output Options"
+            android:title="Kestrel Weather Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
