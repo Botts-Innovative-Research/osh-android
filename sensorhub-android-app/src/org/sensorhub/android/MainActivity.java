@@ -41,7 +41,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
@@ -83,6 +82,7 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
+import org.sensorhub.impl.sensor.kestrel.KestrelBallisticsConfig;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
@@ -106,7 +106,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -119,7 +118,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -177,7 +175,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         ProxySensor,
         BLELocation,
         Meshtastic,
-        PolarHRMonitor
+        PolarHRMonitor,
+        KestrelBallistics
     }
 
 
@@ -512,15 +511,30 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         enabled = prefs.getBoolean("polar_enabled", false);
         if (enabled) {
             PolarConfig polarConfig = new PolarConfig();
-            polarConfig.id = "POLAR_HEART_SENSOR";
-            polarConfig.name = "Polar Heart [" + deviceName + "]";
-            polarConfig.autoStart = true;
-            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            polarConfig.device_name = prefs.getString("polar_device_address", "");
+          polarConfig.id = "POLAR_HEART_SENSOR";
+          polarConfig.name = "Polar Heart [" + deviceName + "]";
+          polarConfig.autoStart = true;
+          polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+          polarConfig.device_name = prefs.getString("polar_device_address", "");
 
             sensorhubConfig.add(polarConfig);
         }
 
+        // Kestrel Ballistics Weather
+        enabled = prefs.getBoolean("kestrel_enabled", false);
+        if (enabled) {
+            KestrelBallisticsConfig ballisticsConfig = new KestrelBallisticsConfig();
+            ballisticsConfig.id = "KESTREL_BALLISTICS";
+            ballisticsConfig.name = "Kestrel Ballistics Weather [" + deviceName + "]";
+            ballisticsConfig.autoStart = true;
+            ballisticsConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+//            ballisticsConfig.device_name = "FE:BB:D9:8B:53:23";
+
+            ballisticsConfig.serialNumber = prefs.getString("kestrel_serial", null);
+//                    prefs.getString("kestrel_device_address", "");
+
+            sensorhubConfig.add(ballisticsConfig);
+        }
 
 
         // AngelSensor
@@ -1366,6 +1380,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         else if (Sensors.PolarHRMonitor.equals(sensor)) {
             return prefs.getBoolean("polar_enabled", false)
                     && prefs.getStringSet("polar_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        }
+
+        else if (Sensors.KestrelBallistics.equals(sensor)) {
+            return prefs.getBoolean("kestrel_enabled", false)
+                    && prefs.getStringSet("kestrel_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;

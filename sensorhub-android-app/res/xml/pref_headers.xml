@@ -12,5 +12,9 @@
     <header
         android:fragment="org.sensorhub.android.UserSettingsActivity$AudioPreferenceFragment"
         android:title="Audio Settings" />
+
+    <header
+        android:fragment="org.sensorhub.android.UserSettingsActivity$KestrelPreferenceFragment"
+        android:title="Kestrel Gun Profile Settings" />
     
 </preference-headers>

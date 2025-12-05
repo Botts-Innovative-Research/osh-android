@@ -1,0 +1,122 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <ListPreference
+        android:defaultValue="0"
+        android:key="kestrel_profile_preset"
+        android:summary="%s"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="Selected Preset" />
+
+<!--    <PreferenceCategory android:title="Profile" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="profile_name"-->
+<!--        android:title="Profile Name"-->
+<!--        android:dialogTitle="Enter the name of the profile"-->
+<!--        android:inputType="textShortMessage" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="profile_notes"-->
+<!--        android:title="Notes (These notes will not be transferrred)"-->
+<!--        android:dialogTitle="Enter notes for profile"-->
+<!--        android:inputType="textMultiLine" />-->
+
+<!--    <PreferenceCategory android:title="Bullet Data" />-->
+<!--    <EditTextPreference-->
+<!--        android:key="diameter"-->
+<!--        android:title="Diameter (inches)"-->
+<!--        android:dialogTitle="Enter the diameter (inches)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="weight"-->
+<!--        android:title="Weight (gr)"-->
+<!--        android:dialogTitle="Enter the weight (gr)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="ballistic_coeff"-->
+<!--        android:title="Ballistic Coefficient (G7)"-->
+<!--        android:dialogTitle="Enter the Ballistic Coefficient (G7)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="length"-->
+<!--        android:title="Length (in)"-->
+<!--        android:dialogTitle="Enter the length (in)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <PreferenceCategory android:title="Gun Data" />-->
+<!--    <EditTextPreference-->
+<!--        android:key="muzzle_velocity"-->
+<!--        android:title="Muzzle Velocity (fps)"-->
+<!--        android:dialogTitle="Enter the muzzle velocity (fps)"-->
+<!--        android:inputType="number" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="zero_range"-->
+<!--        android:title="Zero Range (m)"-->
+<!--        android:dialogTitle="Enter the zero range (m)"-->
+<!--        android:inputType="number" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="bore_height"-->
+<!--        android:title="Bore Height (in)"-->
+<!--        android:dialogTitle="Enter the bore height (in)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="zero_height"-->
+<!--        android:title="Zero Height (in)"-->
+<!--        android:dialogTitle="Enter the zero height (in)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="zero_offset"-->
+<!--        android:title="Zero Offset (in)"-->
+<!--        android:dialogTitle="Enter the zero offset (in)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <EditTextPreference-->
+<!--        android:key="twist_rate"-->
+<!--        android:title="Twist Rate (in)"-->
+<!--        android:dialogTitle="Enter the twist rate (in)"-->
+<!--        android:inputType="numberDecimal" />-->
+
+<!--    <ListPreference-->
+<!--        android:defaultValue="L"-->
+<!--        android:entries="@array/left_right"-->
+<!--        android:entryValues="@array/left_right"-->
+<!--        android:key="twist_rate_direction"-->
+<!--        android:summary="%s"-->
+<!--        android:negativeButtonText="@null"-->
+<!--        android:positiveButtonText="@null"-->
+<!--        android:title="Twist Rate Direction" />-->
+
+<!--    <PreferenceCategory android:title="Scope Data" />-->
+
+<!--    <ListPreference-->
+<!--        android:defaultValue="mil"-->
+<!--        android:entries="@array/unit_list"-->
+<!--        android:entryValues="@array/unit_list"-->
+<!--        android:key="e_unit"-->
+<!--        android:summary="%s"-->
+<!--        android:negativeButtonText="@null"-->
+<!--        android:positiveButtonText="@null"-->
+<!--        android:title="E Units" />-->
+
+<!--    <ListPreference-->
+<!--        android:defaultValue="mil"-->
+<!--        android:entries="@array/unit_list"-->
+<!--        android:entryValues="@array/unit_list"-->
+<!--        android:key="w_unit"-->
+<!--        android:summary="%s"-->
+<!--        android:negativeButtonText="@null"-->
+<!--        android:positiveButtonText="@null"-->
+<!--        android:title="W Units" />-->
+
+
+<!--    <PreferenceCategory android:title="MV-Temp Table (Leave blank if unknown)" />-->
+</PreferenceScreen>

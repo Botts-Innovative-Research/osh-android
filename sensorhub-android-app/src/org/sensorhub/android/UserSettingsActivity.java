@@ -19,6 +19,7 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -39,6 +40,8 @@ import android.text.InputType;
 import android.text.PrecomputedText;
 import android.util.Log;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
+
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URL;
@@ -337,6 +340,17 @@ public class UserSettingsActivity extends PreferenceActivity
                 return true;
             });
 
+            Preference kestrelEnabled = getPreferenceScreen().findPreference("kestrel_enabled");
+            Preference kestrelOptions = getPreferenceScreen().findPreference("kestrel_options");
+            bindPreferenceSummaryToValue(findPreference("kestrel_serial"));
+
+//            ListPreference kestrelDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("kestrel_device_address");
+            kestrelEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                kestrelOptions.setEnabled((boolean) newValue);
+//                kestrelDeviceListPref.setEnabled((boolean) newValue);
+                return true;
+            });
+
             BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
             if (btAdapter != null && btAdapter.isEnabled()) {
 
@@ -359,16 +373,22 @@ public class UserSettingsActivity extends PreferenceActivity
                     deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
                     trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
                     polarDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+//                    kestrelDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+
                     deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                     trupulseListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                     polarDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+//                    kestrelDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                 } else {
                     deviceListPref.setEnabled(false);
                     trupulseListPref.setEnabled(false);
                     polarDeviceListPref.setEnabled(false);
+//                    kestrelDeviceListPref.setEnabled(false);
+
                     deviceListPref.setSummary("No paired Bluetooth devices found");
                     trupulseListPref.setSummary("No paired Bluetooth devices found");
                     polarDeviceListPref.setSummary("No paired Bluetooth devices found");
+//                    kestrelDeviceListPref.setSummary("No paired Bluetooth devices found");
                 }
             }
 
@@ -377,8 +397,6 @@ public class UserSettingsActivity extends PreferenceActivity
                 meshtasticOptions.setEnabled((boolean) newValue);
                 return true;
             });
-
-
 
 //            Preference bleEnable = getPreferenceScreen().findPreference("ble_enabled");
 //            Preference bleLocationMethod = getPreferenceScreen().findPreference("ble_loc_method");
@@ -425,24 +443,17 @@ public class UserSettingsActivity extends PreferenceActivity
                 cameras.add(Integer.toString(i));
             }
             ListPreference cameraSelectList = (ListPreference)videoOptsScreen.findPreference("camera_select");
-//            cameraSelectList.setKey("camera_select");
-//            cameraSelectList.setTitle("Selected Camera");
             cameraSelectList.setEntries(cameras.toArray(new String[0]));
             cameraSelectList.setEntryValues(cameras.toArray(new String[0]));
-//            cameraSelectList.setDefaultValue(0);
             bindPreferenceSummaryToValue(cameraSelectList);
             videoOptsScreen.addPreference(cameraSelectList);
 
             bindPreferenceSummaryToValue(findPreference("video_codec"));
-
-            // TODO: verify that this works in cases where a camera might not be available, and also works on the default value
             // get possible video capture frame rates and sizes
             Camera camera = Camera.open(0);
             Camera.Parameters camParams = camera.getParameters();
-//            ArrayList<String> frameRateList = new ArrayList<>();
             for (int frameRate : camParams.getSupportedPreviewFrameRates())
                 frameRateList.add(Integer.toString(frameRate));
-//            ArrayList<String> resList = new ArrayList<>();
             for (Camera.Size imgSize : camParams.getSupportedPreviewSizes())
                 resList.add(imgSize.width + "x" + imgSize.height);
             camera.release();
@@ -556,6 +567,196 @@ public class UserSettingsActivity extends PreferenceActivity
         }
     }
 
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class KestrelPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            addPreferencesFromResource(R.xml.pref_kestrel);
+
+            PreferenceScreen kestrelOptsScreen = getPreferenceScreen();
+
+            ArrayList<String> presetNames = new ArrayList<>();
+            ArrayList<String> presetIndexes = new ArrayList<>();
+
+            for (int i = 1; i <= 5; i++){
+                PreferenceScreen prefScreen = getPreferenceManager().createPreferenceScreen(kestrelOptsScreen.getContext());
+                prefScreen.setKey("kestrel_preset" + i);
+                String presetName = "Gun Profile Preset #" + i;
+                prefScreen.setTitle(presetName);
+                presetNames.add(presetName);
+                presetIndexes.add(String.valueOf(i-1));
+
+                addBulletDataFields(prefScreen, i);
+                addGunFields(prefScreen, i);
+                addScopeDataFields(prefScreen, i);
+
+                bindPreferenceSummaryToValue(prefScreen);
+                kestrelOptsScreen.addPreference(prefScreen);
+            }
+
+
+            // add list of selectable presets
+            ListPreference selectedPresetList = (ListPreference)kestrelOptsScreen.findPreference("kestrel_profile_preset");
+            presetNames.add("Auto select");
+            presetIndexes.add("AUTO");
+            selectedPresetList.setEntries(presetNames.toArray(new String[0]));
+            selectedPresetList.setEntryValues(presetIndexes.toArray(new String[0]));
+        }
+
+        private void addProfileFields(PreferenceScreen preferenceScreen, int index) {
+//                <PreferenceCategory android:title="Profile" />
+//
+//                    <EditTextPreference
+//            android:key="profile_name"
+//            android:title="Profile Name"
+//            android:dialogTitle="Enter the name of the profile"
+//            android:inputType="textShortMessage" />
+//
+//                    <EditTextPreference
+//            android:key="profile_notes"
+//            android:title="Notes (These notes will not be transferrred)"
+//            android:dialogTitle="Enter notes for profile"
+//            android:inputType="textMultiLine" />
+        }
+        private void addScopeDataFields(PreferenceScreen prefScreen, int index) {
+            List<String> unitList = Arrays.asList("inches", "mil", "tmoa", "smoa", "clicks", "cm");
+
+            ListPreference eUnitList = new ListPreference(prefScreen.getContext());
+            eUnitList.setKey("e_unit_" + index);
+            eUnitList.setTitle("E Units");
+            eUnitList.setEntries(unitList.toArray(new String[0]));
+            eUnitList.setEntryValues(unitList.toArray(new String[0]));
+            bindPreferenceSummaryToValue(eUnitList);
+            prefScreen.addPreference(eUnitList);
+
+            ListPreference wUnitList = new ListPreference(prefScreen.getContext());
+            wUnitList.setKey("w_unit_" + index);
+            wUnitList.setTitle("W Units");
+            wUnitList.setEntries(unitList.toArray(new String[0]));
+            wUnitList.setEntryValues(unitList.toArray(new String[0]));
+            bindPreferenceSummaryToValue(wUnitList);
+            prefScreen.addPreference(wUnitList);
+        }
+
+        private void addGunFields(PreferenceScreen prefScreen, int index) {
+            EditTextPreference muzzleVel = new EditTextPreference(prefScreen.getContext());
+            muzzleVel.setKey("muzzle_velocity_" + index);
+            muzzleVel.setTitle("Muzzle Velocity (fps)");
+            muzzleVel.setDialogTitle("Enter the muzzle velocity (fps)");
+            muzzleVel.getEditText().setSingleLine();
+            muzzleVel.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            muzzleVel.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(muzzleVel);
+            prefScreen.addPreference(muzzleVel);
+
+            EditTextPreference zeroRange = new EditTextPreference(prefScreen.getContext());
+            zeroRange.setKey("zero_range_" + index);
+            zeroRange.setTitle("Zero Range (m)");
+            zeroRange.setDialogTitle("Enter the zero range (m)");
+            zeroRange.getEditText().setSingleLine();
+            zeroRange.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            zeroRange.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(zeroRange);
+            prefScreen.addPreference(zeroRange);
+
+            EditTextPreference boreHeight = new EditTextPreference(prefScreen.getContext());
+            boreHeight.setKey("bore_height_" + index);
+            boreHeight.setTitle("Bore Height (in)");
+            boreHeight.setDialogTitle("Enter the bore height (in)");
+            boreHeight.getEditText().setSingleLine();
+            boreHeight.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            boreHeight.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(boreHeight);
+            prefScreen.addPreference(boreHeight);
+
+            EditTextPreference zeroHeight = new EditTextPreference(prefScreen.getContext());
+            zeroHeight.setKey("zero_height_" + index);
+            zeroHeight.setTitle("Zero Height (in)");
+            zeroHeight.setDialogTitle("Enter the zero height (in)");
+            zeroHeight.getEditText().setSingleLine();
+            zeroHeight.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            zeroHeight.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(zeroHeight);
+            prefScreen.addPreference(zeroHeight);
+
+            EditTextPreference zeroOffset = new EditTextPreference(prefScreen.getContext());
+            zeroOffset.setKey("zero_offset_" + index);
+            zeroOffset.setTitle("Zero Offset (in)");
+            zeroOffset.setDialogTitle("Enter the zero offset (in)");
+            zeroOffset.getEditText().setSingleLine();
+            zeroOffset.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            zeroOffset.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(zeroOffset);
+            prefScreen.addPreference(zeroOffset);
+
+            EditTextPreference twistRate = new EditTextPreference(prefScreen.getContext());
+            twistRate.setKey("twist_rate_" + index);
+            twistRate.setTitle("Twist Rate (in)");
+            twistRate.setDialogTitle("Enter the twist rate (in)");
+            twistRate.getEditText().setSingleLine();
+            twistRate.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            twistRate.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(twistRate);
+            prefScreen.addPreference(twistRate);
+
+            List<String> directionlist = Arrays.asList("L", "R");
+
+            ListPreference twistRateList = new ListPreference(prefScreen.getContext());
+            twistRateList.setKey("twist_rate_direction_" + index);
+            twistRateList.setTitle("Twist Rate Direction");
+            twistRateList.setEntries(directionlist.toArray(new String[0]));
+            twistRateList.setEntryValues(directionlist.toArray(new String[0]));
+            bindPreferenceSummaryToValue(twistRateList);
+            prefScreen.addPreference(twistRateList);
+        }
+
+
+        private void addBulletDataFields(PreferenceScreen prefScreen, int index) {
+            EditTextPreference diameter = new EditTextPreference(prefScreen.getContext());
+            diameter.setKey("diameter_" + index);
+            diameter.setTitle("Diameter (in)");
+            diameter.setDialogTitle("Enter the diameter (inches)");
+            diameter.getEditText().setSingleLine();
+            diameter.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            diameter.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(diameter);
+            prefScreen.addPreference(diameter);
+
+            EditTextPreference weight = new EditTextPreference(prefScreen.getContext());
+            weight.setKey("weight_" + index);
+            weight.setTitle("Weight (gr)");
+            weight.setDialogTitle("Enter the weight (gr)");
+            weight.getEditText().setSingleLine();
+            weight.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            weight.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(weight);
+            prefScreen.addPreference(weight);
+
+            EditTextPreference ballistic = new EditTextPreference(prefScreen.getContext());
+            ballistic.setKey("ballistic_" + index);
+            ballistic.setTitle("Ballistic Coefficient (G7)");
+            ballistic.setDialogTitle("Enter the Ballistic Coefficient (G7)");
+            ballistic.getEditText().setSingleLine();
+            ballistic.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            ballistic.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(ballistic);
+            prefScreen.addPreference(ballistic);
+
+            EditTextPreference length = new EditTextPreference(prefScreen.getContext());
+            length.setKey("length_" + index);
+            length.setTitle("Length (in)");
+            length.setDialogTitle("Enter the length (in)");
+            length.getEditText().setSingleLine();
+            length.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            length.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(length);
+            prefScreen.addPreference(length);
+        }
+
+    }
 
     @Override
     protected boolean isValidFragment(String fragmentName)

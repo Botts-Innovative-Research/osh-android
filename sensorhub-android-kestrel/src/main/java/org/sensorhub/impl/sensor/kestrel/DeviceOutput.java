@@ -12,7 +12,7 @@
 
  ******************************* END LICENSE BLOCK ***************************/
 
-package org.sensorhub.impl.sensor.polar;
+package org.sensorhub.impl.sensor.kestrel;
 
 import net.opengis.swe.v20.DataBlock;
 import net.opengis.swe.v20.DataComponent;
@@ -28,17 +28,17 @@ import org.vast.swe.SWEHelper;
 /**
  *
  * @author Kalyn Stricklin
- * @since Jan 13, 2023
+ * @since Dec 1, 2025
  */
-public class HeartRateOutput extends AbstractSensorOutput<Polar>
+public class DeviceOutput extends AbstractSensorOutput<Kestrel>
 {
     DataComponent dataStruct;
     DataEncoding dataEncoding;
-    private static final String SENSOR_OUTPUT_NAME = "heartRate";
-    private static final String SENSOR_OUTPUT_LABEL = "HeartRate Output";
-    private static final Logger logger = LoggerFactory.getLogger(HeartRateOutput.class);
+    private static final String SENSOR_OUTPUT_NAME = "deviceInformation";
+    private static final String SENSOR_OUTPUT_LABEL = "Device Info Output";
+    private static final Logger logger = LoggerFactory.getLogger(DeviceOutput.class);
 
-    protected HeartRateOutput(Polar parent) {
+    protected DeviceOutput(Kestrel parent) {
         super(SENSOR_OUTPUT_NAME, parent);
     }
     public void doInit(){
@@ -48,11 +48,22 @@ public class HeartRateOutput extends AbstractSensorOutput<Polar>
                 .definition(SWEHelper.getPropertyUri(SENSOR_OUTPUT_NAME))
                 .label(SENSOR_OUTPUT_LABEL)
                 .addField("samplingTime", fac.createTime().asSamplingTimeIsoUTC())
-                .addField("heartRate", fac.createQuantity()
-                        .label("Heart Rate")
-                        .definition(SWEHelper.getPropertyUri("HeartRate"))
-                        .description("heart rate")
-                        .uom("1/min")
+                .addField("batteryLevel", fac.createQuantity()
+                        .label("Battery Level")
+                        .uomCode("%")
+                        .definition(SWEHelper.getPropertyUri("BatteryLevel"))
+                        .build())
+                .addField("firmwareVersion", fac.createText()
+                        .label("Firmware Version")
+                        .definition(SWEHelper.getPropertyUri("FirmwareVersion"))
+                        .build())
+                .addField("serialNumber", fac.createText()
+                        .label("Serial Number")
+                        .definition(SWEHelper.getPropertyUri("SerialNumber"))
+                        .build())
+                .addField("deviceSettings", fac.createText()
+                        .label("Device Settings")
+                        .definition(SWEHelper.getPropertyUri("DeviceSettings"))
                         .build())
                 .build();
 
@@ -74,11 +85,14 @@ public class HeartRateOutput extends AbstractSensorOutput<Polar>
         return dataEncoding;
     }
 
-    public void setData(int hr) {
+    public void setData(double batteryLevel, String firmware, String serialNumber, String deviceSettings) {
         DataBlock dataBlock = dataStruct.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
-        dataBlock.setIntValue(1, hr);
+        dataBlock.setDoubleValue(1, batteryLevel);
+        dataBlock.setStringValue(2, firmware);
+        dataBlock.setStringValue(3, serialNumber);
+        dataBlock.setStringValue(4, deviceSettings);
 
         latestRecord = dataBlock;
         latestRecordTime = System.currentTimeMillis();
