@@ -183,7 +183,6 @@ public class EnvironmentalOutput extends AbstractSensorOutput<Kestrel>
     }
 
     public void setData(Kestrel.KestrelEnvData env) {
-//    public void setData(double windDirection, double windSpeed, double crosswind, double headwind, double temperature, double humidity, double pressure, double altitude, double dewPoint, double densityAltitude, double stationPressure, double heatIndex, double chill, double webBulb) {
         DataBlock dataBlock = dataStruct.createDataBlock();
 
         dataBlock.setDoubleValue(0, System.currentTimeMillis() / 1000d);
@@ -199,7 +198,7 @@ public class EnvironmentalOutput extends AbstractSensorOutput<Kestrel>
         dataBlock.setDoubleValue(10, env.altitude);
         dataBlock.setDoubleValue(11, env.pressure);
         dataBlock.setDoubleValue(12, env.crosswind);
-        dataBlock.setDoubleValue(13, env.headwind); //computeHeadwind(env.windSpeed, env.windDir)
+        dataBlock.setDoubleValue(13, env.headwind);
         dataBlock.setDoubleValue(14, env.densityAlt);
         dataBlock.setDoubleValue(15, env.relativeAirDensity);
         dataBlock.setDoubleValue(16, env.dewPoint);
@@ -212,13 +211,4 @@ public class EnvironmentalOutput extends AbstractSensorOutput<Kestrel>
         eventHandler.publish(new DataEvent(latestRecordTime, this, dataBlock));
     }
 
-    private double computeHeadwind(double windSpeed, double windDir) {
-        double angleRad = Math.toRadians(windDir);
-        return windSpeed * Math.cos(angleRad);
-    }
-
-    private double computeCrosswind(double windSpeed, double windDir) {
-        double angleRad = Math.toRadians(windDir);
-        return windSpeed * Math.sin(angleRad);
-    }
 }
