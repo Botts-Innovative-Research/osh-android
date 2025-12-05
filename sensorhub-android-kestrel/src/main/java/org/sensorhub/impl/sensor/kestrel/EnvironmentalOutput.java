@@ -100,7 +100,7 @@ public class EnvironmentalOutput extends AbstractSensorOutput<Kestrel>
                 .addField("airDensity", fac.createQuantity()
                         .label("Air Density")
                         .definition(SWEHelper.getPropertyUri("AirDensity"))
-                        .uom("Kg/m^3")
+//                        .uomCode("Kg/m^3")
                         .addAllowedInterval(0.0, 2.033)
                         .build())
                 .addField("altitude", fac.createQuantity()

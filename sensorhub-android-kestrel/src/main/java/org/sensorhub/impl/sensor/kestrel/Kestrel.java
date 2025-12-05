@@ -321,7 +321,7 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
         }
 
         if (env.isComplete()) {
-            System.out.println("env snapshot: "+ env.snapshot());
+            System.out.println("env snapshot: "+ env.snapshot().toString());
             environmentalOutput.setData(env.snapshot());
             env.reset();
         }
@@ -341,70 +341,6 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
     @Override
     public boolean isConnected() {
         return btConnected;
-    }
-
-    String manufacturerName;
-    String serialNumber;
-    String modelNumber;
-    String firmwareVersion;
-    String softwareVersion;
-
-    @Override
-    protected void updateSensorDescription() {
-        synchronized (sensorDescLock) {
-            super.updateSensorDescription();
-            sensorDescription.setDescription("");
-
-            SMLHelper helper = new SMLHelper();
-            helper.edit((PhysicalSystem)sensorDescription)
-                    .addClassifier(helper.classifiers.sensorType("Ballistics-Weather Meter"))
-
-                    .addIdentifier(helper.identifiers.manufacturer("Nielsen-Kellerman (Kestrel Instruments)"))
-                    .addIdentifier(helper.identifiers.modelNumber(modelNumber))
-                    .addIdentifier(helper.identifiers.serialNumber(serialNumber))
-                    .addIdentifier(helper.identifiers.firmwareVersion(firmwareVersion))
-                    .addIdentifier(helper.identifiers.softwareVersion(softwareVersion))
-
-                    .addCharacteristicList("operating_specs", helper.characteristics.operatingCharacteristics()
-                            .add("voltage", helper.characteristics.operatingVoltageRange(0.9, 1.8, "V")) // Single AA battery: 0.9-1.8V typical range
-                            .add("operating_temperature", helper.conditions.temperatureRange(-10.0, 55.0, "Cel")) // Typical Kestrel 5 series operating range
-                            .add("storage_temperature", helper.conditions.temperatureRange(-30.0, 60.0, "Cel"))
-
-                    )
-//                            .add("battery_type", helper.characteristics.b("Lithium AA (recommended)")))
-
-//                    .addCharacteristicList("environmental_specs", helper.characteristics.survivalCharacteristics()
-//                            .add("waterproof_rating", helper.characteristics.("IP67 (1m for 30 min)"))
-//                            .add("drop_test", helper.characteristics.("MIL-STD-810G"))
-//                            .add("display_type", helper.characteristics.("High-resolution monochrome LCD"))
-//                            .add("backlight", helper.characteristics("White/Red night-vision preserving")))
-
-                    .addCapabilityList("wind_capabilities", helper.capabilities.systemCapabilities()
-                            .add("wind_speed_range", helper.capabilities.measurementRange(0.6, 40.0, "m/s"))
-                            .add("wind_speed_accuracy", helper.capabilities.relativeAccuracy(3.0)) // ±3% based on search results
-                            .add("wind_speed_resolution", helper.capabilities.resolution(0.1, "m/s"))
-                            .add("wind_direction_range", helper.capabilities.measurementRange(0.0, 360.0, "deg"))
-                            .add("wind_direction_resolution", helper.capabilities.resolution(1.0, "deg")))
-
-                    .addCapabilityList("temperature_capabilities", helper.capabilities.systemCapabilities()
-                            .add("temp_range", helper.capabilities.measurementRange(-29.0, 70.0, "Cel")) // Typical thermistor range
-                            .add("temp_accuracy", helper.capabilities.absoluteAccuracy(0.5, "Cel")) // ±0.5°C typical for Kestrel 5 series
-                            .add("temp_resolution", helper.capabilities.resolution(0.1, "Cel")))
-
-                    .addCapabilityList("humidity_capabilities", helper.capabilities.systemCapabilities()
-                            .add("humidity_range", helper.capabilities.measurementRange(5.0, 95.0, "%"))
-                            .add("humidity_accuracy", helper.capabilities.absoluteAccuracy(2.0, "%")) // ±2% RH typical
-                            .add("humidity_resolution", helper.capabilities.resolution(0.1, "%"))
-//                            .add("humidity_drift", helper.capabilities.drift(1, "RH/year"))
-                    )
-
-                    .addCapabilityList("pressure_capabilities", helper.capabilities.systemCapabilities()
-                            .add("pressure_range", helper.capabilities.measurementRange(700.0, 1100.0, "hPa")) // Typical barometric range
-                            .add("pressure_accuracy", helper.capabilities.absoluteAccuracy(1.5, "hPa")) // ±1.5 hPa typical
-                            .add("pressure_resolution", helper.capabilities.resolution(0.1, "hPa"))
-                    );
-
-        }
     }
 
     public class KestrelEnvData {
