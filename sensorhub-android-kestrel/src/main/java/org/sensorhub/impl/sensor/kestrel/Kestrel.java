@@ -30,16 +30,27 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.widget.Toast;
 import androidx.annotation.RequiresPermission;
+import androidx.core.app.ActivityCompat;
 
 import net.opengis.sensorml.v20.PhysicalComponent;
 import net.opengis.sensorml.v20.PhysicalSystem;
 
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.android.comm.ble.BleConfig;
+import org.sensorhub.android.comm.ble.BleNetwork;
+import org.sensorhub.api.comm.ble.GattCallback;
+import org.sensorhub.api.comm.ble.IGattCharacteristic;
+import org.sensorhub.api.comm.ble.IGattClient;
+import org.sensorhub.api.comm.ble.IGattDescriptor;
+import org.sensorhub.api.comm.ble.IGattField;
+import org.sensorhub.api.comm.ble.IGattService;
+import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.sensor.SensorException;
 import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.impl.sensor.android.SensorMLBuilder;
@@ -47,9 +58,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vast.sensorML.SMLHelper;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -64,10 +77,9 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
     private final SensorMLBuilder smlBuilder;
     static final Logger logger = LoggerFactory.getLogger(Kestrel.class.getSimpleName());
     private Context context;
+    private BleNetwork bleNetwork;
 
-    private BluetoothGatt btGatt;
-    private BluetoothAdapter btAdapter;
-    private BluetoothLeScanner scanner;
+    private IGattClient gattClient;
     private boolean btConnected = false;
     EnvironmentalOutput environmentalOutput;
     private HandlerThread eventThread;
@@ -78,11 +90,11 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
     private static final UUID DERIVED_MEASUREMENTS_3_CHAR = UUID.fromString("03290340-eab4-dea1-b24e-44ec023874db");
     private static final UUID DERIVED_MEASUREMENTS_4_CHAR = UUID.fromString("03290350-eab4-dea1-b24e-44ec023874db");
     private static final UUID CLIENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    private BluetoothGattCharacteristic sensorMeasurements;
-    private BluetoothGattCharacteristic derivedMeasurementsOne;
-    private BluetoothGattCharacteristic derivedMeasurementsTwo;
-    private BluetoothGattCharacteristic derivedMeasurementsThree;
-    private BluetoothGattCharacteristic derivedMeasurementsFour;
+    private IGattCharacteristic sensorMeasurements;
+    private IGattCharacteristic derivedMeasurementsOne;
+    private IGattCharacteristic derivedMeasurementsTwo;
+    private IGattCharacteristic derivedMeasurementsThree;
+    private IGattCharacteristic derivedMeasurementsFour;
 
 
     KestrelEnvData env = new KestrelEnvData();
@@ -101,11 +113,15 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
 
         context = SensorHubService.getContext();
 
-        final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Activity.BLUETOOTH_SERVICE);
-        btAdapter = bluetoothManager.getAdapter();
+        BleConfig bleConfig = new BleConfig();
+        bleConfig.androidContext = context;
 
-        if (btAdapter == null || !btAdapter.isEnabled()) {
-            Toast.makeText(context, "Bluetooth is not enabled", Toast.LENGTH_LONG).show();
+        bleNetwork = new BleNetwork();
+        try {
+            bleNetwork.init(bleConfig);
+            bleNetwork.start();
+        } catch (SensorHubException e) {
+            throw new RuntimeException(e);
         }
 
         addOutputs();
@@ -117,122 +133,109 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
         addOutput(environmentalOutput, false);
     }
 
-    @RequiresPermission(allOf = {Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN})
     @Override
     public void doStart() throws SensorException {
 
-        startScan();
+        if (bleNetwork == null) {
+            logger.error("BLE network is not initialized");
+        }
+
+        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH}, 1);
+        }
+
+        System.out.println("config.device address: "+ config.deviceAddress);
+        bleNetwork.connectGatt(config.deviceAddress, gattCallback);
 
         eventThread = new HandlerThread("KestrelBallisticsThread");
         eventThread.start();
         Handler eventHandler = new Handler(eventThread.getLooper());
     }
 
-    private final ScanCallback scanCallback = new ScanCallback() {
-        @RequiresPermission(allOf = {Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN})
+
+    Queue<IGattDescriptor> descriptorWriteQueue = new LinkedList<>();
+
+    private GattCallback gattCallback = new GattCallback() {
+
         @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            BluetoothDevice device = result.getDevice();
-            String name = device.getName();
-            if (name != null && (name.toLowerCase().contains(config.serialNumber))) {
-                scanner.stopScan(this);
-                connectToDevice(device);
-            }
-        }
-    };
-
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
-    private void startScan() {
-        scanner = btAdapter.getBluetoothLeScanner();
-        ScanFilter filter = new ScanFilter.Builder()
-                // optionally filter by device name or service UUID
-                //.setDeviceName("Kestrel 5700")
-                .build();
-        ScanSettings settings = new ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                .build();
-        scanner.startScan(Collections.singletonList(filter), settings, scanCallback);
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private void connectToDevice(BluetoothDevice device) {
-        btGatt = device.connectGatt(context, false, gattCallback);
-    }
-
-
-    Queue<BluetoothGattDescriptor> descriptorWriteQueue = new LinkedList<>();
-
-    private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if ( newState == BluetoothProfile.STATE_CONNECTED ) {
-                btConnected = true;
-                gatt.discoverServices();
-            } else if ( newState == BluetoothProfile.STATE_DISCONNECTED ) {
-                // cleanup
-            }
+        public void onConnected(IGattClient gatt, int status) {
+            gattClient = gatt;
+            btConnected = true;
+            logger.info("Kestrel Weather Monitor is connected");
+            gattClient.discoverServices();
         }
 
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+        public void onDisconnected(IGattClient gatt, int status) {
+            btConnected = false;
+            logger.info("Kestrel Device is disconnected");
+        }
 
-            for ( BluetoothGattService svc : gatt.getServices() ) {
-                System.out.println("Kestrel --" + "Service: " + svc.getUuid());
-                for (BluetoothGattCharacteristic c : svc.getCharacteristics()) {
-                    System.out.println("Kestrel --"+ "  Char: " + c.getUuid() + " props=" + c.getProperties() + " perms=" + c.getPermissions());
+        @Override
+        public void onServicesDiscovered(IGattClient gatt, int status) {
+            IGattService enviroService = null;
+
+            for (IGattService svc : gatt.getServices()) {
+                System.out.println("Kestrel --" + "Service: " + svc.getType());
+                UUID uuid = svc.getType();
+
+                if (uuid.equals(ENVIRONMENTAL_SERVICE))
+                    enviroService = svc;
+
+                for (IGattCharacteristic c : svc.getCharacteristics()) {
+                    System.out.println("Kestrel --" + "  Char: " + c.getType() + " props=" + c.getProperties() + " perms=" + c.getPermissions());
                 }
             }
 
-            BluetoothGattService env = gatt.getService(ENVIRONMENTAL_SERVICE);
-            if ( env != null ) {
-                for (BluetoothGattCharacteristic ch : env.getCharacteristics()) {
 
-                    if (ch.equals(SENSOR_MEASUREMENTS_CHAR)) {
-                        sensorMeasurements = ch;
-                        if (sensorMeasurements != null)
-                            enableNotification(gatt, sensorMeasurements);
-                    } else if (ch.equals(DERIVED_MEASUREMENTS_1_CHAR)) {
-                        derivedMeasurementsOne = ch;
-                        if (derivedMeasurementsOne != null)
-                            enableNotification(gatt, derivedMeasurementsOne);
-                    } else if (ch.equals(DERIVED_MEASUREMENTS_2_CHAR)) {
-                        derivedMeasurementsTwo = ch;
-                        if (derivedMeasurementsTwo != null)
-                            enableNotification(gatt, derivedMeasurementsTwo);
-                    } else if (ch.equals(DERIVED_MEASUREMENTS_3_CHAR)) {
-                        derivedMeasurementsThree = ch;
-                        if (derivedMeasurementsThree != null)
-                            enableNotification(gatt, derivedMeasurementsThree);
-                    } else if (ch.equals(DERIVED_MEASUREMENTS_4_CHAR)) {
-                        derivedMeasurementsFour = ch;
-                        if (derivedMeasurementsFour != null)
-                            enableNotification(gatt, derivedMeasurementsFour);
-                    } else
-                        enableNotification(gatt, ch);
+            for (IGattCharacteristic characteristic : enviroService.getCharacteristics()) {
+                UUID uuid = characteristic.getType();
+
+                if (uuid.equals(SENSOR_MEASUREMENTS_CHAR)) {
+                    sensorMeasurements = characteristic;
+                    if (sensorMeasurements != null)
+                        enableNotification(sensorMeasurements);
+                } else if (uuid.equals(DERIVED_MEASUREMENTS_1_CHAR)) {
+                    derivedMeasurementsOne = characteristic;
+                    if (derivedMeasurementsOne != null)
+                        enableNotification(derivedMeasurementsOne);
+                } else if (uuid.equals(DERIVED_MEASUREMENTS_2_CHAR)) {
+                    derivedMeasurementsTwo = characteristic;
+                    if (derivedMeasurementsTwo != null)
+                        enableNotification(derivedMeasurementsTwo);
+                } else if (uuid.equals(DERIVED_MEASUREMENTS_3_CHAR)) {
+                    derivedMeasurementsThree = characteristic;
+                    if (derivedMeasurementsThree != null)
+                        enableNotification(derivedMeasurementsThree);
+                } else if (uuid.equals(DERIVED_MEASUREMENTS_4_CHAR)) {
+                    derivedMeasurementsFour = characteristic;
+                    if (derivedMeasurementsFour != null)
+                        enableNotification(derivedMeasurementsFour);
                 }
             }
-
         }
 
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        private void enableNotification(BluetoothGatt gatt, BluetoothGattCharacteristic ch) {
-            gatt.setCharacteristicNotification(ch, true);
-            BluetoothGattDescriptor cccd = ch.getDescriptor(CLIENT_CONFIG);
+        private void enableNotification(IGattCharacteristic ch) {
+            if (ch == null)
+                return;
+
+            gattClient.setCharacteristicNotification(ch, true);
+
+            Map<UUID,? extends IGattDescriptor> descriptors = ch.getDescriptors();
+
+            IGattDescriptor cccd = descriptors.get(CLIENT_CONFIG);
+
             if (cccd != null) {
-                cccd.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                cccd.setValue(ByteBuffer.wrap(IGattCharacteristic.ENABLE_NOTIFICATION_VALUE));
                 descriptorWriteQueue.add(cccd);
 
                 if (descriptorWriteQueue.size() == 1) {
-                    gatt.writeDescriptor(cccd);
+                    gattClient.writeDescriptor(cccd);
                 }
             }
         }
 
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        @Override public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+        @Override public void onDescriptorWrite(IGattClient gatt, IGattDescriptor descriptor, int status) {
             descriptorWriteQueue.poll();
             if (!descriptorWriteQueue.isEmpty()) {
                 gatt.writeDescriptor(descriptorWriteQueue.peek());
@@ -240,14 +243,14 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
         }
 
         @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            byte[] val = characteristic.getValue();
-            handleCharacteristicBytes(characteristic.getUuid(), val);
+        public void onCharacteristicChanged(IGattClient gatt, IGattField field) {
+            byte[] val = field.getValue().array();
+            handleCharacteristicBytes(field.getType(), val);
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if ( status != BluetoothGatt.GATT_SUCCESS ) {
+        public void onCharacteristicWrite(IGattClient gatt, IGattField field, int status) {
+            if ( status != IGattClient.GATT_SUCCESS ) {
                 System.out.println("Failed to write to characteristic");
             }
         }
@@ -328,13 +331,21 @@ public class Kestrel extends AbstractSensorModule<KestrelConfig> {
     }
 
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Override
     public void doStop() {
-        if (btGatt != null) {
-            btGatt.disconnect();
-            btGatt.close();
-            btGatt = null;
+        if (gattClient != null) {
+            gattClient.disconnect();
+            gattClient.close();
+            gattClient = null;
+        }
+
+        if (bleNetwork != null) {
+            try {
+                bleNetwork.stop();
+            } catch (SensorHubException e) {
+                logger.error("Error stopping BLE network");
+            }
+            bleNetwork = null;
         }
     }
 

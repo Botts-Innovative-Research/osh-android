@@ -13,6 +13,12 @@ dependencies {
   api 'javax.xml.stream:stax-api:1.0-2'
 //  implementation 'androidx.core:core:1.12.0'
 
+  testImplementation 'junit:junit:4.12'
+  androidTestImplementation 'androidx.test:core:1.5.0'
+  androidTestImplementation 'androidx.test:runner:1.5.2'
+  androidTestImplementation 'androidx.test:rules:1.5.0'
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
 android {
@@ -22,6 +28,7 @@ android {
   defaultConfig {
     minSdkVersion rootProject.minSdkVersion
     targetSdkVersion rootProject.targetSdkVersion
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
 
   compileOptions {
@@ -40,6 +47,10 @@ android {
       res.srcDirs = ['res']
       assets.srcDirs = ['assets']
     }
+
+    // Add this section for androidTest
+    androidTest {
+      java.srcDirs = ['src/androidTest/java']
+    }
   }
 }
-

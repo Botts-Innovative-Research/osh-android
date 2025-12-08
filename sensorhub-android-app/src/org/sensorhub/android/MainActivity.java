@@ -71,6 +71,7 @@ import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
+import org.sensorhub.impl.driver.flir.FlirOneCameraConfig;
 import org.sensorhub.impl.event.EventBus;
 import org.sensorhub.impl.module.InMemoryConfigDb;
 import org.sensorhub.impl.module.ModuleClassFinder;
@@ -80,9 +81,10 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
-import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
+
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
@@ -520,7 +522,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(polarConfig);
         }
 
-        // Kestrel Ballistics Weather
+        // Kestrel Weather
         enabled = prefs.getBoolean("kestrel_enabled", false);
         if (enabled) {
             KestrelConfig kestrelConfig = new KestrelConfig();
@@ -528,10 +530,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             kestrelConfig.name = "Kestrel Weather [" + deviceName + "]";
             kestrelConfig.autoStart = true;
             kestrelConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-//            kestrelConfig.device_name = "FE:BB:D9:8B:53:23";
-
-            kestrelConfig.serialNumber = prefs.getString("kestrel_serial", null);
-//                    prefs.getString("kestrel_device_address", "");
+            kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
 
             sensorhubConfig.add(kestrelConfig);
         }
@@ -573,7 +572,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             showVideo = true;
             sensorhubConfig.add(flironeConfig);
             addSosTConfig(flironeConfig, sosUser, sosPwd);
-        }*/
+        }
 
         // DJI Drone
         /*enabled = prefs.getBoolean("dji_enabled", false);

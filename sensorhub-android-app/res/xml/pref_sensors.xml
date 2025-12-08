@@ -207,13 +207,14 @@
             android:summary="Enable streaming of Kestrel Weather Meter"
             android:title="Kestrel Weather Data" />
 
-        <EditTextPreference
-            android:defaultValue=""
-            android:inputType="text"
-            android:key="kestrel_serial"
-            android:singleLine="true"
-            android:title="Kestrel Device Serial Number" />
-
+        <ListPreference
+            android:key="kestrel_device_address"
+            android:title="Select Kestrel Device"
+            android:entries="@array/bluetooth_scanned_address_list"
+            android:entryValues="@array/bluetooth_scanned_address_list"
+            android:summary="Choose a scanned Kestrel Bluetooth device"
+            android:dialogTitle="Select Device"
+            />
         <MultiSelectListPreference
             android:key="kestrel_options"
             android:title="Kestrel Weather Output Options"

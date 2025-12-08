@@ -11,6 +11,8 @@ dependencies {
   api project(':sensorhub-driver-videocam')
   api project(':sensorhub-process-vecmath')
   api project(':sensorhub-android-service')
+  testImplementation 'junit:junit:4.12'
+
 }
 
 android {

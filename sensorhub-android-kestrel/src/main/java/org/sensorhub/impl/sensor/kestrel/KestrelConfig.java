@@ -15,6 +15,7 @@ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
 package org.sensorhub.impl.sensor.kestrel;
 
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.api.config.DisplayInfo;
 import org.sensorhub.api.sensor.SensorConfig;
 
 import android.content.Context;
@@ -34,7 +35,11 @@ public class KestrelConfig extends SensorConfig
         this.moduleClass = Kestrel.class.getCanonicalName();
     }
 
+    @DisplayInfo(label="Serial Number", desc="Kestrel Weather Meter Serial Number")
     public String serialNumber;
+
+    @DisplayInfo(label="Device Address", desc="Kestrel Weather Meter Device Address")
+    public String deviceAddress;
 
     public static String getUid() {
         Context context = SensorHubService.getContext();

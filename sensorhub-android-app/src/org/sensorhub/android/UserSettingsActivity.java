@@ -19,6 +19,9 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -27,6 +30,8 @@ import android.hardware.Camera;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -35,12 +40,17 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+
+import androidx.annotation.RequiresPermission;
 import androidx.core.app.ActivityCompat;
 import android.text.InputType;
 import android.text.PrecomputedText;
 import android.util.Log;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -50,6 +60,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -57,7 +68,9 @@ import java.util.prefs.Preferences;
 
 public class UserSettingsActivity extends PreferenceActivity
 {
-    
+
+    private static final Logger log = LoggerFactory.getLogger(UserSettingsActivity.class);
+
     @Override
     public void onBuildHeaders(List<Header> target)
     {
@@ -342,12 +355,13 @@ public class UserSettingsActivity extends PreferenceActivity
 
             Preference kestrelEnabled = getPreferenceScreen().findPreference("kestrel_enabled");
             Preference kestrelOptions = getPreferenceScreen().findPreference("kestrel_options");
-            bindPreferenceSummaryToValue(findPreference("kestrel_serial"));
+//            bindPreferenceSummaryToValue(findPreference("kestrel_device_name"));
+//            bindPreferenceSummaryToValue(findPreference("kestrel_serial"));
 
-//            ListPreference kestrelDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("kestrel_device_address");
+            ListPreference kestrelDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("kestrel_device_address");
             kestrelEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 kestrelOptions.setEnabled((boolean) newValue);
-//                kestrelDeviceListPref.setEnabled((boolean) newValue);
+                kestrelDeviceListPref.setEnabled((boolean) newValue);
                 return true;
             });
 
@@ -371,25 +385,76 @@ public class UserSettingsActivity extends PreferenceActivity
 
                 if (!entries.isEmpty()) {
                     deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
-                    trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
-                    polarDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
-//                    kestrelDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
-
                     deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+
+                    trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
                     trupulseListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+
+                    polarDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
                     polarDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
-//                    kestrelDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                 } else {
                     deviceListPref.setEnabled(false);
-                    trupulseListPref.setEnabled(false);
-                    polarDeviceListPref.setEnabled(false);
-//                    kestrelDeviceListPref.setEnabled(false);
-
                     deviceListPref.setSummary("No paired Bluetooth devices found");
+
+                    trupulseListPref.setEnabled(false);
                     trupulseListPref.setSummary("No paired Bluetooth devices found");
+
+                    polarDeviceListPref.setEnabled(false);
                     polarDeviceListPref.setSummary("No paired Bluetooth devices found");
-//                    kestrelDeviceListPref.setSummary("No paired Bluetooth devices found");
                 }
+
+
+                List<CharSequence> scannedEntries = new ArrayList<>();
+                List<CharSequence> scannedEntryValues = new ArrayList<>();
+                Set<BluetoothDevice> scannedDevices = new HashSet<>();
+
+                BluetoothLeScanner scanner = btAdapter.getBluetoothLeScanner();
+
+                if (scanner != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                    }
+
+                    ScanCallback scanCallback = new ScanCallback() {
+                        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+                        @Override
+                        public void onScanResult(int callbackType, ScanResult result) {
+                            BluetoothDevice device = result.getDevice();
+                            if (!scannedDevices.contains(device)) {
+                                scannedDevices.add(device);
+
+                                String name = result.getDevice().getName();
+                                String mac = device.getAddress();
+                                System.out.println("devices: name:"+ name + "- mac: " + mac);
+                                scannedEntries.add(name != null ? name + " (" + mac + ")" : mac);
+                                scannedEntryValues.add(mac);
+                            }
+                        }
+                    };
+
+                    scanner.startScan(scanCallback);
+
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            if (ActivityCompat.checkSelfPermission(getContext(),
+                                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                                return;
+                            }
+                        }
+                        scanner.stopScan(scanCallback);
+
+                        if (!scannedEntries.isEmpty()) {
+                            kestrelDeviceListPref.setEntries(scannedEntries.toArray(new CharSequence[0]));
+                            kestrelDeviceListPref.setEntryValues(scannedEntryValues.toArray(new CharSequence[0]));
+                        } else {
+                            kestrelDeviceListPref.setEnabled(false);
+                            kestrelDeviceListPref.setSummary("No BLE devices found");
+                        }
+                    }, 10000);
+                }
+
             }
 
             meshtasticOptions.setEnabled(prefs.getBoolean(meshtasticEnabled.getKey(), false));

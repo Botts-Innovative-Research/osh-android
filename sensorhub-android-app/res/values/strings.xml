@@ -233,6 +233,9 @@
         <item></item>
     </string-array>
 
+    <string-array name="bluetooth_scanned_address_list">
+        <item></item>
+    </string-array>
     <string name="meshtastic_msg">Enter a message!</string>
     <string name="message_hint">Enter a message!</string>
     <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>
