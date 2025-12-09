@@ -30,7 +30,6 @@ dependencies {
     implementation project(':sensorhub-android-meshtastic')
     implementation project(':sensorhub-android-polar')
     implementation project(':sensorhub-driver-android')
-    implementation project(':sensorhub-android-kestrel')
 }
 
 android {

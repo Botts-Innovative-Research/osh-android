@@ -224,9 +224,6 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
         this.aContext = config.androidContext;
         BluetoothManager bluetoothManager = (BluetoothManager) aContext.getSystemService(Context.BLUETOOTH_SERVICE);
         aBleAdapter = bluetoothManager.getAdapter();
-
-        if (aBleAdapter == null)
-            throw new SensorHubException("bluetooth adapter is not available on this device");
     }
 
 
@@ -244,10 +241,6 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
     public void cleanup() throws SensorHubException
     {
         // TODO Auto-generated method stubs
-        stop();
-        scanner = null;
-        aBleAdapter = null;
-        aContext = null;
     }
 
 
@@ -262,9 +255,14 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
     @Override
     public void connectGatt(String address, GattCallback callback)
     {
+        if (aBleAdapter == null) {
+            log.error("BLE Adapter is null");
+            throw new IllegalStateException("BLE Adapter is null");
+        }
         BluetoothDevice btDevice = aBleAdapter.getRemoteDevice(address);
         GattClientImpl client = new GattClientImpl(aContext, btDevice, callback);
         client.connect();
+
         log.info("Connecting to BT device " + address + "...");
     }
 

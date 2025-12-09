@@ -20,6 +20,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -57,6 +58,9 @@ import net.opengis.swe.v20.DataBlock;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
+import org.sensorhub.android.comm.BluetoothManager;
+import org.sensorhub.android.comm.ble.BleConfig;
+import org.sensorhub.android.comm.ble.BleNetwork;
 import org.sensorhub.api.command.CommandData;
 import org.sensorhub.api.command.IStreamingControlInterface;
 import org.sensorhub.api.common.BigId;
@@ -71,7 +75,7 @@ import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
-import org.sensorhub.impl.driver.flir.FlirOneCameraConfig;
+//import org.sensorhub.impl.driver.flir.FlirOneCameraConfig;
 import org.sensorhub.impl.event.EventBus;
 import org.sensorhub.impl.module.InMemoryConfigDb;
 import org.sensorhub.impl.module.ModuleClassFinder;
@@ -178,7 +182,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         BLELocation,
         Meshtastic,
         PolarHRMonitor,
-        KestrelBallistics
+        Kestrel
     }
 
 
@@ -195,7 +199,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             boundService = null;
         }
     };
-
 
 
     protected void updateConfig(SharedPreferences prefs, String runName)
@@ -525,16 +528,26 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         // Kestrel Weather
         enabled = prefs.getBoolean("kestrel_enabled", false);
         if (enabled) {
+
+            BleConfig bleConf = new BleConfig();
+            bleConf.androidContext = getApplicationContext();
+            bleConf.id = "BLE_NETWORK";
+            bleConf.name = "Bluetooth LE Network";
+            bleConf.autoStart = true;
+            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
+
+            sensorhubConfig.add(bleConf);
+
             KestrelConfig kestrelConfig = new KestrelConfig();
             kestrelConfig.id = "KESTREL_WEATHER";
             kestrelConfig.name = "Kestrel Weather [" + deviceName + "]";
             kestrelConfig.autoStart = true;
             kestrelConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            kestrelConfig.networkID = "BLE_NETWORK";
             kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
 
             sensorhubConfig.add(kestrelConfig);
         }
-
 
         // AngelSensor
         /*enabled = prefs.getBoolean("angel_enabled", false);
@@ -603,8 +616,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
     {
-
-
         if (clientURL == null)
             return;
 
@@ -1380,7 +1391,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return prefs.getBoolean("polar_enabled", false)
                     && prefs.getStringSet("polar_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
-        else if (Sensors.KestrelBallistics.equals(sensor)) {
+        else if (Sensors.Kestrel.equals(sensor)) {
             return prefs.getBoolean("kestrel_enabled", false)
                     && prefs.getStringSet("kestrel_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }

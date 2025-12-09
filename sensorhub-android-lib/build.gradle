@@ -8,6 +8,8 @@ dependencies {
   api project(':sensorhub-driver-trupulse')
 //  api project(':sensorhub-driver-angelsensor')
   api project(':sensorhub-driver-android')
+//  api project(':sensorhub-android-kestrel')
+  api project(':sensorhub-driver-kestrel')
 //  api project(':sensorhub-android-flirone')
   //api project(':sensorhub-android-dji')
 //  api project(':sensorhub-storage-h2')
