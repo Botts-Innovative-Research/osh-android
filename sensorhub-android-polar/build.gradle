@@ -21,10 +21,12 @@ dependencies {
   implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
   implementation 'androidx.core:core:1.5.0'
 }
+configurations.configureEach {
+  exclude group: "ch.qos.logback"
+}
 
 android {
-
-
+  namespace 'org.sensorhub.impl.sensor.polar'
   compileSdkVersion rootProject.compileSdkVersion
   buildToolsVersion rootProject.buildToolsVersion
 

@@ -21,7 +21,12 @@ dependencies {
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
+configurations.configureEach {
+  exclude group: "ch.qos.logback"
+}
+
 android {
+  namespace 'org.sensorhub.android.service'
   compileSdkVersion rootProject.compileSdkVersion
   buildToolsVersion rootProject.buildToolsVersion
 
@@ -32,8 +37,8 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_11
-    targetCompatibility JavaVersion.VERSION_11
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
   }
 
   lintOptions {

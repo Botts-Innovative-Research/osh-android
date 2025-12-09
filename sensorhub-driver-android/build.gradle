@@ -15,7 +15,12 @@ dependencies {
 
 }
 
+configurations.configureEach {
+  exclude group: "ch.qos.logback"
+}
+
 android {
+  namespace 'org.sensorhub.impl.sensor.android'
   compileSdkVersion rootProject.compileSdkVersion
   buildToolsVersion rootProject.buildToolsVersion
 

@@ -417,42 +417,42 @@ public class UserSettingsActivity extends PreferenceActivity
                         }
                     }
 
-                    ScanCallback scanCallback = new ScanCallback() {
-                        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-                        @Override
-                        public void onScanResult(int callbackType, ScanResult result) {
-                            BluetoothDevice device = result.getDevice();
-                            if (!scannedDevices.contains(device)) {
-                                scannedDevices.add(device);
+//                    ScanCallback scanCallback = new ScanCallback() {
+//                        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+//                        @Override
+//                        public void onScanResult(int callbackType, ScanResult result) {
+//                            BluetoothDevice device = result.getDevice();
+//                            if (!scannedDevices.contains(device)) {
+//                                scannedDevices.add(device);
+//
+//                                String name = result.getDevice().getName();
+//                                String mac = device.getAddress();
+//                                System.out.println("devices: name:"+ name + "- mac: " + mac);
+//                                scannedEntries.add(name != null ? name + " (" + mac + ")" : mac);
+//                                scannedEntryValues.add(mac);
+//                            }
+//                        }
+//                    };
 
-                                String name = result.getDevice().getName();
-                                String mac = device.getAddress();
-                                System.out.println("devices: name:"+ name + "- mac: " + mac);
-                                scannedEntries.add(name != null ? name + " (" + mac + ")" : mac);
-                                scannedEntryValues.add(mac);
-                            }
-                        }
-                    };
+//                    scanner.startScan(scanCallback);
 
-                    scanner.startScan(scanCallback);
-
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            if (ActivityCompat.checkSelfPermission(getContext(),
-                                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                                return;
-                            }
-                        }
-                        scanner.stopScan(scanCallback);
-
-                        if (!scannedEntries.isEmpty()) {
-                            kestrelDeviceListPref.setEntries(scannedEntries.toArray(new CharSequence[0]));
-                            kestrelDeviceListPref.setEntryValues(scannedEntryValues.toArray(new CharSequence[0]));
-                        } else {
-                            kestrelDeviceListPref.setEnabled(false);
-                            kestrelDeviceListPref.setSummary("No BLE devices found");
-                        }
-                    }, 10000);
+//                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                            if (ActivityCompat.checkSelfPermission(getContext(),
+//                                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+//                                return;
+//                            }
+//                        }
+//                        scanner.stopScan(scanCallback);
+//
+//                        if (!scannedEntries.isEmpty()) {
+//                            kestrelDeviceListPref.setEntries(scannedEntries.toArray(new CharSequence[0]));
+//                            kestrelDeviceListPref.setEntryValues(scannedEntryValues.toArray(new CharSequence[0]));
+//                        } else {
+//                            kestrelDeviceListPref.setEnabled(false);
+//                            kestrelDeviceListPref.setSummary("No BLE devices found");
+//                        }
+//                    }, 10000);
                 }
 
             }

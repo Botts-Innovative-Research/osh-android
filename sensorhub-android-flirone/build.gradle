@@ -11,7 +11,12 @@ dependencies {
   api fileTree(dir: 'libs', include: ['*.jar'])
 }
 
+configurations.configureEach {
+  exclude group: "ch.qos.logback"
+}
+
 android {
+  namespace 'org.sensorhub.impl.driver.flir'
   compileSdkVersion rootProject.compileSdkVersion
   buildToolsVersion rootProject.buildToolsVersion
 

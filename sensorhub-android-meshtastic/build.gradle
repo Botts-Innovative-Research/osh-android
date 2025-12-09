@@ -16,6 +16,18 @@ dependencies {
     implementation project(':sensorhub-driver-android')
 }
 
+configurations.configureEach {
+    exclude group: "ch.qos.logback"
+}
+
+
 android {
-    compileSdk = 28
+    namespace 'org.sensorhub.impl.sensor.meshtastic'
+    compileSdkVersion rootProject.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.minSdkVersion   // ← important
+        targetSdkVersion rootProject.targetSdkVersion
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
 }

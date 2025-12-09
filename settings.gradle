@@ -4,62 +4,65 @@ gradle.ext.oshCoreDir = "$includeBaseDir/osh-core"
 
 // include builds from other repos
 def repos = [
-    'osh-core': [
-        'lib-ogc/swe-common-core',
-        'lib-ogc/swe-common-om',
-        'lib-ogc/sensorml-core',
-        'lib-ogc/ogc-services-common',
-        'lib-ogc/ogc-services-swe',
-        'lib-ogc/ogc-services-sos',
-        'lib-ogc/ogc-services-sps',
-        'lib-ogc/sensorml-core',
-        'lib-ogc/sensorml-core',
-        'sensorhub-core',
-        'sensorhub-service-swe',
-        'sensorhub-service-sweapi',
-        'sensorhub-service-consys',
-        'sensorhub-utils-kryo',
-        'sensorhub-datastore-h2',
-    ],
-    'osh-addons': [
-        'comm/sensorhub-comm-ble',
-        'comm/sensorhub-comm-ble-dbus',
-        'services/sensorhub-service-video',
-        'sensors/video/sensorhub-driver-videocam',
-        'sensors/positioning/sensorhub-driver-trupulse',
+        'osh-core'    : [
+                'lib-ogc/swe-common-core',
+                'lib-ogc/swe-common-om',
+                'lib-ogc/sensorml-core',
+                'lib-ogc/ogc-services-common',
+                'lib-ogc/ogc-services-swe',
+                'lib-ogc/ogc-services-sos',
+                'lib-ogc/ogc-services-sps',
+                'lib-ogc/sensorml-core',
+                'lib-ogc/sensorml-core',
+                'sensorhub-core',
+                'sensorhub-service-swe',
+                'sensorhub-service-sweapi',
+                'sensorhub-service-consys',
+                'sensorhub-utils-kryo',
+                'sensorhub-datastore-h2',
+        ],
+        'osh-addons'  : [
+                'comm/sensorhub-comm-ble',
+                'comm/sensorhub-comm-ble-dbus',
+                'services/sensorhub-service-video',
+                'sensors/video/sensorhub-driver-videocam',
+                'sensors/positioning/sensorhub-driver-trupulse',
 //        'sensors/others/sensorhub-driver-meshtastic',
-        'sensors/weather/sensorhub-driver-kestrel',
-        'sensors/health/sensorhub-driver-angelsensor',
-        'processing/sensorhub-process-vecmath',
-        'processing/sensorhub-process-geoloc'
-    ]
+                'sensors/weather/sensorhub-driver-kestrel',
+                'sensors/health/sensorhub-driver-angelsensor',
+                'processing/sensorhub-process-vecmath',
+                'processing/sensorhub-process-geoloc'
+        ],
+        'botts-addons': [
+                'clients/sensorhub-client-consys-okhttp'
+        ]
 ]
 
 repos.each { repoName, modules ->
-  File repoDir = new File(includeBaseDir, repoName).getCanonicalFile()
-  if (!repoDir.exists())
-    throw new GradleException('Repository ' + repoName + ' is missing. Please update submodules using "git submodule update --init --recursive"')
-  modules.each { moduleName ->
-    File moduleDir = new File(repoDir, moduleName).getCanonicalFile()
-    // include all folders with build.gradle as subprojects
-    FileTree subprojects = fileTree(moduleDir).include('**/build.gradle')
-    subprojects.files.each { File f ->
-      File projectFolder = f.parentFile
-      String projectName = projectFolder.name
-      include projectName
-      project(':' + projectName).projectDir = projectFolder
+    File repoDir = new File(includeBaseDir, repoName).getCanonicalFile()
+    if (!repoDir.exists())
+        throw new GradleException('Repository ' + repoName + ' is missing. Please update submodules using "git submodule update --init --recursive"')
+    modules.each { moduleName ->
+        File moduleDir = new File(repoDir, moduleName).getCanonicalFile()
+        // include all folders with build.gradle as subprojects
+        FileTree subprojects = fileTree(moduleDir).include('**/build.gradle')
+        subprojects.files.each { File f ->
+            File projectFolder = f.parentFile
+            String projectName = projectFolder.name
+            include projectName
+            project(':' + projectName).projectDir = projectFolder
+        }
     }
-  }
 }
 
 // include all folders with build.gradle as subprojects
 FileTree subprojects = fileTree(rootDir).include('**/build.gradle').exclude('submodules')
 subprojects.files.each { File f ->
-  File projectFolder = f.parentFile
-  if (projectFolder != rootDir) {
-    String projectName = projectFolder.name
-    include projectName
-    project(':' + projectName).projectDir = projectFolder
-  }
+    File projectFolder = f.parentFile
+    if (projectFolder != rootDir) {
+        String projectName = projectFolder.name
+        include projectName
+        project(':' + projectName).projectDir = projectFolder
+    }
 }
 
