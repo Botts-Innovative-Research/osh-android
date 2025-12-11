@@ -34,7 +34,8 @@ def repos = [
                 'processing/sensorhub-process-geoloc'
         ],
         'botts-addons': [
-                'clients/sensorhub-client-consys-okhttp'
+                'clients/sensorhub-client-consys-okhttp',
+//                'sensors/video/sensorhub-driver-flirone'
         ]
 ]
 

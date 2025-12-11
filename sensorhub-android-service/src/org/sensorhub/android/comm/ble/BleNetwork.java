@@ -42,6 +42,7 @@ import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 
 
+
 public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork<BleConfig>
 {
     static final Logger log = LoggerFactory.getLogger(BleNetwork.class.getSimpleName());
@@ -49,7 +50,7 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
     Context aContext;
     BluetoothAdapter aBleAdapter;
 
-    IDeviceScanner scanner;
+//    IDeviceScanner scanner;
     
     @Override
     public String getInterfaceName()
@@ -76,139 +77,140 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
     @Override
     public IDeviceScanner getDeviceScanner()
     {
-        if (scanner == null)
+        /*if (scanner == null)
             scanner = new BleDeviceScanner();
-        return scanner;
+        return scanner;*/
+        return null;
     }
 
-    class BleDeviceScanner implements IDeviceScanner {
-        private BluetoothLeScanner bluetoothLeScanner;
-        private ScanCallback scanCallback;
-        private boolean isScanning = false;
-        private IDeviceScanCallback deviceScanCallback;
-
-        @Override
-        public void startScan(IDeviceScanCallback callback) {
-            startScan(callback, null);
-        }
-
-        @SuppressLint("MissingPermission")
-        @Override
-        public void startScan(IDeviceScanCallback callback, String idRegex) {
-            log.debug("Starting Bluetooth LE scan");
-
-            if (isScanning)
-                return;
-
-            if (aBleAdapter == null)
-                return;
-
-            this.deviceScanCallback = callback;
-            bluetoothLeScanner = aBleAdapter.getBluetoothLeScanner();
-
-            if (bluetoothLeScanner == null)
-                return;
-
-            scanCallback = new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-                    if (result == null || result.getDevice() == null)
-                        return;
-
-                    BluetoothDevice device = result.getDevice();
-                    String address = device.getAddress();
-                    @SuppressLint("MissingPermission") String  name = device.getName();
-
-                    log.debug("device found: name: {} address: {} rssi: {}" + name + address, result.getRssi());
-
-                    BleDeviceInfo deviceInfo = new BleDeviceInfo(device, result.getRssi());
-
-                    if (deviceScanCallback != null)
-                        deviceScanCallback.onDeviceFound(deviceInfo);
-                }
-
-                @Override
-                public void onScanFailed(int errorCode) {
-                    isScanning = false;
-                    if (deviceScanCallback != null)
-                        deviceScanCallback.onScanError(new Throwable("Scan Failed with error: " + errorCode));
-                }
-            };
-
-            ScanSettings.Builder settingsBuilder = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setReportDelay(0);
-
-            List<ScanFilter> filters = new ArrayList<>();
-            // filters.add(new ScanFilter.Builder().setDeviceName("DeviceName").build());
-
-            bluetoothLeScanner.startScan(filters, settingsBuilder.build(), scanCallback);
-            isScanning = true;
-        }
-
-        @SuppressLint("MissingPermission")
-        @Override
-        public void stopScan() {
-            log.debug("Stopping Bluetooth LE scan");
-            if (scanner.isScanning()) {
-                scanner.stopScan();
-                scanner = null;
-            }
-            if (bluetoothLeScanner != null)
-                bluetoothLeScanner.stopScan(scanCallback);
-            isScanning = false;
-            scanCallback = null;
-            deviceScanCallback = null;
-        }
-
-        @Override
-        public boolean isScanning() {
-            return isScanning;
-        }
-    }
-
-    public static class BleDeviceInfo implements IDeviceInfo {
-
-        private final BluetoothDevice device;
-        private final int rssi;
-
-        public BleDeviceInfo(BluetoothDevice device, int rssi){
-            this.device = device;
-            this.rssi = rssi;
-        }
-
-        @Override
-        public String getType() {
-            return null;
-        }
-
-        @Override
-        public String getSignalLevel() {
-            return String.valueOf(rssi);
-        }
-
-        @Override
-        public ICommConfig getCommConfig() {
-            return null;
-        }
-
-        @SuppressLint("MissingPermission")
-        public String getName() {
-            return device.getName();
-        }
-
-        public String getAddress() {
-            return device.getAddress();
-        }
-
-        public int getRssi() {
-            return rssi;
-        }
-
-        public BluetoothDevice getDevice() {
-            return device;
-        }
-    }
+//    class BleDeviceScanner implements IDeviceScanner {
+//        private BluetoothLeScanner bluetoothLeScanner;
+//        private ScanCallback scanCallback;
+//        private boolean isScanning = false;
+//        private IDeviceScanCallback deviceScanCallback;
+//
+//        @Override
+//        public void startScan(IDeviceScanCallback callback) {
+//            startScan(callback, null);
+//        }
+//
+//        @SuppressLint("MissingPermission")
+//        @Override
+//        public void startScan(IDeviceScanCallback callback, String idRegex) {
+//            log.debug("Starting Bluetooth LE scan");
+//
+//            if (isScanning)
+//                return;
+//
+//            if (aBleAdapter == null)
+//                return;
+//
+//            this.deviceScanCallback = callback;
+//            bluetoothLeScanner = aBleAdapter.getBluetoothLeScanner();
+//
+//            if (bluetoothLeScanner == null)
+//                return;
+//
+//            scanCallback = new ScanCallback() {
+//                @Override
+//                public void onScanResult(int callbackType, ScanResult result) {
+//                    if (result == null || result.getDevice() == null)
+//                        return;
+//
+//                    BluetoothDevice device = result.getDevice();
+//                    String address = device.getAddress();
+//                    @SuppressLint("MissingPermission") String  name = device.getName();
+//
+//                    log.debug("device found: name: {} address: {} rssi: {}" + name + address, result.getRssi());
+//
+//                    BleDeviceInfo deviceInfo = new BleDeviceInfo(device, result.getRssi());
+//
+//                    if (deviceScanCallback != null)
+//                        deviceScanCallback.onDeviceFound(deviceInfo);
+//                }
+//
+//                @Override
+//                public void onScanFailed(int errorCode) {
+//                    isScanning = false;
+//                    if (deviceScanCallback != null)
+//                        deviceScanCallback.onScanError(new Throwable("Scan Failed with error: " + errorCode));
+//                }
+//            };
+//
+//            ScanSettings.Builder settingsBuilder = new ScanSettings.Builder()
+//                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+//                    .setReportDelay(0);
+//
+//            List<ScanFilter> filters = new ArrayList<>();
+//            // filters.add(new ScanFilter.Builder().setDeviceName("DeviceName").build());
+//
+//            bluetoothLeScanner.startScan(filters, settingsBuilder.build(), scanCallback);
+//            isScanning = true;
+//        }
+//
+//        @SuppressLint("MissingPermission")
+//        @Override
+//        public void stopScan() {
+//            log.debug("Stopping Bluetooth LE scan");
+//            if (scanner.isScanning()) {
+//                scanner.stopScan();
+//                scanner = null;
+//            }
+//            if (bluetoothLeScanner != null)
+//                bluetoothLeScanner.stopScan(scanCallback);
+//            isScanning = false;
+//            scanCallback = null;
+//            deviceScanCallback = null;
+//        }
+//
+//        @Override
+//        public boolean isScanning() {
+//            return isScanning;
+//        }
+//    }
+//
+//    public static class BleDeviceInfo implements IDeviceInfo {
+//
+//        private final BluetoothDevice device;
+//        private final int rssi;
+//
+//        public BleDeviceInfo(BluetoothDevice device, int rssi){
+//            this.device = device;
+//            this.rssi = rssi;
+//        }
+//
+//        @Override
+//        public String getType() {
+//            return null;
+//        }
+//
+//        @Override
+//        public String getSignalLevel() {
+//            return String.valueOf(rssi);
+//        }
+//
+//        @Override
+//        public ICommConfig getCommConfig() {
+//            return null;
+//        }
+//
+//        @SuppressLint("MissingPermission")
+//        public String getName() {
+//            return device.getName();
+//        }
+//
+//        public String getAddress() {
+//            return device.getAddress();
+//        }
+//
+//        public int getRssi() {
+//            return rssi;
+//        }
+//
+//        public BluetoothDevice getDevice() {
+//            return device;
+//        }
+//    }
 
     @Override
     public Collection<? extends INetworkInfo> getAvailableNetworks()
@@ -216,7 +218,6 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
         // TODO Auto-generated method stub
         return null;
     }
-
 
     @Override
     public void start() throws SensorHubException
@@ -226,14 +227,13 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
         aBleAdapter = bluetoothManager.getAdapter();
     }
 
-
     @Override
     public void stop() throws SensorHubException
     {
         // TODO Auto-generated method stub
 
-        if (scanner != null && scanner.isScanning())
-            scanner.stopScan();
+//        if (scanner != null && scanner.isScanning())
+//            scanner.stopScan();
     }
 
 
@@ -255,16 +255,14 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
     @Override
     public void connectGatt(String address, GattCallback callback)
     {
-        if (aBleAdapter == null) {
-            log.error("BLE Adapter is null");
-            throw new IllegalStateException("BLE Adapter is null");
-        }
         BluetoothDevice btDevice = aBleAdapter.getRemoteDevice(address);
         GattClientImpl client = new GattClientImpl(aContext, btDevice, callback);
         client.connect();
-
         log.info("Connecting to BT device " + address + "...");
     }
 
+    public void setContext(Context context) {
+        this.aContext = context;
+    }
 }
 

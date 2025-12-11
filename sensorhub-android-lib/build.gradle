@@ -6,10 +6,10 @@ ext.details = 'OSH library for Android'
 dependencies {
   api project(':sensorhub-android-service')
   api project(':sensorhub-driver-trupulse')
-//  api project(':sensorhub-driver-angelsensor')
+  api project(':sensorhub-driver-angelsensor')
   api project(':sensorhub-driver-android')
-//  api project(':sensorhub-android-kestrel')
   api project(':sensorhub-driver-kestrel')
+//  api project(':sensorhub-driver-flirone')
   api project(':sensorhub-client-consys-okhttp')
 //  api project(':sensorhub-android-flirone')
   //api project(':sensorhub-android-dji')

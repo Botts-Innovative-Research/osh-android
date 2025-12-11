@@ -205,7 +205,7 @@
             android:defaultValue="false"
             android:key="kestrel_enabled"
             android:summary="Enable streaming of Kestrel Weather Meter"
-            android:title="Kestrel Weather Data" />
+            android:title="Kestrel Weather Meter" />
 
         <ListPreference
             android:key="kestrel_device_address"

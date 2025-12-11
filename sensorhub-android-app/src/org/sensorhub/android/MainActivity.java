@@ -63,6 +63,7 @@ import org.sensorhub.android.comm.ble.BleNetwork;
 import org.sensorhub.api.command.CommandData;
 import org.sensorhub.api.command.IStreamingControlInterface;
 import org.sensorhub.api.common.BigId;
+import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
@@ -84,6 +85,7 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.angel.AngelSensorConfig;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
@@ -514,17 +516,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(polarConfig);
         }
 
-        // Kestrel Weather
+//        // Kestrel Weather
+
         enabled = prefs.getBoolean("kestrel_enabled", false);
         if (enabled) {
-
             BleConfig bleConf = new BleConfig();
-            bleConf.androidContext = this.getApplicationContext();
             bleConf.id = "BLE_NETWORK";
-            bleConf.name = "Bluetooth LE Network";
-            bleConf.autoStart = true;
             bleConf.moduleClass = BleNetwork.class.getCanonicalName();
-
+            bleConf.androidContext = this.getApplicationContext();
+            bleConf.autoStart = true;
             sensorhubConfig.add(bleConf);
 
             KestrelConfig kestrelConfig = new KestrelConfig();
@@ -538,29 +538,44 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(kestrelConfig);
         }
 
+        // FLIR One Edge sensor
+//        enabled = prefs.getBoolean("flirone_enabled", false);
+//        if (enabled)
+//        {
+//
+//            // perhaps do a wireless comm module
+//            FlirOneConfig flironeConfig = new FlirOneConfig();
+//            flironeConfig.id = "FLIRONE_EDGE_SENSOR";
+//            flironeConfig.name = "FLIR One Thermal Edge Camera [" + deviceName + "]";
+//            flironeConfig.autoStart = true;
+////            flironeConfig.androidContext = this.getApplicationContext();
+////            flironeConfig.camPreviewTexture = boundService.getVideoTexture();
+//            showVideo = true;
+//            sensorhubConfig.add(flironeConfig);
+//        }
+
         // AngelSensor
-        /*enabled = prefs.getBoolean("angel_enabled", false);
-        if (enabled)
-        {
-            BleConfig bleConf = new BleConfig();
-            bleConf.id = "BLE";
-            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
-            bleConf.androidContext = this.getApplicationContext();
-            bleConf.autoStart = true;
-            sensorhubConfig.add(bleConf);
+//        enabled = prefs.getBoolean("angel_enabled", false);
+//        if (enabled)
+//        {
+//            BleConfig bleConf = new BleConfig();
+//            bleConf.id = "BLE";
+//            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
+//            bleConf.androidContext = this.getApplicationContext();
+//            bleConf.autoStart = true;
+//            sensorhubConfig.add(bleConf);
+//
+//            AngelSensorConfig angelConfig = new AngelSensorConfig();
+//            angelConfig.id = "ANGEL_SENSOR";
+//            angelConfig.name = "Angel Sensor [" + deviceName + "]";
+//            angelConfig.autoStart = true;
+//            angelConfig.networkID = bleConf.id;
+//            //angelConfig.btAddress = "00:07:80:79:04:AF"; // mike
+//            //angelConfig.btAddress = "00:07:80:03:0E:0A"; // alex
+//            angelConfig.btAddress = prefs.getString("angel_address", null);
+//            sensorhubConfig.add(angelConfig);
 
-            AngelSensorConfig angelConfig = new AngelSensorConfig();
-            angelConfig.id = "ANGEL_SENSOR";
-            angelConfig.name = "Angel Sensor [" + deviceName + "]";
-            angelConfig.autoStart = true;
-            angelConfig.networkID = bleConf.id;
-            //angelConfig.btAddress = "00:07:80:79:04:AF"; // mike
-            //angelConfig.btAddress = "00:07:80:03:0E:0A"; // alex
-            angelConfig.btAddress = prefs.getString("angel_address", null);
-            sensorhubConfig.add(angelConfig);
-            addSosTConfig(angelConfig, sosUser, sosPwd);
-        }
-
+/**
         // FLIR One sensor
         enabled = prefs.getBoolean("flirone_enabled", false);
         if (enabled)
@@ -592,12 +607,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }*/
 
         if(isApiServiceEnabled){
-            //add connected sys service
+            // add connected sys service
             System.out.println("Connected Systems Service enabled");
             sensorhubConfig.add(conSysApiService);
         }
         if(isSosServiceEnabled){
-            //if off add sos service
+            // add sos service
             System.out.println("SOS Service enabled");
             sensorhubConfig.add(sosConfig);
         }
@@ -694,6 +709,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         TextureView textureView = findViewById(R.id.video);
         textureView.setSurfaceTextureListener(this);
 
+
+        hasBluetoothPermissions();
+
+        checkForPermissions();
         // bind to SensorHub service
         Intent intent = new Intent(this, SensorHubService.class);
         startService(intent);  // ADD THIS LINE
@@ -703,7 +722,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         displayHandler = new Handler(Looper.getMainLooper());
 
         setupBroadcastReceivers();
-        checkForPermissions();
         requestBatteryOptimizationExemption();
 
         // Due to changes with OSH, it may be best to create and start the hub immediately
@@ -711,6 +729,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 //        boundService.initSensorhub();
     }
 
+    private boolean hasBluetoothPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // Older versions handled by existing checks
+    }
 
     Menu optionsMenu;
 
@@ -764,16 +789,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             showMeshtasticDialog();
         }
-//        else if (id == R.id.action_restart){
-//            stopListeningForEvents();
-//            stopRefreshingStatus();
-//
-//            if (boundService != null)
-//              boundService.stopSensorHub();
-//
-//            restartSensorHub();
-//
-//        }
         else if(id == R.id.action_status)
         {
             Intent statusIntent = new Intent(this, AppStatusActivity.class);
@@ -1515,6 +1530,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         System.out.println(e.getSource());
         if (e instanceof ModuleEvent)
         {
+
             // start refreshing status on first module loaded
             if (!oshStarted && ((ModuleEvent) e).getType() == ModuleEvent.Type.LOADED)
             {
