@@ -207,6 +207,12 @@
             android:summary="Enable streaming of Kestrel Weather Meter"
             android:title="Kestrel Weather Meter" />
 
+        <Preference
+            android:key="scan_ble_devices"
+            android:title="Scan for BLE Devices"
+            android:summary="Refresh the list of BLE Devices"
+            />
+
         <ListPreference
             android:key="kestrel_device_address"
             android:title="Select Kestrel Device"
@@ -215,6 +221,7 @@
             android:summary="Choose a scanned Kestrel Bluetooth device"
             android:dialogTitle="Select Device"
             />
+
         <MultiSelectListPreference
             android:key="kestrel_options"
             android:title="Kestrel Weather Output Options"

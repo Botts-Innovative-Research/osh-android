@@ -23,11 +23,14 @@ But also other sensors connected via USB, Bluetooth or Bluetooth Smart:
 - FLIR One Thermal Camera (USB)
 - Trupulse 360 Range Finder (Bluetooth)
 - Angel Sensor Wrist Band (Bluetooth Smart)
+- Kestrel Weather Meeter (Bluetooth LE)
+- Polar Heart Rate Monitor (Bluetooth)
+- Meshtastic (Bluetooth)
 
 
 ## Build
 
-Building has been tested with Gradle 7.2 and Android Studio 3.2.1.
+Building has been tested with Gradle 7.5 and Android Studio 3.2.1 and JDK 17.
 
 ### Prerequisites
 - Android SDK and set its path in the [local.properties](local.properties)
@@ -36,8 +39,7 @@ Building has been tested with Gradle 7.2 and Android Studio 3.2.1.
 ### Using Command Line
 
 ```bash
-cd sensorhub-android-app
-../gradlew build
+./gradlew build -x test -x javadoc -x lintDebug
 ```
 
 The APK will be located in: `sensorhub-android-app/build/outputs/apk/debug`
@@ -86,7 +88,8 @@ You'll also have to enable transactional operations on the server side so the ph
 - Swipe right or go back to the main Settings menu
 - Click on the **Sensors** tab to enable/disable the sensors
 
-> **Note**: You must enable **Network Location Data**
+[//]: # (> **Note**: You must enable **Network Location Data**)
+> 
 - If using video or audio, configure:
   - **Video Settings**
   - **Audio Settings**
