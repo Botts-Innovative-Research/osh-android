@@ -23,7 +23,7 @@ But also other sensors connected via USB, Bluetooth or Bluetooth Smart:
 - FLIR One Thermal Camera (USB)
 - Trupulse 360 Range Finder (Bluetooth)
 - Angel Sensor Wrist Band (Bluetooth Smart)
-- Kestrel Weather Meeter (Bluetooth LE)
+- Kestrel Weather Meter (Bluetooth LE)
 - Polar Heart Rate Monitor (Bluetooth)
 - Meshtastic (Bluetooth)
 
@@ -88,8 +88,6 @@ You'll also have to enable transactional operations on the server side so the ph
 - Swipe right or go back to the main Settings menu
 - Click on the **Sensors** tab to enable/disable the sensors
 
-[//]: # (> **Note**: You must enable **Network Location Data**)
-> 
 - If using video or audio, configure:
   - **Video Settings**
   - **Audio Settings**
