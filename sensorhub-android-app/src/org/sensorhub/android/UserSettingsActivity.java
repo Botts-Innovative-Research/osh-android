@@ -1,16 +1,15 @@
 /***************************** BEGIN LICENSE BLOCK ***************************
 
-The contents of this file are subject to the Mozilla Public License, v. 2.0.
-If a copy of the MPL was not distributed with this file, You can obtain one
-at http://mozilla.org/MPL/2.0/.
+ The contents of this file are subject to the Mozilla Public License, v. 2.0.
+ If a copy of the MPL was not distributed with this file, You can obtain one
+ at http://mozilla.org/MPL/2.0/.
 
-Software distributed under the License is distributed on an "AS IS" basis,
-WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-for the specific language governing rights and limitations under the License.
- 
-Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
- 
-******************************* END LICENSE BLOCK ***************************/
+ Software distributed under the License is distributed on an "AS IS" basis,
+ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ for the specific language governing rights and limitations under the License.
+
+ Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
+ ******************************* END LICENSE BLOCK ***************************/
 
 package org.sensorhub.android;
 
@@ -19,6 +18,9 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -26,19 +28,25 @@ import android.hardware.Camera;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import androidx.core.app.ActivityCompat;
 import android.text.InputType;
-import android.text.PrecomputedText;
 import android.util.Log;
 import android.widget.BaseAdapter;
+
+import androidx.annotation.RequiresPermission;
+import androidx.core.app.ActivityCompat;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URL;
@@ -46,72 +54,59 @@ import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
 
 
-public class UserSettingsActivity extends PreferenceActivity
-{
-    
+public class UserSettingsActivity extends PreferenceActivity {
+
+    private static final Logger log = LoggerFactory.getLogger(UserSettingsActivity.class);
+
     @Override
-    public void onBuildHeaders(List<Header> target)
-    {
+    public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.pref_headers, target);
     }
 
-    
+
     /*
      * A preference value change listener that updates the preference's summary to reflect its new value.
      */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener()
-    {
+    private static final Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
-        public boolean onPreferenceChange(Preference preference, Object value)
-        {
+        public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
-            
-            if (preference instanceof ListPreference)
-            {
-                ListPreference listPreference = (ListPreference) preference;
+
+            if (preference instanceof ListPreference listPreference) {
                 int index = listPreference.findIndexOfValue(stringValue);
                 preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
-            }
-            else if (preference.getKey().startsWith("video_res"))
-            {
-                PreferenceScreen presetSettings = (PreferenceScreen)preference;
-                String frameSize = ((ListPreference)presetSettings.getPreference(0)).getValue();
-                String minBitrate = ((EditTextPreference)presetSettings.getPreference(1)).getText();
-                String maxBitrate = ((EditTextPreference)presetSettings.getPreference(2)).getText();
+            } else if (preference.getKey().startsWith("video_res")) {
+                PreferenceScreen presetSettings = (PreferenceScreen) preference;
+                String frameSize = ((ListPreference) presetSettings.getPreference(0)).getValue();
+                String minBitrate = ((EditTextPreference) presetSettings.getPreference(1)).getText();
+                String maxBitrate = ((EditTextPreference) presetSettings.getPreference(2)).getText();
                 presetSettings.setSummary(frameSize + " @ " + minBitrate + "-" + maxBitrate + " kbits/s");
-                ((BaseAdapter)presetSettings.getRootAdapter()).notifyDataSetChanged();
-            }
-            else
-            {
+                ((BaseAdapter) presetSettings.getRootAdapter()).notifyDataSetChanged();
+            } else {
                 preference.setSummary(stringValue);
             }
-            
+
             // detect errors
-            if (preference.getKey().equals("sos_uri"))
-            {
-                try
-                {
+            if (preference.getKey().equals("sos_uri")) {
+                try {
                     URL url = new URL(value.toString());
                     if (!url.getProtocol().equals("http") && !url.getProtocol().equals("https"))
                         throw new Exception("SOS URL must be HTTP or HTTPS");
-                }
-                catch (Exception e)
-                {
-                    AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(preference.getContext());
+                } catch (Exception e) {
+                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(preference.getContext());
                     dlgAlert.setMessage("Invalid SOS URL");
                     dlgAlert.setTitle(e.getMessage());
                     dlgAlert.setPositiveButton("OK", null);
                     dlgAlert.setCancelable(true);
-                    dlgAlert.create().show();                
+                    dlgAlert.create().show();
                 }
             }
-            
+
             return true;
         }
     };
@@ -126,8 +121,7 @@ public class UserSettingsActivity extends PreferenceActivity
      *
      * @see #sBindPreferenceSummaryToValueListener
      */
-    private static void bindPreferenceSummaryToValue(Preference preference)
-    {
+    private static void bindPreferenceSummaryToValue(Preference preference) {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
@@ -136,7 +130,7 @@ public class UserSettingsActivity extends PreferenceActivity
             preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    ((PreferenceScreen)preference).getDialog().setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    ((PreferenceScreen) preference).getDialog().setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
                             sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, "");
@@ -150,17 +144,15 @@ public class UserSettingsActivity extends PreferenceActivity
         // Trigger the listener immediately with the preference's current value.
         sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
     }
-    
+
 
     /*
      * Fragment for general preferences
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment
-    {
+    public static class GeneralPreferenceFragment extends PreferenceFragment {
         @Override
-        public void onCreate(Bundle savedInstanceState)
-        {
+        public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             bindPreferenceSummaryToValue(findPreference("device_name"));
@@ -211,17 +203,21 @@ public class UserSettingsActivity extends PreferenceActivity
             });
         }
     }
-    
-    
+
+
     /*
      * Fragment for sensor preferences
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class SensorPreferenceFragment extends PreferenceFragment
-    {
+    public static class SensorPreferenceFragment extends PreferenceFragment {
+
+        List<CharSequence> scannedEntries = new ArrayList<>();
+        List<CharSequence> scannedEntryValues = new ArrayList<>();
+        Set<BluetoothDevice> scannedDevices = new HashSet<>();
+
+
         @Override
-        public void onCreate(Bundle savedInstanceState)
-        {
+        public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_sensors);
             bindPreferenceSummaryToValue(findPreference("angel_address"));
@@ -325,7 +321,7 @@ public class UserSettingsActivity extends PreferenceActivity
             Preference meshtasticEnabled = getPreferenceScreen().findPreference("meshtastic_enabled");
             Preference meshtasticOptions = getPreferenceScreen().findPreference("meshtastic_options");
 
-            ListPreference deviceListPref = (ListPreference) getPreferenceScreen().findPreference("meshtastic_device_address");
+            ListPreference meshDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("meshtastic_device_address");
 
 
             Preference polarEnabled = getPreferenceScreen().findPreference("polar_enabled");
@@ -337,8 +333,40 @@ public class UserSettingsActivity extends PreferenceActivity
                 return true;
             });
 
+
+            Preference kestrelEnabled = getPreferenceScreen().findPreference("kestrel_enabled");
+            Preference kestrelOptions = getPreferenceScreen().findPreference("kestrel_options");
+//            bindPreferenceSummaryToValue(findPreference("kestrel_device_name"));
+//            bindPreferenceSummaryToValue(findPreference("kestrel_serial"));
+
+            ListPreference kestrelDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("kestrel_device_address");
+
+            kestrelEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                kestrelOptions.setEnabled((boolean) newValue);
+                kestrelDeviceListPref.setEnabled((boolean) newValue);
+                return true;
+            });
+
+
+            Preference scanPref = findPreference("scan_ble_devices");
+
+            scanPref.setOnPreferenceClickListener(preference -> {
+                startBleScan();
+                return true;
+            });
+
+
             BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
             if (btAdapter != null && btAdapter.isEnabled()) {
+
+//                if (!scannedEntries.isEmpty()) {
+//                    kestrelDeviceListPref.setEntries(scannedEntries.toArray(new CharSequence[0]));
+//                    kestrelDeviceListPref.setEntryValues(scannedEntryValues.toArray(new CharSequence[0]));
+//                } else {
+//                    kestrelDeviceListPref.setEnabled(false);
+//                    kestrelDeviceListPref.setSummary("No BLE devices found");
+//                }
+
 
                 if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                     return;
@@ -356,18 +384,22 @@ public class UserSettingsActivity extends PreferenceActivity
                 }
 
                 if (!entries.isEmpty()) {
-                    deviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    meshDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
+                    meshDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+
                     trupulseListPref.setEntries(entries.toArray(new CharSequence[0]));
-                    polarDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
-                    deviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                     trupulseListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
+
+                    polarDeviceListPref.setEntries(entries.toArray(new CharSequence[0]));
                     polarDeviceListPref.setEntryValues(entryValues.toArray(new CharSequence[0]));
                 } else {
-                    deviceListPref.setEnabled(false);
+                    meshDeviceListPref.setEnabled(false);
+                    meshDeviceListPref.setSummary("No paired Bluetooth devices found");
+
                     trupulseListPref.setEnabled(false);
-                    polarDeviceListPref.setEnabled(false);
-                    deviceListPref.setSummary("No paired Bluetooth devices found");
                     trupulseListPref.setSummary("No paired Bluetooth devices found");
+
+                    polarDeviceListPref.setEnabled(false);
                     polarDeviceListPref.setSummary("No paired Bluetooth devices found");
                 }
             }
@@ -377,8 +409,6 @@ public class UserSettingsActivity extends PreferenceActivity
                 meshtasticOptions.setEnabled((boolean) newValue);
                 return true;
             });
-
-
 
 //            Preference bleEnable = getPreferenceScreen().findPreference("ble_enabled");
 //            Preference bleLocationMethod = getPreferenceScreen().findPreference("ble_loc_method");
@@ -396,6 +426,81 @@ public class UserSettingsActivity extends PreferenceActivity
 
             // TODO: introduce FLIR and ANGEL sensors
         }
+
+        public void startBleScan() {
+            BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (btAdapter == null || !btAdapter.isEnabled())
+                return;
+
+            scannedEntries.clear();
+            scannedEntryValues.clear();
+            scannedDevices.clear();
+
+
+            Preference scanBlePref = findPreference("scan_ble_devices");
+
+            BluetoothLeScanner scanner = btAdapter.getBluetoothLeScanner();
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+            }
+
+            ScanCallback scanCallback = new ScanCallback() {
+                @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    BluetoothDevice device = result.getDevice();
+                    String name = device.getName();
+                    String address = device.getAddress();
+
+                    if (name == null && !scannedEntryValues.contains(address)) {
+                        name = "Unnamed Device";
+                    }
+                    if (!scannedEntryValues.contains(address)) {
+                        scannedEntries.add(name != null ? name + " (" + address + ")" : address);
+                        scannedEntryValues.add(address);
+
+                        updateKestrelListPreference();
+                    }
+                }
+            };
+
+            scanner.startScan(scanCallback);
+
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (ActivityCompat.checkSelfPermission(getContext(),
+                            Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                }
+                scanner.stopScan(scanCallback);
+
+                if (scanBlePref != null) scanBlePref.setEnabled(true);
+
+                updateKestrelListPreference();
+            }, 8000);
+
+        }
+
+        private void updateKestrelListPreference() {
+            ListPreference kestrelPref = (ListPreference) findPreference("kestrel_device_address");
+
+            if (kestrelPref == null) return;
+
+            kestrelPref.setEntries(scannedEntries.toArray(new CharSequence[0]));
+            kestrelPref.setEntryValues(scannedEntryValues.toArray(new CharSequence[0]));
+            kestrelPref.setEnabled(!scannedEntries.isEmpty());
+
+            if (scannedEntries.isEmpty()) {
+                kestrelPref.setSummary("No BLE devices found");
+            } else {
+                kestrelPref.setSummary("Select a device");
+            }
+        }
     }
 
 
@@ -403,14 +508,12 @@ public class UserSettingsActivity extends PreferenceActivity
      * Fragment for video settings
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class VideoPreferenceFragment extends PreferenceFragment
-    {
+    public static class VideoPreferenceFragment extends PreferenceFragment {
         ArrayList<String> frameRateList = new ArrayList<>();
         ArrayList<String> resList = new ArrayList<>();
 
         @Override
-        public void onCreate(Bundle savedInstanceState)
-        {
+        public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_video);
 
@@ -418,37 +521,29 @@ public class UserSettingsActivity extends PreferenceActivity
 
             // Create camera selection preference
             ArrayList<String> cameras = new ArrayList<>();
-            for(int i = 0; i < Camera.getNumberOfCameras(); i++)
-            {
+            for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
                 Camera.CameraInfo info = new Camera.CameraInfo();
                 Camera.getCameraInfo(i, info);
                 cameras.add(Integer.toString(i));
             }
-            ListPreference cameraSelectList = (ListPreference)videoOptsScreen.findPreference("camera_select");
-//            cameraSelectList.setKey("camera_select");
-//            cameraSelectList.setTitle("Selected Camera");
+            ListPreference cameraSelectList = (ListPreference) videoOptsScreen.findPreference("camera_select");
             cameraSelectList.setEntries(cameras.toArray(new String[0]));
             cameraSelectList.setEntryValues(cameras.toArray(new String[0]));
-//            cameraSelectList.setDefaultValue(0);
             bindPreferenceSummaryToValue(cameraSelectList);
             videoOptsScreen.addPreference(cameraSelectList);
 
             bindPreferenceSummaryToValue(findPreference("video_codec"));
-
-            // TODO: verify that this works in cases where a camera might not be available, and also works on the default value
             // get possible video capture frame rates and sizes
             Camera camera = Camera.open(0);
             Camera.Parameters camParams = camera.getParameters();
-//            ArrayList<String> frameRateList = new ArrayList<>();
             for (int frameRate : camParams.getSupportedPreviewFrameRates())
                 frameRateList.add(Integer.toString(frameRate));
-//            ArrayList<String> resList = new ArrayList<>();
             for (Camera.Size imgSize : camParams.getSupportedPreviewSizes())
                 resList.add(imgSize.width + "x" + imgSize.height);
             camera.release();
 
             // add list of supported frame rates
-            ListPreference frameRatePrefList = (ListPreference)videoOptsScreen.findPreference("video_framerate");
+            ListPreference frameRatePrefList = (ListPreference) videoOptsScreen.findPreference("video_framerate");
             frameRatePrefList.setEntries(frameRateList.toArray(new String[0]));
             frameRatePrefList.setEntryValues(frameRateList.toArray(new String[0]));
             bindPreferenceSummaryToValue(findPreference("video_framerate"));
@@ -456,14 +551,13 @@ public class UserSettingsActivity extends PreferenceActivity
             // add list of configurable presets
             ArrayList<String> presetNames = new ArrayList<>();
             ArrayList<String> presetIndexes = new ArrayList<>();
-            for (int i = 1; i <= 5; i++)
-            {
+            for (int i = 1; i <= 5; i++) {
                 PreferenceScreen prefScreen = getPreferenceManager().createPreferenceScreen(videoOptsScreen.getContext());
                 prefScreen.setKey("video_res" + i);
                 String presetName = "Video Preset #" + i;
                 prefScreen.setTitle(presetName);
                 presetNames.add(presetName);
-                presetIndexes.add(String.valueOf(i-1));
+                presetIndexes.add(String.valueOf(i - 1));
 
                 ListPreference sizeList = new ListPreference(prefScreen.getContext());
                 sizeList.setKey("video_size" + i);
@@ -496,7 +590,7 @@ public class UserSettingsActivity extends PreferenceActivity
             }
 
             // add list of selectable presets
-            ListPreference selectedPresetList = (ListPreference)videoOptsScreen.findPreference("video_preset");
+            ListPreference selectedPresetList = (ListPreference) videoOptsScreen.findPreference("video_preset");
             presetNames.add("Auto select");
             presetIndexes.add("AUTO");
             selectedPresetList.setEntries(presetNames.toArray(new String[0]));
@@ -511,7 +605,7 @@ public class UserSettingsActivity extends PreferenceActivity
             });
         }
 
-        protected void updateCameraSettings(Integer cameraId){
+        protected void updateCameraSettings(Integer cameraId) {
             Camera camera = Camera.open(cameraId);
             Camera.Parameters camParams = camera.getParameters();
             for (int frameRate : camParams.getSupportedPreviewFrameRates())
@@ -527,11 +621,9 @@ public class UserSettingsActivity extends PreferenceActivity
      * Fragment for audio settings
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class AudioPreferenceFragment extends PreferenceFragment
-    {
+    public static class AudioPreferenceFragment extends PreferenceFragment {
         @Override
-        public void onCreate(Bundle savedInstanceState)
-        {
+        public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_audio);
 
@@ -543,13 +635,13 @@ public class UserSettingsActivity extends PreferenceActivity
             List<String> bitRateList = Arrays.asList("32", "64", "96", "128", "160", "192");
 
             // add list of supported sample rates
-            ListPreference sampleRatePrefList = (ListPreference)audioOptsScreen.findPreference("audio_samplerate");
+            ListPreference sampleRatePrefList = (ListPreference) audioOptsScreen.findPreference("audio_samplerate");
             sampleRatePrefList.setEntries(sampleRateList.toArray(new String[0]));
             sampleRatePrefList.setEntryValues(sampleRateList.toArray(new String[0]));
             bindPreferenceSummaryToValue(findPreference("audio_samplerate"));
 
             // add list of supported bitrates
-            ListPreference bitRatePrefList = (ListPreference)audioOptsScreen.findPreference("audio_bitrate");
+            ListPreference bitRatePrefList = (ListPreference) audioOptsScreen.findPreference("audio_bitrate");
             bitRatePrefList.setEntries(bitRateList.toArray(new String[0]));
             bitRatePrefList.setEntryValues(bitRateList.toArray(new String[0]));
             bindPreferenceSummaryToValue(findPreference("audio_samplerate"));
@@ -557,9 +649,199 @@ public class UserSettingsActivity extends PreferenceActivity
     }
 
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class KestrelPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            addPreferencesFromResource(R.xml.pref_kestrel);
+
+            PreferenceScreen kestrelOptsScreen = getPreferenceScreen();
+
+            ArrayList<String> presetNames = new ArrayList<>();
+            ArrayList<String> presetIndexes = new ArrayList<>();
+
+            for (int i = 1; i <= 5; i++) {
+                PreferenceScreen prefScreen = getPreferenceManager().createPreferenceScreen(kestrelOptsScreen.getContext());
+                prefScreen.setKey("kestrel_preset" + i);
+                String presetName = "Gun Profile Preset #" + i;
+                prefScreen.setTitle(presetName);
+                presetNames.add(presetName);
+                presetIndexes.add(String.valueOf(i - 1));
+
+                addBulletDataFields(prefScreen, i);
+                addGunFields(prefScreen, i);
+                addScopeDataFields(prefScreen, i);
+
+                bindPreferenceSummaryToValue(prefScreen);
+                kestrelOptsScreen.addPreference(prefScreen);
+            }
+
+
+            // add list of selectable presets
+            ListPreference selectedPresetList = (ListPreference) kestrelOptsScreen.findPreference("kestrel_profile_preset");
+            presetNames.add("Auto select");
+            presetIndexes.add("AUTO");
+            selectedPresetList.setEntries(presetNames.toArray(new String[0]));
+            selectedPresetList.setEntryValues(presetIndexes.toArray(new String[0]));
+        }
+
+        private void addProfileFields(PreferenceScreen preferenceScreen, int index) {
+//                <PreferenceCategory android:title="Profile" />
+//
+//                    <EditTextPreference
+//            android:key="profile_name"
+//            android:title="Profile Name"
+//            android:dialogTitle="Enter the name of the profile"
+//            android:inputType="textShortMessage" />
+//
+//                    <EditTextPreference
+//            android:key="profile_notes"
+//            android:title="Notes (These notes will not be transferrred)"
+//            android:dialogTitle="Enter notes for profile"
+//            android:inputType="textMultiLine" />
+        }
+
+        private void addScopeDataFields(PreferenceScreen prefScreen, int index) {
+            List<String> unitList = Arrays.asList("inches", "mil", "tmoa", "smoa", "clicks", "cm");
+
+            ListPreference eUnitList = new ListPreference(prefScreen.getContext());
+            eUnitList.setKey("e_unit_" + index);
+            eUnitList.setTitle("E Units");
+            eUnitList.setEntries(unitList.toArray(new String[0]));
+            eUnitList.setEntryValues(unitList.toArray(new String[0]));
+            bindPreferenceSummaryToValue(eUnitList);
+            prefScreen.addPreference(eUnitList);
+
+            ListPreference wUnitList = new ListPreference(prefScreen.getContext());
+            wUnitList.setKey("w_unit_" + index);
+            wUnitList.setTitle("W Units");
+            wUnitList.setEntries(unitList.toArray(new String[0]));
+            wUnitList.setEntryValues(unitList.toArray(new String[0]));
+            bindPreferenceSummaryToValue(wUnitList);
+            prefScreen.addPreference(wUnitList);
+        }
+
+        private void addGunFields(PreferenceScreen prefScreen, int index) {
+            EditTextPreference muzzleVel = new EditTextPreference(prefScreen.getContext());
+            muzzleVel.setKey("muzzle_velocity_" + index);
+            muzzleVel.setTitle("Muzzle Velocity (fps)");
+            muzzleVel.setDialogTitle("Enter the muzzle velocity (fps)");
+            muzzleVel.getEditText().setSingleLine();
+            muzzleVel.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            muzzleVel.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(muzzleVel);
+            prefScreen.addPreference(muzzleVel);
+
+            EditTextPreference zeroRange = new EditTextPreference(prefScreen.getContext());
+            zeroRange.setKey("zero_range_" + index);
+            zeroRange.setTitle("Zero Range (m)");
+            zeroRange.setDialogTitle("Enter the zero range (m)");
+            zeroRange.getEditText().setSingleLine();
+            zeroRange.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            zeroRange.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(zeroRange);
+            prefScreen.addPreference(zeroRange);
+
+            EditTextPreference boreHeight = new EditTextPreference(prefScreen.getContext());
+            boreHeight.setKey("bore_height_" + index);
+            boreHeight.setTitle("Bore Height (in)");
+            boreHeight.setDialogTitle("Enter the bore height (in)");
+            boreHeight.getEditText().setSingleLine();
+            boreHeight.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            boreHeight.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(boreHeight);
+            prefScreen.addPreference(boreHeight);
+
+            EditTextPreference zeroHeight = new EditTextPreference(prefScreen.getContext());
+            zeroHeight.setKey("zero_height_" + index);
+            zeroHeight.setTitle("Zero Height (in)");
+            zeroHeight.setDialogTitle("Enter the zero height (in)");
+            zeroHeight.getEditText().setSingleLine();
+            zeroHeight.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            zeroHeight.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(zeroHeight);
+            prefScreen.addPreference(zeroHeight);
+
+            EditTextPreference zeroOffset = new EditTextPreference(prefScreen.getContext());
+            zeroOffset.setKey("zero_offset_" + index);
+            zeroOffset.setTitle("Zero Offset (in)");
+            zeroOffset.setDialogTitle("Enter the zero offset (in)");
+            zeroOffset.getEditText().setSingleLine();
+            zeroOffset.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            zeroOffset.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(zeroOffset);
+            prefScreen.addPreference(zeroOffset);
+
+            EditTextPreference twistRate = new EditTextPreference(prefScreen.getContext());
+            twistRate.setKey("twist_rate_" + index);
+            twistRate.setTitle("Twist Rate (in)");
+            twistRate.setDialogTitle("Enter the twist rate (in)");
+            twistRate.getEditText().setSingleLine();
+            twistRate.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            twistRate.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(twistRate);
+            prefScreen.addPreference(twistRate);
+
+            List<String> directionlist = Arrays.asList("L", "R");
+
+            ListPreference twistRateList = new ListPreference(prefScreen.getContext());
+            twistRateList.setKey("twist_rate_direction_" + index);
+            twistRateList.setTitle("Twist Rate Direction");
+            twistRateList.setEntries(directionlist.toArray(new String[0]));
+            twistRateList.setEntryValues(directionlist.toArray(new String[0]));
+            bindPreferenceSummaryToValue(twistRateList);
+            prefScreen.addPreference(twistRateList);
+        }
+
+
+        private void addBulletDataFields(PreferenceScreen prefScreen, int index) {
+            EditTextPreference diameter = new EditTextPreference(prefScreen.getContext());
+            diameter.setKey("diameter_" + index);
+            diameter.setTitle("Diameter (in)");
+            diameter.setDialogTitle("Enter the diameter (inches)");
+            diameter.getEditText().setSingleLine();
+            diameter.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            diameter.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(diameter);
+            prefScreen.addPreference(diameter);
+
+            EditTextPreference weight = new EditTextPreference(prefScreen.getContext());
+            weight.setKey("weight_" + index);
+            weight.setTitle("Weight (gr)");
+            weight.setDialogTitle("Enter the weight (gr)");
+            weight.getEditText().setSingleLine();
+            weight.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            weight.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(weight);
+            prefScreen.addPreference(weight);
+
+            EditTextPreference ballistic = new EditTextPreference(prefScreen.getContext());
+            ballistic.setKey("ballistic_" + index);
+            ballistic.setTitle("Ballistic Coefficient (G7)");
+            ballistic.setDialogTitle("Enter the Ballistic Coefficient (G7)");
+            ballistic.getEditText().setSingleLine();
+            ballistic.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            ballistic.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(ballistic);
+            prefScreen.addPreference(ballistic);
+
+            EditTextPreference length = new EditTextPreference(prefScreen.getContext());
+            length.setKey("length_" + index);
+            length.setTitle("Length (in)");
+            length.setDialogTitle("Enter the length (in)");
+            length.getEditText().setSingleLine();
+            length.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            length.setDefaultValue("0.0");
+            bindPreferenceSummaryToValue(length);
+            prefScreen.addPreference(length);
+        }
+
+    }
+
     @Override
-    protected boolean isValidFragment(String fragmentName)
-    {
+    protected boolean isValidFragment(String fragmentName) {
         return true;
     }
 }

@@ -6,8 +6,11 @@ ext.details = 'OSH library for Android'
 dependencies {
   api project(':sensorhub-android-service')
   api project(':sensorhub-driver-trupulse')
-//  api project(':sensorhub-driver-angelsensor')
+  api project(':sensorhub-driver-angelsensor')
   api project(':sensorhub-driver-android')
+  api project(':sensorhub-driver-kestrel')
+//  api project(':sensorhub-driver-flirone')
+  api project(':sensorhub-client-consys-okhttp')
 //  api project(':sensorhub-android-flirone')
   //api project(':sensorhub-android-dji')
 //  api project(':sensorhub-storage-h2')
@@ -28,12 +31,13 @@ configurations {
 
     resolutionStrategy.dependencySubstitution {
       // use Android version of slf4j
-      substitute module('org.slf4j:slf4j-api') with module('org.slf4j:slf4j-android:1.6.1-RC1')
+      substitute(module('org.slf4j:slf4j-api')).using(module('org.slf4j:slf4j-android:1.6.1-RC1'))
     }
   }
 }
 
 android {
+  namespace 'org.sensorhub.android.lib'
   compileSdkVersion rootProject.compileSdkVersion
   buildToolsVersion rootProject.buildToolsVersion
 

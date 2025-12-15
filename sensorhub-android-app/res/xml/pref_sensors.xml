@@ -183,13 +183,6 @@
             android:summary="Enable streaming of Polar Heart Sensor (sensor must be connected via Bluetooth LE)"
             android:title="Polar Heart Rate Data" />
 
-<!--        <EditTextPreference-->
-<!--            android:defaultValue="CB:14:3B:29:BF:47"-->
-<!--            android:inputType="text"-->
-<!--            android:key="polar_address"-->
-<!--            android:singleLine="true"-->
-<!--            android:title="Polar Heart Sensor Bluetooth Address" />-->
-
         <ListPreference
             android:key="polar_device_address"
             android:title="Select Polar HR Device"
@@ -206,6 +199,37 @@
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults" />
+
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="kestrel_enabled"
+            android:summary="Enable streaming of Kestrel Weather Meter"
+            android:title="Kestrel Weather Meter" />
+
+        <Preference
+            android:key="scan_ble_devices"
+            android:title="Scan for BLE Devices"
+            android:summary="Refresh the list of BLE Devices"
+            />
+
+        <ListPreference
+            android:key="kestrel_device_address"
+            android:title="Select Kestrel Device"
+            android:entries="@array/bluetooth_scanned_address_list"
+            android:entryValues="@array/bluetooth_scanned_address_list"
+            android:summary="Choose a scanned Kestrel Bluetooth device"
+            android:dialogTitle="Select Device"
+            />
+
+        <MultiSelectListPreference
+            android:key="kestrel_options"
+            android:title="Kestrel Weather Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults" />
+
 
         <SwitchPreference
             android:defaultValue="false"

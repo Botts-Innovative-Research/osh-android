@@ -207,10 +207,35 @@
         <item>PCM</item>
     </string-array>
 
+    <string-array name="caliber_list">
+        <item>0.172</item>
+        <item>0.204</item>
+        <item>0.222</item>
+        <item>0.224</item>
+        <item>0.257</item>
+    </string-array>
+
+    <string-array name="unit_list">
+        <item>inches</item>
+        <item>mil</item>
+        <item>tmoa</item>
+        <item>smoa</item>
+        <item>clicks</item>
+        <item>cm</item>
+    </string-array>
+
+    <string-array name="left_right">
+        <item>L</item>
+        <item>R</item>
+    </string-array>
+
     <string-array name="bluetooth_mac_address_list">
         <item></item>
     </string-array>
 
+    <string-array name="bluetooth_scanned_address_list">
+        <item></item>
+    </string-array>
     <string name="meshtastic_msg">Enter a message!</string>
     <string name="message_hint">Enter a message!</string>
     <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>

@@ -41,7 +41,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.text.Html;
 import android.util.Log;
@@ -54,13 +53,17 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+
 import net.opengis.swe.v20.DataBlock;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
+import org.sensorhub.android.comm.ble.BleConfig;
+import org.sensorhub.android.comm.ble.BleNetwork;
 import org.sensorhub.api.command.CommandData;
 import org.sensorhub.api.command.IStreamingControlInterface;
 import org.sensorhub.api.common.BigId;
+import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
@@ -72,6 +75,7 @@ import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
+//import org.sensorhub.impl.driver.flir.FlirOneCameraConfig;
 import org.sensorhub.impl.event.EventBus;
 import org.sensorhub.impl.module.InMemoryConfigDb;
 import org.sensorhub.impl.module.ModuleClassFinder;
@@ -81,8 +85,11 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.angel.AngelSensorConfig;
+import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
+
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
@@ -90,9 +97,11 @@ import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
-import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
-import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
-import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig;
+
+import com.botts.impl.client.okhttp.ConSysApiClientConfig;
+import com.botts.impl.client.okhttp.ConSysApiClientModule;
+import com.botts.impl.client.okhttp.ConSysOAuthConfig;
+
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
@@ -106,7 +115,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -119,7 +127,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -177,7 +184,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         ProxySensor,
         BLELocation,
         Meshtastic,
-        PolarHRMonitor
+        PolarHRMonitor,
+        Kestrel
     }
 
 
@@ -194,7 +202,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             boundService = null;
         }
     };
-
 
 
     protected void updateConfig(SharedPreferences prefs, String runName)
@@ -277,8 +284,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         String clientId = prefs.getString("client_id", "").trim();
         String tokenEndpoint = prefs.getString("token_endpoint", "").trim();
         String clientSecret = prefs.getString("client_secret", "").trim();
-
-
 
         // get device name
         String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
@@ -368,7 +373,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sosConfig.enableTransactional = true;
         sosConfig.exposedResources = new ObsSystemDatabaseViewConfig();
 
-
         //Connected systems service
         ConSysApiServiceConfig conSysApiService = new ConSysApiServiceConfig();
         conSysApiService.moduleClass = ConSysApiService.class.getCanonicalName();
@@ -379,14 +383,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
 
         ConSysOAuthConfig conSysOAuthConfig = new ConSysOAuthConfig();
-
-        if (isOAuthEnabled && !clientId.isEmpty() && !tokenEndpoint.isEmpty() && !clientSecret.isEmpty()) {
-            conSysOAuthConfig.oAuthEnabled = true;
-            conSysOAuthConfig.tokenEndpoint = tokenEndpoint;
-            conSysOAuthConfig.clientID = clientId;
-            conSysOAuthConfig.clientSecret = clientSecret;
-        }
-
+        conSysOAuthConfig.oAuthEnabled = isOAuthEnabled;
+        conSysOAuthConfig.tokenEndpoint = tokenEndpoint;
+        conSysOAuthConfig.clientID = clientId;
+        conSysOAuthConfig.clientSecret = clientSecret;
 
 
         // Push Sensors Config
@@ -395,10 +395,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (isPushingSensor(Sensors.Android)) {
             if (isClientEnabled) {
                 System.out.println("Connected Systems Client enabled");
-                if (isOAuthEnabled)
-                    addCSApiConfig(sensorsConfig, user, password, conSysOAuthConfig);
-                else
-                    addCSApiConfig(sensorsConfig, user, password, null);
+                addCSApiConfig(sensorsConfig, user, password, conSysOAuthConfig);
 
             } else {
                 System.out.println("SOST Client enabled");
@@ -407,8 +404,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         }
 
-        //Storage Configuration
-//        if(prefs.getBoolean("hub_enable", true) && prefs.getBoolean("hub_enable_local_storage", true)) {
         if(shouldStore(prefs)) {
             File dbFile = new File(getApplicationContext().getFilesDir() + "/db/");
             dbFile.mkdirs();
@@ -512,40 +507,75 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         enabled = prefs.getBoolean("polar_enabled", false);
         if (enabled) {
             PolarConfig polarConfig = new PolarConfig();
-            polarConfig.id = "POLAR_HEART_SENSOR";
-            polarConfig.name = "Polar Heart [" + deviceName + "]";
-            polarConfig.autoStart = true;
-            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            polarConfig.device_name = prefs.getString("polar_device_address", "");
+          polarConfig.id = "POLAR_HEART_SENSOR";
+          polarConfig.name = "Polar Heart [" + deviceName + "]";
+          polarConfig.autoStart = true;
+          polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+          polarConfig.device_name = prefs.getString("polar_device_address", "");
 
             sensorhubConfig.add(polarConfig);
         }
 
+//        // Kestrel Weather
 
-
-        // AngelSensor
-        /*enabled = prefs.getBoolean("angel_enabled", false);
-        if (enabled)
-        {
+        enabled = prefs.getBoolean("kestrel_enabled", false);
+        if (enabled) {
             BleConfig bleConf = new BleConfig();
-            bleConf.id = "BLE";
+            bleConf.id = "BLE_NETWORK";
             bleConf.moduleClass = BleNetwork.class.getCanonicalName();
             bleConf.androidContext = this.getApplicationContext();
             bleConf.autoStart = true;
             sensorhubConfig.add(bleConf);
 
-            AngelSensorConfig angelConfig = new AngelSensorConfig();
-            angelConfig.id = "ANGEL_SENSOR";
-            angelConfig.name = "Angel Sensor [" + deviceName + "]";
-            angelConfig.autoStart = true;
-            angelConfig.networkID = bleConf.id;
-            //angelConfig.btAddress = "00:07:80:79:04:AF"; // mike
-            //angelConfig.btAddress = "00:07:80:03:0E:0A"; // alex
-            angelConfig.btAddress = prefs.getString("angel_address", null);
-            sensorhubConfig.add(angelConfig);
-            addSosTConfig(angelConfig, sosUser, sosPwd);
+            KestrelConfig kestrelConfig = new KestrelConfig();
+            kestrelConfig.id = "KESTREL_WEATHER";
+            kestrelConfig.name = "Kestrel Weather [" + deviceName + "]";
+            kestrelConfig.autoStart = true;
+            kestrelConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            kestrelConfig.networkID = bleConf.id;
+            kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
+
+            sensorhubConfig.add(kestrelConfig);
         }
 
+        // FLIR One Edge sensor
+//        enabled = prefs.getBoolean("flirone_enabled", false);
+//        if (enabled)
+//        {
+//
+//            // perhaps do a wireless comm module
+//            FlirOneConfig flironeConfig = new FlirOneConfig();
+//            flironeConfig.id = "FLIRONE_EDGE_SENSOR";
+//            flironeConfig.name = "FLIR One Thermal Edge Camera [" + deviceName + "]";
+//            flironeConfig.autoStart = true;
+////            flironeConfig.androidContext = this.getApplicationContext();
+////            flironeConfig.camPreviewTexture = boundService.getVideoTexture();
+//            showVideo = true;
+//            sensorhubConfig.add(flironeConfig);
+//        }
+
+        // AngelSensor
+//        enabled = prefs.getBoolean("angel_enabled", false);
+//        if (enabled)
+//        {
+//            BleConfig bleConf = new BleConfig();
+//            bleConf.id = "BLE";
+//            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
+//            bleConf.androidContext = this.getApplicationContext();
+//            bleConf.autoStart = true;
+//            sensorhubConfig.add(bleConf);
+//
+//            AngelSensorConfig angelConfig = new AngelSensorConfig();
+//            angelConfig.id = "ANGEL_SENSOR";
+//            angelConfig.name = "Angel Sensor [" + deviceName + "]";
+//            angelConfig.autoStart = true;
+//            angelConfig.networkID = bleConf.id;
+//            //angelConfig.btAddress = "00:07:80:79:04:AF"; // mike
+//            //angelConfig.btAddress = "00:07:80:03:0E:0A"; // alex
+//            angelConfig.btAddress = prefs.getString("angel_address", null);
+//            sensorhubConfig.add(angelConfig);
+
+/**
         // FLIR One sensor
         enabled = prefs.getBoolean("flirone_enabled", false);
         if (enabled)
@@ -559,7 +589,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             showVideo = true;
             sensorhubConfig.add(flironeConfig);
             addSosTConfig(flironeConfig, sosUser, sosPwd);
-        }*/
+        }
 
         // DJI Drone
         /*enabled = prefs.getBoolean("dji_enabled", false);
@@ -577,12 +607,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }*/
 
         if(isApiServiceEnabled){
-            //add connected sys service
+            // add connected sys service
             System.out.println("Connected Systems Service enabled");
             sensorhubConfig.add(conSysApiService);
         }
         if(isSosServiceEnabled){
-            //if off add sos service
+            // add sos service
             System.out.println("SOS Service enabled");
             sensorhubConfig.add(sosConfig);
         }
@@ -590,8 +620,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
     {
-
-
         if (clientURL == null)
             return;
 
@@ -631,17 +659,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd, ConSysOAuthConfig oAuthConfig)
     {
-//        URL apiUrl;
-//
-//        if (clientUri == null)
-//            return;
-//
-//        try {
-//            apiUrl = clientUri.resolve("/sensorhub/api/").toURL();
-//            System.out.println("API URL"+ apiUrl);
-//        } catch (MalformedURLException e) {
-//            throw new RuntimeException(e);
-//        }
 
         System.out.println("client URL: " + clientURL);
         if (clientURL == null)
@@ -662,9 +679,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         consysConfig.dataSourceSelector = new ObsSystemDatabaseViewConfig();
 
-        if (oAuthConfig != null)
-            consysConfig.conSysOAuth = oAuthConfig;
-
+        consysConfig.conSysOAuth = oAuthConfig;
 
         sensorhubConfig.add(consysConfig);
     }
@@ -694,6 +709,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         TextureView textureView = findViewById(R.id.video);
         textureView.setSurfaceTextureListener(this);
 
+
+        hasBluetoothPermissions();
+
+        checkForPermissions();
         // bind to SensorHub service
         Intent intent = new Intent(this, SensorHubService.class);
         startService(intent);  // ADD THIS LINE
@@ -703,7 +722,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         displayHandler = new Handler(Looper.getMainLooper());
 
         setupBroadcastReceivers();
-        checkForPermissions();
         requestBatteryOptimizationExemption();
 
         // Due to changes with OSH, it may be best to create and start the hub immediately
@@ -711,6 +729,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 //        boundService.initSensorhub();
     }
 
+    private boolean hasBluetoothPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // Older versions handled by existing checks
+    }
 
     Menu optionsMenu;
 
@@ -764,16 +789,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             showMeshtasticDialog();
         }
-//        else if (id == R.id.action_restart){
-//            stopListeningForEvents();
-//            stopRefreshingStatus();
-//
-//            if (boundService != null)
-//              boundService.stopSensorHub();
-//
-//            restartSensorHub();
-//
-//        }
         else if(id == R.id.action_status)
         {
             Intent statusIntent = new Intent(this, AppStatusActivity.class);
@@ -1037,14 +1052,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 mainInfoText.append("</p>");
 
             }
-
-//            log.debug("[SENSOR RESTART]", client.isConnected());
-
-//            if(!client.isConnected()){
-//                mainInfoText.setLength(0);
-//                mainInfoText.append("Attempting to restart SensorHub");
-//                needsRestart = true;
-//            }
         }
 
 
@@ -1176,92 +1183,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         }
 
-//        if(needsRestart){
-//
-//            mainInfoArea.clearComposingText();
-//
-//           restartService();
-//        }
-
     }
-
-//    private void restartService(){
-//        displayHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                restartSensorHubService();
-//            }
-//        }, 5000);
-//    }
-//
-//    private void restartSensorHubService() {
-//        try {
-//            mainInfoText.append("Restarting OSH Service");
-//
-//            stopListeningForEvents();
-//            stopRefreshingStatus();
-//
-//            if (boundService != null) {
-//                boundService.stopSensorHub();
-//            }
-//
-//            Thread.sleep(10000);
-//
-//            updateConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this), runName);
-//
-//            AndroidSensorsConfig androidSensorConfig = (AndroidSensorsConfig) sensorhubConfig.get("ANDROID_SENSORS");
-//            VideoEncoderConfig videoConfig = androidSensorConfig.videoConfig;
-//
-//            boolean cameraInUse = (androidSensorConfig.activateBackCamera || androidSensorConfig.activateFrontCamera);
-//            boolean improperVideoSettings = (videoConfig.selectedPreset < 0 || videoConfig.selectedPreset >= videoConfig.presets.length);
-//
-//            if (cameraInUse && improperVideoSettings) {
-//                showVideoConfigErrorPopup();
-//                newStatusMessage("Video Config Error: Check Settings");
-//                return;
-//            }
-//
-//            newStatusMessage("Starting SensorHub...");
-//
-//
-//            boundService.startSensorHub(sensorhubConfig, showVideo);
-//
-//            if (boundService.hasVideo()) {
-//                mainInfoArea.setBackgroundColor(0x80FFFFFF);
-//            }
-//
-//            while(boundService.getSensorHub() == null) {
-//                newStatusMessage("Waiting for BoundService Hub to start...");
-//                Thread.sleep(1000);
-//            }
-//
-//            if (boundService.getSensorHub() == null) {
-//                appendStatusMessage("Failed to start SensorHub after restart");
-//                return;
-//            }
-//
-//            while(boundService.getSensorHub().getEventBus() == null) {
-//                newStatusMessage("Waiting for BoundService Hub EventBus to start...");
-//                Thread.sleep(1000);
-//            }
-//
-//            if (boundService.getSensorHub().getEventBus() != null) {
-//                EventBus shEvtBus = (EventBus) boundService.getSensorHub().getEventBus();
-//                shEvtBus.newSubscription()
-//                        .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
-//                        .subscribe(mainActivity);
-//
-//                newStatusMessage("SensorHub restarted successfully");
-//            }
-//
-//        } catch (InterruptedException e) {
-//            newStatusMessage("Restart interrupted: " + e.getMessage());
-//            Thread.currentThread().interrupt();
-//        } catch (Exception e) {
-//            newStatusMessage("Restart failed: " + e.getMessage());
-//        }
-//    }
-
 
     protected synchronized void newStatusMessage(String msg)
     {
@@ -1367,6 +1289,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return prefs.getBoolean("polar_enabled", false)
                     && prefs.getStringSet("polar_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
+        else if (Sensors.Kestrel.equals(sensor)) {
+            return prefs.getBoolean("kestrel_enabled", false)
+                    && prefs.getStringSet("kestrel_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        }
 
         return false;
     }
@@ -1386,17 +1312,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     if (sosEndpointUrl == null || name == null || sensorId == null || properties.size() == 0) {
                         return;
                     }
-
-                   /* ProxySensorConfig proxySensorConfig = (ProxySensorConfig) createSensorConfig(Sensors.ProxySensor);
-                    proxySensorConfig.androidContext = getApplicationContext();
-                    proxySensorConfig.sosEndpointUrl = sosEndpointUrl;
-                    proxySensorConfig.name = name;
-                    proxySensorConfig.id = sensorId;
-                    proxySensorConfig.sensorUID = sensorId;
-                    proxySensorConfig.observedProperties.addAll(properties);
-                    proxySensorConfig.sosUseWebsockets = true;
-                    proxySensorConfig.autoStart = true;
-                    proxySensorConfigs.add(proxySensorConfig);*/
 
                     // register and "start" new sensor, data stream doesn't begin until someone requests data;
                     try {
@@ -1562,6 +1477,37 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.BLUETOOTH_SCAN);
         }
+        if (checkSelfPermission(Manifest.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND);
+        }
+        if (checkSelfPermission(Manifest.permission.CHANGE_WIFI_STATE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.CHANGE_WIFI_STATE);
+        }
+        if (checkSelfPermission(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        }
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        if (checkSelfPermission(Manifest.permission.FOREGROUND_SERVICE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
+        if (checkSelfPermission(Manifest.permission.WAKE_LOCK) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.WAKE_LOCK);
+        }
+        if (checkSelfPermission(Manifest.permission.INTERNET) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.INTERNET);
+        }
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.READ_PHONE_STATE);
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_DENIED) {
+            permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        }
+
         // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
         permARR = permissions.toArray(permARR);
@@ -1584,6 +1530,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         System.out.println(e.getSource());
         if (e instanceof ModuleEvent)
         {
+
             // start refreshing status on first module loaded
             if (!oshStarted && ((ModuleEvent) e).getType() == ModuleEvent.Type.LOADED)
             {
