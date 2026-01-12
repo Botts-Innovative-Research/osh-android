@@ -501,6 +501,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             meshtasticConfig.autoStart = true;
             meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
             meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
+            meshtasticConfig.uid_extension = prefs.getString("uid_extension", "");
+
 
             sensorhubConfig.add(meshtasticConfig);
         }
@@ -509,11 +511,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         enabled = prefs.getBoolean("polar_enabled", false);
         if (enabled) {
             PolarConfig polarConfig = new PolarConfig();
-          polarConfig.id = "POLAR_HEART_SENSOR";
-          polarConfig.name = "Polar Heart [" + deviceName + "]";
-          polarConfig.autoStart = true;
-          polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-          polarConfig.device_name = prefs.getString("polar_device_address", "");
+            polarConfig.id = "POLAR_HEART_SENSOR";
+            polarConfig.name = "Polar Heart [" + deviceName + "]";
+            polarConfig.autoStart = true;
+            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            polarConfig.device_name = prefs.getString("polar_device_address", "");
+            polarConfig.uid_extension = prefs.getString("uid_extension", "");
+
 
             sensorhubConfig.add(polarConfig);
         }

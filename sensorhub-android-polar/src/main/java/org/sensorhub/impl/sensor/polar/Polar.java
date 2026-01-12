@@ -111,9 +111,9 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
             throw new RuntimeException(e);
         }
 
-        batteryOutput = new BatteryOutput(this);
-        batteryOutput.doInit();
-        addOutput(batteryOutput, false);
+//        batteryOutput = new BatteryOutput(this);
+//        batteryOutput.doInit();
+//        addOutput(batteryOutput, false);
 
         heartRateOutput = new HeartRateOutput(this);
         heartRateOutput.doInit();
@@ -238,7 +238,7 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
             if (uuid.equals(BATTERY_LEVEL_CHARACTERISTIC_UUID)) {
                 byte[] data = characteristic.getValue().array();
                 int battery = data[0] & 0xFF;
-                batteryOutput.setData(battery);
+//                batteryOutput.setData(battery);
             }
         }
     };
