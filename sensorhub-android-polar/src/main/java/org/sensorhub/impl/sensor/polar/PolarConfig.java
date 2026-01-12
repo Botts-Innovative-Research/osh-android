@@ -34,11 +34,19 @@ public class PolarConfig extends SensorConfig
         this.moduleClass = Polar.class.getCanonicalName();
     }
 
-
     public String device_name;
+    public String uid_extension;
 
     public static String getUid() {
         Context context = SensorHubService.getContext();
         return "urn:android:polar:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public String getUidExt() {
+        Context context = SensorHubService.getContext();
+        if (uid_extension == null || uid_extension.isEmpty())
+            return "urn:android:polar:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        return "urn:android:polar:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID) + ":" + uid_extension;
     }
 }

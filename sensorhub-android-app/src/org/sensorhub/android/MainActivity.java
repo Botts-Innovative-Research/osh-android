@@ -354,6 +354,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorsConfig.audioConfig.bitRate = Integer.parseInt(prefs.getString("audio_bitrate", "64"));
 
         sensorsConfig.runName = runName;
+        sensorsConfig.uidExtension = prefs.getString("uid_extension", "0");
 
 
         // START SOS Config ************************************************************************
@@ -451,7 +452,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 }
 
                 trupulseConfig = new TruPulseWithGeolocConfig();
-                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = AndroidSensorsConfig.getAndroidSensorsUid();
+                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = sensorsConfig.getUidExt();
+//                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = AndroidSensorsConfig.getAndroidSensorsUid();
                 ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
             }
 

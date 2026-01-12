@@ -89,7 +89,8 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
     {
         // generate identifiers
         this.xmlID = "ANDROID_SENSORS_" + Build.SERIAL;
-        this.uniqueID = AndroidSensorsConfig.getAndroidSensorsUid();
+//        this.uniqueID = AndroidSensorsConfig.getAndroidSensorsUid();
+        this.uniqueID = config.getUidExt();
         this.localFrameURI = this.uniqueID + "#" + LOCAL_REF_FRAME;
 
         // create data interfaces for sensors

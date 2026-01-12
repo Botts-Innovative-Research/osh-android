@@ -220,6 +220,7 @@ public class UserSettingsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_sensors);
+            bindPreferenceSummaryToValue(findPreference("uid_extension"));
             bindPreferenceSummaryToValue(findPreference("angel_address"));
 
             SharedPreferences prefs = getPreferenceManager().getSharedPreferences();

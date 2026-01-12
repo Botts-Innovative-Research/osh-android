@@ -1,5 +1,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <EditTextPreference
+        android:defaultValue=""
+        android:inputType="text"
+        android:key="uid_extension"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Sensors UID Extension" />
+
     <PreferenceCategory android:title="Android Sensors">
 
         <SwitchPreference

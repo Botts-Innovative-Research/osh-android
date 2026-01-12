@@ -52,7 +52,7 @@ public class AndroidSensorsConfig extends SensorConfig
     public boolean activateMicAudio = false;
     public AudioEncoderConfig audioConfig = new AudioEncoderConfig();
 
-
+    public String uidExtension;
     public String deviceName;
     public String runName;
     public String runDescription;
@@ -69,7 +69,13 @@ public class AndroidSensorsConfig extends SensorConfig
         Context androidContext = SensorHubService.getContext();
         String deviceID = Settings.Secure.getString(androidContext.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-
         return "urn:android:device:" + deviceID;
+    }
+
+    public String getUidExt()
+    {
+        if (uidExtension == null || uidExtension.isEmpty())
+            return getAndroidSensorsUid();
+        return getAndroidSensorsUid() + ":" + uidExtension;
     }
 }

@@ -94,7 +94,7 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
     public void doInit() {
         logger.info("Initializing Polar heart monitor sensor");
         this.xmlID = "POLAR_" + Build.SERIAL;
-        this.uniqueID = PolarConfig.getUid();
+        this.uniqueID = config.getUid();
 
         context = SensorHubService.getContext();
 

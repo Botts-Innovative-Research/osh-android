@@ -84,7 +84,7 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
     @Override
     public void doInit() {
         this.xmlID = "MESHTASTIC" + Build.SERIAL;
-        this.uniqueID = MeshtasticConfig.getUid();
+        this.uniqueID = config.getUidExt();
 
         context = SensorHubService.getContext();
 
