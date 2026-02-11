@@ -53,6 +53,9 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.botts.impl.client.okhttp.ConSysApiClientConfig;
+import com.botts.impl.client.okhttp.ConSysApiClientModule;
+import com.botts.impl.client.okhttp.ConSysOAuthConfig;
 
 import net.opengis.swe.v20.DataBlock;
 
@@ -63,7 +66,6 @@ import org.sensorhub.android.comm.ble.BleNetwork;
 import org.sensorhub.api.command.CommandData;
 import org.sensorhub.api.command.IStreamingControlInterface;
 import org.sensorhub.api.common.BigId;
-import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleConfigRepository;
@@ -75,7 +77,6 @@ import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
-//import org.sensorhub.impl.driver.flir.FlirOneCameraConfig;
 import org.sensorhub.impl.event.EventBus;
 import org.sensorhub.impl.module.InMemoryConfigDb;
 import org.sensorhub.impl.module.ModuleClassFinder;
@@ -85,27 +86,20 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
-import org.sensorhub.impl.sensor.angel.AngelSensorConfig;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
+import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
-
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
+import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
-
-import com.botts.impl.client.okhttp.ConSysApiClientConfig;
-import com.botts.impl.client.okhttp.ConSysApiClientModule;
-import com.botts.impl.client.okhttp.ConSysOAuthConfig;
-
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
-import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
-import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -393,6 +387,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         // Push Sensors Config
         sensorhubConfig.add(sensorsConfig);
 
+
         if (isPushingSensor(Sensors.Android)) {
             if (isClientEnabled) {
                 System.out.println("Connected Systems Client enabled");
@@ -452,8 +447,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 }
 
                 trupulseConfig = new TruPulseWithGeolocConfig();
-                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = sensorsConfig.getUidExt();
-//                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = AndroidSensorsConfig.getAndroidSensorsUid();
+                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = sensorsConfig.getAndroidSensorsUidWithExt();
                 ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
             }
 
@@ -628,23 +622,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     {
         if (clientURL == null)
             return;
-
-//        URL sosUrl = null;
-//        try {
-//            sosUrl = clientUri.toURL();
-//        } catch (MalformedURLException e) {
-//            throw new RuntimeException(e);
-//        }
-
-
-//        try {
-////            sosUrl = clientUri.resolve("/sensorhub/sos").toURL();
-//            sosUrl = clientUri.toURL();
-//            System.out.println("SOS URL"+ sosUrl);
-//        } catch (MalformedURLException e) {
-//            throw new RuntimeException(e);
-//        }
-
         SOSTClientConfig sosConfig = new SOSTClientConfig();
         sosConfig.id = sensorConf.id + "_SOST";
         sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");// + "SOS-T Client";
@@ -665,8 +642,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd, ConSysOAuthConfig oAuthConfig)
     {
-
-        System.out.println("client URL: " + clientURL);
         if (clientURL == null)
             return;
 
@@ -876,8 +851,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     }
 
     private void sendMeshtasticMessage(String message, String nodeId) throws IOException {
-        log.debug("sending mesh node");
-        // todo think ab how we want to send the commands
         ModuleRegistry reg = boundService.getSensorHub().getModuleRegistry();
         MeshtasticSensor meshy = reg.getModuleByType(MeshtasticSensor.class);
 
@@ -1396,14 +1369,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     protected void onDestroy()
     {
-//        stopService(new Intent(this, SensorHubService.class));
-//        super.onDestroy();
+        stopService(new Intent(this, SensorHubService.class));
 
-        // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
-        if (boundService != null) {
-            unbindService(sConn);
-            boundService = null;
-        }
+//        // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
+//        if (boundService != null) {
+//            unbindService(sConn);
+//            boundService = null;
+//        }
         super.onDestroy();
     }
 

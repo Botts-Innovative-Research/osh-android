@@ -11,19 +11,20 @@ public class MeshtasticConfig extends SensorConfig {
         this.moduleClass = MeshtasticSensor.class.getCanonicalName();
     }
 
+    public String device_name;
     public String uid_extension;
+
     public static String getUid() {
         Context context = SensorHubService.getContext();
         return "urn:android:meshtastic:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
-    public String getUidExt() {
-        Context context = SensorHubService.getContext();
-        if (uid_extension == null || uid_extension.isEmpty())
-            return "urn:android:meshtastic:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        return "urn:android:meshtastic:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID) + ":" + uid_extension;
+    public String getUidWithExt()
+    {
+        String baseUid = getUid();
+        if (uid_extension != null && !uid_extension.isEmpty())
+            return baseUid + ":" + uid_extension;
+        return baseUid;
     }
-    public String device_name;
 
 }

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationRequest;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -20,7 +19,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
 
-import org.sensorhub.android.service.R;
 import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.impl.SensorHub;
@@ -116,11 +114,10 @@ public class SensorHubService extends Service
             }
         }
 
-        // Create pending intent to open app when notification is tapped
         Intent notificationIntent = new Intent();
         notificationIntent.setClassName(
                 getApplicationContext(),
-                "org.sensorhub.android.MainActivity"  // CHANGE THIS to your actual package path
+                "org.sensorhub.android.MainActivity"
         );
 
         PendingIntent pendingIntent;
@@ -234,14 +231,27 @@ public class SensorHubService extends Service
 
         this.hasVideo = false;
 
+        final SensorHubAndroid hubToStop = sensorhub;
+        sensorhub = null;
+
+        final java.util.concurrent.CountDownLatch stopLatch = new java.util.concurrent.CountDownLatch(1);
+
         msgHandler.post(new Runnable() {
             public void run() {
-                sensorhub.stop();
-                sensorhub = null;
+                try {
+                    hubToStop.stop();
+                } finally {
+                    stopLatch.countDown();
+                }
             }
         });
 
-        // Release wake locks
+        try {
+            stopLatch.await(15, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         releaseWakeLocks();
     }
 
@@ -249,7 +259,6 @@ public class SensorHubService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        // START_STICKY ensures service is restarted if killed by system
         return START_STICKY;
     }
 

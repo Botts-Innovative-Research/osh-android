@@ -72,10 +72,11 @@ public class AndroidSensorsConfig extends SensorConfig
         return "urn:android:device:" + deviceID;
     }
 
-    public String getUidExt()
+    public String getAndroidSensorsUidWithExt()
     {
-        if (uidExtension == null || uidExtension.isEmpty())
-            return getAndroidSensorsUid();
-        return getAndroidSensorsUid() + ":" + uidExtension;
+        String baseUid = getAndroidSensorsUid();
+        if (uidExtension != null && !uidExtension.isEmpty())
+            return baseUid + ":" + uidExtension;
+        return baseUid;
     }
 }

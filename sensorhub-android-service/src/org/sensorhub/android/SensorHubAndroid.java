@@ -17,11 +17,8 @@ import org.sensorhub.impl.processing.ProcessingManagerImpl;
 import org.sensorhub.impl.security.ClientAuth;
 import org.sensorhub.impl.security.SecurityManagerImpl;
 import org.sensorhub.impl.system.DefaultSystemRegistry;
-import org.sensorhub.utils.ModuleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ForkJoinPool;
 
 public class SensorHubAndroid extends SensorHub {
     private static final Logger log = LoggerFactory.getLogger(SensorHub.class);
@@ -37,8 +34,8 @@ public class SensorHubAndroid extends SensorHub {
             log.info("*****************************************");
             log.info("Starting SensorHub...");
 //            log.info("Version : {}", ModuleUtils.getModuleInfo(SensorHub.class).getModuleVersion());
-            log.info("CPU cores: {}", Runtime.getRuntime().availableProcessors());
-            log.info("CommonPool Parallelism: {}", ForkJoinPool.commonPool().getParallelism());
+//            log.info("CPU cores: {}", Runtime.getRuntime().availableProcessors());
+//            log.info("CommonPool Parallelism: {}", ForkJoinPool.commonPool().getParallelism());
 
             // use provided module configs, read from JSON or create an in-memory one
             if (moduleConfigs == null)
