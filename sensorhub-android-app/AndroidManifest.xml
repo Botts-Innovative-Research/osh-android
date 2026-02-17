@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.sensorhub.android"
     android:hardwareAccelerated="true">
 
@@ -43,7 +44,8 @@
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -64,7 +66,8 @@
         android:name=".SensorHubService"
         android:enabled="true"
         android:foregroundServiceType="location"
-        android:exported="false"/>
+        android:exported="false"
+        tools:ignore="ForegroundServicePermission" />
 
 <!--        <receiver android:name=".RestartSensorHubReceiver"-->
 <!--            android:exported="false" />-->

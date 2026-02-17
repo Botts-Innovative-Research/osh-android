@@ -10,7 +10,7 @@ dependencies {
   api project(':sensorhub-driver-android')
   api project(':sensorhub-driver-kestrel')
 //  api project(':sensorhub-driver-flirone')
-  api project(':sensorhub-client-consys-okhttp')
+//  api project(':sensorhub-client-consys-okhttp')
 //  api project(':sensorhub-android-flirone')
   //api project(':sensorhub-android-dji')
 //  api project(':sensorhub-storage-h2')

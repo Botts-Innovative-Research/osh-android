@@ -53,9 +53,6 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.botts.impl.client.okhttp.ConSysApiClientConfig;
-import com.botts.impl.client.okhttp.ConSysApiClientModule;
-import com.botts.impl.client.okhttp.ConSysOAuthConfig;
 
 import net.opengis.swe.v20.DataBlock;
 
@@ -98,6 +95,9 @@ import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
+import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
+import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
+import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig;
 import org.sensorhub.impl.service.sos.SOSService;
 import org.sensorhub.impl.service.sos.SOSServiceConfig;
 import org.slf4j.Logger;

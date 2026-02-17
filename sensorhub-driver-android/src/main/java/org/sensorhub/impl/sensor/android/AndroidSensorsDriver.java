@@ -375,7 +375,7 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
         if (config.runName != null && config.runName.length() > 0)
         {
             AbstractFeature foi = new GenericFeatureImpl(new QName(SMLStaxBindings.NS_URI, "Feature", "sml"));
-            String uid = "urn:android:foi:" + config.runName.replaceAll("[ |']", "");
+            String uid = "urn:android:foi:" + config.uidExtension + ":" + config.deviceName; //config.runName.replaceAll("[ |']", "");
             foi.setUniqueIdentifier(uid);
             foi.setName(config.runName);
             foi.setDescription(config.runDescription);

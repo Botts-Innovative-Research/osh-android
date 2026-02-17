@@ -56,10 +56,10 @@ public class GattClientImpl implements IGattClient
     GattCallback callback;
     Map<BluetoothGattService, GattServiceImpl> services;
     ExecutorService bleCmdExec;
-    
     Context aContext;
     BluetoothDevice aDevice;
     BluetoothGatt aGatt;
+    final Object mtuLock = new Object();
         
     
     public GattClientImpl(Context aContext, BluetoothDevice aDevice, GattCallback callback)
@@ -138,7 +138,14 @@ public class GattClientImpl implements IGattClient
                 IGattDescriptor descriptor = getDescObject(aDesc);
                 notifyCommandExecuted(descriptor);
                 callback.onDescriptorWrite(GattClientImpl.this, descriptor, status);
-            }           
+            }
+
+            @Override
+            public void onMtuChanged(BluetoothGatt gatt, int mtu, int status)
+            {
+                log.debug("MTU changed to: " + mtu + ", status: " + status);
+                notifyCommandExecuted(mtuLock);
+            }
         });
     }
     
@@ -249,7 +256,7 @@ public class GattClientImpl implements IGattClient
             public void run()
             {
                 aGatt.requestMtu(mtu);
-                waitForCommandExecuted(mtu);
+                waitForCommandExecuted(mtuLock);
             }
         });
 
