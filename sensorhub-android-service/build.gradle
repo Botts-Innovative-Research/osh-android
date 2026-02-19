@@ -9,6 +9,7 @@ dependencies {
   //api 'org.sensorhub:sensorhub-process-vecmath:[1.0,2.0)'
   api project(':sensorhub-core')
   api project(':sensorhub-comm-ble')
+  api project(':sensorhub-service-consys')
   api project(':sensorhub-service-swe')
   api 'javax.xml.stream:stax-api:1.0-2'
 //  implementation 'androidx.core:core:1.12.0'
@@ -19,6 +20,7 @@ dependencies {
   androidTestImplementation 'androidx.test:rules:1.5.0'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+  implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
 configurations.configureEach {

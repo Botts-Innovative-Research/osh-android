@@ -657,6 +657,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         consysConfig.conSys.password = apiPwd;
         consysConfig.connection.connectTimeout = 10000;
         consysConfig.connection.reconnectAttempts = 9;
+        consysConfig.httpClientImplClass = OkHttpClientWrapper.class.getCanonicalName();
 
         consysConfig.dataSourceSelector = new ObsSystemDatabaseViewConfig();
 

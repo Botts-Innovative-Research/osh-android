@@ -339,7 +339,7 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
             }
 
 //            sensorDescription.setFeaturesOfInterest(foiList);
-            sensorDescription.setFeaturesOfInterest(getCurrentFeaturesOfInterestList());
+//            sensorDescription.setFeaturesOfInterest(getCurrentFeaturesOfInterestList());
 
             // add components
             int index = 0;
