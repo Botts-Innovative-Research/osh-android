@@ -7,7 +7,7 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_settings"/>
-    
+
     <item
         android:id="@+id/action_start"
         android:orderInCategory="101"
@@ -21,8 +21,19 @@
         android:title="@string/action_stop"/>
 
     <item
-        android:id="@+id/action_about"
+        android:id="@+id/action_status"
+        android:orderInCategory="104"
+        android:showAsAction="never"
+        android:title="@string/action_status"/>
+
+    <item
+        android:id="@+id/action_meshtastic"
         android:orderInCategory="103"
+        android:showAsAction="never"
+        android:title="@string/action_meshtastic"/>
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="110"
         android:showAsAction="never"
         android:title="@string/action_about"/>
 

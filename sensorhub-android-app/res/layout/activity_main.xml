@@ -31,5 +31,4 @@
         android:background="#80FFFFFF"
         android:padding="10dp"
         android:text="" />
-
 </RelativeLayout>
