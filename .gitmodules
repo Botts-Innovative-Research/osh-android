@@ -6,11 +6,3 @@
 	path = submodules/osh-core
 	url = git@github.com:kalynstricklin/osh-core.git
 	branch = update-moduleutils
-[submodule "submodules/socom-addons"]
-	path = submodules/socom-addons
-	url = git@github.com:Botts-Innovative-Research/socom-addons.git
-	branch = develop
-[submodule "submodules/botts-addons"]
-	path = submodules/botts-addons
-	url = git@github.com:Botts-Innovative-Research/botts-addons.git
-	branch = main
