@@ -65,7 +65,7 @@
     <service
         android:name=".SensorHubService"
         android:enabled="true"
-        android:foregroundServiceType="location"
+        android:foregroundServiceType="location|camera|microphone"
         android:exported="false"
         tools:ignore="ForegroundServicePermission" />
 
