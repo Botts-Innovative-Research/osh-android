@@ -53,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vast.ogc.gml.GenericFeatureImpl;
 import org.vast.ogc.gml.IFeature;
+import org.vast.ogc.om.MovingFeature;
 import org.vast.sensorML.SMLStaxBindings;
 
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ import javax.xml.namespace.QName;
 
 public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsConfig>
 {
+    static final String UID_PREFIX = "urn:osh:android";
     // keep logger name short because in LogCat it's max 23 chars
     private static final Logger log = LoggerFactory.getLogger(AndroidSensorsDriver.class.getSimpleName());
     public static final String LOCAL_REF_FRAME = "LOCAL_FRAME";
@@ -89,7 +91,7 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
     {
         // generate identifiers
         this.xmlID = "ANDROID_SENSORS_" + Build.SERIAL;
-        this.uniqueID = config.getAndroidSensorsUidWithExt();
+        this.uniqueID = UID_PREFIX + config.getAndroidSensorsUidWithExt();
         this.localFrameURI = this.uniqueID + "#" + LOCAL_REF_FRAME;
 
         // create data interfaces for sensors
@@ -250,8 +252,7 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
         }
     }
 
-    
-//    protected void useSensor(ISensorDataInterface output, Sensor sensor)
+
     protected void useSensor(IStreamingDataInterface output, Sensor sensor)
     {
         addOutput(output, false);
@@ -328,18 +329,8 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
             localRefFrame.addAxis("z", "The Z axis points towards the outside of the front face of the screen");
             ((PhysicalSystem)sensorDescription).addLocalReferenceFrame(localRefFrame);
 
-            // add FOI
-            // TODO: make sure that casting is correct here
-            Map<String, ? extends IFeature> fois = getCurrentFeaturesOfInterest();
-            FeatureListImpl foiList = new FeatureListImpl();
-            if (fois.size()  != 0) {
-                for (Map.Entry<String,? extends IFeature> foi: fois.entrySet()) {
-                    foiList.addFeature((AbstractFeature) foi);
-                }
-            }
-
 //            sensorDescription.setFeaturesOfInterest(foiList);
-//            sensorDescription.setFeaturesOfInterest(getCurrentFeaturesOfInterestList());
+            sensorDescription.setFeaturesOfInterest(getCurrentFeaturesOfInterestList());
 
             // add components
             int index = 0;
@@ -351,57 +342,46 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
         }
     }
 
-
-//    @Override
-//    public Map<String, ? extends IFeature> getCurrentFeaturesOfInterest()
-//    {
-//        if (config.runName != null && config.runName.length() > 0)
-//        {
-//            AbstractFeature foi = new GenericFeatureImpl(new QName(SMLStaxBindings.NS_URI, "Feature", "sml"));
-//            String uid = "urn:android:foi:" + config.runName.replaceAll("[ |']", "");
-//            foi.setUniqueIdentifier(uid);
-//            foi.setName(config.runName);
-//            foi.setDescription(config.runDescription);
-//            this.addFoi(foi);
-//
-//            return Collections.unmodifiableMap(foiMap);
-//        }
-//
-//        return null;
-//    }
-
     public FeatureList getCurrentFeaturesOfInterestList()
     {
-        if (config.runName != null && config.runName.length() > 0)
-        {
-            AbstractFeature foi = new GenericFeatureImpl(new QName(SMLStaxBindings.NS_URI, "Feature", "sml"));
-            String uid = "urn:android:foi:" + config.uidExtension + ":" + config.deviceName; //config.runName.replaceAll("[ |']", "");
-            foi.setUniqueIdentifier(uid);
-            foi.setName(config.runName);
-            foi.setDescription(config.runDescription);
-            this.addFoi(foi);
+        AbstractFeature foi = new GenericFeatureImpl(new QName(SMLStaxBindings.NS_URI, "Feature", "sml"));
+        String uid = "urn:android:foi" + config.getAndroidSensorsUidWithExt().replaceAll("[ |']", "");
+        foi.setUniqueIdentifier(uid);
+        foi.setName("Android Sensors");
+        foi.setDescription(config.runDescription);
+        this.addFoi(foi);
 
-            FeatureList featureList = new FeatureListImpl();
-            featureList.addFeature(foi);
-            return featureList;
-        }
-
-        return null;
+        FeatureList featureList = new FeatureListImpl();
+        featureList.addFeature(foi);
+        return featureList;
     }
 
+//    String addFoi(String type)
+//    {
+//        String foiUID = UID_PREFIX + config.getAndroidSensorsUidWithExt() + ":" + type + ":foi";
+//
+//        if (!foiMap.containsKey(foiUID))
+//        {
+//            MovingFeature foi = new MovingFeature();
+//            foi.setId(foiUID);
+//            foi.setUniqueIdentifier(foiUID);
+//            foi.setName("Android " + type);
+//            foi.setDescription("Android Sensor - " + type);
+//
+//            // register it
+//            addFoi(foi);
+//
+//            getLogger().debug("New vehicle added as FOI: {}", foiUID);
+//        }
+//
+//        return foiUID;
+//    }
 
     @Override
     public boolean isConnected()
     {
         return true;
     }
-
-
-    @Override
-    public void cleanup() throws SensorHubException
-    {
-    }
-
 
     public SensorManager getSensorManager()
     {
@@ -414,4 +394,5 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
     {
         return log;
     }
+
 }

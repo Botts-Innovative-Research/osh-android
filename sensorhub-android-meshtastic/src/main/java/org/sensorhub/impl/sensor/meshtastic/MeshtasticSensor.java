@@ -48,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
+    static final String UID_PREFIX = "urn:osh:sensor:meshtastic:";
+
     private static final UUID FROMRADIO_CHARACTERISTIC_UUID = UUID.fromString("2c55e69e-4993-11ed-b878-0242ac120002");
     private static final UUID TORADIO_CHARACTERISTIC_UUID = UUID.fromString("f75c76d2-129e-4dad-a1dd-7866124401e7");
     private static final UUID MESHTASTIC_SERVICE_UUID = UUID.fromString("6ba1b218-15a8-461f-9fa8-5dcae273eafd");
@@ -84,7 +86,7 @@ public class MeshtasticSensor extends AbstractSensorModule<MeshtasticConfig> {
     @Override
     public void doInit() {
         this.xmlID = "MESHTASTIC" + Build.SERIAL;
-        this.uniqueID = config.getUidWithExt();
+        this.uniqueID = UID_PREFIX + config.getUidWithExt();
 
         context = SensorHubService.getContext();
 

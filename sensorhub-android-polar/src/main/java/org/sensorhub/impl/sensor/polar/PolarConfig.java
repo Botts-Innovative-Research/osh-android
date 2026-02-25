@@ -39,7 +39,7 @@ public class PolarConfig extends SensorConfig
 
     public static String getUid() {
         Context context = SensorHubService.getContext();
-        return "urn:android:polar:" + Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     public String getUidWithExt()

@@ -447,7 +447,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 }
 
                 trupulseConfig = new TruPulseWithGeolocConfig();
-                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = sensorsConfig.getAndroidSensorsUidWithExt();
+                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = "urn:osh:android" + sensorsConfig.getAndroidSensorsUidWithExt();
                 ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
             }
 

@@ -17,7 +17,9 @@ package org.sensorhub.impl.sensor.android;
 import android.graphics.SurfaceTexture;
 
 import org.sensorhub.android.SensorHubService;
+import org.sensorhub.api.config.DisplayInfo;
 import org.sensorhub.api.module.ModuleConfig;
+import org.sensorhub.api.sensor.PositionConfig;
 import org.sensorhub.api.sensor.SensorConfig;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
@@ -57,7 +59,6 @@ public class AndroidSensorsConfig extends SensorConfig
     public String runName;
     public String runDescription;
 
-
     public AndroidSensorsConfig()
     {
         this.moduleClass = AndroidSensorsDriver.class.getCanonicalName();
@@ -69,7 +70,7 @@ public class AndroidSensorsConfig extends SensorConfig
         Context androidContext = SensorHubService.getContext();
         String deviceID = Settings.Secure.getString(androidContext.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        return "urn:android:device:" + deviceID;
+        return ":" + deviceID;
     }
 
     public String getAndroidSensorsUidWithExt()

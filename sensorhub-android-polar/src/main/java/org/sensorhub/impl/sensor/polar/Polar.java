@@ -63,6 +63,8 @@ import java.util.UUID;
  * @since Jan 13, 2023
  */
 public class Polar extends AbstractSensorModule<PolarConfig> {
+    static final String UID_PREFIX = "urn:osh:sensor:polar:";
+
     private final ArrayList<PhysicalComponent> smlComponents;
     private final SensorMLBuilder smlBuilder;
     static final Logger logger = LoggerFactory.getLogger(Polar.class.getSimpleName());
@@ -94,7 +96,7 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
     public void doInit() {
         logger.info("Initializing Polar heart monitor sensor");
         this.xmlID = "POLAR_" + Build.SERIAL;
-        this.uniqueID = config.getUidWithExt();
+        this.uniqueID = UID_PREFIX + config.getUidWithExt();
 
         context = SensorHubService.getContext();
 
@@ -110,10 +112,6 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
         } catch (SensorHubException e) {
             throw new RuntimeException(e);
         }
-
-//        batteryOutput = new BatteryOutput(this);
-//        batteryOutput.doInit();
-//        addOutput(batteryOutput, false);
 
         heartRateOutput = new HeartRateOutput(this);
         heartRateOutput.doInit();
