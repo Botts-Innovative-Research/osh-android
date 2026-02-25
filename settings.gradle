@@ -32,10 +32,6 @@ def repos = [
                 'sensors/health/sensorhub-driver-angelsensor',
                 'processing/sensorhub-process-vecmath',
                 'processing/sensorhub-process-geoloc'
-        ],
-        'botts-addons': [
-//                'clients/sensorhub-client-consys-okhttp',
-//                'sensors/video/sensorhub-driver-flirone'
         ]
 ]
 
