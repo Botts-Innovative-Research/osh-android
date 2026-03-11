@@ -26,6 +26,7 @@ public class SOSServiceWithIPC extends SOSService
     private static final String EXTRA_PAYLOAD = "SOS";
     private static final String EXTRA_ORIGIN = "src";
     private Context androidContext;
+    private BroadcastReceiver receiver;
 
     @Override
     public void start() throws SensorHubException
@@ -33,7 +34,7 @@ public class SOSServiceWithIPC extends SOSService
         super.start();
         androidContext = ((SOSServiceWithIPCConfig) config).androidContext;
 
-        BroadcastReceiver receiver = new BroadcastReceiver()
+        receiver = new BroadcastReceiver()
         {
             @Override
             public void onReceive(Context context, Intent intent)
@@ -50,6 +51,16 @@ public class SOSServiceWithIPC extends SOSService
         filter.addAction(ACTION_SOS);
 
         androidContext.registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public void stop() throws SensorHubException
+    {
+        if (androidContext != null && receiver != null) {
+            androidContext.unregisterReceiver(receiver);
+            receiver = null;
+        }
+        super.stop();
     }
 
     private void handleIPCRequest(String body)

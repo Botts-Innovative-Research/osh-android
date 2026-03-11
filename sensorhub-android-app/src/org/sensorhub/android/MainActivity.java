@@ -162,6 +162,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     private Flow.Subscription subscription;
     Flow.Subscriber mainActivity = this;
+    private BroadcastReceiver broadcastReceiver;
 
     // Request codes for permissions
     final int FINE_LOC_RC = 101;
@@ -1279,7 +1280,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
 
     private void setupBroadcastReceivers() {
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+        broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String origin = intent.getStringExtra("src");
@@ -1319,7 +1320,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_BROADCAST_RECEIVER);
 
-        registerReceiver(receiver, filter);
+        registerReceiver(broadcastReceiver, filter);
     }
 
     @Override
@@ -1371,6 +1372,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     protected void onDestroy()
     {
 //        stopService(new Intent(this, SensorHubService.class));
+
+        if (broadcastReceiver != null) {
+            unregisterReceiver(broadcastReceiver);
+            broadcastReceiver = null;
+        }
 
         // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
         if (boundService != null) {
