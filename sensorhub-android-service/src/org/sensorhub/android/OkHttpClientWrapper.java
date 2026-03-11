@@ -26,6 +26,7 @@ import org.sensorhub.impl.service.consys.client.TokenHandler;
 import org.sensorhub.impl.service.consys.client.http.IHttpClient;
 import org.sensorhub.impl.service.consys.resource.ResourceFormat;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -34,11 +35,14 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
+import okhttp3.Dispatcher;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -46,7 +50,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class OkHttpClientWrapper implements IHttpClient
+public class OkHttpClientWrapper implements IHttpClient, Closeable
 {
     protected OkHttpClient http;
     protected TokenHandler tokenHandler;
@@ -57,6 +61,8 @@ public class OkHttpClientWrapper implements IHttpClient
 
     @Override
     public void setConfig(ConSysApiClientConfig config) {
+        shutdownClient();
+
         if (config.conSysOAuth.oAuthEnabled) {
             tokenHandler = new TokenHandler(config.conSysOAuth);
         }
@@ -176,8 +182,9 @@ public class OkHttpClientWrapper implements IHttpClient
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                future.complete(response.code());
-                response.close();
+                try (ResponseBody ignored = response.body()) {
+                    future.complete(response.code());
+                }
             }
         });
 
@@ -204,7 +211,7 @@ public class OkHttpClientWrapper implements IHttpClient
         http.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+                future.completeExceptionally(e);
             }
 
             @Override
@@ -252,7 +259,7 @@ public class OkHttpClientWrapper implements IHttpClient
         http.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+                future.completeExceptionally(e);
             }
 
             @Override
@@ -294,5 +301,21 @@ public class OkHttpClientWrapper implements IHttpClient
             }
             requestBuilder.addHeader("Authorization", "Bearer " + tokenHandler.getToken());
         }
+    }
+
+    private void shutdownClient()
+    {
+        if (http != null) {
+            http.dispatcher().executorService().shutdown();
+            http.connectionPool().evictAll();
+            http = null;
+        }
+    }
+
+    @Override
+    public void close()
+    {
+        shutdownClient();
+        tokenHandler = null;
     }
 }
