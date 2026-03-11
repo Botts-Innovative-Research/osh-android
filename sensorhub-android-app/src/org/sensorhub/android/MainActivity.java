@@ -86,7 +86,7 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
-import org.sensorhub.impl.sensor.meshtastic.MeshtasticControlTextMessage;
+import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
@@ -760,7 +760,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         ModuleRegistry reg = boundService.getSensorHub().getModuleRegistry();
         MeshtasticSensor meshy = reg.getModuleByType(MeshtasticSensor.class);
 
-        IStreamingControlInterface textMessageControl = meshy.getCommandInputs().get(MeshtasticControlTextMessage.NAME);
+        IStreamingControlInterface textMessageControl = meshy.getCommandInputs().get(TextMessageControl.NAME);
 
         DataBlock cmdData = textMessageControl.getCommandDescription().createDataBlock();
         cmdData.setStringValue(0, message);
