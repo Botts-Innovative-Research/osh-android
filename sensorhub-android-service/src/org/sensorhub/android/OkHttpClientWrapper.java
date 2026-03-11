@@ -22,7 +22,8 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 
 import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
-import org.sensorhub.impl.service.consys.client.TokenHandler;
+import org.sensorhub.impl.service.consys.client.ITokenHandler;
+import org.sensorhub.impl.service.consys.client.OAuthTokenHandler;
 import org.sensorhub.impl.service.consys.client.http.IHttpClient;
 import org.sensorhub.impl.service.consys.resource.ResourceFormat;
 
@@ -49,16 +50,33 @@ import okhttp3.ResponseBody;
 public class OkHttpClientWrapper implements IHttpClient
 {
     protected OkHttpClient http;
-    protected TokenHandler tokenHandler;
+    protected ITokenHandler tokenHandler;
 
     public OkHttpClientWrapper() {
 
     }
 
+    public OkHttpClientWrapper(String user, char[] password, ITokenHandler tokenHandler) {
+        this.tokenHandler = tokenHandler;
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        if (user != null && !user.isEmpty()) {
+            final String finalPwd = password != null ? new String(password) : "";
+            builder.authenticator((route, response) -> {
+                String credential = Credentials.basic(user, finalPwd);
+                return response.request().newBuilder()
+                        .header(HttpHeaders.AUTHORIZATION, credential)
+                        .build();
+            });
+        }
+
+        this.http = builder.build();
+    }
+
     @Override
     public void setConfig(ConSysApiClientConfig config) {
         if (config.conSysOAuth.oAuthEnabled) {
-            tokenHandler = new TokenHandler(config.conSysOAuth);
+            tokenHandler = new OAuthTokenHandler(config.conSysOAuth);
         }
         this.http = new OkHttpClient.Builder().authenticator((route, response) -> {
             final String finalPwd = config.conSys.password != null ? new String(config.conSys.password) : "";
@@ -204,7 +222,7 @@ public class OkHttpClientWrapper implements IHttpClient
         http.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+                future.completeExceptionally(new CompletionException("Network request failed: " + e.getMessage(), e));
             }
 
             @Override
@@ -252,7 +270,7 @@ public class OkHttpClientWrapper implements IHttpClient
         http.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+                future.completeExceptionally(new CompletionException("Batch request failed: " + e.getMessage(), e));
             }
 
             @Override
@@ -271,7 +289,7 @@ public class OkHttpClientWrapper implements IHttpClient
                                 }
                                 reader.endArray();
                             } catch (IOException e) {
-                                future.completeExceptionally(e);
+                                future.completeExceptionally(new CompletionException("Error reading response string " + e.getMessage() , e));
                                 return;
                             }
                         }

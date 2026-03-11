@@ -82,6 +82,8 @@ public class AndroidCamera2Output extends AbstractSensorOutput<AndroidSensorsDri
     DataEncoding dataEncoding;
     int samplingPeriod;
     long systemTimeOffset = -1L;
+    byte[] frameBuffer;
+    int frameBufferSize;
     
     
     protected AndroidCamera2Output(AndroidSensorsDriver parentModule, CameraManager camManager, String cameraId, SurfaceHolder previewSurfaceHolder)
@@ -347,31 +349,42 @@ public class AndroidCamera2Output extends AbstractSensorOutput<AndroidSensorsDri
                 Image img = imgEncoder.acquireLatestImage();
                 if (img == null)
                     return;
-                ByteBuffer buf = img.getPlanes()[0].getBuffer();
-                
-                // generate new data record
-                DataBlock newRecord;
-                if (latestRecord == null)
-                    newRecord = dataStruct.createDataBlock();
-                else
-                    newRecord = latestRecord.renew();
-                
-                // set time stamp
-                double samplingTime = getJulianTimeStamp(img.getTimestamp());
-                newRecord.setDoubleValue(0, samplingTime);
-                
-                // set encoded data
-                //AbstractDataBlock frameData = (AbstractDataBlock)newRecord;
-                AbstractDataBlock frameData = ((DataBlockMixed)newRecord).getUnderlyingObject()[1];
-                byte[] frameBytes = new byte[buf.limit()];
-                buf.get(frameBytes);
-                frameData.setUnderlyingObject(frameBytes);
-                img.close();
-                
-                // send event
-                latestRecord = newRecord;
-                latestRecordTime = System.currentTimeMillis();
-                eventHandler.publish(new DataEvent(latestRecordTime, AndroidCamera2Output.this, latestRecord));
+
+                try {
+                    ByteBuffer buf = img.getPlanes()[0].getBuffer();
+                    int size = buf.remaining();
+
+                    if (frameBuffer == null || frameBufferSize < size) {
+                        frameBuffer = new byte[size];
+                        frameBufferSize = size;
+                        log.debug("Allocated frame buffer: {} bytes", size);
+                    }
+
+                    // generate new data record
+                    DataBlock newRecord;
+                    if (latestRecord == null)
+                        newRecord = dataStruct.createDataBlock();
+                    else
+                        newRecord = latestRecord.renew();
+
+                    // set time stamp
+                    double samplingTime = getJulianTimeStamp(img.getTimestamp());
+                    newRecord.setDoubleValue(0, samplingTime);
+
+                    // set encoded data
+                    //AbstractDataBlock frameData = (AbstractDataBlock)newRecord;
+                    AbstractDataBlock frameData = ((DataBlockMixed)newRecord).getUnderlyingObject()[1];
+                    byte[] frameBytes = new byte[size];
+                    buf.get(frameBytes);
+                    frameData.setUnderlyingObject(frameBytes);
+
+                    // send event
+                    latestRecord = newRecord;
+                    latestRecordTime = System.currentTimeMillis();
+                    eventHandler.publish(new DataEvent(latestRecordTime, AndroidCamera2Output.this, latestRecord));
+                } finally {
+                    img.close();
+                }
             }
         };
         
@@ -423,8 +436,15 @@ public class AndroidCamera2Output extends AbstractSensorOutput<AndroidSensorsDri
         }*/
         
         if (imgEncoder != null)
+        {
+            imgEncoder.setOnImageAvailableListener(null, null);
             imgEncoder.close();
-        
+            imgEncoder = null;
+        }
+
+        frameBuffer = null;
+        frameBufferSize = 0;
+
         if (cameraThread != null)
         {
             cameraThread.quitSafely();

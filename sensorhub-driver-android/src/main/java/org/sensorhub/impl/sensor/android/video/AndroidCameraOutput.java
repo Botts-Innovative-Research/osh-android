@@ -439,12 +439,18 @@ public abstract class AndroidCameraOutput extends AbstractSensorOutput<AndroidSe
         {
             mCodec.stop();
             mCodec.release();
+            mCodec = null;
         }
-        
+
+        imgBuf1 = null;
+        imgBuf2 = null;
+        latestRecord = null;
+        codecInfoData = null;
+
         if (bgLooper != null)
         {
             bgLooper.quit();
-            bgLooper = null;            
+            bgLooper = null;
         }
     }
 

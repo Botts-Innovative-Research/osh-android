@@ -35,8 +35,10 @@ android {
     targetSdkVersion rootProject.targetSdkVersion
   }
 
-  lintOptions {
-    abortOnError false
+  lint {
+    abortOnError true
+    warningsAsErrors false
+    checkReleaseBuilds true
   }
 
   sourceSets {

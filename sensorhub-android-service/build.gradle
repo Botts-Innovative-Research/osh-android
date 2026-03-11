@@ -43,8 +43,10 @@ android {
     targetCompatibility JavaVersion.VERSION_17
   }
 
-  lintOptions {
-    abortOnError false
+  lint {
+    abortOnError true
+    warningsAsErrors false
+    checkReleaseBuilds true
   }
 
   sourceSets {

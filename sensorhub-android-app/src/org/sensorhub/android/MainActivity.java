@@ -86,7 +86,7 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
-import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
+import org.sensorhub.impl.sensor.meshtastic.MeshtasticControlTextMessage;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
@@ -148,6 +148,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     StringBuffer mainInfoText = new StringBuffer();
     StringBuffer videoInfoText = new StringBuffer();
     boolean oshStarted = false;
+    boolean connectionErrorDialogShown = false;
     ArrayList<SOSTClient> sostClients = new ArrayList<>();
     ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<>();
 
@@ -227,14 +228,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         try {
             clientUri = new URI(newUrl);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
             clientURL = clientUri.toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+        } catch (URISyntaxException | MalformedURLException e) {
+            log.error("Invalid endpoint URL: " + newUrl, e);
+            clientUri = null;
+            clientURL = null;
         }
 
         // disable SSL check if requested
@@ -390,14 +388,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         if (isPushingSensor(Sensors.Android)) {
             if (isClientEnabled) {
-                System.out.println("Connected Systems Client enabled");
                 addCSApiConfig(sensorsConfig, user, password, conSysOAuthConfig);
-
             } else {
-                System.out.println("SOST Client enabled");
                 addSosTConfig(sensorsConfig, user, password);
             }
-
         }
 
         if(shouldStore(prefs)) {
@@ -451,7 +445,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
             }
 
-
             trupulseConfig.id = "TRUPULSE_SENSOR";
             trupulseConfig.name = "TruPulse Range Finder [" + deviceName + "]";
             trupulseConfig.autoStart = true;
@@ -467,7 +460,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 trupulseConfig.connection.reconnectAttempts = 10;
             }
             trupulseConfig.commSettings = btConf;
-
 
             sensorhubConfig.add(trupulseConfig);
         }
@@ -494,9 +486,15 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             meshtasticConfig.name = "Meshtastic [" + deviceName + "]";
             meshtasticConfig.autoStart = true;
             meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
-            meshtasticConfig.uid_extension = prefs.getString("uid_extension", "");
+            meshtasticConfig.serialNumber = deviceID;
 
+            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
+            btConf.protocol.deviceName = prefs.getString("meshtastic_device_address", "");
+            btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
+            meshtasticConfig.connection.connectTimeout = 100000;
+            meshtasticConfig.connection.reconnectAttempts = 10;
+
+            meshtasticConfig.commSettings = btConf;
 
             sensorhubConfig.add(meshtasticConfig);
         }
@@ -512,12 +510,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             polarConfig.device_name = prefs.getString("polar_device_address", "");
             polarConfig.uid_extension = prefs.getString("uid_extension", "");
 
-
             sensorhubConfig.add(polarConfig);
         }
 
-//        // Kestrel Weather
-
+        // Kestrel Weather
         enabled = prefs.getBoolean("kestrel_enabled", false);
         if (enabled) {
             BleConfig bleConf = new BleConfig();
@@ -538,82 +534,10 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(kestrelConfig);
         }
 
-        // FLIR One Edge sensor
-//        enabled = prefs.getBoolean("flirone_enabled", false);
-//        if (enabled)
-//        {
-//
-//            // perhaps do a wireless comm module
-//            FlirOneConfig flironeConfig = new FlirOneConfig();
-//            flironeConfig.id = "FLIRONE_EDGE_SENSOR";
-//            flironeConfig.name = "FLIR One Thermal Edge Camera [" + deviceName + "]";
-//            flironeConfig.autoStart = true;
-////            flironeConfig.androidContext = this.getApplicationContext();
-////            flironeConfig.camPreviewTexture = boundService.getVideoTexture();
-//            showVideo = true;
-//            sensorhubConfig.add(flironeConfig);
-//        }
-
-        // AngelSensor
-//        enabled = prefs.getBoolean("angel_enabled", false);
-//        if (enabled)
-//        {
-//            BleConfig bleConf = new BleConfig();
-//            bleConf.id = "BLE";
-//            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
-//            bleConf.androidContext = this.getApplicationContext();
-//            bleConf.autoStart = true;
-//            sensorhubConfig.add(bleConf);
-//
-//            AngelSensorConfig angelConfig = new AngelSensorConfig();
-//            angelConfig.id = "ANGEL_SENSOR";
-//            angelConfig.name = "Angel Sensor [" + deviceName + "]";
-//            angelConfig.autoStart = true;
-//            angelConfig.networkID = bleConf.id;
-//            //angelConfig.btAddress = "00:07:80:79:04:AF"; // mike
-//            //angelConfig.btAddress = "00:07:80:03:0E:0A"; // alex
-//            angelConfig.btAddress = prefs.getString("angel_address", null);
-//            sensorhubConfig.add(angelConfig);
-
-/**
-        // FLIR One sensor
-        enabled = prefs.getBoolean("flirone_enabled", false);
-        if (enabled)
-        {
-            FlirOneCameraConfig flironeConfig = new FlirOneCameraConfig();
-            flironeConfig.id = "FLIRONE_SENSOR";
-            flironeConfig.name = "FLIR One Camera [" + deviceName + "]";
-            flironeConfig.autoStart = true;
-            flironeConfig.androidContext = this.getApplicationContext();
-            flironeConfig.camPreviewTexture = boundService.getVideoTexture();
-            showVideo = true;
-            sensorhubConfig.add(flironeConfig);
-            addSosTConfig(flironeConfig, sosUser, sosPwd);
-        }
-
-        // DJI Drone
-        /*enabled = prefs.getBoolean("dji_enabled", false);
-        if (enabled)
-        {
-            DjiConfig djiConfig = new DjiConfig();
-            djiConfig.id = "DJI_DRONE";
-            djiConfig.name = "DJI Aircraft [" + deviceName + "]";
-            djiConfig.autoStart = true;
-            djiConfig.androidContext = this.getApplicationContext();
-            djiConfig.camPreviewTexture = boundService.getVideoTexture();
-            showVideo = true;
-            sensorhubConfig.add(djiConfig);
-            addSosTConfig(djiConfig, sosUser, sosPwd);
-        }*/
-
         if(isApiServiceEnabled){
-            // add connected sys service
-            System.out.println("Connected Systems Service enabled");
             sensorhubConfig.add(conSysApiService);
         }
         if(isSosServiceEnabled){
-            // add sos service
-            System.out.println("SOS Service enabled");
             sensorhubConfig.add(sosConfig);
         }
     }
@@ -678,6 +602,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         }
 
     }
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -840,8 +765,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 String destinationId = destinationIdText.getText().toString();
                 try {
                     sendMeshtasticMessage(msg, destinationId);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    log.error("Failed to send Meshtastic message", e);
+                    showErrorDialog("Failed to send message", e.getMessage());
                 }
             }
         });
@@ -855,7 +781,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         ModuleRegistry reg = boundService.getSensorHub().getModuleRegistry();
         MeshtasticSensor meshy = reg.getModuleByType(MeshtasticSensor.class);
 
-        IStreamingControlInterface textMessageControl = meshy.getCommandInputs().get(TextMessageControl.NAME);
+        IStreamingControlInterface textMessageControl = meshy.getCommandInputs().get(MeshtasticControlTextMessage.NAME);
 
         DataBlock cmdData = textMessageControl.getCommandDescription().createDataBlock();
         cmdData.setStringValue(0, message);
@@ -912,10 +838,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                         mainInfoArea.setBackgroundColor(0x80FFFFFF);
 
                     while(boundService.getSensorHub() == null){
+                        // Wait for SensorHub to start
                         System.out.println("Waiting for BoundService Hub to start...");
                     }
-                    System.out.println("BoundService SensorHub Started...");
                     while(boundService.getSensorHub().getEventBus() == null){
+                        // Wait for EventBus to start
                         System.out.println("Waiting for BoundService Hub EventBus to start...");
                     }
                     System.out.println("BoundService SensorHub EventBus Started...");
@@ -968,6 +895,45 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             // user accepted
         });
         alert.show();
+    }
+
+    /**
+     * shows an error dialog to the user.
+     */
+    protected void showErrorDialog(String title, String message) {
+        runOnUiThread(() -> {
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle(title);
+            alert.setMessage(message != null ? message : "An unknown error occurred");
+            alert.setIcon(android.R.drawable.ic_dialog_alert);
+            alert.setPositiveButton("OK", null);
+            alert.show();
+        });
+    }
+
+    /**
+     * shows a connection error dialog with option to retry or stop.
+     */
+    protected void showConnectionErrorDialog(String errorMessage) {
+        runOnUiThread(() -> {
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Connection Error");
+            alert.setMessage("Failed to connect to server:\n\n" + errorMessage + "\n\nWould you like to stop the service?");
+            alert.setIcon(android.R.drawable.ic_dialog_alert);
+            alert.setPositiveButton("Stop Service", (dialog, id) -> {
+                stopListeningForEvents();
+                stopRefreshingStatus();
+                sostClients.clear();
+                conSysClients.clear();
+                if (boundService != null)
+                    boundService.stopSensorHub();
+                mainInfoArea.setBackgroundColor(0xFFFFFFFF);
+                oshStarted = false;
+                newStatusMessage("SensorHub Stopped");
+            });
+            alert.setNegativeButton("Dismiss", null);
+            alert.show();
+        });
     }
 
 
@@ -1055,6 +1021,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
                         errorMsg += errorObj.getCause().getMessage();
                     mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
+//                    showConnectionErrorDialog("<font color='red'>"+ errorObj.getCause().getMessage() + "</font>");
                 }
                 mainInfoText.append("</p>");
             }
@@ -1071,6 +1038,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
             long now = System.currentTimeMillis();
+            boolean isConnected = client.isConnected();
 
             for (Entry<String, StreamInfo> stream : dataStreams.entrySet())
             {
@@ -1078,19 +1046,17 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
                 long lastEventTime = stream.getValue().lastEventTime;
                 long dt = now - lastEventTime;
+                int errorCount = stream.getValue().errorCount;
                 if (lastEventTime == Long.MIN_VALUE)
                     mainInfoText.append("<font color='red'>NO OBS</font>");
+                else if (!isConnected)
+                    mainInfoText.append("<font color='red'>DISCONNECTED (" + dt + "ms ago)</font>");
+                else if (errorCount > 0)
+                    mainInfoText.append("<font color='red'>ERR (" + dt + "ms ago, " + errorCount + " errors)</font>");
                 else if (dt > stream.getValue().measPeriodMs)
                     mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
                 else
                     mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-
-                if (stream.getValue().errorCount > 0)
-                {
-                    mainInfoText.append("<font color='red'> (");
-                    mainInfoText.append(stream.getValue().errorCount);
-                    mainInfoText.append(")</font>");
-                }
 
                 mainInfoText.append("<br/>");
             }
@@ -1104,6 +1070,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
             long now = System.currentTimeMillis();
+            boolean isConnected = client.isConnected();
+
+            // Reset dialog flag when connection is restored
+            if (isConnected) {
+                connectionErrorDialogShown = false;
+            }
 
             for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
             {
@@ -1113,17 +1085,17 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 long dt = now - lastEventTime;
                 if (lastEventTime == Long.MIN_VALUE)
                     mainInfoText.append("<font color='red'>NO OBS</font>");
+                else if (!isConnected) {
+                    mainInfoText.append("<font color='red'>DISCONNECTED (" + dt + "ms ago)</font>");
+                    if (!connectionErrorDialogShown) {
+                        connectionErrorDialogShown = true;
+                        showConnectionErrorDialog("Connection to ConSysApi server interrupted.");
+                    }
+                }
                 else if (dt > stream.getValue().measPeriodMs)
                     mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
                 else
                     mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-
-                if (stream.getValue().errorCount > 0)
-                {
-                    mainInfoText.append("<font color='red'> (");
-                    mainInfoText.append(stream.getValue().errorCount);
-                    mainInfoText.append(")</font>");
-                }
 
                 mainInfoText.append("<br/>");
             }
@@ -1159,7 +1131,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                         .append(preset.selectedBitrate).append(" kbits/s")
                         .append("");
             }catch (Exception e){
-                log.error("Exception thrown trying to disaply video", e.getMessage());
+                log.error("Exception thrown trying to display video", e.getMessage());
             }
         }
 
@@ -1498,15 +1470,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
         this.subscription = subscription;
-        System.out.println("MainActivity Subscribed...");
         subscription.request(10);
     }
 
     @Override
     public void onNext(Event e) {
-        System.out.println("Event of : " + e);
-
-        System.out.println(e.getSource());
         if (e instanceof ModuleEvent)
         {
 

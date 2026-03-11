@@ -9,8 +9,10 @@ dependencies {
   api project(':sensorhub-driver-angelsensor')
   api project(':sensorhub-driver-android')
   api project(':sensorhub-driver-kestrel')
+  api project(':sensorhub-driver-meshtastic')
+  api project(':sensorhub-comm-jssc')
+
 //  api project(':sensorhub-driver-flirone')
-//  api project(':sensorhub-client-consys-okhttp')
 //  api project(':sensorhub-android-flirone')
   //api project(':sensorhub-android-dji')
 //  api project(':sensorhub-storage-h2')
@@ -60,8 +62,10 @@ android {
     }
   }
 
-  lintOptions {
-    abortOnError false
+  lint {
+    abortOnError true
+    warningsAsErrors false
+    checkReleaseBuilds true
   }
 }
 

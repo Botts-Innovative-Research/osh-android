@@ -322,6 +322,7 @@ public abstract class AndroidAudioOutput extends AbstractSensorOutput<AndroidSen
         {
             mCodec.stop();
             mCodec.release();
+            mCodec = null;
         }
         
         if (bgLooper != null)

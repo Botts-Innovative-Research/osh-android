@@ -24,10 +24,11 @@ def repos = [
         'osh-addons'  : [
                 'comm/sensorhub-comm-ble',
                 'comm/sensorhub-comm-ble-dbus',
+                'comm/sensorhub-comm-jssc',
                 'services/sensorhub-service-video',
                 'sensors/video/sensorhub-driver-videocam',
                 'sensors/positioning/sensorhub-driver-trupulse',
-//        'sensors/others/sensorhub-driver-meshtastic',
+                'sensors/others/sensorhub-driver-meshtastic',
                 'sensors/weather/sensorhub-driver-kestrel',
                 'sensors/health/sensorhub-driver-angelsensor',
                 'processing/sensorhub-process-vecmath',

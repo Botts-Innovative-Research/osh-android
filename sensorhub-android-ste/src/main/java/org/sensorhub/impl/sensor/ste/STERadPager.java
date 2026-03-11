@@ -18,6 +18,8 @@ import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+
+import androidx.annotation.RequiresPermission;
 import androidx.core.app.ActivityCompat;
 import android.widget.Toast;
 
@@ -109,6 +111,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         addOutput(output, false);
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Override
     public void doStart() throws SensorException {
         Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
@@ -138,6 +141,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         output.doStart(eventHandler);
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Override
     public void doStop() {
         txNotificationTimer.cancel();
@@ -146,6 +150,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
     }
 
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -165,6 +170,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
             }
         }
 
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             deviceInformationService = btGatt.getService((DEVICE_INFORMATION_SERVICE));
@@ -185,6 +191,7 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
 
             txNotificationTimer = new Timer();
             TimerTask txNotificationTask = new TimerTask() {
+                @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
                 @Override
                 public void run() {
                     txCharacteristic.setValue("?");

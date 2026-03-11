@@ -321,9 +321,13 @@ public class UserSettingsActivity extends PreferenceActivity {
 
             Preference meshtasticEnabled = getPreferenceScreen().findPreference("meshtastic_enabled");
             Preference meshtasticOptions = getPreferenceScreen().findPreference("meshtastic_options");
-
             ListPreference meshDeviceListPref = (ListPreference) getPreferenceScreen().findPreference("meshtastic_device_address");
-
+            meshtasticOptions.setEnabled(prefs.getBoolean(meshtasticEnabled.getKey(), false));
+            meshtasticEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                meshtasticOptions.setEnabled((boolean) newValue);
+                meshDeviceListPref.setEnabled((boolean) newValue);
+                return true;
+            });
 
             Preference polarEnabled = getPreferenceScreen().findPreference("polar_enabled");
             Preference polarOptions = getPreferenceScreen().findPreference("polar_options");
@@ -405,11 +409,6 @@ public class UserSettingsActivity extends PreferenceActivity {
                 }
             }
 
-            meshtasticOptions.setEnabled(prefs.getBoolean(meshtasticEnabled.getKey(), false));
-            meshtasticEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
-                meshtasticOptions.setEnabled((boolean) newValue);
-                return true;
-            });
 
 //            Preference bleEnable = getPreferenceScreen().findPreference("ble_enabled");
 //            Preference bleLocationMethod = getPreferenceScreen().findPreference("ble_loc_method");

@@ -24,7 +24,7 @@ dependencies {
     implementation project(path: ':sensorhub-datastore-h2')
     implementation project(path: ':sensorhub-service-consys')
     implementation project(':sensorhub-android-ste')
-    implementation project(':sensorhub-android-meshtastic')
+//    implementation project(':sensorhub-android-meshtastic')
     implementation project(':sensorhub-android-polar')
     implementation project(':sensorhub-driver-android')
     implementation 'org.slf4j:slf4j-api:2.0.9'
@@ -78,8 +78,10 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
+    lint {
+        abortOnError true
+        warningsAsErrors false
+        checkReleaseBuilds true
     }
     buildFeatures {
         viewBinding true
