@@ -305,6 +305,12 @@ public class GattClientImpl implements IGattClient
     @Override
     public void close()
     {
+        if (bleCmdExec != null)
+        {
+            bleCmdExec.shutdownNow();
+            bleCmdExec = null;
+        }
+
         if (aGatt != null)
         {
             aGatt.disconnect();

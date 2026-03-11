@@ -78,6 +78,7 @@ public class OkHttpClientWrapper implements IHttpClient
         if (config.conSysOAuth.oAuthEnabled) {
             tokenHandler = new OAuthTokenHandler(config.conSysOAuth);
         }
+        shutdownClient();
         this.http = new OkHttpClient.Builder().authenticator((route, response) -> {
             final String finalPwd = config.conSys.password != null ? new String(config.conSys.password) : "";
 
@@ -311,6 +312,14 @@ public class OkHttpClientWrapper implements IHttpClient
                 tokenHandler.refreshAccessToken();
             }
             requestBuilder.addHeader("Authorization", "Bearer " + tokenHandler.getToken());
+        }
+    }
+
+    private void shutdownClient()
+    {
+        if (http != null) {
+            http.dispatcher().executorService().shutdown();
+            http.connectionPool().evictAll();
         }
     }
 }

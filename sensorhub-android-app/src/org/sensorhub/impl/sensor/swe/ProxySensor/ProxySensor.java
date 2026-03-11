@@ -45,6 +45,7 @@ public class ProxySensor extends SWEVirtualSensor {
     private static final String EXTRA_PAYLOAD = "PROXY";
     private static final String EXTRA_ORIGIN = "src";
     private Context androidContext;
+    private BroadcastReceiver receiver;
 
     public ProxySensor() {
         super();
@@ -54,7 +55,7 @@ public class ProxySensor extends SWEVirtualSensor {
     public void start() throws SensorHubException {
         androidContext = ((ProxySensorConfig) config).androidContext;
 
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+        receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String origin = intent.getStringExtra(EXTRA_ORIGIN);
@@ -209,5 +210,14 @@ public class ProxySensor extends SWEVirtualSensor {
                 break;
             }
         }
+    }
+
+    @Override
+    protected void doStop() throws SensorHubException {
+        if (androidContext != null && receiver != null) {
+            androidContext.unregisterReceiver(receiver);
+            receiver = null;
+        }
+        super.doStop();
     }
 }
