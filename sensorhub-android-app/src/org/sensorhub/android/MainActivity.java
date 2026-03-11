@@ -464,18 +464,29 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             meshtasticConfig.name = "Meshtastic [" + deviceName + "]";
             meshtasticConfig.autoStart = true;
             meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            meshtasticConfig.serialNumber = deviceID;
-
-            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
-            btConf.protocol.deviceName = prefs.getString("meshtastic_device_address", "");
-            btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
-            meshtasticConfig.connection.connectTimeout = 100000;
-            meshtasticConfig.connection.reconnectAttempts = 10;
-
-            meshtasticConfig.commSettings = btConf;
+            meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
+            meshtasticConfig.uid_extension = prefs.getString("uid_extension", "");
 
             sensorhubConfig.add(meshtasticConfig);
         }
+        //todo use this when finish switching to meshtastic in osh-addons
+//        if (enabled) {
+//            MeshtasticConfig meshtasticConfig = new MeshtasticConfig();
+//
+//            meshtasticConfig.id = "MESHTASTIC_SENSOR";
+//            meshtasticConfig.name = "Meshtastic Radio [" + deviceName + "]";
+//            meshtasticConfig.autoStart = true;
+//            meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+//            meshtasticConfig.serialNumber = deviceID;
+//            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
+//            btConf.protocol.deviceName = prefs.getString("meshtastic_device_address", "");
+//            btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
+//            meshtasticConfig.connection.connectTimeout = 100000;
+//            meshtasticConfig.connection.reconnectAttempts = 10;
+//            meshtasticConfig.commSettings = btConf;
+//
+//            sensorhubConfig.add(meshtasticConfig);
+//        }
 
         // Polar Heart Sensor
         enabled = prefs.getBoolean("polar_enabled", false);
