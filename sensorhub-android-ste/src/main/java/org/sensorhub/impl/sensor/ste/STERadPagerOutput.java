@@ -91,7 +91,7 @@ public class STERadPagerOutput extends AbstractSensorOutput<STERadPager> impleme
 
     @SuppressLint("MissingPermission")
     public void doStart(Handler handler) {
-        locManager.requestLocationUpdates(locProvider.getName(), 100, 0.0f, this, handler.getLooper());
+        locManager.requestLocationUpdates(locProvider.getName(), 1000, 0.0f, this, handler.getLooper());
     }
 
     @Override

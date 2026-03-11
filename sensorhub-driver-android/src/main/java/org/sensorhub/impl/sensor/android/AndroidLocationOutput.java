@@ -81,7 +81,7 @@ public class AndroidLocationOutput extends AbstractSensorOutput<AndroidSensorsDr
     @Override
     public void start(Handler eventHandler) {
         // request location data
-        locManager.requestLocationUpdates(locProvider.getName(), 100, 0.0f, this, eventHandler.getLooper());
+        locManager.requestLocationUpdates(locProvider.getName(), 1000, 0.0f, this, eventHandler.getLooper());
     }
     
     
