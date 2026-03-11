@@ -121,6 +121,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Flow;
 
 import javax.net.ssl.HostnameVerifier;
@@ -139,6 +140,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     public static final Date TRUPULSE_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
     private static final Logger log = LoggerFactory.getLogger(MainActivity.class);
 
+    private BroadcastReceiver broadcastReceiver;
+
     TextView mainInfoArea;
     TextView videoInfoArea;
     SensorHubService boundService;
@@ -149,8 +152,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     StringBuffer videoInfoText = new StringBuffer();
     boolean oshStarted = false;
     boolean connectionErrorDialogShown = false;
-    ArrayList<SOSTClient> sostClients = new ArrayList<>();
-    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<>();
+    CopyOnWriteArrayList<SOSTClient> sostClients = new CopyOnWriteArrayList<>();
+    CopyOnWriteArrayList<ConSysApiClientModule> conSysClients = new CopyOnWriteArrayList<>();
 
     URL url;
     AndroidSensorsDriver androidSensors;
@@ -163,6 +166,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     private Flow.Subscription subscription;
     Flow.Subscriber mainActivity = this;
+
+    private static final long HUB_POLL_INTERVAL_MS = 200;
+    private static final int HUB_POLL_MAX_ATTEMPTS = 50; // 10 seconds total
 
     // Request codes for permissions
     final int FINE_LOC_RC = 101;
@@ -189,7 +195,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         public void onServiceConnected(ComponentName className, IBinder service)
         {
             boundService = ((SensorHubService.LocalBinder) service).getService();
-//            boundService.initSensorhub();
         }
 
         public void onServiceDisconnected(ComponentName className)
@@ -204,7 +209,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
-        //get ip, port, user, password
         String host = prefs.getString("ip_address", "").trim();
         String port = prefs.getString("port", "").trim();
         String user = prefs.getString("username", null);
@@ -221,8 +225,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         if (port.isEmpty())
             port = "8585";
-
-//        String sensorhubEndpoint = "/sensorhub";
 
         String newUrl = (isTLSEnabled ? "https://" : "http://") + host + ":" + port + endpointPath;
 
@@ -241,18 +243,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             // Create a trust manager that does not validate certificate chains
             TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        X509Certificate[] myTrustedAnchors = new X509Certificate[0];
-                        return myTrustedAnchors;
+                    new X509TrustManager() {
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            X509Certificate[] myTrustedAnchors = new X509Certificate[0];
+                            return myTrustedAnchors;
+                        }
+                        public void checkClientTrusted(
+                                java.security.cert.X509Certificate[] certs, String authType) {
+                        }
+                        public void checkServerTrusted(
+                                java.security.cert.X509Certificate[] certs, String authType) {
+                        }
                     }
-                    public void checkClientTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                    public void checkServerTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                }
             };
 
             // Install the all-trusting trust manager
@@ -277,7 +279,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         String tokenEndpoint = prefs.getString("token_endpoint", "").trim();
         String clientSecret = prefs.getString("client_secret", "").trim();
 
-        // get device name
         String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         String deviceName = prefs.getString("device_name", null);
         if (deviceName == null || deviceName.length() < 2)
@@ -299,8 +300,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sensorsConfig.activateNetworkLocation = prefs.getBoolean("netloc_enabled", false);
         sensorsConfig.enableCamera = prefs.getBoolean("cam_enabled", false);
         sensorsConfig.selectedCameraId = Integer.parseInt(prefs.getString("camera_select", "0"));
-        /*if (sensorsConfig.activateBackCamera || sensorsConfig.activateFrontCamera)
-            showVideo = true;*/
         if (sensorsConfig.enableCamera)
             showVideo = true;
 
@@ -350,14 +349,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
 
         // START SOS Config ************************************************************************
-        // Setup HTTPServerConfig for enabling more complete node functionality
         HttpServerConfig serverConfig = new HttpServerConfig();
         serverConfig.proxyBaseUrl = "";
         serverConfig.httpPort = 8585;
         serverConfig.autoStart = true;
         sensorhubConfig.add(serverConfig);
 
-        // We don't need android context unless we're doing IPC things
         SOSServiceConfig sosConfig = new SOSServiceConfig();
         sosConfig.moduleClass = SOSService.class.getCanonicalName();
         sosConfig.id = "SOS_SERVICE";
@@ -366,7 +363,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         sosConfig.enableTransactional = true;
         sosConfig.exposedResources = new ObsSystemDatabaseViewConfig();
 
-        //Connected systems service
         ConSysApiServiceConfig conSysApiService = new ConSysApiServiceConfig();
         conSysApiService.moduleClass = ConSysApiService.class.getCanonicalName();
         conSysApiService.id = "CON_SYS_SERVICE";
@@ -381,10 +377,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         conSysOAuthConfig.clientID = clientId;
         conSysOAuthConfig.clientSecret = clientSecret;
 
-
-        // Push Sensors Config
         sensorhubConfig.add(sensorsConfig);
-
 
         if (isPushingSensor(Sensors.Android)) {
             if (isClientEnabled) {
@@ -401,21 +394,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             basicStorageConfig.moduleClass = "org.sensorhub.impl.persistence.h2.MVObsStorageImpl";
             basicStorageConfig.storagePath = dbFile.getAbsolutePath() + "/${STORAGE_ID}.dat";
             basicStorageConfig.autoStart = true;
-
-//            sosConfig.newStorageConfig = basicStorageConfig;
-
-//            StreamStorageConfig androidStreamStorageConfig = createStreamStorageConfig(androidSensorsConfig);
-//            addStorageConfig(androidSensorsConfig, androidStreamStorageConfig);
-
-           /* File dbFile = new File(getApplicationContext().getFilesDir() + "/db/");
-            dbFile.mkdirs();
-
-            MVStorageConfig storageConfig = new MVStorageConfig();
-            storageConfig.setStorageIdentifier("OSH_CONNECT_OBS");*/
         }
 
-//        SensorDataProviderConfig androidDataProviderConfig = createDataProviderConfig(androidSensorsConfig);
-//        addSosServerConfig(sosConfig, androidDataProviderConfig);
         // END SOS CONFIG **************************************************************************
 
         // TruPulse sensor
@@ -424,7 +404,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         {
             TruPulseConfig trupulseConfig = new TruPulseConfig();
 
-            // add target geolocation processing if GPS is enabled
             if (sensorsConfig.activateGpsLocation)
             {
                 String gpsOutputName = null;
@@ -476,7 +455,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(steRadPagerConfig);
         }
 
-
         // Meshtastic Sensor
         enabled = prefs.getBoolean("meshtastic_enabled", false);
         if (enabled)
@@ -499,7 +477,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             sensorhubConfig.add(meshtasticConfig);
         }
 
-        // polar heart Sensor
+        // Polar Heart Sensor
         enabled = prefs.getBoolean("polar_enabled", false);
         if (enabled) {
             PolarConfig polarConfig = new PolarConfig();
@@ -548,7 +526,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return;
         SOSTClientConfig sosConfig = new SOSTClientConfig();
         sosConfig.id = sensorConf.id + "_SOST";
-        sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");// + "SOS-T Client";
+        sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");
         sosConfig.autoStart = true;
         sosConfig.sos.remoteHost = clientURL.getHost();
         sosConfig.sos.remotePort = clientURL.getPort() < 0 ? clientURL.getDefaultPort() : clientURL.getPort();
@@ -622,7 +600,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         checkForPermissions();
         // bind to SensorHub service
         Intent intent = new Intent(this, SensorHubService.class);
-        startService(intent);  // ADD THIS LINE
+        startService(intent);
         bindService(intent, sConn, Context.BIND_AUTO_CREATE);
 
         // handler to refresh sensor status in UI
@@ -630,10 +608,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         setupBroadcastReceivers();
         requestBatteryOptimizationExemption();
-
-        // Due to changes with OSH, it may be best to create and start the hub immediately
-        // This allows us access to the module registry created by default
-//        boundService.initSensorhub();
     }
 
     private boolean hasBluetoothPermissions() {
@@ -641,7 +615,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             return checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
                     && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED;
         }
-        return true; // Older versions handled by existing checks
+        return true;
     }
 
     Menu optionsMenu;
@@ -659,9 +633,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings)
         {
@@ -734,9 +705,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 statusIntent.putExtra("sensorStorageStatus", "N/A");
             }
 
-//            statusIntent.putExtra("boundService", boundService);
-
-
             startActivity(statusIntent);
             return true;
         }
@@ -794,7 +762,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 .build();
 
         textMessageControl.submitCommand(cmd);
-     }
+    }
 
     protected synchronized void showRunNamePopup() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -802,7 +770,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         alert.setTitle("Run Name");
         alert.setMessage("Please enter the name for this run");
 
-        // Set an EditText view to get user input
         final EditText input = new EditText(this);
         input.getText().append("Run-");
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
@@ -815,7 +782,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 String runName = input.getText().toString();
-
 
                 updateConfig(PreferenceManager.getDefaultSharedPreferences(MainActivity.this), runName);
 
@@ -832,27 +798,22 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     newStatusMessage("Starting SensorHub...");
                     sostClients.clear();
                     conSysClients.clear();
+
+                    // Subscribe BEFORE modules load so we don't miss events
+                    boundService.setOnHubReadyListener(hub -> {
+                        EventBus shEvtBus = (EventBus) hub.getEventBus();
+                        if (shEvtBus != null) {
+                            shEvtBus.newSubscription()
+                                    .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
+                                    .subscribe(mainActivity);
+                        }
+                    });
+
                     boundService.startSensorHub(sensorhubConfig, showVideo);
 
                     if (boundService.hasVideo())
                         mainInfoArea.setBackgroundColor(0x80FFFFFF);
-
-                    while(boundService.getSensorHub() == null){
-                        // Wait for SensorHub to start
-                        System.out.println("Waiting for BoundService Hub to start...");
-                    }
-                    while(boundService.getSensorHub().getEventBus() == null){
-                        // Wait for EventBus to start
-                        System.out.println("Waiting for BoundService Hub EventBus to start...");
-                    }
-                    System.out.println("BoundService SensorHub EventBus Started...");
-                    EventBus shEvtBus = (EventBus) boundService.getSensorHub().getEventBus();
-
-                    shEvtBus.newSubscription()
-                            .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
-                            .subscribe(mainActivity);
                 }
-
             }
         });
 
@@ -860,6 +821,26 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         });
 
         alert.show();
+    }
+
+    private void waitForSensorHubReady(final int attempt) {
+        if (attempt >= HUB_POLL_MAX_ATTEMPTS) {
+            log.error("SensorHub did not start within the expected time");
+            newStatusMessage("Error: SensorHub startup timed out");
+            return;
+        }
+
+        if (boundService.getSensorHub() != null
+                && boundService.getSensorHub().getEventBus() != null) {
+            log.info("SensorHub EventBus ready after {} polls", attempt);
+            EventBus shEvtBus = (EventBus) boundService.getSensorHub().getEventBus();
+            shEvtBus.newSubscription()
+                    .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
+                    .subscribe(mainActivity);
+        } else {
+            displayHandler.postDelayed(() -> waitForSensorHubReady(attempt + 1),
+                    HUB_POLL_INTERVAL_MS);
+        }
     }
 
 
@@ -892,7 +873,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         alert.setTitle("OpenSensorHub");
         alert.setMessage(message);
         alert.setPositiveButton("OK", (dialog, id) -> {
-            // user accepted
         });
         alert.show();
     }
@@ -941,7 +921,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         if (displayCallback != null)
             return;
 
-        // handler to display async messages in UI
         displayCallback = new Runnable()
         {
             public void run()
@@ -969,11 +948,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected synchronized void displayStatus() {
 
-        boolean needsRestart = false;
-
         mainInfoText.setLength(0);
 
-        // first display error messages if any
         for (SOSTClient client: sostClients)
         {
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
@@ -987,12 +963,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     mainInfoText.append(client.getStatusMessage() + "<br/>");
                 if (showError)
                 {
-                    Throwable errorObj = client.getCurrentError();
-                    String errorMsg = errorObj.getMessage().trim();
-                    if (!errorMsg.endsWith("."))
-                        errorMsg += ". ";
-                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
-                        errorMsg += errorObj.getCause().getMessage();
+                    String errorMsg = getSafeErrorMessage(client.getCurrentError());
                     mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
                 }
                 mainInfoText.append("</p>");
@@ -1014,14 +985,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     mainInfoText.append(client.getStatusMessage() + "<br/>");
                 if (showError)
                 {
-                    Throwable errorObj = client.getCurrentError();
-                    String errorMsg = errorObj.getMessage().trim();
-                    if (!errorMsg.endsWith("."))
-                        errorMsg += ". ";
-                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
-                        errorMsg += errorObj.getCause().getMessage();
+                    String errorMsg = getSafeErrorMessage(client.getCurrentError());
                     mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
-//                    showConnectionErrorDialog("<font color='red'>"+ errorObj.getCause().getMessage() + "</font>");
                 }
                 mainInfoText.append("</p>");
             }
@@ -1049,8 +1014,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 int errorCount = stream.getValue().errorCount;
                 if (lastEventTime == Long.MIN_VALUE)
                     mainInfoText.append("<font color='red'>NO OBS</font>");
-                else if (!isConnected)
-                    mainInfoText.append("<font color='red'>DISCONNECTED (" + dt + "ms ago)</font>");
+//                else if (!isConnected)
+//                    mainInfoText.append("<font color='red'>DISCONNECTED (" + dt + "ms ago)</font>");
                 else if (errorCount > 0)
                     mainInfoText.append("<font color='red'>ERR (" + dt + "ms ago, " + errorCount + " errors)</font>");
                 else if (dt > stream.getValue().measPeriodMs)
@@ -1073,9 +1038,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             boolean isConnected = client.isConnected();
 
             // Reset dialog flag when connection is restored
-            if (isConnected) {
-                connectionErrorDialogShown = false;
-            }
+//            if (isConnected) {
+//                connectionErrorDialogShown = false;
+//            }
 
             for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet())
             {
@@ -1085,13 +1050,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                 long dt = now - lastEventTime;
                 if (lastEventTime == Long.MIN_VALUE)
                     mainInfoText.append("<font color='red'>NO OBS</font>");
-                else if (!isConnected) {
-                    mainInfoText.append("<font color='red'>DISCONNECTED (" + dt + "ms ago)</font>");
-                    if (!connectionErrorDialogShown) {
-                        connectionErrorDialogShown = true;
-                        showConnectionErrorDialog("Connection to ConSysApi server interrupted.");
-                    }
-                }
+//                else if (!isConnected) {
+//                    mainInfoText.append("<font color='red'>DISCONNECTED (" + dt + "ms ago)</font>");
+//                    if (!connectionErrorDialogShown) {
+//                        connectionErrorDialogShown = true;
+//                        showConnectionErrorDialog("Connection to ConSysApi server interrupted.");
+//                    }
+//                }
                 else if (dt > stream.getValue().measPeriodMs)
                     mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
                 else
@@ -1103,10 +1068,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         mainInfoText.append("<p>");
 
         if (mainInfoText.length() > 5)
-            mainInfoText.setLength(mainInfoText.length()-5); // remove last </br>
+            mainInfoText.setLength(mainInfoText.length()-5);
         mainInfoText.append("</p>");
 
-        // Notify we are running when no data is being pushed
         boolean serveOrStore = shouldServe(PreferenceManager.getDefaultSharedPreferences(MainActivity.this)) || shouldStore(PreferenceManager.getDefaultSharedPreferences(MainActivity.this));
         if(sostClients.isEmpty() && serveOrStore){
             mainInfoText.append("No Sensors Set to Push Remotely");
@@ -1119,7 +1083,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         // show video info
         if (androidSensors != null && boundService.hasVideo())
         {
-//             TODO: Fix crash resulting from this (620)
             try {
                 VideoEncoderConfig config = androidSensors.getConfiguration().videoConfig;
                 VideoPreset preset = config.presets[config.selectedPreset];
@@ -1135,6 +1098,16 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         }
 
+    }
+
+    private String getSafeErrorMessage(Throwable errorObj) {
+        String errorMsg = errorObj.getMessage() != null ? errorObj.getMessage().trim() : "Unknown error";
+
+        if (!errorMsg.endsWith("."))
+            errorMsg += ". ";
+        if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
+            errorMsg += errorObj.getCause().getMessage();
+        return errorMsg;
     }
 
     protected synchronized void newStatusMessage(String msg)
@@ -1160,23 +1133,16 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     protected void startListeningForEvents() {
         if (boundService == null || boundService.getSensorHub() == null){
-
+            // no-op
         }
-
-        // TODO: Implement a listener that can sub to the status of the hub
-//        boundService.getSensorHub().getModuleRegistry().registerListener(this);
-
     }
 
 
     protected void stopListeningForEvents()
     {
         if (boundService == null || boundService.getSensorHub() == null){
-
+            // no-op
         }
-
-        // TODO: Unsub the listener here
-//        boundService.getSensorHub().getModuleRegistry().unregisterListener(this);
     }
 
 
@@ -1251,7 +1217,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
 
     private void setupBroadcastReceivers() {
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+        broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String origin = intent.getStringExtra("src");
@@ -1265,7 +1231,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                         return;
                     }
 
-                    // register and "start" new sensor, data stream doesn't begin until someone requests data;
                     try {
                         boundService.stopSensorHub();
                         Thread.sleep(2000);
@@ -1277,10 +1242,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                         if (boundService.hasVideo())
                             mainInfoArea.setBackgroundColor(0x80FFFFFF);
 
-                        EventBus shEventBus = (EventBus) boundService.getSensorHub().getEventBus();
-//                        shEventBus.newSubscription()
-//                                .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
-//                                .subscribe();
                     } catch (InterruptedException e) {
                         Log.e("OSHApp", "Error Loading Proxy Sensor", e);
                     }
@@ -1291,7 +1252,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_BROADCAST_RECEIVER);
 
-        registerReceiver(receiver, filter);
+        registerReceiver(broadcastReceiver, filter);
     }
 
     @Override
@@ -1342,9 +1303,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     protected void onDestroy()
     {
-//        stopService(new Intent(this, SensorHubService.class));
+        if (broadcastReceiver != null) {
+            try {
+                unregisterReceiver(broadcastReceiver);
+            } catch (IllegalArgumentException e) {
+            }
+            broadcastReceiver = null;
+        }
 
-        // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
         if (boundService != null) {
             unbindService(sConn);
             boundService = null;
@@ -1369,7 +1335,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture)
     {
-        return false;
+        return true;
     }
 
 
@@ -1406,7 +1372,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     private void checkForPermissions(){
         List<String> permissions = new ArrayList<>();
 
-        // Check for necessary permissions
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
@@ -1459,7 +1424,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
         }
 
-        // Does app actually need storage permissions now?
         String[] permARR = new String[permissions.size()];
         permARR = permissions.toArray(permARR);
         if(permARR.length >0) {
@@ -1477,22 +1441,18 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     public void onNext(Event e) {
         if (e instanceof ModuleEvent)
         {
-
-            // start refreshing status on first module loaded
             if (!oshStarted && ((ModuleEvent) e).getType() == ModuleEvent.Type.LOADED)
             {
                 oshStarted = true;
-                startRefreshingStatus();
+                displayHandler.post(() -> startRefreshingStatus());
                 return;
             }
 
-            // detect when Android sensor driver is started
             else if (e.getSource() instanceof AndroidSensorsDriver)
             {
                 this.androidSensors = (AndroidSensorsDriver)e.getSource();
             }
 
-            // detect when SOS-T modules are connected
             else if (e.getSource() instanceof SOSTClient && ((ModuleEvent)e).getType() == ModuleEvent.Type.STATE_CHANGED)
             {
                 switch (((ModuleEvent)e).getNewState())
@@ -1518,7 +1478,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     @Override
     public void onError(Throwable throwable) {
-
+        log.error("Event subscription error", throwable);
     }
 
     @Override

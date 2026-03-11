@@ -4,6 +4,7 @@ import org.sensorhub.api.ISensorHubConfig;
 import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.impl.SensorHub;
+import org.sensorhub.impl.SensorHubConfig;
 import org.sensorhub.impl.comm.NetworkManagerImpl;
 import org.sensorhub.impl.common.IdEncodersBase32;
 import org.sensorhub.impl.common.IdEncodersDES;
@@ -32,44 +33,43 @@ public class SensorHubAndroid extends SensorHub {
         super(config, moduleConfigs);
     }
 
-    public synchronized void start() throws SensorHubException {
-        if (!started)
-        {
-            log.info("*****************************************");
-            log.info("Starting SensorHub...");
-            log.info("Version : {}", ModuleUtils.getModuleInfo(SensorHub.class).getModuleVersion());
-            log.info("CPU cores: {}", Runtime.getRuntime().availableProcessors());
-            log.info("CommonPool Parallelism: {}", ForkJoinPool.commonPool().getParallelism());
+    public synchronized void initComponents() throws SensorHubException {
+        if (started) return;
 
-            // use provided module configs, read from JSON or create an in-memory one
-            if (moduleConfigs == null)
-            {
-                var classFinder = new ModuleClassFinder(osgiContext);
-                moduleConfigs = config.getModuleConfigPath() != null ?
-                        new ModuleConfigJsonFile(config.getModuleConfigPath(), true, classFinder) :
-                        new InMemoryConfigDb(classFinder);
+        log.info("*****************************************");
+        log.info("Starting SensorHub...");
+        log.info("Version : {}", ModuleUtils.getModuleInfo(SensorHub.class).getModuleVersion());
+        log.info("CPU cores: {}", Runtime.getRuntime().availableProcessors());
+        log.info("CommonPool Parallelism: {}", ForkJoinPool.commonPool().getParallelism());
+
+        if (moduleConfigs == null) {
+            var classFinder = new ModuleClassFinder(osgiContext);
+            moduleConfigs = config.getModuleConfigPath() != null ?
+                    new ModuleConfigJsonFile(config.getModuleConfigPath(), true, classFinder) :
+                    new InMemoryConfigDb(classFinder);
+        }
+
+        this.moduleRegistry = new ModuleRegistry(this, moduleConfigs);
+        this.eventBus = new EventBus();
+        this.databaseRegistry = new DefaultDatabaseRegistry(this);
+        this.driverRegistry = new DefaultSystemRegistry(this, new InMemorySystemStateDbConfig());
+
+        this.securityManager = new SecurityManagerImpl(this);
+        this.networkManager = new NetworkManagerImpl(this);
+        this.processingManager = new ProcessingManagerImpl(this);
+        this.idEncoders = new IdEncodersBase32();
+
+        ClientAuth.createInstance("keystore");
+    }
+
+    public synchronized void start() throws SensorHubException {
+        if (!started) {
+            if (this.eventBus == null) {
+                initComponents();
             }
 
-            // init hub core components
-            this.moduleRegistry = new ModuleRegistry(this, moduleConfigs);
-            this.eventBus = new EventBus();
-            this.databaseRegistry = new DefaultDatabaseRegistry(this);
-            this.driverRegistry = new DefaultSystemRegistry(this, new InMemorySystemStateDbConfig());
-
-            // init service managers
-            this.securityManager = new SecurityManagerImpl(this);
-            this.networkManager = new NetworkManagerImpl(this);
-            this.processingManager = new ProcessingManagerImpl(this);
-            this.idEncoders = new IdEncodersBase32();
-//            this.idEncoders = new IdEncodersDES(this);
-
-            // prepare client authenticator (e.g. for HTTP connections, etc...)
-            ClientAuth.createInstance("keystore");
-
-            // load all modules in the order implied by dependency constraints
             moduleRegistry.loadAllModules();
             started = true;
         }
     }
-
 }
