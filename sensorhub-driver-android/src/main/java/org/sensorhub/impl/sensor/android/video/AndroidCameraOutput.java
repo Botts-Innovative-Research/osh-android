@@ -426,8 +426,15 @@ public abstract class AndroidCameraOutput extends AbstractSensorOutput<AndroidSe
         if (camera != null)
         {
             camera.stopPreview();
+            camera.setPreviewCallbackWithBuffer(null);
             camera.release();
             camera = null;
+        }
+
+        if (previewTexture != null)
+        {
+            previewTexture.release();
+            previewTexture = null;
         }
 
         if (sensorManager != null)
@@ -439,12 +446,13 @@ public abstract class AndroidCameraOutput extends AbstractSensorOutput<AndroidSe
         {
             mCodec.stop();
             mCodec.release();
+            mCodec = null;
         }
-        
+
         if (bgLooper != null)
         {
             bgLooper.quit();
-            bgLooper = null;            
+            bgLooper = null;
         }
     }
 

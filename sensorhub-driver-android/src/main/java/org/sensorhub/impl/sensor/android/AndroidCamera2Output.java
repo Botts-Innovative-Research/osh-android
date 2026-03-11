@@ -423,7 +423,11 @@ public class AndroidCamera2Output extends AbstractSensorOutput<AndroidSensorsDri
         }*/
         
         if (imgEncoder != null)
+        {
+            imgEncoder.setOnImageAvailableListener(null, null);
             imgEncoder.close();
+            imgEncoder = null;
+        }
         
         if (cameraThread != null)
         {
