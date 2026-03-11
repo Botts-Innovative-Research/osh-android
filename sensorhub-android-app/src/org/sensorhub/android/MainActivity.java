@@ -1370,13 +1370,13 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     @Override
     protected void onDestroy()
     {
-        stopService(new Intent(this, SensorHubService.class));
+//        stopService(new Intent(this, SensorHubService.class));
 
-//        // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
-//        if (boundService != null) {
-//            unbindService(sConn);
-//            boundService = null;
-//        }
+        // this should stop it from stopping sensorhub and allow it to stay connected when the app closes/ phone shuts off
+        if (boundService != null) {
+            unbindService(sConn);
+            boundService = null;
+        }
         super.onDestroy();
     }
 
