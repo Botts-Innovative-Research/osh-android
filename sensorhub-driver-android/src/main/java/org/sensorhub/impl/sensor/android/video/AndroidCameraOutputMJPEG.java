@@ -82,4 +82,17 @@ public class AndroidCameraOutputMJPEG extends AndroidCameraOutput
 
         sendCompressedData(timeStamp, jpegBuf.toByteArray());
     }
+
+    @Override
+    public void stop() {
+        super.stop();
+
+        if (jpegBuf != null) {
+            jpegBuf.reset();
+            jpegBuf = null;
+        }
+        yuvImg1 = null;
+        yuvImg2 = null;
+        imgArea = null;
+    }
 }
