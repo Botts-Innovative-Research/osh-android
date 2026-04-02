@@ -18,7 +18,6 @@ import static android.content.ContentValues.TAG;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -53,6 +52,9 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.opengis.swe.v20.DataBlock;
 
@@ -131,7 +133,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 
-public class MainActivity extends Activity implements TextureView.SurfaceTextureListener, Flow.Subscriber<Event>
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, Flow.Subscriber<Event>
 {
     public static final String ACTION_BROADCAST_RECEIVER = "org.sensorhub.android.BROADCAST_RECEIVER";
     public static final String ANDROID_SENSORS_MODULE_ID = "ANDROID_SENSORS";
@@ -685,6 +687,11 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Set up Material Toolbar
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         mainInfoArea =  findViewById(R.id.main_info);
         videoInfoArea = findViewById(R.id.video_info);
 
@@ -727,8 +734,22 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     {
         getMenuInflater().inflate(R.menu.main, menu);
         optionsMenu = menu;
+        updateToggleButton();
 
         return true;
+    }
+
+    private void updateToggleButton() {
+        if (optionsMenu == null) return;
+        MenuItem toggleItem = optionsMenu.findItem(R.id.action_toggle);
+        if (toggleItem == null) return;
+        if (oshStarted) {
+            toggleItem.setIcon(R.drawable.ic_stop);
+            toggleItem.setTitle(R.string.action_stop);
+        } else {
+            toggleItem.setIcon(R.drawable.ic_play);
+            toggleItem.setTitle(R.string.action_start);
+        }
     }
 
 
@@ -744,24 +765,26 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             startActivity(new Intent(this, UserSettingsActivity.class));
             return true;
         }
-        else if (id == R.id.action_start)
+        else if (id == R.id.action_toggle)
         {
-            if (boundService != null && boundService.getSensorHub() == null)
-                showRunNamePopup();
-            return true;
-        }
-        else if (id == R.id.action_stop)
-        {
-            stopListeningForEvents();
-            stopRefreshingStatus();
-            sostClients.clear();
-            conSysClients.clear();
-            if (boundService != null)
-                boundService.stopSensorHub();
-            mainInfoArea.setBackgroundColor(0xFFFFFFFF);
-            oshStarted = false;
-            newStatusMessage("SensorHub Stopped");
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            if (!oshStarted) {
+                // Start
+                if (boundService != null && boundService.getSensorHub() == null)
+                    showRunNamePopup();
+            } else {
+                // Stop
+                stopListeningForEvents();
+                stopRefreshingStatus();
+                sostClients.clear();
+                conSysClients.clear();
+                if (boundService != null)
+                    boundService.stopSensorHub();
+                mainInfoArea.setBackgroundColor(getResources().getColor(R.color.md_theme_surface, getTheme()));
+                oshStarted = false;
+                updateToggleButton();
+                newStatusMessage("SensorHub Stopped");
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
             return true;
         }
         else if (id == R.id.action_about)
@@ -827,7 +850,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         EditText messageInput = dialogView.findViewById(R.id.msg_input);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
 
         builder.setTitle("Send Meshtastic Message");
         builder.setView(dialogView);
@@ -910,7 +933,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                     boundService.startSensorHub(sensorhubConfig, showVideo);
 
                     if (boundService.hasVideo())
-                        mainInfoArea.setBackgroundColor(0x80FFFFFF);
+                        mainInfoArea.setBackgroundColor(getResources().getColor(R.color.overlay_light, getTheme()));
 
                     while(boundService.getSensorHub() == null){
                         System.out.println("Waiting for BoundService Hub to start...");
@@ -1304,7 +1327,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
                         sostClients.clear();
                         boundService.startSensorHub(sensorhubConfig, showVideo);
                         if (boundService.hasVideo())
-                            mainInfoArea.setBackgroundColor(0x80FFFFFF);
+                            mainInfoArea.setBackgroundColor(getResources().getColor(R.color.overlay_light, getTheme()));
 
                         EventBus shEventBus = (EventBus) boundService.getSensorHub().getEventBus();
 //                        shEventBus.newSubscription()
@@ -1344,7 +1367,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             startRefreshingStatus();
 
             if (boundService.hasVideo())
-                mainInfoArea.setBackgroundColor(0x80FFFFFF);
+                mainInfoArea.setBackgroundColor(getResources().getColor(R.color.overlay_light, getTheme()));
         }
     }
 
@@ -1520,6 +1543,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             if (!oshStarted && ((ModuleEvent) e).getType() == ModuleEvent.Type.LOADED)
             {
                 oshStarted = true;
+                runOnUiThread(this::updateToggleButton);
                 startRefreshingStatus();
                 return;
             }

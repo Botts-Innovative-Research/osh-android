@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Orange / Black / White Theme for OpenSensorHub -->
+
+    <!-- Primary (Orange) -->
+    <color name="md_theme_primary">#FF6D00</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_primaryContainer">#FFE0B2</color>
+    <color name="md_theme_onPrimaryContainer">#3E1C00</color>
+    <color name="md_theme_primaryDark">#E65100</color>
+
+    <!-- Secondary (Black) -->
+    <color name="md_theme_secondary">#212121</color>
+    <color name="md_theme_onSecondary">#FFFFFF</color>
+    <color name="md_theme_secondaryContainer">#424242</color>
+    <color name="md_theme_onSecondaryContainer">#FFFFFF</color>
+
+    <!-- Tertiary -->
+    <color name="md_theme_tertiary">#FF9100</color>
+    <color name="md_theme_onTertiary">#FFFFFF</color>
+    <color name="md_theme_tertiaryContainer">#FFF3E0</color>
+    <color name="md_theme_onTertiaryContainer">#3E2700</color>
+
+    <!-- Error -->
+    <color name="md_theme_error">#D32F2F</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_errorContainer">#FFCDD2</color>
+    <color name="md_theme_onErrorContainer">#410002</color>
+
+    <!-- Background / Surface -->
+    <color name="md_theme_background">#FFFFFF</color>
+    <color name="md_theme_onBackground">#212121</color>
+    <color name="md_theme_surface">#FFFFFF</color>
+    <color name="md_theme_onSurface">#212121</color>
+    <color name="md_theme_surfaceVariant">#F5F5F5</color>
+    <color name="md_theme_onSurfaceVariant">#616161</color>
+    <color name="md_theme_outline">#9E9E9E</color>
+
+    <!-- Status colors -->
+    <color name="status_started">#4CAF50</color>
+    <color name="status_stopped">#F44336</color>
+    <color name="status_initializing">#FF9800</color>
+    <color name="status_unknown">#9E9E9E</color>
+
+    <!-- Overlay colors -->
+    <color name="overlay_light">#CCFFFFFF</color>
+    <color name="overlay_dark">#80000000</color>
+    <color name="card_info_bg">#F5F5F5</color>
+
+    <!-- Toolbar -->
+    <color name="toolbar_title">#FFFFFF</color>
+    <color name="toolbar_bg">#212121</color>
+</resources>

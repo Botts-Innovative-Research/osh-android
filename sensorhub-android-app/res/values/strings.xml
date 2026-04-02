@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpenSensorHub SmartHub</string>
+    <string name="app_name">OpenSensorHub</string>
     <string name="hello_world">Please configure and start SmartHub using the Options Menu</string>
     <string name="action_settings">Settings</string>
     <string name="action_start">Start SmartHub</string>

@@ -1,40 +1,41 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="org.sensorhub.android.MainActivity" >
+    tools:context="org.sensorhub.android.MainActivity">
 
+    <!-- Single unified Start/Stop toggle -->
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_toggle"
         android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
-
-    <item
-        android:id="@+id/action_start"
-        android:orderInCategory="101"
-        android:showAsAction="never"
-        android:title="@string/action_start"/>
-    
-    <item
-        android:id="@+id/action_stop"
-        android:orderInCategory="102"
-        android:showAsAction="never"
-        android:title="@string/action_stop"/>
+        android:icon="@drawable/ic_play"
+        android:title="@string/action_start"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_status"
-        android:orderInCategory="104"
-        android:showAsAction="never"
-        android:title="@string/action_status"/>
+        android:orderInCategory="102"
+        android:icon="@drawable/ic_info"
+        android:title="@string/action_status"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_meshtastic"
         android:orderInCategory="103"
-        android:showAsAction="never"
-        android:title="@string/action_meshtastic"/>
+        android:icon="@drawable/ic_message"
+        android:title="@string/action_meshtastic"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="110"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_about"
-        android:orderInCategory="110"
-        android:showAsAction="never"
-        android:title="@string/action_about"/>
+        android:orderInCategory="120"
+        android:title="@string/action_about"
+        app:showAsAction="never" />
 
 </menu>
