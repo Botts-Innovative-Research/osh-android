@@ -107,30 +107,36 @@ public class BluetoothManager
     
     
     /**
-     * Returns the first paired device whose name matches the given pattern
-     * @param macAddress regular expression to match device names
+     * Returns the first paired device whose address or name matches the given identifier.
+     * Tries MAC address match first, then falls back to name matching (startsWith, case-insensitive).
+     * @param deviceId MAC address or device name to match
      * @return first matching device
-     * @throws IOException if a paired device with a matching name cannot be found
+     * @throws IOException if a paired device with a matching address or name cannot be found
      */
-    public BluetoothDevice findDevice(String macAddress) throws IOException
+    public BluetoothDevice findDevice(String deviceId) throws IOException
     {
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if(btAdapter == null || !btAdapter.isEnabled()) throw new IOException("Bluetooth is not available or not enabled");
 
+        // match by MAC address
         for (BluetoothDevice dev: btAdapter.getBondedDevices())
         {
-            if (dev.getAddress() != null && dev.getAddress().startsWith(macAddress)) {
+            if (dev.getAddress() != null && dev.getAddress().equalsIgnoreCase(deviceId)) {
                 return dev;
             }
-//            if(dev.getName() != null && dev.getName().startsWith(deviceNameRegex)){
-//                return dev;
-//            }
-//            if (dev.getName().matches(deviceNameRegex))
-//              return dev;
         }
-        
-        throw new IOException("Cannot find device " + macAddress);
+
+        // match by device name (case-insensitive startsWith)
+        String lowerDeviceId = deviceId.toLowerCase();
+        for (BluetoothDevice dev: btAdapter.getBondedDevices())
+        {
+            if (dev.getName() != null && dev.getName().toLowerCase().startsWith(lowerDeviceId)) {
+                return dev;
+            }
+        }
+
+        throw new IOException("Cannot find device " + deviceId);
     }
     
     

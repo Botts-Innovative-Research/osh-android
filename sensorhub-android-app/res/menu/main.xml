@@ -3,21 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="org.sensorhub.android.MainActivity">
 
-    <!-- Single unified Start/Stop toggle -->
-    <item
-        android:id="@+id/action_toggle"
-        android:orderInCategory="100"
-        android:icon="@drawable/ic_play"
-        android:title="@string/action_start"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_status"
-        android:orderInCategory="102"
-        android:icon="@drawable/ic_info"
-        android:title="@string/action_status"
-        app:showAsAction="ifRoom" />
-
     <item
         android:id="@+id/action_meshtastic"
         android:orderInCategory="103"
@@ -26,16 +11,15 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="110"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_about"
         android:orderInCategory="120"
         android:title="@string/action_about"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_status"
+        android:orderInCategory="104"
+        android:title="@string/action_status"
         app:showAsAction="never" />
 
 </menu>

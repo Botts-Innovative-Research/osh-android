@@ -41,6 +41,11 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 
+import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 
 
 public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork<BleConfig>
@@ -253,12 +258,112 @@ public class BleNetwork extends AbstractModule<BleConfig> implements IBleNetwork
 
 
     @Override
+    @SuppressLint("MissingPermission")
     public void connectGatt(String address, GattCallback callback)
     {
-        BluetoothDevice btDevice = aBleAdapter.getRemoteDevice(address);
+        String resolvedAddress = resolveDeviceAddress(address);
+        BluetoothDevice btDevice = aBleAdapter.getRemoteDevice(resolvedAddress);
         GattClientImpl client = new GattClientImpl(aContext, btDevice, callback);
         client.connect();
-        log.info("Connecting to BT device " + address + "...");
+        log.info("Connecting to BT device " + resolvedAddress + " (input: " + address + ")...");
+    }
+
+    private static final long BLE_NAME_SCAN_TIMEOUT_MS = 15000;
+
+    /**
+     * Resolves a device identifier to a MAC address.
+     * If the input is already a valid MAC address, returns it directly.
+     * Otherwise, searches bonded devices by name first, then falls back to
+     * a short BLE scan filtered by device name (for unbonded BLE devices like Kestrel).
+     */
+    @SuppressLint("MissingPermission")
+    private String resolveDeviceAddress(String deviceId)
+    {
+        // If it looks like a MAC address, use it directly
+        if (deviceId != null && deviceId.matches("^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"))
+            return deviceId;
+
+        String lowerInput = deviceId != null ? deviceId.toLowerCase() : "";
+
+        // First: search bonded devices by name
+        if (aBleAdapter != null) {
+            for (BluetoothDevice dev : aBleAdapter.getBondedDevices()) {
+                String name = dev.getName();
+                if (name != null && name.toLowerCase().startsWith(lowerInput)) {
+                    log.info("Resolved device name '{}' to bonded MAC {}", deviceId, dev.getAddress());
+                    return dev.getAddress();
+                }
+            }
+        }
+
+        // Second: targeted BLE scan by name (for unbonded BLE devices)
+        log.info("Device '{}' not bonded, starting targeted BLE scan...", deviceId);
+        String scannedAddress = scanForDeviceByName(deviceId);
+        if (scannedAddress != null) {
+            log.info("BLE scan resolved '{}' to MAC {}", deviceId, scannedAddress);
+            return scannedAddress;
+        }
+
+        log.warn("Could not resolve device identifier '{}' to a MAC address, using as-is", deviceId);
+        return deviceId;
+    }
+
+    /**
+     * Performs a short BLE scan filtered by device name.
+     * Returns the MAC address of the first matching device, or null if not found within the timeout.
+     */
+    @SuppressLint("MissingPermission")
+    private String scanForDeviceByName(String deviceName)
+    {
+        if (aBleAdapter == null || !aBleAdapter.isEnabled())
+            return null;
+
+        BluetoothLeScanner scanner = aBleAdapter.getBluetoothLeScanner();
+        if (scanner == null)
+            return null;
+
+        String lowerName = deviceName != null ? deviceName.toLowerCase() : "";
+        AtomicReference<String> foundAddress = new AtomicReference<>(null);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        ScanCallback callback = new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, ScanResult result) {
+                if (result == null || result.getDevice() == null)
+                    return;
+
+                BluetoothDevice device = result.getDevice();
+                String name = device.getName();
+
+                if (name != null && name.toLowerCase().startsWith(lowerName)) {
+                    foundAddress.set(device.getAddress());
+                    log.info("BLE scan found '{}' at {}", name, device.getAddress());
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void onScanFailed(int errorCode) {
+                log.error("BLE scan failed with error code {}", errorCode);
+                latch.countDown();
+            }
+        };
+
+        ScanSettings settings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .setReportDelay(0)
+                .build();
+
+        scanner.startScan(Collections.emptyList(), settings, callback);
+
+        try {
+            latch.await(BLE_NAME_SCAN_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        scanner.stopScan(callback);
+        return foundAddress.get();
     }
 
     public void setContext(Context context) {

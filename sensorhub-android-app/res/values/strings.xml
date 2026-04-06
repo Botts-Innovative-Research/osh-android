@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OpenSensorHub</string>
-    <string name="hello_world">Please configure and start SmartHub using the Options Menu</string>
+    <string name="hello_world">Configure settings and tap the play button to start SmartHub</string>
     <string name="action_settings">Settings</string>
     <string name="action_start">Start SmartHub</string>
     <string name="action_stop">Stop SmartHub</string>
@@ -17,12 +17,27 @@
     <string name="sensor_meshtastic">Meshtastic Sensor</string>
     <string name="sensor_angel">Angel Sensor</string>
     <string name="sensor_flirone">Flirone Sensor</string>
+
     <string-array name="video_codec_list">
         <item>JPEG</item>
         <item>H264</item>
         <item>H265</item>
         <item>VP9</item>
         <item>VP8</item>
+    </string-array>
+
+    <string-array name="video_framerate">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+
+    <string-array name="video_resolution_list">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
     </string-array>
 
     <string-array name="orientation_angle_list">
@@ -236,6 +251,10 @@
     <string-array name="bluetooth_scanned_address_list">
         <item></item>
     </string-array>
+
+    <string name="tab_sensors">Sensors</string>
+    <string name="tab_dashboard">Home</string>
+    <string name="tab_settings">Settings</string>
     <string name="meshtastic_msg">Enter a message!</string>
     <string name="message_hint">Enter a message!</string>
     <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>

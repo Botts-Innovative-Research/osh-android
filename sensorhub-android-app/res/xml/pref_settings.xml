@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+<!--    <PreferenceCategory android:title="Device">-->
+        <EditTextPreference
+            android:textAlignment="viewStart"
+            android:defaultValue="MyDevice"
+            android:inputType="text"
+            android:key="device_name"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Device Name"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <Preference
+            android:enabled="true"
+            android:key="nop_ipAddress"
+            android:selectable="false"
+            android:summary=""
+            android:title="Device IP Address"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+<!--    </PreferenceCategory>-->
+
+
+    <!-- CONNECTION -->
+    <PreferenceCategory android:title="Server Settings">
+        <Preference
+            android:key="saved_servers"
+            android:title="Saved Servers"
+            android:summary="Select a saved server to auto-fill"
+            android:layout="@layout/preference_list_item" />
+
+        <Preference
+            android:key="save_current_server"
+            android:title="Save Current Server"
+            android:summary="Save the current server configuration"
+            android:layout="@layout/preference_list_item" />
+
+        <Preference
+            android:key="remove_saved_server"
+            android:title="Remove Saved Server"
+            android:summary="Remove a server from the saved list"
+            android:layout="@layout/preference_list_item" />
+
+        <EditTextPreference
+            android:key="server_name"
+            android:title="Server Name"
+            android:defaultValue="Local Server"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:key="ip_address"
+            android:title="Server Address"
+            android:defaultValue="127.0.0.1"
+            android:summary="e.g. 192.168.1.10"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:key="port"
+            android:title="Port"
+            android:defaultValue="8585"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:key="endpoint_path"
+            android:title="Resource Path"
+            android:defaultValue="/sensorhub/api"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:inputType="text"
+            android:key="username"
+            android:title="Username"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:inputType="textPassword"
+            android:key="password"
+            android:title="Password"
+            android:selectAllOnFocus="true"
+            android:layout="@layout/preference_item" />
+
+        <SwitchPreferenceCompat
+            android:key="enable_tls"
+            android:title="Enable TLS"
+            android:defaultValue="false"
+            android:layout="@layout/preference_switch_item" />
+
+        <SwitchPreferenceCompat
+            android:key="sos_disable_ssl_check"
+            android:title="Disable SSL Validation"
+            android:summary=""
+            android:defaultValue="false"
+            android:layout="@layout/preference_switch_item" />
+    </PreferenceCategory>
+
+    <!-- SERVICES -->
+    <PreferenceCategory android:title="Services">
+        <SwitchPreferenceCompat
+            android:id="@+id/api_service_switch"
+            android:key="api_service"
+            android:title="Enable API Service"
+            android:defaultValue="true"
+            android:layout="@layout/preference_switch_item" />
+
+        <SwitchPreferenceCompat
+            android:id="@+id/sos_service_switch"
+            android:key="sos_service"
+            android:title="Enable SOS Service"
+            android:defaultValue="true"
+            android:layout="@layout/preference_switch_item" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Clients">
+        <SwitchPreferenceCompat
+            android:id="@+id/client_switch"
+            android:key="enable_client"
+            android:title="Client Mode"
+            android:summaryOn="Connected Systems"
+            android:summaryOff="SOS-T"
+            android:defaultValue="true"
+            android:layout="@layout/preference_switch_item" />
+
+        <SwitchPreferenceCompat
+            android:key="o_auth_enabled"
+            android:title="Enable OAuth"
+            android:defaultValue="false"
+            android:layout="@layout/preference_switch_item"/>
+
+        <EditTextPreference
+            android:key="token_endpoint"
+            android:title="Token Endpoint"
+            android:visible="false"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:key="client_id"
+            android:title="Client ID"
+            android:visible="false"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+
+        <EditTextPreference
+            android:key="client_secret"
+            android:title="Client Secret"
+            android:visible="false"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_item" />
+    </PreferenceCategory>
+<!--    &lt;!&ndash; TOGGLE ADVANCED &ndash;&gt;-->
+<!--    <SwitchPreferenceCompat-->
+<!--        android:key="show_advanced"-->
+<!--        android:title="Show Advanced Settings"-->
+<!--        android:defaultValue="false" />-->
+
+
+<!--    &lt;!&ndash; ADVANCED SETTINGS &ndash;&gt;-->
+<!--    <PreferenceCategory-->
+<!--        android:key="advanced_category"-->
+<!--        android:title="Advanced Settings"-->
+<!--        android:visible="false">-->
+
+
+        <!-- OAUTH -->
+
+</PreferenceScreen>

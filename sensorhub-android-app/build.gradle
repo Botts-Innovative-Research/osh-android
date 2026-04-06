@@ -20,6 +20,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation 'androidx.preference:preference:1.2.0'
 
     implementation project(path: ':sensorhub-datastore-h2')
     implementation project(path: ':sensorhub-service-consys')
@@ -29,6 +30,7 @@ dependencies {
     implementation project(':sensorhub-driver-android')
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'com.github.tony19:logback-android:3.0.0'
+
 }
 
 allprojects {

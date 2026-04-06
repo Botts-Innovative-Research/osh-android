@@ -53,13 +53,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".UserSettingsActivity"
-            android:label="@string/title_activity_user_settings"
-            android:theme="@style/SettingsTheme" />
-        <activity
             android:name=".AppStatusActivity"
-            android:label="App Status"
-            android:theme="@style/AppStatusTheme" />
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:exported="false" />
         <!-- <activity android:name=".spotreport.SpotReportActivity" -->
         <!-- android:configChanges="orientation|screenSize"> -->
 

@@ -1,61 +1,244 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Material 3 Application Theme -->
-    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
+    <!-- =========================
+         APP THEME (Material 3 Dark)
+         ========================= -->
+    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
+
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="preferenceCategoryStyle">@style/PreferenceCategoryNoPadding</item>
+
+        <!-- COLOR SYSTEM -->
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/md_theme_onPrimaryContainer</item>
+
         <item name="colorSecondary">@color/md_theme_secondary</item>
         <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
         <item name="colorSecondaryContainer">@color/md_theme_secondaryContainer</item>
         <item name="colorOnSecondaryContainer">@color/md_theme_onSecondaryContainer</item>
+
         <item name="colorTertiary">@color/md_theme_tertiary</item>
         <item name="colorOnTertiary">@color/md_theme_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_onTertiaryContainer</item>
+
         <item name="colorError">@color/md_theme_error</item>
         <item name="colorOnError">@color/md_theme_onError</item>
         <item name="colorErrorContainer">@color/md_theme_errorContainer</item>
         <item name="colorOnErrorContainer">@color/md_theme_onErrorContainer</item>
+
         <item name="android:colorBackground">@color/md_theme_background</item>
         <item name="colorOnBackground">@color/md_theme_onBackground</item>
+
         <item name="colorSurface">@color/md_theme_surface</item>
         <item name="colorOnSurface">@color/md_theme_onSurface</item>
+
         <item name="colorSurfaceVariant">@color/md_theme_surfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/md_theme_onSurfaceVariant</item>
+
         <item name="colorOutline">@color/md_theme_outline</item>
-        <item name="android:statusBarColor">@color/toolbar_bg</item>
+
+        <!-- SYSTEM UI -->
+        <item name="android:statusBarColor">@color/surface_base</item>
+        <item name="android:navigationBarColor">@color/surface_low</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+
+        <!-- COMPONENT THEMING -->
+        <item name="toolbarStyle">@style/AppToolbar</item>
+        <item name="materialCardViewStyle">@style/AppCard</item>
+        <item name="materialButtonStyle">@style/AppButton</item>
+        <item name="textInputStyle">@style/AppTextInput</item>
+
     </style>
 
-    <!-- Theme for legacy PreferenceActivity (UserSettingsActivity) -->
-    <style name="SettingsTheme" parent="android:Theme.Material.Light.DarkActionBar">
-        <item name="android:colorPrimary">@color/toolbar_bg</item>
-        <item name="android:colorPrimaryDark">#000000</item>
-        <item name="android:colorAccent">@color/md_theme_primary</item>
-        <item name="android:statusBarColor">@color/toolbar_bg</item>
+
+    <!-- =========================
+         TOOLBAR STYLE
+         ========================= -->
+    <style name="AppToolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/toolbar_bg</item>
+        <item name="titleTextAppearance">@style/ToolbarTitle</item>
+        <item name="android:elevation">0dp</item>
     </style>
 
-    <!-- AppStatus Theme with DayNight support -->
-    <style name="AppStatusTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/md_theme_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
-        <item name="colorSecondary">@color/md_theme_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
-        <item name="android:statusBarColor">@color/toolbar_bg</item>
-    </style>
-
-    <!-- Status card styles -->
-    <style name="StatusCard" parent="Widget.Material3.CardView.Filled">
-        <item name="cardCornerRadius">12dp</item>
-        <item name="cardElevation">2dp</item>
-        <item name="contentPadding">16dp</item>
-        <item name="android:layout_marginBottom">12dp</item>
-    </style>
-
-    <!-- Toolbar title style -->
     <style name="ToolbarTitle">
         <item name="android:textColor">@color/toolbar_title</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">18sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+
+
+    <style name="AppCard" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="strokeColor">@color/md_theme_outline</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="AppCard.Accent" parent="AppCard">
+        <item name="cardBackgroundColor">@color/overlay_dark</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+
+    <style name="AppButton" parent="Widget.Material3.Button">
+        <item name="cornerRadius">100dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@color/md_theme_primaryContainer</item>
+        <item name="android:textColor">@color/md_theme_primary</item>
+    </style>
+
+    <style name="AppButton.Outline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">100dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="strokeColor">@color/md_theme_outline</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="AppButton.Ghost" parent="Widget.Material3.Button.TextButton">
+        <item name="cornerRadius">100dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="AppButton.Icon" parent="Widget.Material3.Button.IconButton">
+        <item name="android:backgroundTint">@color/surface_elevated</item>
+        <item name="iconTint">@color/text_secondary</item>
+    </style>
+
+
+    <style name="AppFAB" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/accent_orange</item>
+        <item name="tint">@color/md_theme_onPrimary</item>
+        <item name="shapeAppearanceOverlay">@style/FabShape</item>
+        <item name="elevation">8dp</item>
+    </style>
+
+    <style name="FabShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+
+    <style name="AppTextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeColor">@color/md_theme_outline</item>
+        <item name="boxBackgroundColor">@color/surface_card</item>
+        <item name="hintTextColor">@color/text_muted</item>
+        <item name="android:textColorHint">@color/text_muted</item>
+    </style>
+
+
+
+    <style name="AppChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/surface_elevated</item>
+        <item name="chipStrokeColor">@color/md_theme_outline</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="checkedIconTint">@color/accent_orange</item>
+    </style>
+
+    <style name="AppChip.Active" parent="AppChip">
+        <item name="chipBackgroundColor">@color/md_theme_surfaceVariant</item>
+        <item name="chipStrokeColor">@color/accent_orange</item>
+        <item name="android:textColor">@color/accent_orange</item>
+    </style>
+
+
+    <!-- =========================
+         TEXT APPEARANCES
+         ========================= -->
+    <style name="TextTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextBody" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="TextMuted" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/text_muted</item>
+    </style>
+
+    <style name="TextStatus" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <style name="TextAccent" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+
+    <style name="AppBottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@color/md_theme_surface</item>
+        <item name="itemIconTint">@color/bottom_nav_selector</item>
+        <item name="itemTextColor">@color/bottom_nav_selector</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+
+    <style name="AppSwitch" parent="Widget.Material3.CompoundButton.Switch">
+        <item name="thumbTint">@color/switch_thumb_selector</item>
+        <item name="trackTint">@color/switch_track_selector</item>
+    </style>
+
+
+    <style name="PreferenceThemeOverlay" parent="ThemeOverlay.Material3">
+        <item name="android:listPreferredItemPaddingStart">0dp</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+    <style name="PreferenceCategoryNoPadding" parent="Preference.Category">
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodySmall</item>
+    </style>
+
+    <style name="PreferenceTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="PreferenceSummary" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="PreferenceSubTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+
+    <style name="StatusChip">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:background">@drawable/bg_status_chip</item>
     </style>
 
 </resources>
