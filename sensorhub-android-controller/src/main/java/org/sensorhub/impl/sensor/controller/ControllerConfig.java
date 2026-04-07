@@ -13,7 +13,7 @@
 
  ******************************* END LICENSE BLOCK ***************************/
 
-package org.sensorhub.impl.sensor.polar;
+package org.sensorhub.impl.sensor.controller;
 
 import org.sensorhub.android.SensorHubService;
 import org.sensorhub.api.sensor.SensorConfig;
@@ -23,19 +23,19 @@ import android.provider.Settings;
 
 
 /**
+ * Configuration class for the Android Controller driver.
  *
  * @author Kalyn Stricklin
- * @since Jan 13, 2023
+ * @since 05/26/2024
  */
-public class PolarConfig extends SensorConfig
+public class ControllerConfig extends SensorConfig
 {
-
-    public PolarConfig()
+    public ControllerConfig()
     {
-        this.moduleClass = Polar.class.getCanonicalName();
+        this.moduleClass = ControllerDriver.class.getCanonicalName();
     }
 
-    public String device_name;
+    public String deviceName = "controller";
     public String uid_extension;
 
     public static String getUid() {
@@ -43,8 +43,7 @@ public class PolarConfig extends SensorConfig
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
-    public String getUidWithExt()
-    {
+    public String getUidWithExt() {
         String baseUid = getUid();
         if (uid_extension != null && !uid_extension.isEmpty())
             return baseUid + ":" + uid_extension;

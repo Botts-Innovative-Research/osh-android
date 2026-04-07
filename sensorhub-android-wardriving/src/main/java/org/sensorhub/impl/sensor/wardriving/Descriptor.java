@@ -12,7 +12,8 @@
  Developer are Copyright (C) 2025 the Initial Developer. All Rights Reserved.
 
  ******************************* END LICENSE BLOCK ***************************/
-package org.sensorhub.impl.sensor.polar;
+
+package org.sensorhub.impl.sensor.wardriving;
 
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.IModuleProvider;
@@ -28,20 +29,20 @@ import org.sensorhub.api.module.ModuleConfig;
  * @author Alex Robin <alex.robin@sensiasoftware.com>
  * @since Sep 7, 2013
  */
-public class PolarDescriptor implements IModuleProvider
+public class Descriptor implements IModuleProvider
 {
 
     @Override
     public String getModuleName()
     {
-        return "Polar Heart Rate Driver";
+        return "Wardriving";
     }
 
 
     @Override
     public String getModuleDescription()
     {
-        return "Driver supporting Polar H9 and H10 Heart Rate Sensors";
+        return "Driver for collecting wireless networks";
     }
 
 
@@ -55,21 +56,21 @@ public class PolarDescriptor implements IModuleProvider
     @Override
     public String getProviderName()
     {
-        return "Bott's Inc";
+        return "GeoRobotix LLC";
     }
 
 
     @Override
     public Class<? extends IModule<?>> getModuleClass()
     {
-        return Polar.class;
+        return Wardriving.class;
     }
 
 
     @Override
     public Class<? extends ModuleConfig> getModuleConfigClass()
     {
-        return PolarConfig.class;
+        return WardrivingConfig.class;
     }
 
 }

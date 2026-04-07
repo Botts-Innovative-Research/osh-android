@@ -53,6 +53,9 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         {"angel_enabled",       "angel_address", "angel_options"},
         {"flirone_enabled",     "flir_options"},
         {"ste_radpager_enabled","ste_radpager_options"},
+        {"wardriving_enabled", "wardriving_options"},
+        {"controller_enabled", "controller_options"},
+
     };
 
     /** Keys of Preferences that use the Bluetooth device picker dialog */
@@ -99,8 +102,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         // Wire up Bluetooth device picker for all BLE device preferences
         setupBluetoothDevicePickers();
     }
-
-    // ==================== Bluetooth Device Picker ====================
 
     private void setupBluetoothDevicePickers() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
@@ -200,7 +201,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         }
     }
 
-    // ==================== Video Preferences ====================
 
     private void setupVideoPreferences() {
         // Camera selection
@@ -282,7 +282,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         }
     }
 
-    // ==================== Audio Preferences ====================
 
     private void setupAudioPreferences() {
         List<String> sampleRateList = Arrays.asList("8000", "11025", "22050", "44100", "48000");
@@ -300,8 +299,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             bitRatePrefList.setEntryValues(bitRateList.toArray(new String[0]));
         }
     }
-
-    // ==================== Helpers ====================
 
     private BluetoothAdapter getBluetoothAdapter() {
         BluetoothManager btManager = (BluetoothManager) requireContext().getSystemService(Context.BLUETOOTH_SERVICE);

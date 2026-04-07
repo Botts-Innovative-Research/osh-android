@@ -48,9 +48,6 @@ import android.os.PowerManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -81,6 +78,11 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.controller.ControllerConfig;
+import org.sensorhub.impl.sensor.controller.ControllerDriver;
+
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
@@ -90,6 +92,7 @@ import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
+import org.sensorhub.impl.sensor.wardriving.WardrivingConfig;
 import org.sensorhub.impl.service.HttpServerConfig;
 import org.sensorhub.impl.service.consys.ConSysApiService;
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig;
@@ -161,7 +164,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         BLELocation,
         Meshtastic,
         PolarHRMonitor,
-        Kestrel
+        Kestrel,
+        Wardriving,
+        Controller
     }
 
     private final ServiceConnection sConn = new ServiceConnection()
@@ -519,6 +524,30 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(kestrelConfig);
         }
 
+        // Wardriving
+        enabled = prefs.getBoolean("wardriving_enabled", false);
+        if (enabled) {
+            WardrivingConfig wardrivingConfig = new WardrivingConfig();
+            wardrivingConfig.id = "WARDRIVING_";
+            wardrivingConfig.name = "Wardriving [" + deviceName + "]";
+            wardrivingConfig.autoStart = true;
+            wardrivingConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            wardrivingConfig.uid_extension = prefs.getString("uid_extension", "");
+            sensorhubConfig.add(wardrivingConfig);
+        }
+
+        // USB Controller
+        enabled = prefs.getBoolean("controller_enabled", false);
+        if (enabled) {
+            ControllerConfig controllerConfig = new ControllerConfig();
+            controllerConfig.id = "CONTROLLER";
+            controllerConfig.name = "Controller [" + deviceName + "]";
+            controllerConfig.autoStart = true;
+            controllerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            controllerConfig.uid_extension = prefs.getString("uid_extension", "");
+            sensorhubConfig.add(controllerConfig);
+        }
+
         if (isApiServiceEnabled) {
             sensorhubConfig.add(conSysApiService);
         }
@@ -580,7 +609,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Set up Material Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -588,7 +616,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
-        // Set up Navigation
         Fragment homeFragment = new DashboardFragment();
         Fragment sensorsFragment = new SensorsFragment();
         Fragment settingsFragment = new SettingsFragment();
@@ -609,14 +636,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             return true;
         });
 
-        // Show dashboard on initial load
         setCurrentFragment(homeFragment);
         bottomNav.setSelectedItemId(R.id.dashboard);
 
         hasBluetoothPermissions();
         checkForPermissions();
 
-        // Bind to SensorHub service
+        // bind to SensorHub service
         Intent intent = new Intent(this, SensorHubService.class);
         startService(intent);
         bindService(intent, sConn, Context.BIND_AUTO_CREATE);
@@ -636,7 +662,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.main, menu);
-        // may need to change icon color here instead ?? lets find out
         return true;
     }
 
@@ -654,7 +679,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             showMeshtasticDialog();
             return true;
         }
-        // maybe need to add the activity status back in here for the services
         else if(id == R.id.action_status) {
             Intent statusIntent = new Intent(this, AppStatusActivity.class);
 
@@ -715,6 +739,34 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             boundService = null;
         }
         super.onDestroy();
+    }
+
+    // ==================== Controller Event Forwarding ====================
+
+    private ControllerDriver getControllerDriver() {
+        if (boundService == null || boundService.sensorhub == null)
+            return null;
+        try {
+            return boundService.sensorhub.getModuleRegistry().getModuleByType(ControllerDriver.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        ControllerDriver controller = getControllerDriver();
+        if (controller != null && controller.onKeyEvent(event))
+            return true;
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        ControllerDriver controller = getControllerDriver();
+        if (controller != null && controller.onMotionEvent(event))
+            return true;
+        return super.dispatchGenericMotionEvent(event);
     }
 
     // ==================== Dialogs ====================
@@ -784,7 +836,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         alert.show();
     }
 
-    // ==================== Utilities ====================
+    // ========================================
 
     boolean isPushingSensor(Sensors sensor) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -831,6 +883,12 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         } else if (Sensors.Kestrel.equals(sensor)) {
             return prefs.getBoolean("kestrel_enabled", false)
                     && prefs.getStringSet("kestrel_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        } else if (Sensors.Wardriving.equals(sensor)) {
+            return prefs.getBoolean("wardriving_enabled", false)
+                    && prefs.getStringSet("wardriving_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        } else if (Sensors.Controller.equals(sensor)) {
+            return prefs.getBoolean("controller_enabled", false)
+                    && prefs.getStringSet("controller_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;
@@ -901,6 +959,14 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             permissions.add(Manifest.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND);
         if (checkSelfPermission(Manifest.permission.CHANGE_WIFI_STATE) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.CHANGE_WIFI_STATE);
+        if (checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_DENIED)
+            permissions.add(Manifest.permission.ACCESS_WIFI_STATE);
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED)
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_DENIED)
+                permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES);
+        }
         if (checkSelfPermission(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) == PackageManager.PERMISSION_DENIED)
             permissions.add(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED)

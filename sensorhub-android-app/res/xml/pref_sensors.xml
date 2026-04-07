@@ -268,6 +268,23 @@
             android:defaultValue="@array/sos_option_defaults"
             android:layout="@layout/preference_list_item"/>
 
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="wardriving_enabled"
+            android:summary="Enable streaming of Wardriving Sensor"
+            android:title="Wardriving Data"
+            android:layout="@layout/preference_switch_item" />
+
+        <MultiSelectListPreference
+            android:key="wardriving_options"
+            android:visible="false"
+            android:title="Wardriving Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item" />
+
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
@@ -312,6 +329,23 @@
             android:key="kestrel_options"
             android:visible="false"
             android:title="Kestrel Weather Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="controller_enabled"
+            android:summary="Enable streaming of USB Controller (controller must be connected to device via USB on startup)"
+            android:title="Controller"
+            android:layout="@layout/preference_switch_item" />
+
+        <MultiSelectListPreference
+            android:key="controller_options"
+            android:visible="false"
+            android:title="Controller Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"

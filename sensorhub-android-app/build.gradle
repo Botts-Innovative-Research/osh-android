@@ -27,6 +27,8 @@ dependencies {
     implementation project(':sensorhub-android-ste')
     implementation project(':sensorhub-android-meshtastic')
     implementation project(':sensorhub-android-polar')
+    implementation project(':sensorhub-android-wardriving')
+    implementation project(':sensorhub-android-controller')
     implementation project(':sensorhub-driver-android')
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'com.github.tony19:logback-android:3.0.0'
