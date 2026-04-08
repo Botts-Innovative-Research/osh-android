@@ -1,6 +1,9 @@
 package org.sensorhub.android;
 
+import static android.content.Context.WIFI_SERVICE;
+
 import android.content.SharedPreferences;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -11,10 +14,15 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreferenceCompat;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.nio.ByteOrder;
+
 
 /*
  * Fragment for settings preferences
@@ -27,6 +35,26 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.pref_settings, rootKey);
 
+
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+        int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
+
+        // Convert little-endian to big-endianif needed
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ipAddress = Integer.reverseBytes(ipAddress);
+        }
+
+        byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
+
+        String ipAddressString;
+        try {
+            ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
+        } catch (UnknownHostException ex) {
+            ipAddressString = "Unable to get IP Address";
+        }
+
+        Preference ipAddressLabel = getPreferenceScreen().findPreference("nop_ipAddress");
+        ipAddressLabel.setSummary(ipAddressString);
         setupSavedServers();
         setupOAuthToggle();
     }
