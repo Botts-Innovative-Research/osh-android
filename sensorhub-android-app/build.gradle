@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 description = 'OSH Android App'
-ext.details = 'OSH app for  Android'
+ext.details = 'OSH app for Android'
 
 repositories {
 //  maven {
@@ -29,6 +29,7 @@ dependencies {
     implementation project(':sensorhub-android-polar')
     implementation project(':sensorhub-android-wardriving')
     implementation project(':sensorhub-android-controller')
+    implementation project(':sensorhub-android-template')
     implementation project(':sensorhub-driver-android')
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'com.github.tony19:logback-android:3.0.0'
@@ -59,7 +60,23 @@ android {
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName rootProject.version
+        applicationId "com.georobotix.android"
     }
+
+    //https://developer.android.com/build/build-variants#groovy
+//    flavorDimensions += "version" // maybe dont need
+//    productFlavors {
+//        create("free") {
+//            dimension = "version"
+//            applicationIdSuffix = ".free"
+//            buildConfigField("boolean", "IS_PREMIUM", "false")
+//        }
+//        create("premium") {
+//            dimension = "version"
+//            applicationIdSuffix = ".premium"
+//            buildConfigField("boolean", "IS_PREMIUM", "true")
+//        }
+//    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -94,5 +111,6 @@ android {
             excludes += ["META-INF/INDEX.LIST"]
         }
     }
+
 }
 

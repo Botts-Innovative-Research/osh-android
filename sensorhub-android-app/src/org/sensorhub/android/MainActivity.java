@@ -14,8 +14,6 @@
 
 package org.sensorhub.android;
 
-import static android.content.ContentValues.TAG;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -89,6 +87,7 @@ import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
+import org.sensorhub.impl.sensor.template.TemplateConfig;
 import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream;
 import org.sensorhub.impl.sensor.trupulse.TruPulseConfig;
 import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig;
@@ -166,7 +165,8 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         PolarHRMonitor,
         Kestrel,
         Wardriving,
-        Controller
+        Controller,
+        Template
     }
 
     private final ServiceConnection sConn = new ServiceConnection()
@@ -554,6 +554,19 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         if (isSosServiceEnabled) {
             sensorhubConfig.add(sosConfig);
         }
+
+        // Template Driver
+        enabled = prefs.getBoolean("template_enabled", false);
+        if (enabled) {
+            TemplateConfig templateConfig = new TemplateConfig();
+            templateConfig.id = "TEMPLATE_DRIVER_";
+            templateConfig.name = "Template [" + deviceName + "]";
+            templateConfig.autoStart = true;
+            templateConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            templateConfig.uid_extension = prefs.getString("uid_extension", "");
+            sensorhubConfig.add(templateConfig);
+        }
+
     }
 
     protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
@@ -889,6 +902,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         } else if (Sensors.Controller.equals(sensor)) {
             return prefs.getBoolean("controller_enabled", false)
                     && prefs.getStringSet("controller_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        }  else if (Sensors.Template.equals(sensor)) {
+            return prefs.getBoolean("template_enabled", false)
+                    && prefs.getStringSet("template_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;

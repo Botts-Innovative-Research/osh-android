@@ -455,4 +455,29 @@
             android:entryValues="@array/sos_option_values"
             android:defaultValue="@array/sos_option_defaults"
             android:layout="@layout/preference_list_item"/>
+
+        <!-- TEMPLATE DRIVER -->
+        <SwitchPreferenceCompat
+            android:key="template_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of template driver"
+            android:title="Template Driver Data"
+            android:layout="@layout/preference_switch_item" />
+
+        <Preference
+            android:key="template_device_address"
+            android:visible="false"
+            android:title="Select template Device"
+            android:summary="Tap to select or enter device address"
+            android:layout="@layout/preference_list_item" />
+
+        <MultiSelectListPreference
+            android:key="template_options"
+            android:visible="false"
+            android:title="Template Driver Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 </PreferenceScreen>

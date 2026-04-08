@@ -36,25 +36,26 @@ import java.util.Set;
 public class SensorsFragment extends PreferenceFragmentCompat {
 
     private static final String[][] SWITCH_DEPENDENTS = {
-        {"accel_enabled",       "accel_options"},
-        {"gyro_enabled",        "gyro_options"},
-        {"mag_enabled",         "mag_options"},
+        {"accel_enabled", "accel_options"},
+        {"gyro_enabled", "gyro_options"},
+        {"mag_enabled", "mag_options"},
         {"orient_quat_enabled", "orient_quat_options"},
         {"orient_euler_enabled","orient_euler_options"},
-        {"gps_enabled",         "gps_options"},
-        {"netloc_enabled",      "netloc_options"},
-        {"cam_enabled",         "cam_options", "video_codec", "video_framerate", "video_preset", "camera_select"},
-        {"video_roll_enabled",  "video_roll_options"},
-        {"audio_enabled",       "audio_options", "audio_codec", "audio_samplerate", "audio_bitrate"},
-        {"meshtastic_enabled",  "meshtastic_device_address", "meshtastic_options"},
-        {"polar_enabled",       "polar_device_address", "polar_options"},
-        {"kestrel_enabled",     "kestrel_device_address", "kestrel_options"},
-        {"trupulse_enabled",    "trupulse_datasource", "trupulse_options", "trupulse_device_address", "trupulse_simu"},
-        {"angel_enabled",       "angel_address", "angel_options"},
-        {"flirone_enabled",     "flir_options"},
+        {"gps_enabled", "gps_options"},
+        {"netloc_enabled", "netloc_options"},
+        {"cam_enabled", "cam_options", "video_codec", "video_framerate", "video_preset", "camera_select"},
+        {"video_roll_enabled", "video_roll_options"},
+        {"audio_enabled", "audio_options", "audio_codec", "audio_samplerate", "audio_bitrate"},
+        {"meshtastic_enabled", "meshtastic_device_address", "meshtastic_options"},
+        {"polar_enabled", "polar_device_address", "polar_options"},
+        {"kestrel_enabled", "kestrel_device_address", "kestrel_options"},
+        {"trupulse_enabled", "trupulse_datasource", "trupulse_options", "trupulse_device_address", "trupulse_simu"},
+        {"angel_enabled", "angel_address", "angel_options"},
+        {"flirone_enabled", "flir_options"},
         {"ste_radpager_enabled","ste_radpager_options"},
         {"wardriving_enabled", "wardriving_options"},
         {"controller_enabled", "controller_options"},
+        {"template_enabled", "template_device_address", "template_options"},
 
     };
 
@@ -64,6 +65,7 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         "polar_device_address",
         "kestrel_device_address",
         "trupulse_device_address",
+        "template_device_address"
     };
 
     private ArrayList<String> frameRateList = new ArrayList<>();
