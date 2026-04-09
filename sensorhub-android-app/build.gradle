@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 description = 'OSH Android App'
-ext.details = 'OSH app for  Android'
+ext.details = 'OSH app for Android'
 
 repositories {
 //  maven {
@@ -14,21 +14,26 @@ dependencies {
 
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
-    implementation 'android.arch.navigation:navigation-fragment:1.0.0'
-    implementation 'android.arch.navigation:navigation-ui:1.0.0'
-    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.navigation:navigation-fragment:2.5.3'
+    implementation 'androidx.navigation:navigation-ui:2.5.3'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation 'androidx.preference:preference:1.2.0'
 
     implementation project(path: ':sensorhub-datastore-h2')
     implementation project(path: ':sensorhub-service-consys')
     implementation project(':sensorhub-android-ste')
     implementation project(':sensorhub-android-meshtastic')
     implementation project(':sensorhub-android-polar')
+    implementation project(':sensorhub-android-wardriving')
+    implementation project(':sensorhub-android-controller')
+    implementation project(':sensorhub-android-template')
     implementation project(':sensorhub-driver-android')
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'com.github.tony19:logback-android:3.0.0'
+
 }
 
 allprojects {
@@ -55,7 +60,23 @@ android {
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName rootProject.version
+        applicationId "com.georobotix.android"
     }
+
+    //https://developer.android.com/build/build-variants#groovy
+//    flavorDimensions += "version" // maybe dont need
+//    productFlavors {
+//        create("free") {
+//            dimension = "version"
+//            applicationIdSuffix = ".free"
+//            buildConfigField("boolean", "IS_PREMIUM", "false")
+//        }
+//        create("premium") {
+//            dimension = "version"
+//            applicationIdSuffix = ".premium"
+//            buildConfigField("boolean", "IS_PREMIUM", "true")
+//        }
+//    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -90,5 +111,6 @@ android {
             excludes += ["META-INF/INDEX.LIST"]
         }
     }
+
 }
 

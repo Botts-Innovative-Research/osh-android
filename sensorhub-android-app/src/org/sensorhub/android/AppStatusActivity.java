@@ -2,10 +2,15 @@ package org.sensorhub.android;
 
 import android.content.Context;
 import android.content.Intent;
-import androidx.appcompat.app.AppCompatActivity;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.appbar.MaterialToolbar;
 
 public class AppStatusActivity extends AppCompatActivity {
 
@@ -14,8 +19,12 @@ public class AppStatusActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_status);
 
+        // Set up toolbar with back navigation
+        MaterialToolbar toolbar = findViewById(R.id.status_toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
         Intent intent = getIntent();
-        Context appContext = getApplicationContext();
 
         String sosStatus = intent.getStringExtra("sosService");
         String consSysStatus = intent.getStringExtra("conSysService");
@@ -23,16 +32,45 @@ public class AppStatusActivity extends AppCompatActivity {
         String sensorStatus = intent.getStringExtra("androidSensorStatus");
         String sensorStorageStatus = intent.getStringExtra("sensorStorageStatus");
 
-        TextView sosStatusView = (TextView) findViewById(R.id.sos_service_state);
-        TextView conSysStatusView = (TextView) findViewById(R.id.consys_service_state);
-        TextView httpStatusView = (TextView) findViewById(R.id.http_service_state);
-        TextView sensorStatusView = (TextView) findViewById(R.id.sensor_service_state);
-        TextView storageStatusView = (TextView) findViewById(R.id.storage_service_state);
+        // Set status text
+        TextView sosStatusView = findViewById(R.id.sos_service_state);
+        TextView conSysStatusView = findViewById(R.id.consys_service_state);
+        TextView httpStatusView = findViewById(R.id.http_service_state);
+        TextView sensorStatusView = findViewById(R.id.sensor_service_state);
+        TextView storageStatusView = findViewById(R.id.storage_service_state);
 
         sosStatusView.setText(sosStatus);
         conSysStatusView.setText(consSysStatus);
         httpStatusView.setText(httpStatus);
         sensorStatusView.setText(sensorStatus);
         storageStatusView.setText(sensorStorageStatus);
+
+        // Color the status indicator dots
+        setStatusDotColor(findViewById(R.id.sos_status_dot), sosStatus);
+        setStatusDotColor(findViewById(R.id.consys_status_dot), consSysStatus);
+        setStatusDotColor(findViewById(R.id.http_status_dot), httpStatus);
+        setStatusDotColor(findViewById(R.id.sensor_status_dot), sensorStatus);
+        setStatusDotColor(findViewById(R.id.storage_status_dot), sensorStorageStatus);
+    }
+
+    private void setStatusDotColor(View dot, String status) {
+        int colorRes;
+        if (status == null) {
+            colorRes = R.color.status_unknown;
+        } else {
+            String lower = status.toLowerCase();
+            if (lower.contains("started")) {
+                colorRes = R.color.status_started;
+            } else if (lower.contains("stopped")) {
+                colorRes = R.color.status_stopped;
+            } else if (lower.contains("starting") || lower.contains("initializ")) {
+                colorRes = R.color.status_initializing;
+            } else {
+                colorRes = R.color.status_unknown;
+            }
+        }
+
+        GradientDrawable background = (GradientDrawable) dot.getBackground();
+        background.setColor(ContextCompat.getColor(this, colorRes));
     }
 }

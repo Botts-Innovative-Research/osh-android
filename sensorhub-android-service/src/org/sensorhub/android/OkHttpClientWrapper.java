@@ -21,8 +21,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 
-import org.sensorhub.impl.service.consys.client.ConSysApiClientConfig;
-import org.sensorhub.impl.service.consys.client.TokenHandler;
+import org.sensorhub.impl.service.consys.client.ITokenHandler;
 import org.sensorhub.impl.service.consys.client.http.IHttpClient;
 import org.sensorhub.impl.service.consys.resource.ResourceFormat;
 
@@ -35,14 +34,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.ConnectionPool;
-import okhttp3.Credentials;
-import okhttp3.Dispatcher;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -53,27 +48,41 @@ import okhttp3.ResponseBody;
 public class OkHttpClientWrapper implements IHttpClient, Closeable
 {
     protected OkHttpClient http;
-    protected TokenHandler tokenHandler;
+    protected ITokenHandler tokenHandler;
+    protected String username;
+    protected char[] password;
 
-    public OkHttpClientWrapper() {
+    public OkHttpClientWrapper() {}
 
+    @Override
+    public void setUsername(String username) {
+        this.username = username;
+        rebuildHttpClient();
     }
 
     @Override
-    public void setConfig(ConSysApiClientConfig config) {
-        shutdownClient();
+    public void setPassword(char[] password) {
+        this.password = password;
+        rebuildHttpClient();
+    }
 
-        if (config.conSysOAuth.oAuthEnabled) {
-            tokenHandler = new TokenHandler(config.conSysOAuth);
+    @Override
+    public void setTokenHandler(ITokenHandler tokenHandler) {
+        this.tokenHandler = tokenHandler;
+    }
+
+    protected void rebuildHttpClient() {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if (username != null && !username.isEmpty()) {
+            var finalPwd = password != null ? new String(password) : "";
+            builder.authenticator((route, response) -> {
+                String credential = okhttp3.Credentials.basic(username, finalPwd);
+                return response.request().newBuilder()
+                        .header("Authorization", credential)
+                        .build();
+            });
         }
-        this.http = new OkHttpClient.Builder().authenticator((route, response) -> {
-            final String finalPwd = config.conSys.password != null ? new String(config.conSys.password) : "";
-
-            String credential = Credentials.basic(config.conSys.user, finalPwd);
-            return response.request().newBuilder()
-                    .header(HttpHeaders.AUTHORIZATION, credential)
-                    .build();
-        }).build();
+        this.http = builder.build();
     }
 
     @Override
