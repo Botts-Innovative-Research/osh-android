@@ -5,8 +5,13 @@ import static android.content.Context.WIFI_SERVICE;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -55,6 +60,23 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         Preference ipAddressLabel = getPreferenceScreen().findPreference("nop_ipAddress");
         ipAddressLabel.setSummary(ipAddressString);
+
+
+        EditTextPreference passwordPref = findPreference("password");
+        if (passwordPref != null) {
+            passwordPref.setSummaryProvider(pref -> "••••••••");
+            passwordPref.setOnBindEditTextListener(editText ->
+                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance())
+            );
+        }
+
+        EditTextPreference secretPref = findPreference("client_secret");
+        if (secretPref != null) {
+            secretPref.setSummaryProvider(pref -> "••••••••");
+            secretPref.setOnBindEditTextListener(editText ->
+                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance())
+            );
+        }
         setupSavedServers();
         setupOAuthToggle();
     }

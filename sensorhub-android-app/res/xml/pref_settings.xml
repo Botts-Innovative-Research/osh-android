@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
 
-<!--    <PreferenceCategory android:title="Device">-->
-        <EditTextPreference
+    <!-- Device info -->
+    <EditTextPreference
             android:textAlignment="viewStart"
             android:defaultValue="MyDevice"
             android:inputType="text"
@@ -15,7 +15,6 @@
             android:title="Device Name"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
-
         <Preference
             android:enabled="true"
             android:key="nop_ipAddress"
@@ -24,8 +23,6 @@
             android:title="Device IP Address"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
-<!--    </PreferenceCategory>-->
-
 
     <!-- CONNECTION -->
     <PreferenceCategory android:title="Server Settings">
@@ -82,14 +79,14 @@
             android:title="Username"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            app:useSimpleSummaryProvider="true"
+            android:summary="Enter username"
             android:layout="@layout/preference_item" />
 
         <EditTextPreference
             android:inputType="textPassword"
             android:key="password"
             android:title="Password"
-            android:selectAllOnFocus="true"
+            android:summary="Enter password"
             android:layout="@layout/preference_item" />
 
         <SwitchPreferenceCompat
@@ -124,6 +121,7 @@
 
     </PreferenceCategory>
 
+    <!-- Clients -->
     <PreferenceCategory android:title="Clients">
         <SwitchPreferenceCompat
             android:id="@+id/client_switch"
@@ -158,23 +156,8 @@
             android:key="client_secret"
             android:title="Client Secret"
             android:visible="false"
-            app:useSimpleSummaryProvider="true"
+            android:inputType="textPassword"
             android:layout="@layout/preference_item" />
     </PreferenceCategory>
-<!--    &lt;!&ndash; TOGGLE ADVANCED &ndash;&gt;-->
-<!--    <SwitchPreferenceCompat-->
-<!--        android:key="show_advanced"-->
-<!--        android:title="Show Advanced Settings"-->
-<!--        android:defaultValue="false" />-->
-
-
-<!--    &lt;!&ndash; ADVANCED SETTINGS &ndash;&gt;-->
-<!--    <PreferenceCategory-->
-<!--        android:key="advanced_category"-->
-<!--        android:title="Advanced Settings"-->
-<!--        android:visible="false">-->
-
-
-        <!-- OAUTH -->
 
 </PreferenceScreen>

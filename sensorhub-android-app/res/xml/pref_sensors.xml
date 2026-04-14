@@ -166,10 +166,9 @@
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_list_item"/>
         <ListPreference
-            android:key="video_preset"
+            android:key="video_resolution"
             android:visible="false"
-            android:title="Resolution Preset"
-            android:defaultValue="0"
+            android:title="Resolution"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_list_item"/>
         <ListPreference
@@ -179,8 +178,6 @@
             android:defaultValue="0"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_list_item"/>
-
-
         <!--   VIDEO  END   -->
 
         <SwitchPreferenceCompat

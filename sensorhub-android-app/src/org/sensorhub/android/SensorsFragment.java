@@ -43,7 +43,7 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         {"orient_euler_enabled","orient_euler_options"},
         {"gps_enabled", "gps_options"},
         {"netloc_enabled", "netloc_options"},
-        {"cam_enabled", "cam_options", "video_codec", "video_framerate", "video_preset", "camera_select"},
+        {"cam_enabled", "cam_options", "video_codec", "video_framerate", "video_resolution", "camera_select"},
         {"video_roll_enabled", "video_roll_options"},
         {"audio_enabled", "audio_options", "audio_codec", "audio_samplerate", "audio_bitrate"},
         {"meshtastic_enabled", "meshtastic_device_address", "meshtastic_options"},
@@ -75,7 +75,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.pref_sensors, rootKey);
 
-        // Wire up switch visibility toggling
         for (String[] group : SWITCH_DEPENDENTS) {
             String switchKey = group[0];
             SwitchPreferenceCompat switchPref = findPreference(switchKey);
@@ -97,11 +96,9 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             });
         }
 
-        // Populate video and audio preference lists dynamically
         setupVideoPreferences();
         setupAudioPreferences();
 
-        // Wire up Bluetooth device picker for all BLE device preferences
         setupBluetoothDevicePickers();
     }
 
@@ -112,7 +109,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             Preference pref = findPreference(key);
             if (pref == null) continue;
 
-            // Show the currently saved address in the summary
             String saved = prefs.getString(key, "");
             if (!saved.isEmpty()) {
                 pref.setSummary(saved);
@@ -141,7 +137,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             }
         }
 
-        // Add manual entry option at the end
         names.add("Enter name or address manually...");
         addresses.add(null);
 
@@ -151,7 +146,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             .setTitle("Select Device")
             .setItems(displayNames, (dialog, which) -> {
                 if (addresses.get(which) == null) {
-                    // Manual entry
                     showManualAddressDialog(prefKey);
                 } else {
                     saveDeviceAddress(prefKey, addresses.get(which), displayNames[which]);
@@ -166,7 +160,6 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setHint("e.g. Ballistic or AA:BB:CC:DD:EE:FF");
 
-        // Load current value if any
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
         String current = prefs.getString(prefKey, "");
         if (!current.isEmpty()) {
@@ -246,19 +239,13 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             frameRatePrefList.setEntryValues(frameRateList.toArray(new String[0]));
         }
 
-        // Preset list
-        ListPreference selectedPresetList = findPreference("video_preset");
-        if (selectedPresetList != null) {
-            ArrayList<String> presetNames = new ArrayList<>();
-            ArrayList<String> presetIndexes = new ArrayList<>();
-            for (int i = 0; i < 5; i++) {
-                presetNames.add("Video Preset #" + (i + 1));
-                presetIndexes.add(String.valueOf(i));
-            }
-            presetNames.add("Auto select");
-            presetIndexes.add("AUTO");
-            selectedPresetList.setEntries(presetNames.toArray(new String[0]));
-            selectedPresetList.setEntryValues(presetIndexes.toArray(new String[0]));
+        // Resolution list
+        ListPreference resolutionPrefList = findPreference("video_resolution");
+        if (resolutionPrefList != null) {
+            resolutionPrefList.setEntries(resList.toArray(new String[0]));
+            resolutionPrefList.setEntryValues(resList.toArray(new String[0]));
+            if (!resList.isEmpty() && resolutionPrefList.getValue() == null)
+                resolutionPrefList.setValue(resList.get(0));
         }
     }
 
@@ -278,6 +265,11 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             if (frameRatePrefList != null) {
                 frameRatePrefList.setEntries(frameRateList.toArray(new String[0]));
                 frameRatePrefList.setEntryValues(frameRateList.toArray(new String[0]));
+            }
+            ListPreference resolutionPrefList = findPreference("video_resolution");
+            if (resolutionPrefList != null) {
+                resolutionPrefList.setEntries(resList.toArray(new String[0]));
+                resolutionPrefList.setEntryValues(resList.toArray(new String[0]));
             }
         } catch (Exception e) {
             Log.e("SensorsFragment", "Error updating camera settings", e);

@@ -144,7 +144,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     URL url;
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
-    URI clientUri = null;
     URL clientURL = null;
 
     String deviceID;
@@ -249,23 +248,17 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         if (host.isEmpty())
             host = "127.0.0.1";
-
         if (port.isEmpty())
             port = "8585";
-
-        String newUrl = (isTLSEnabled ? "https://" : "http://") + host + ":" + port + endpointPath;
-
-        try {
-            clientUri = new URI(newUrl);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        
+        String url = (isTLSEnabled ? "https://" : "http://") + host + ":" + port + endpointPath;
 
         try {
-            clientURL = clientUri.toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            clientURL = new URI(url).toURL();
+        } catch (URISyntaxException | MalformedURLException e) {
+            log.error("Error: Client URL is invalid");
         }
+
 
         boolean disableSslCheck = prefs.getBoolean("sos_disable_ssl_check", false);
         if (disableSslCheck)
@@ -306,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         String tokenEndpoint = prefs.getString("token_endpoint", "").trim();
         String clientSecret = prefs.getString("client_secret", "").trim();
 
+
         String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         String deviceName = prefs.getString("device_name", null);
         if (deviceName == null || deviceName.length() < 2)
@@ -334,32 +328,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         sensorsConfig.videoConfig.codec = prefs.getString("video_codec", VideoEncoderConfig.JPEG_CODEC);
         sensorsConfig.videoConfig.frameRate = Integer.parseInt(prefs.getString("video_framerate", "30"));
 
-        String selectedPreset = prefs.getString("video_preset", "0");
-        if ("AUTO".equals(selectedPreset)) {
-            sensorsConfig.videoConfig.autoPreset = true;
-            sensorsConfig.videoConfig.selectedPreset = 0;
-        }
-        else {
-            sensorsConfig.videoConfig.autoPreset = false;
-            sensorsConfig.videoConfig.selectedPreset = Integer.parseInt(selectedPreset);
-        }
-
-        int resIdx = 1;
-        ArrayList<VideoPreset> presetList = new ArrayList<>();
-        while (prefs.contains("video_size" + resIdx))
-        {
-            String resString = prefs.getString("video_size" + resIdx, "Disabled");
-            String[] tokens = resString.split("x");
-            VideoPreset preset = new VideoPreset();
-            preset.width = Integer.parseInt(tokens[0]);
-            preset.height = Integer.parseInt(tokens[1]);
-            preset.minBitrate = Integer.parseInt(prefs.getString("video_min_bitrate" + resIdx, "3000"));
-            preset.maxBitrate = Integer.parseInt(prefs.getString("video_max_bitrate" + resIdx, "3000"));
-            preset.selectedBitrate = preset.maxBitrate;
-            presetList.add(preset);
-            resIdx++;
-        }
-        sensorsConfig.videoConfig.presets = presetList.toArray(new VideoPreset[0]);
+        String resolutionStr = prefs.getString("video_resolution", "640x480");
+        String[] resParts = resolutionStr.split("x");
+        VideoPreset videoPreset = new VideoPreset();
+        videoPreset.width = Integer.parseInt(resParts[0]);
+        videoPreset.height = Integer.parseInt(resParts[1]);
+        sensorsConfig.videoConfig.presets = new VideoPreset[]{videoPreset};
+        sensorsConfig.videoConfig.selectedPreset = 0;
 
         sensorsConfig.outputVideoRoll = prefs.getBoolean("video_roll_enabled", false);
 

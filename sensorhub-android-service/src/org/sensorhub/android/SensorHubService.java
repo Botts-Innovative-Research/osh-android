@@ -1,5 +1,6 @@
 package org.sensorhub.android;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,17 +19,24 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
+import android.os.SystemClock;
+
+import com.ctc.wstx.stax.WstxInputFactory;
+import com.ctc.wstx.stax.WstxOutputFactory;
 
 import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.impl.SensorHub;
 import org.sensorhub.impl.SensorHubConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vast.xml.XMLImplFinder;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class SensorHubService extends Service
 {
+    private static final Logger log = LoggerFactory.getLogger(SensorHubService.class);
     final IBinder binder = new LocalBinder();
     private HandlerThread msgThread;
     private Handler msgHandler;
@@ -69,8 +77,8 @@ public class SensorHubService extends Service
             //Dexter.loadFromAssets(this.getApplicationContext(), "stax-api-1.0-2.dex");
 
             // set default StAX implementation
-            XMLImplFinder.setStaxInputFactory(com.ctc.wstx.stax.WstxInputFactory.class.newInstance());
-            XMLImplFinder.setStaxOutputFactory(com.ctc.wstx.stax.WstxOutputFactory.class.newInstance());
+            XMLImplFinder.setStaxInputFactory(WstxInputFactory.class.newInstance());
+            XMLImplFinder.setStaxOutputFactory(WstxOutputFactory.class.newInstance());
 
             // set default DOM implementation
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -179,7 +187,7 @@ public class SensorHubService extends Service
                 try {
                     sensorhub.start();
                 } catch (SensorHubException e) {
-                    e.printStackTrace();
+                    log.error("Error starting SensorHub: "+ e.getMessage());
                     // Release locks if startup fails
                     releaseWakeLocks();
                 }
@@ -203,7 +211,7 @@ public class SensorHubService extends Service
                 .getSystemService(Context.WIFI_SERVICE);
         if (wifiManager != null && wifiLock == null) {
             wifiLock = wifiManager.createWifiLock(
-                    WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                    WifiManager.WIFI_MODE_FULL_LOW_LATENCY,
                     "SensorHub::WiFiLock"
             );
             wifiLock.acquire();
@@ -276,6 +284,21 @@ public class SensorHubService extends Service
         super.onDestroy();
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        log.info("Task removed, scheduling restart");
+        Intent restartIntent = new Intent(getApplicationContext(), SensorHubService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(
+                getApplicationContext(), 1, restartIntent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
+        );
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.ELAPSED_REALTIME,
+                    SystemClock.elapsedRealtime() + 1000, pendingIntent);
+        }
+        super.onTaskRemoved(rootIntent);
+    }
 
     @Override
     public IBinder onBind(Intent intent)
