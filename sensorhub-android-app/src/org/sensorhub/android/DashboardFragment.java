@@ -29,6 +29,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import android.graphics.drawable.GradientDrawable;
+import android.widget.Toast;
+
 import androidx.core.content.ContextCompat;
 
 import org.sensorhub.api.event.Event;
@@ -135,6 +137,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     private void stopHub() {
+        Toast.makeText(requireContext(), "Stopping SensorHub", Toast.LENGTH_SHORT).show();
         stopRefreshingStatus();
         provider.stopSensorHub();
         updateFabIcon();
@@ -144,7 +147,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    // ==================== Run Name Popup ====================
 
     protected synchronized void showRunNamePopup() {
         MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(requireContext());
@@ -185,6 +187,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                     showVideoConfigErrorPopup();
                     newStatusMessage("Video Config Error: Check Settings");
                 } else {
+                    Toast.makeText(requireContext(), "Starting SensorHub...", Toast.LENGTH_SHORT).show();
                     newStatusMessage("Starting SensorHub...");
                     provider.getSostClients().clear();
                     provider.getConSysClients().clear();
@@ -192,12 +195,14 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
                     SensorHubService service = provider.getBoundService();
 
+                    //todo: fix this
                     while (service.getSensorHub() == null) {
                         System.out.println("Waiting for BoundService Hub to start...");
                     }
                     while (service.getSensorHub().getEventBus() == null) {
                         System.out.println("Waiting for BoundService Hub EventBus to start...");
                     }
+                    // todo:
 
                     EventBus shEvtBus = (EventBus) service.getSensorHub().getEventBus();
                     shEvtBus.newSubscription()
@@ -219,8 +224,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             .setPositiveButton("OK", (dialog, id) -> {})
             .show();
     }
-
-    // ==================== Status Display ====================
 
     protected void startRefreshingStatus() {
         if (displayCallback != null) return;
@@ -292,7 +295,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             }
         }
 
-        // Stream statuses
         mainInfoText.append("<p>");
         for (SOSTClient client : provider.getSostClients()) {
             mainInfoText.append("SOS-T Client<p>");
@@ -355,7 +357,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             mainInfoText.append("No Sensors Set to Push Remotely");
         }
 
-        // video info — update status card
         AndroidSensorsDriver sensors = provider.getAndroidSensors();
         SensorHubService service = provider.getBoundService();
         if (sensors != null && service != null && service.hasVideo()) {
@@ -380,8 +381,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         displayHandler.post(() -> mainInfoArea.setText(mainInfoText.toString()));
     }
 
-    // ==================== Video ====================
-
     private void updateVideoStatusCard() {
         SensorHubService service = provider.getBoundService();
         boolean hasVideo = service != null && service.hasVideo();
@@ -392,7 +391,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             videoInfoArea.setText(videoInfoText.toString());
         }
 
-        // Update the status dot color (green = streaming)
         if (videoStatusDot != null && videoStatusDot.getBackground() instanceof GradientDrawable) {
             GradientDrawable dot = (GradientDrawable) videoStatusDot.getBackground();
             int color = ContextCompat.getColor(requireContext(),
