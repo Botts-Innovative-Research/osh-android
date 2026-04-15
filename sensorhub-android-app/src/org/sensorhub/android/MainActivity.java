@@ -14,6 +14,8 @@
 
 package org.sensorhub.android;
 
+import static org.sensorhub.android.SensorHubService.context;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -47,6 +49,8 @@ import android.os.PowerManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.botts.impl.service.discovery.DiscoveryService;
+import com.botts.impl.service.discovery.DiscoveryServiceConfig;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -104,7 +108,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -243,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
         Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
+        Boolean isDiscoveryServiceEnabled = prefs.getBoolean("discovery_service", true);
         Boolean isClientEnabled = prefs.getBoolean("enable_client", true);
         Boolean isTLSEnabled = prefs.getBoolean("enable_tls", false);
 
@@ -372,6 +381,30 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         conSysApiService.enableTransactional = true;
         conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
 
+        // Discovery Service
+        DiscoveryServiceConfig discoveryServiceConfig = new DiscoveryServiceConfig();
+        discoveryServiceConfig.moduleClass = DiscoveryService.class.getCanonicalName();
+        discoveryServiceConfig.id = "DISCOVERY_SERVICE";
+        discoveryServiceConfig.name= "Discovery Service";
+        discoveryServiceConfig.autoStart = true;
+
+        InputStream inputStream = context.getResources().openRawResource(R.raw.rules);
+        File outFile = new File(context.getFilesDir(), "rules.txt");
+        try (OutputStream outputStream = new FileOutputStream(outFile)) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+            outputStream.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        discoveryServiceConfig.rulesFilePath = outFile.getAbsolutePath();
+
+        // OAuth
         ConSysOAuthConfig conSysOAuthConfig = new ConSysOAuthConfig();
         conSysOAuthConfig.oAuthEnabled = isOAuthEnabled;
         conSysOAuthConfig.tokenEndpoint = tokenEndpoint;
@@ -523,6 +556,18 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(controllerConfig);
         }
 
+        //---------- SERVICES ---------------------
+        if (isApiServiceEnabled) {
+            sensorhubConfig.add(conSysApiService);
+        }
+        if (isSosServiceEnabled) {
+            sensorhubConfig.add(sosConfig);
+        }
+        if (isDiscoveryServiceEnabled) {
+            sensorhubConfig.add(discoveryServiceConfig);
+        }
+
+
         // Template Driver
         enabled = prefs.getBoolean("template_enabled", false);
         if (enabled) {
@@ -535,13 +580,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(templateConfig);
         }
 
-
-        if (isApiServiceEnabled) {
-            sensorhubConfig.add(conSysApiService);
-        }
-        if (isSosServiceEnabled) {
-            sensorhubConfig.add(sosConfig);
-        }
     }
 
     protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
@@ -690,6 +728,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
                                 break;
                             case "CON_SYS_SERVICE":
                                 statusIntent.putExtra("conSysService", status);
+                                break;
+                            case "DISCOVERY_SERVICE":
+                                statusIntent.putExtra("discoveryService", status);
                                 break;
                             case "ANDROID_SENSORS":
                                 statusIntent.putExtra("androidSensorStatus", status);

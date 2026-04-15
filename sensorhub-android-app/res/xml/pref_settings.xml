@@ -119,6 +119,13 @@
             android:defaultValue="true"
             android:layout="@layout/preference_switch_item" />
 
+        <SwitchPreferenceCompat
+            android:id="@+id/discovery_service_switch"
+            android:key="discovery_service"
+            android:title="Enable Discovery Service"
+            android:defaultValue="true"
+            android:layout="@layout/preference_switch_item" />
+
     </PreferenceCategory>
 
     <!-- Clients -->

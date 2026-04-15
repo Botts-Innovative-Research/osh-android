@@ -24,6 +24,7 @@ dependencies {
 
     implementation project(path: ':sensorhub-datastore-h2')
     implementation project(path: ':sensorhub-service-consys')
+    implementation project(path: ':sensorhub-service-discovery')
     implementation project(':sensorhub-android-ste')
     implementation project(':sensorhub-android-meshtastic')
     implementation project(':sensorhub-android-polar')
