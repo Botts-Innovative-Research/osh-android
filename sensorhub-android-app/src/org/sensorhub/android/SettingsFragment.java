@@ -5,19 +5,18 @@ import static android.content.Context.WIFI_SERVICE;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreferenceCompat;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -64,18 +63,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         EditTextPreference passwordPref = findPreference("password");
         if (passwordPref != null) {
-            passwordPref.setSummaryProvider(pref -> "••••••••");
-            passwordPref.setOnBindEditTextListener(editText ->
-                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance())
-            );
+            passwordPref.setSummaryProvider(pref -> "•••••••");
         }
 
         EditTextPreference secretPref = findPreference("client_secret");
         if (secretPref != null) {
             secretPref.setSummaryProvider(pref -> "••••••••");
-            secretPref.setOnBindEditTextListener(editText ->
-                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance())
-            );
         }
         setupSavedServers();
         setupOAuthToggle();
@@ -123,10 +116,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private String getDisplayName(String entry) {
-        // entry format: "ip|port|name"
-        String[] parts = entry.split("\\|", 3);
-        if (parts.length >= 3) return parts[2] + " (" + parts[0] + ":" + parts[1] + ")";
-        return entry;
+        try {
+            JSONObject obj = new JSONObject(entry);
+            String name = obj.optString("name");
+            String ip = obj.optString("ip");
+            String port = obj.optString("port");
+            return name + " (" + ip + ":" + port + ")";
+        } catch (JSONException e) {
+            return entry;
+        }
     }
 
     private void updateSavedServersSummary(Preference pref) {
@@ -143,6 +141,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         String name = prefs.getString("server_name", "").trim();
         String ip = prefs.getString("ip_address", "").trim();
         String port = prefs.getString("port", "").trim();
+        String username = prefs.getString("username", "").trim();
+        String password = prefs.getString("password", "").trim();
+        String endpoint = prefs.getString("endpoint_path", "").trim();
 
         if (ip.isEmpty() || port.isEmpty()) {
             Toast.makeText(requireContext(), "Server address and port are required", Toast.LENGTH_SHORT).show();
@@ -153,19 +154,34 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             name = ip + ":" + port;
         }
 
-        String entry = ip + "|" + port + "|" + name;
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("ip", ip);
+            obj.put("port", port);
+            obj.put("name", name);
+            obj.put("username", username);
+            obj.put("password", password);
+            obj.put("endpoint", endpoint);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
 
         Set<String> servers = new HashSet<>(getSavedServers());
 
-        // Check for duplicate ip:port
-        String finalIp = ip;
-        String finalPort = port;
+        // remove duplicates (ip + port + endpoint)
         servers.removeIf(s -> {
-            String[] parts = s.split("\\|", 3);
-            return parts.length >= 2 && parts[0].equals(finalIp) && parts[1].equals(finalPort);
+            try {
+                JSONObject existing = new JSONObject(s);
+                return existing.optString("ip").equals(ip) &&
+                        existing.optString("port").equals(port) &&
+                        existing.optString("endpoint").equals(endpoint);
+            } catch (JSONException e) {
+                return false;
+            }
         });
 
-        servers.add(entry);
+        servers.add(obj.toString());
         putSavedServers(servers);
 
         Preference selectPref = findPreference("saved_servers");
@@ -189,18 +205,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         new AlertDialog.Builder(requireContext())
             .setTitle("Select Server")
             .setItems(displayNames, (dialog, which) -> {
-                String[] parts = servers.get(which).split("\\|", 3);
-                if (parts.length < 3) return;
+                try {
+                    JSONObject obj = new JSONObject(servers.get(which));
 
-                EditTextPreference ipPref = findPreference("ip_address");
-                EditTextPreference portPref = findPreference("port");
-                EditTextPreference namePref = findPreference("server_name");
+                    EditTextPreference ipPref = findPreference("ip_address");
+                    EditTextPreference portPref = findPreference("port");
+                    EditTextPreference namePref = findPreference("server_name");
+                    EditTextPreference usernamePref = findPreference("username");
+                    EditTextPreference passwordPref = findPreference("password");
+                    EditTextPreference endpointPref = findPreference("endpoint_path");
 
-                if (ipPref != null) ipPref.setText(parts[0]);
-                if (portPref != null) portPref.setText(parts[1]);
-                if (namePref != null) namePref.setText(parts[2]);
+                    if (ipPref != null) ipPref.setText(obj.optString("ip"));
+                    if (portPref != null) portPref.setText(obj.optString("port"));
+                    if (namePref != null) namePref.setText(obj.optString("name"));
+                    if (usernamePref != null) usernamePref.setText(obj.optString("username"));
+                    if (passwordPref != null) passwordPref.setText(obj.optString("password"));
+                    if (endpointPref != null) endpointPref.setText(obj.optString("endpoint"));
 
-                Toast.makeText(requireContext(), "Loaded: " + parts[2], Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Loaded: " + obj.optString("name"), Toast.LENGTH_SHORT).show();
+
+                } catch (JSONException e) {
+                    Toast.makeText(requireContext(), "Failed to load server", Toast.LENGTH_SHORT).show();
+                }
             })
             .setNegativeButton("Cancel", null)
             .show();
