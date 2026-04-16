@@ -28,6 +28,7 @@ public class AppStatusActivity extends AppCompatActivity {
 
         String sosStatus = intent.getStringExtra("sosService");
         String consSysStatus = intent.getStringExtra("conSysService");
+        String discoveryStatus = intent.getStringExtra("discoveryService");
         String httpStatus = intent.getStringExtra("httpStatus");
         String sensorStatus = intent.getStringExtra("androidSensorStatus");
         String sensorStorageStatus = intent.getStringExtra("sensorStorageStatus");
@@ -35,12 +36,14 @@ public class AppStatusActivity extends AppCompatActivity {
         // Set status text
         TextView sosStatusView = findViewById(R.id.sos_service_state);
         TextView conSysStatusView = findViewById(R.id.consys_service_state);
+        TextView discoveryStatusView = findViewById(R.id.discovery_service_state);
         TextView httpStatusView = findViewById(R.id.http_service_state);
         TextView sensorStatusView = findViewById(R.id.sensor_service_state);
         TextView storageStatusView = findViewById(R.id.storage_service_state);
 
         sosStatusView.setText(sosStatus);
         conSysStatusView.setText(consSysStatus);
+        discoveryStatusView.setText(discoveryStatus);
         httpStatusView.setText(httpStatus);
         sensorStatusView.setText(sensorStatus);
         storageStatusView.setText(sensorStorageStatus);
@@ -48,6 +51,7 @@ public class AppStatusActivity extends AppCompatActivity {
         // Color the status indicator dots
         setStatusDotColor(findViewById(R.id.sos_status_dot), sosStatus);
         setStatusDotColor(findViewById(R.id.consys_status_dot), consSysStatus);
+        setStatusDotColor(findViewById(R.id.discovery_status_dot), discoveryStatus);
         setStatusDotColor(findViewById(R.id.http_status_dot), httpStatus);
         setStatusDotColor(findViewById(R.id.sensor_status_dot), sensorStatus);
         setStatusDotColor(findViewById(R.id.storage_status_dot), sensorStorageStatus);

@@ -6,3 +6,6 @@
 	path = submodules/osh-core
 	url = git@github.com:kalynstricklin/osh-core.git
 	branch = update-moduleutils
+[submodule "submodules/botts-addons"]
+	path = submodules/botts-addons
+	url = git@github.com:Botts-Innovative-Research/botts-addons.git
