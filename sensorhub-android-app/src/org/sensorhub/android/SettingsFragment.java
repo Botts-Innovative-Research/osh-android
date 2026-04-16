@@ -43,7 +43,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
         int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
 
-        // Convert little-endian to big-endianif needed
         if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
             ipAddress = Integer.reverseBytes(ipAddress);
         }
@@ -61,17 +60,36 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         ipAddressLabel.setSummary(ipAddressString);
 
 
-        EditTextPreference passwordPref = findPreference("password");
-        if (passwordPref != null) {
-            passwordPref.setSummaryProvider(pref -> "•••••••");
-        }
+        setupSecurePreference("password", "•••••••");
+        setupSecurePreference("client_secret", "••••••••");
+        setupSecurePreference("client_id", null);
+        setupSecurePreference("token_endpoint", null);
 
-        EditTextPreference secretPref = findPreference("client_secret");
-        if (secretPref != null) {
-            secretPref.setSummaryProvider(pref -> "••••••••");
-        }
         setupSavedServers();
         setupOAuthToggle();
+    }
+
+    private void setupSecurePreference(String key, String maskedSummary) {
+        EditTextPreference pref = findPreference(key);
+        if (pref == null) return;
+
+        pref.setPersistent(false);
+
+        String value = SecurePrefs.get(requireContext(), key, "");
+        pref.setText(value);
+
+        if (maskedSummary != null) {
+            pref.setSummaryProvider(p -> {
+                String v = SecurePrefs.get(requireContext(), key, "");
+                return (v != null && !v.isEmpty()) ? maskedSummary : "Not set";
+            });
+        }
+
+        pref.setOnPreferenceChangeListener((p, newValue) -> {
+            SecurePrefs.put(requireContext(), key, (String) newValue);
+            pref.setText((String) newValue);
+            return false;
+        });
     }
 
     // ==================== Saved Servers ====================
@@ -142,7 +160,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         String ip = prefs.getString("ip_address", "").trim();
         String port = prefs.getString("port", "").trim();
         String username = prefs.getString("username", "").trim();
-        String password = prefs.getString("password", "").trim();
+        String password = SecurePrefs.get(requireContext(), "password", "").trim();
         String endpoint = prefs.getString("endpoint_path", "").trim();
 
         if (ip.isEmpty() || port.isEmpty()) {
@@ -154,22 +172,25 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             name = ip + ":" + port;
         }
 
+        String serverKey = ip + ":" + port + endpoint;
         JSONObject obj = new JSONObject();
         try {
             obj.put("ip", ip);
             obj.put("port", port);
             obj.put("name", name);
             obj.put("username", username);
-            obj.put("password", password);
             obj.put("endpoint", endpoint);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
 
+        if (!password.isEmpty()) {
+            SecurePrefs.put(requireContext(), "server_pwd_" + serverKey, password);
+        }
+
         Set<String> servers = new HashSet<>(getSavedServers());
 
-        // remove duplicates (ip + port + endpoint)
         servers.removeIf(s -> {
             try {
                 JSONObject existing = new JSONObject(s);
@@ -219,8 +240,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     if (portPref != null) portPref.setText(obj.optString("port"));
                     if (namePref != null) namePref.setText(obj.optString("name"));
                     if (usernamePref != null) usernamePref.setText(obj.optString("username"));
-                    if (passwordPref != null) passwordPref.setText(obj.optString("password"));
                     if (endpointPref != null) endpointPref.setText(obj.optString("endpoint"));
+
+                    String serverKey = obj.optString("ip") + ":" + obj.optString("port") + obj.optString("endpoint");
+                    String savedPwd = SecurePrefs.get(requireContext(), "server_pwd_" + serverKey, "");
+                    if (passwordPref != null) {
+                        passwordPref.setText(savedPwd);
+                        SecurePrefs.put(requireContext(), "password", savedPwd);
+                    }
 
                     Toast.makeText(requireContext(), "Loaded: " + obj.optString("name"), Toast.LENGTH_SHORT).show();
 
@@ -254,7 +281,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             .setPositiveButton("Remove", (dialog, which) -> {
                 Set<String> remaining = new HashSet<>();
                 for (int i = 0; i < servers.size(); i++) {
-                    if (!checked[i]) remaining.add(servers.get(i));
+                    if (!checked[i]) {
+                        remaining.add(servers.get(i));
+                    } else {
+                        try {
+                            JSONObject obj = new JSONObject(servers.get(i));
+                            String serverKey = obj.optString("ip") + ":" + obj.optString("port") + obj.optString("endpoint");
+                            SecurePrefs.remove(requireContext(), "server_pwd_" + serverKey);
+                        } catch (JSONException ignored) {}
+                    }
                 }
                 putSavedServers(remaining);
 

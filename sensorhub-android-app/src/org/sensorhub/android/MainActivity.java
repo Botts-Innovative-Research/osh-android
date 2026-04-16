@@ -244,10 +244,10 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
-        String host = prefs.getString("ip_address", "").trim();
-        String port = prefs.getString("port", "").trim();
+        String host = prefs.getString("ip_address", "127.0.0.1").trim();
+        String portStr = prefs.getString("port", "8080").trim();
         String user = prefs.getString("username", null);
-        String password = prefs.getString("password", null);
+        String password = SecurePrefs.get(this, "password", null);
         String endpointPath = prefs.getString("endpoint_path", null);
 
         Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
@@ -256,17 +256,34 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         Boolean isClientEnabled = prefs.getBoolean("enable_client", true);
         Boolean isTLSEnabled = prefs.getBoolean("enable_tls", false);
 
-        if (host.isEmpty())
+        if (host == null || host.isEmpty())
             host = "127.0.0.1";
-        if (port.isEmpty())
-            port = "8585";
-        
-        String url = (isTLSEnabled ? "https://" : "http://") + host + ":" + port + endpointPath;
+        host = host.replace("http://", "").replace("https://", "");
+
+        int port;
+        try {
+            port = Integer.parseInt(portStr);
+            if (port < 1 || port > 65535) {
+                port = 8080;
+            }
+        } catch (NumberFormatException e) {
+            port = 8080;
+        }
+
+        if (endpointPath.isEmpty()) {
+            endpointPath = "";
+        } else if (!endpointPath.startsWith("/")) {
+            endpointPath = "/" + endpointPath;
+        }
+
+        String urlStr = (isTLSEnabled ? "https://" : "http://") +
+                host + ":" + port + endpointPath;
 
         try {
-            clientURL = new URI(url).toURL();
+            clientURL = new URI(urlStr).toURL();
         } catch (URISyntaxException | MalformedURLException e) {
-            log.error("Error: Client URL is invalid");
+            log.error("Invalid URL: " + urlStr, e);
+            clientURL = null;
         }
 
 
@@ -305,9 +322,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         // OAuth
         Boolean isOAuthEnabled = prefs.getBoolean("o_auth_enabled", false);
-        String clientId = prefs.getString("client_id", "").trim();
-        String tokenEndpoint = prefs.getString("token_endpoint", "").trim();
-        String clientSecret = prefs.getString("client_secret", "").trim();
+        String clientId = SecurePrefs.get(this, "client_id", "").trim();
+        String tokenEndpoint = SecurePrefs.get(this, "token_endpoint", "").trim();
+        String clientSecret = SecurePrefs.get(this, "client_secret", "").trim();
 
 
         String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
@@ -874,8 +891,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         alert.setIcon(R.drawable.ic_launcher);
         alert.show();
     }
-
-    // ========================================
 
     boolean isPushingSensor(Sensors sensor) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

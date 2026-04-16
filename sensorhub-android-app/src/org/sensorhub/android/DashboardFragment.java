@@ -13,6 +13,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -28,12 +29,16 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
 import org.sensorhub.api.event.Event;
+import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.ModuleEvent;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
@@ -62,6 +67,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private MaterialButton btnToggleVideo;
     private View videoStatusDot;
     private FloatingActionButton fab;
+    private ImageButton btnToggleStatus;
+    private View mainInfoScroll;
     private Handler displayHandler;
     private Runnable displayCallback;
     private StringBuffer mainInfoText = new StringBuffer();
@@ -69,6 +76,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private Flow.Subscription subscription;
     private SensorHubServiceProvider provider;
     private boolean videoPreviewVisible = false;
+    private boolean statusExpanded = true;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,10 +107,14 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
         btnToggleVideo.setOnClickListener(v -> toggleVideoPreview());
 
+        btnToggleStatus = view.findViewById(R.id.btn_toggle_status);
+        btnToggleStatus.setOnClickListener(v -> toggleStatusExpanded());
+        mainInfoScroll = view.findViewById(R.id.main_info_scroll);
+
         fab = view.findViewById(R.id.fab_toggle);
         fab.setOnClickListener(v -> {
             if (!provider.isOshStarted()) {
-                if (provider.getBoundService() != null && provider.getBoundService().getSensorHub() == null)
+                if (provider.getBoundService() != null)
                     showRunNamePopup();
             } else {
                 stopHub();
@@ -142,9 +154,19 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         provider.stopSensorHub();
         updateFabIcon();
         hideVideoPreview();
+        clearTextureView();
         videoStatusCard.setVisibility(View.GONE);
         newStatusMessage("SensorHub Stopped");
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    private void clearTextureView() {
+        if (textureView == null || textureView.getSurfaceTexture() == null) return;
+        Canvas canvas = textureView.lockCanvas();
+        if (canvas != null) {
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            textureView.unlockCanvasAndPost(canvas);
+        }
     }
 
 
@@ -193,27 +215,61 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                     provider.getConSysClients().clear();
                     provider.startSensorHub();
 
-                    SensorHubService service = provider.getBoundService();
-
-                    //todo: fix this
-                    while (service.getSensorHub() == null) {
-                        System.out.println("Waiting for BoundService Hub to start...");
-                    }
-                    while (service.getSensorHub().getEventBus() == null) {
-                        System.out.println("Waiting for BoundService Hub EventBus to start...");
-                    }
-                    // todo:
-
-                    EventBus shEvtBus = (EventBus) service.getSensorHub().getEventBus();
-                    shEvtBus.newSubscription()
-                            .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
-                            .subscribe(DashboardFragment.this);
+                    waitForHubReady();
                 }
             }
         });
 
         alert.setNegativeButton("Cancel", (dialog, whichButton) -> {});
         alert.show();
+    }
+
+    private static final int HUB_POLL_INTERVAL_MS = 200;
+    private static final int HUB_POLL_MAX_ATTEMPTS = 150;
+    private int hubPollAttempts = 0;
+
+    private void waitForHubReady() {
+        hubPollAttempts = 0;
+        displayHandler.post(this::pollHubReady);
+    }
+
+    private void pollHubReady() {
+        if (!isAdded()) return;
+
+        SensorHubService service = provider.getBoundService();
+        hubPollAttempts++;
+
+        if (service != null && service.getSensorHub() != null && service.getSensorHub().getEventBus() != null) {
+            EventBus shEvtBus = (EventBus) service.getSensorHub().getEventBus();
+            shEvtBus.newSubscription()
+                    .withTopicID(ModuleRegistry.EVENT_GROUP_ID)
+                    .subscribe(DashboardFragment.this);
+
+            ModuleRegistry registry = (ModuleRegistry) service.getSensorHub().getModuleRegistry();
+            for (IModule<?> module : registry.getLoadedModules()) {
+                if (module instanceof SOSTClient) {
+                    provider.getSostClients().add((SOSTClient) module);
+                } else if (module instanceof ConSysApiClientModule) {
+                    provider.getConSysClients().add((ConSysApiClientModule) module);
+                } else if (module instanceof AndroidSensorsDriver) {
+                    provider.setAndroidSensors((AndroidSensorsDriver) module);
+                }
+            }
+
+            if (!provider.isOshStarted()) {
+                provider.setOshStarted(true);
+                updateFabIcon();
+                startRefreshingStatus();
+                updateVideoStatusCard();
+                if (videoPreviewVisible)
+                    showVideo();
+            }
+        } else if (hubPollAttempts < HUB_POLL_MAX_ATTEMPTS) {
+            displayHandler.postDelayed(this::pollHubReady, HUB_POLL_INTERVAL_MS);
+        } else {
+            newStatusMessage("SensorHub failed to start");
+            updateFabIcon();
+        }
     }
 
     protected void showVideoConfigErrorPopup() {
@@ -372,6 +428,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                 // ignore display errors
             }
             updateVideoStatusCard();
+            if (videoPreviewVisible)
+                showVideo();
         }
     }
 
@@ -399,6 +457,12 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
+    private void toggleStatusExpanded() {
+        statusExpanded = !statusExpanded;
+        mainInfoScroll.setVisibility(statusExpanded ? View.VISIBLE : View.GONE);
+        btnToggleStatus.setImageResource(statusExpanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
+    }
+
     private void toggleVideoPreview() {
         videoPreviewVisible = !videoPreviewVisible;
         if (videoPreviewVisible) {
@@ -420,7 +484,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
     protected void showVideo() {
         SensorHubService service = provider.getBoundService();
-        if (service != null && service.getVideoTexture() != null) {
+        if (service != null && service.getVideoTexture() != null && !service.getVideoTexture().isReleased()) {
             if (textureView.getSurfaceTexture() != service.getVideoTexture())
                 textureView.setSurfaceTexture(service.getVideoTexture());
         }

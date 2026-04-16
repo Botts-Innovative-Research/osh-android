@@ -62,7 +62,7 @@
         <EditTextPreference
             android:key="port"
             android:title="Port"
-            android:defaultValue="8585"
+            android:defaultValue="8080"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
 

@@ -66,10 +66,8 @@ public class SensorHubService extends Service
 
         try
         {
-            // keep handle to Android context so it can be retrieved by OSH components
             SensorHubService.context = getApplicationContext();
 
-            // create video surface texture here so it's not destroyed when pausing the app
             SensorHubService.videoTex = new SurfaceTexture(1);
             SensorHubService.videoTex.detachFromGLContext();
 
@@ -90,7 +88,6 @@ public class SensorHubService extends Service
             msgThread.start();
             msgHandler = new Handler(msgThread.getLooper());
 
-            // Start as foreground service with notification
             startForegroundService();
         }
         catch (Exception e)
@@ -177,18 +174,30 @@ public class SensorHubService extends Service
 
         this.hasVideo = hasVideo;
 
-        // Acquire wake locks BEFORE starting the hub
+        if (hasVideo) {
+            if (videoTex != null) {
+                videoTex.release();
+            }
+            videoTex = new SurfaceTexture(1);
+            videoTex.detachFromGLContext();
+        }
+
         acquireWakeLocks();
 
         msgHandler.post(new Runnable() {
             public void run() {
-                // create and start sensorhub instance
                 sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
                 try {
                     sensorhub.start();
                 } catch (SensorHubException e) {
-                    log.error("Error starting SensorHub: "+ e.getMessage());
-                    // Release locks if startup fails
+                    log.error("Error starting SensorHub: " + e.getMessage());
+                    try {
+                        sensorhub.stop();
+                    } catch (Exception ex) {
+                        log.error("Error stopping failed SensorHub", ex);
+                    }
+                    sensorhub = null;
+                    SensorHubService.this.hasVideo = false;
                     releaseWakeLocks();
                 }
             }
@@ -234,31 +243,12 @@ public class SensorHubService extends Service
 
     public synchronized void stopSensorHub()
     {
-        if (sensorhub == null)
-            return;
+        if (sensorhub != null) {
+            sensorhub.stop();
+            sensorhub = null;
+        }
 
         this.hasVideo = false;
-
-        final SensorHubAndroid hubToStop = sensorhub;
-        sensorhub = null;
-
-        final java.util.concurrent.CountDownLatch stopLatch = new java.util.concurrent.CountDownLatch(1);
-
-        msgHandler.post(new Runnable() {
-            public void run() {
-                try {
-                    hubToStop.stop();
-                } finally {
-                    stopLatch.countDown();
-                }
-            }
-        });
-
-        try {
-            stopLatch.await(15, java.util.concurrent.TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         releaseWakeLocks();
     }
