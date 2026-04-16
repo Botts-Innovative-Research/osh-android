@@ -523,13 +523,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(controllerConfig);
         }
 
-        if (isApiServiceEnabled) {
-            sensorhubConfig.add(conSysApiService);
-        }
-        if (isSosServiceEnabled) {
-            sensorhubConfig.add(sosConfig);
-        }
-
         // Template Driver
         enabled = prefs.getBoolean("template_enabled", false);
         if (enabled) {
@@ -542,6 +535,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(templateConfig);
         }
 
+
+        if (isApiServiceEnabled) {
+            sensorhubConfig.add(conSysApiService);
+        }
+        if (isSosServiceEnabled) {
+            sensorhubConfig.add(sosConfig);
+        }
     }
 
     protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
