@@ -79,14 +79,15 @@
             android:title="Username"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="Enter username"
+            app:useSimpleSummaryProvider="true"
+            android:summary="Enter your username or leave blank"
             android:layout="@layout/preference_item" />
 
         <EditTextPreference
-            android:inputType="textPassword"
+            android:inputType="textVisiblePassword"
             android:key="password"
             android:title="Password"
-            android:summary="Enter password"
+            android:summary="Enter password or leave blank"
             android:layout="@layout/preference_item" />
 
         <SwitchPreferenceCompat
@@ -170,7 +171,7 @@
             android:key="client_secret"
             android:title="Client Secret"
             android:visible="false"
-            android:inputType="textPassword"
+            android:inputType="textVisiblePassword"
             android:layout="@layout/preference_item" />
     </PreferenceCategory>
 
