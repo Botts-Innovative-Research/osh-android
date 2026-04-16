@@ -113,6 +113,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -126,6 +127,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.FutureTask;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -388,19 +390,29 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         discoveryServiceConfig.name= "Discovery Service";
         discoveryServiceConfig.autoStart = true;
 
-        InputStream inputStream = context.getResources().openRawResource(R.raw.rules);
         File outFile = new File(context.getFilesDir(), "rules.txt");
-        try (OutputStream outputStream = new FileOutputStream(outFile)) {
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, length);
+        String rulesLink = prefs.getString("rules_link", "");
+        FutureTask<Void> downloadTask = new java.util.concurrent.FutureTask<>(() -> {
+            URL rulesUrl = new URL(rulesLink);
+            HttpURLConnection conn = (HttpURLConnection) rulesUrl.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            try (InputStream in = conn.getInputStream();
+                 OutputStream out = new FileOutputStream(outFile)) {
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, len);
+                }
+            } finally {
+                conn.disconnect();
             }
-            outputStream.flush();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return null;
+        });
+        new Thread(downloadTask).start();
+        try {
+            downloadTask.get();
+        } catch (Exception e) {
+            Log.e("OSH - Discovery", "Failed to download rules file", e);
         }
         discoveryServiceConfig.rulesFilePath = outFile.getAbsolutePath();
 
@@ -556,18 +568,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(controllerConfig);
         }
 
-        //---------- SERVICES ---------------------
-        if (isApiServiceEnabled) {
-            sensorhubConfig.add(conSysApiService);
-        }
-        if (isSosServiceEnabled) {
-            sensorhubConfig.add(sosConfig);
-        }
-        if (isDiscoveryServiceEnabled) {
-            sensorhubConfig.add(discoveryServiceConfig);
-        }
-
-
         // Template Driver
         enabled = prefs.getBoolean("template_enabled", false);
         if (enabled) {
@@ -578,6 +578,17 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             templateConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
             templateConfig.uid_extension = prefs.getString("uid_extension", "");
             sensorhubConfig.add(templateConfig);
+        }
+
+        //---------- SERVICES ---------------------
+        if (isApiServiceEnabled) {
+            sensorhubConfig.add(conSysApiService);
+        }
+        if (isSosServiceEnabled) {
+            sensorhubConfig.add(sosConfig);
+        }
+        if (isDiscoveryServiceEnabled) {
+            sensorhubConfig.add(discoveryServiceConfig);
         }
 
     }
