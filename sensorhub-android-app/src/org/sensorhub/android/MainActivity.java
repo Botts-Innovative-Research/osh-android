@@ -153,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     URL url;
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
-    URL clientURL = null;
 
     String deviceID;
     String runName;
@@ -244,50 +243,20 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
-        String host = prefs.getString("ip_address", "127.0.0.1").trim();
-        String portStr = prefs.getString("port", "8080").trim();
-        String user = prefs.getString("username", null);
-        String password = SecurePrefs.get(this, "password", null);
-        String endpointPath = prefs.getString("endpoint_path", null);
-
         Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
         Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
         Boolean isDiscoveryServiceEnabled = prefs.getBoolean("discovery_service", true);
-        Boolean isClientEnabled = prefs.getBoolean("enable_client", true);
-        Boolean isTLSEnabled = prefs.getBoolean("enable_tls", false);
 
-        if (host == null || host.isEmpty())
-            host = "127.0.0.1";
-        host = host.replace("http://", "").replace("https://", "");
+        ServerProfileRepository serverRepo = new ServerProfileRepository(this);
+        List<ServerProfile> enabledServers = serverRepo.getEnabled();
 
-        int port;
-        try {
-            port = Integer.parseInt(portStr);
-            if (port < 1 || port > 65535) {
-                port = 8080;
+        boolean disableSslCheck = false;
+        for (ServerProfile sp : enabledServers) {
+            if (sp.disableSslCheck) {
+                disableSslCheck = true;
+                break;
             }
-        } catch (NumberFormatException e) {
-            port = 8080;
         }
-
-        if (endpointPath.isEmpty()) {
-            endpointPath = "";
-        } else if (!endpointPath.startsWith("/")) {
-            endpointPath = "/" + endpointPath;
-        }
-
-        String urlStr = (isTLSEnabled ? "https://" : "http://") +
-                host + ":" + port + endpointPath;
-
-        try {
-            clientURL = new URI(urlStr).toURL();
-        } catch (URISyntaxException | MalformedURLException e) {
-            log.error("Invalid URL: " + urlStr, e);
-            clientURL = null;
-        }
-
-
-        boolean disableSslCheck = prefs.getBoolean("sos_disable_ssl_check", false);
         if (disableSslCheck)
         {
             TrustManager[] trustAllCerts = new TrustManager[]{
@@ -319,12 +288,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
                 log.error(e.getMessage());
             }
         }
-
-        // OAuth
-        Boolean isOAuthEnabled = prefs.getBoolean("o_auth_enabled", false);
-        String clientId = SecurePrefs.get(this, "client_id", "").trim();
-        String tokenEndpoint = SecurePrefs.get(this, "token_endpoint", "").trim();
-        String clientSecret = SecurePrefs.get(this, "client_secret", "").trim();
 
 
         String deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
@@ -432,20 +395,28 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         }
         discoveryServiceConfig.rulesFilePath = outFile.getAbsolutePath();
 
-        // OAuth
-        ConSysOAuthConfig conSysOAuthConfig = new ConSysOAuthConfig();
-        conSysOAuthConfig.oAuthEnabled = isOAuthEnabled;
-        conSysOAuthConfig.tokenEndpoint = tokenEndpoint;
-        conSysOAuthConfig.clientID = clientId;
-        conSysOAuthConfig.clientSecret = clientSecret;
-
         sensorhubConfig.add(sensorsConfig);
 
         if (isPushingSensor(Sensors.Android)) {
-            if (isClientEnabled) {
-                addCSApiConfig(sensorsConfig, user, password, conSysOAuthConfig);
-            } else {
-                addSosTConfig(sensorsConfig, user, password);
+            for (ServerProfile sp : enabledServers) {
+                URL profileUrl = sp.buildClientUrl();
+                if (profileUrl == null) {
+                    log.error("Skipping server profile '{}': invalid URL", sp.name);
+                    continue;
+                }
+
+                String pwd = serverRepo.getPassword(sp.id);
+
+                if (sp.useConSysClient) {
+                    ConSysOAuthConfig oAuthConfig = new ConSysOAuthConfig();
+                    oAuthConfig.oAuthEnabled = sp.oAuthEnabled;
+                    oAuthConfig.tokenEndpoint = serverRepo.getOAuthTokenEndpoint(sp.id);
+                    oAuthConfig.clientID = serverRepo.getOAuthClientId(sp.id);
+                    oAuthConfig.clientSecret = serverRepo.getOAuthClientSecret(sp.id);
+                    addCSApiConfig(sensorsConfig, sp, profileUrl, sp.username, pwd, oAuthConfig);
+                } else {
+                    addSosTConfig(sensorsConfig, sp, profileUrl, sp.username, pwd);
+                }
             }
         }
 
@@ -609,18 +580,16 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
     }
 
-    protected void addSosTConfig(SensorConfig sensorConf, String user, String pwd)
+    protected void addSosTConfig(SensorConfig sensorConf, ServerProfile profile, URL serverUrl, String user, String pwd)
     {
-        if (clientURL == null)
-            return;
         SOSTClientConfig sosConfig = new SOSTClientConfig();
-        sosConfig.id = sensorConf.id + "_SOST";
-        sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");
+        sosConfig.id = sensorConf.id + "_SOST_" + profile.id;
+        sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "") + " -> " + profile.name;
         sosConfig.autoStart = true;
-        sosConfig.sos.remoteHost = clientURL.getHost();
-        sosConfig.sos.remotePort = clientURL.getPort() < 0 ? clientURL.getDefaultPort() : clientURL.getPort();
-        sosConfig.sos.resourcePath = clientURL.getPath();
-        sosConfig.sos.enableTLS = clientURL.getProtocol().equals("https");
+        sosConfig.sos.remoteHost = serverUrl.getHost();
+        sosConfig.sos.remotePort = serverUrl.getPort() < 0 ? serverUrl.getDefaultPort() : serverUrl.getPort();
+        sosConfig.sos.resourcePath = serverUrl.getPath();
+        sosConfig.sos.enableTLS = serverUrl.getProtocol().equals("https");
         sosConfig.sos.user = user;
         sosConfig.sos.password = pwd;
         sosConfig.connection.connectTimeout = 10000;
@@ -631,19 +600,16 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         sensorhubConfig.add(sosConfig);
     }
 
-    protected void addCSApiConfig(SensorConfig sensorConf, String apiUser, String apiPwd, ConSysOAuthConfig oAuthConfig)
+    protected void addCSApiConfig(SensorConfig sensorConf, ServerProfile profile, URL serverUrl, String apiUser, String apiPwd, ConSysOAuthConfig oAuthConfig)
     {
-        if (clientURL == null)
-            return;
-
         ConSysApiClientConfig consysConfig = new ConSysApiClientConfig();
-        consysConfig.id = sensorConf.id + "_CONSYS";
-        consysConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "");
+        consysConfig.id = sensorConf.id + "_CONSYS_" + profile.id;
+        consysConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "") + " -> " + profile.name;
         consysConfig.autoStart = true;
-        consysConfig.conSys.remoteHost = clientURL.getHost();
-        consysConfig.conSys.remotePort = clientURL.getPort() < 0 ? clientURL.getDefaultPort() : clientURL.getPort();
-        consysConfig.conSys.resourcePath = clientURL.getPath();
-        consysConfig.conSys.enableTLS = clientURL.getProtocol().equals("https");
+        consysConfig.conSys.remoteHost = serverUrl.getHost();
+        consysConfig.conSys.remotePort = serverUrl.getPort() < 0 ? serverUrl.getDefaultPort() : serverUrl.getPort();
+        consysConfig.conSys.resourcePath = serverUrl.getPath();
+        consysConfig.conSys.enableTLS = serverUrl.getProtocol().equals("https");
         consysConfig.conSys.user = apiUser;
         consysConfig.conSys.password = apiPwd;
         consysConfig.connection.connectTimeout = 10000;
@@ -797,8 +763,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         super.onDestroy();
     }
 
-    // ==================== Controller Event Forwarding ====================
-
     private ControllerDriver getControllerDriver() {
         if (boundService == null || boundService.sensorhub == null)
             return null;
@@ -825,7 +789,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         return super.dispatchGenericMotionEvent(event);
     }
 
-    // ==================== Dialogs ====================
 
     protected void showMeshtasticDialog() {
         LayoutInflater inflater = getLayoutInflater();

@@ -19,7 +19,6 @@ public class AppStatusActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_status);
 
-        // Set up toolbar with back navigation
         MaterialToolbar toolbar = findViewById(R.id.status_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
@@ -33,7 +32,6 @@ public class AppStatusActivity extends AppCompatActivity {
         String sensorStatus = intent.getStringExtra("androidSensorStatus");
         String sensorStorageStatus = intent.getStringExtra("sensorStorageStatus");
 
-        // Set status text
         TextView sosStatusView = findViewById(R.id.sos_service_state);
         TextView conSysStatusView = findViewById(R.id.consys_service_state);
         TextView discoveryStatusView = findViewById(R.id.discovery_service_state);
@@ -48,7 +46,6 @@ public class AppStatusActivity extends AppCompatActivity {
         sensorStatusView.setText(sensorStatus);
         storageStatusView.setText(sensorStorageStatus);
 
-        // Color the status indicator dots
         setStatusDotColor(findViewById(R.id.sos_status_dot), sosStatus);
         setStatusDotColor(findViewById(R.id.consys_status_dot), consSysStatus);
         setStatusDotColor(findViewById(R.id.discovery_status_dot), discoveryStatus);
