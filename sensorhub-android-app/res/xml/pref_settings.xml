@@ -24,155 +24,36 @@
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
 
-    <!-- CONNECTION -->
-    <PreferenceCategory android:title="Server Settings">
+    <!--  Server Management  -->
+    <PreferenceCategory android:title="Server Profiles">
         <Preference
-            android:key="saved_servers"
-            android:title="Saved Servers"
-            android:summary="Select a saved server to auto-fill"
+            android:key="manage_servers"
+            android:title="Manage Servers"
+            android:summary="Add, edit, or remove servers"
             android:layout="@layout/preference_list_item" />
-
-        <Preference
-            android:key="save_current_server"
-            android:title="Save Current Server"
-            android:summary="Save the current server configuration"
-            android:layout="@layout/preference_list_item" />
-
-        <Preference
-            android:key="remove_saved_server"
-            android:title="Remove Saved Server"
-            android:summary="Remove a server from the saved list"
-            android:layout="@layout/preference_list_item" />
-
-        <EditTextPreference
-            android:key="server_name"
-            android:title="Server Name"
-            android:defaultValue="Local Server"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:key="ip_address"
-            android:title="Server Address"
-            android:defaultValue="127.0.0.1"
-            android:summary="e.g. 192.168.1.10"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:key="port"
-            android:title="Port"
-            android:defaultValue="8080"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:key="endpoint_path"
-            android:title="Resource Path"
-            android:defaultValue="/sensorhub/api"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:inputType="text"
-            android:key="username"
-            android:title="Username"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            app:useSimpleSummaryProvider="true"
-            android:summary="Enter your username or leave blank"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:inputType="textVisiblePassword"
-            android:key="password"
-            android:title="Password"
-            android:summary="Enter password or leave blank"
-            android:layout="@layout/preference_item" />
-
-        <SwitchPreferenceCompat
-            android:key="enable_tls"
-            android:title="Enable TLS"
-            android:defaultValue="false"
-            android:layout="@layout/preference_switch_item" />
-
-        <SwitchPreferenceCompat
-            android:key="sos_disable_ssl_check"
-            android:title="Disable SSL Validation"
-            android:summary=""
-            android:defaultValue="false"
-            android:layout="@layout/preference_switch_item" />
     </PreferenceCategory>
+
+
 
     <!-- SERVICES -->
     <PreferenceCategory android:title="Services">
         <SwitchPreferenceCompat
-            android:id="@+id/api_service_switch"
-            android:key="api_service"
-            android:title="Enable API Service"
-            android:defaultValue="true"
-            android:layout="@layout/preference_switch_item" />
-
-        <SwitchPreferenceCompat
-            android:id="@+id/sos_service_switch"
-            android:key="sos_service"
-            android:title="Enable SOS Service"
-            android:defaultValue="true"
-            android:layout="@layout/preference_switch_item" />
-
-        <SwitchPreferenceCompat
             android:id="@+id/discovery_service_switch"
             android:key="discovery_service"
             android:title="Enable Discovery Service"
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:layout="@layout/preference_switch_item" />
 
         <EditTextPreference
             android:defaultValue="https://drive.google.com/uc?export=download&amp;id="
             android:inputType="text"
+            app:useSimpleSummaryProvider="true"
+            android:visible="false"
             android:key="rules_link"
             android:singleLine="true"
             android:title="URL to Discovery Rules.txt"
             android:layout="@layout/preference_item"/>
     </PreferenceCategory>
 
-    <!-- Clients -->
-    <PreferenceCategory android:title="Clients">
-        <SwitchPreferenceCompat
-            android:id="@+id/client_switch"
-            android:key="enable_client"
-            android:title="Client Mode"
-            android:summaryOn="Connected Systems"
-            android:summaryOff="SOS-T"
-            android:defaultValue="true"
-            android:layout="@layout/preference_switch_item" />
-
-        <SwitchPreferenceCompat
-            android:key="o_auth_enabled"
-            android:title="Enable OAuth"
-            android:defaultValue="false"
-            android:layout="@layout/preference_switch_item"/>
-
-        <EditTextPreference
-            android:key="token_endpoint"
-            android:title="Token Endpoint"
-            android:visible="false"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:key="client_id"
-            android:title="Client ID"
-            android:visible="false"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
-        <EditTextPreference
-            android:key="client_secret"
-            android:title="Client Secret"
-            android:visible="false"
-            android:inputType="textVisiblePassword"
-            android:layout="@layout/preference_item" />
-    </PreferenceCategory>
 
 </PreferenceScreen>

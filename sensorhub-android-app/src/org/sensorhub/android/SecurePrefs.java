@@ -106,7 +106,18 @@ public class SecurePrefs {
     }
 
     public static boolean isSensitiveKey(String key) {
-        return SENSITIVE_KEYS.contains(key);
+        return SENSITIVE_KEYS.contains(key) || key.startsWith("profile_");
+    }
+
+    public static void removeByPrefix(Context context, String prefix) {
+        SharedPreferences secureStore = getSecureStore(context);
+        SharedPreferences.Editor editor = secureStore.edit();
+        for (String key : secureStore.getAll().keySet()) {
+            if (key.startsWith(prefix)) {
+                editor.remove(key);
+            }
+        }
+        editor.apply();
     }
 
 }

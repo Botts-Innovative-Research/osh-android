@@ -52,31 +52,35 @@ import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Flow;
+
+import android.widget.LinearLayout;
 
 
 public class DashboardFragment extends Fragment implements TextureView.SurfaceTextureListener, Flow.Subscriber<Event>
 {
-    private TextView mainInfoArea;
     private TextView videoInfoArea;
     private TextureView textureView;
     private MaterialCardView videoStatusCard;
     private MaterialButton btnToggleVideo;
     private View videoStatusDot;
     private FloatingActionButton fab;
-    private ImageButton btnToggleStatus;
-    private View mainInfoScroll;
+    private LinearLayout serverStatusContainer;
     private Handler displayHandler;
     private Runnable displayCallback;
-    private StringBuffer mainInfoText = new StringBuffer();
     private StringBuffer videoInfoText = new StringBuffer();
     private Flow.Subscription subscription;
     private SensorHubServiceProvider provider;
     private boolean videoPreviewVisible = false;
-    private boolean statusExpanded = true;
+
+    private final Map<String, View> serverCardViews = new HashMap<>();
+    private final Set<String> expandedServers = new HashSet<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,7 +99,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mainInfoArea = view.findViewById(R.id.main_info);
         videoInfoArea = view.findViewById(R.id.video_info);
 
         textureView = view.findViewById(R.id.video);
@@ -107,9 +110,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
         btnToggleVideo.setOnClickListener(v -> toggleVideoPreview());
 
-        btnToggleStatus = view.findViewById(R.id.btn_toggle_status);
-        btnToggleStatus.setOnClickListener(v -> toggleStatusExpanded());
-        mainInfoScroll = view.findViewById(R.id.main_info_scroll);
+        serverStatusContainer = view.findViewById(R.id.server_status_container);
 
         fab = view.findViewById(R.id.fab_toggle);
         fab.setOnClickListener(v -> {
@@ -259,6 +260,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             if (!provider.isOshStarted()) {
                 provider.setOshStarted(true);
                 updateFabIcon();
+                serverStatusContainer.removeAllViews();
+                serverCardViews.clear();
                 startRefreshingStatus();
                 updateVideoStatusCard();
                 if (videoPreviewVisible)
@@ -287,7 +290,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         displayCallback = new Runnable() {
             public void run() {
                 displayStatus();
-                mainInfoArea.setText(Html.fromHtml(mainInfoText.toString()));
                 videoInfoArea.setText(Html.fromHtml(videoInfoText.toString()));
                 displayHandler.postDelayed(this, 1000);
             }
@@ -303,114 +305,132 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     protected synchronized void displayStatus() {
-        mainInfoText.setLength(0);
+        Set<String> activeClientIds = new HashSet<>();
 
-        // SOST Client errors/status
         for (SOSTClient client : provider.getSostClients()) {
+            String clientId = client.getLocalID();
+            activeClientIds.add(clientId);
+            String serverName = extractServerName(client.getName(), "SOS-T");
+            String clientMode = "SOS-T";
+
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
-            boolean showError = (client.getCurrentError() != null);
-            boolean showMsg = (dataStreams.isEmpty()) && (client.getStatusMessage() != null);
+            StringBuffer detailHtml = new StringBuffer();
+            boolean hasError = false;
 
-            if (showError || showMsg) {
-                mainInfoText.append("<p>" + client.getName() + ":<br/>");
-                if (showMsg)
-                    mainInfoText.append(client.getStatusMessage() + "<br/>");
-                if (showError) {
-                    Throwable errorObj = client.getCurrentError();
-                    String errorMsg = errorObj.getMessage().trim();
-                    if (!errorMsg.endsWith("."))
-                        errorMsg += ". ";
-                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
-                        errorMsg += errorObj.getCause().getMessage();
-                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
-                }
-                mainInfoText.append("</p>");
+            if (client.getCurrentError() != null) {
+                hasError = true;
+                Throwable errorObj = client.getCurrentError();
+                String errorMsg = errorObj.getMessage() != null ? errorObj.getMessage().trim() : "Unknown error";
+                if (!errorMsg.endsWith(".")) errorMsg += ". ";
+                if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
+                    errorMsg += errorObj.getCause().getMessage();
+                detailHtml.append("<font color='red'>" + errorMsg + "</font><br/>");
             }
-        }
-
-        // ConSys Client errors/status
-        for (ConSysApiClientModule client : provider.getConSysClients()) {
-            Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
-            boolean showError = (client.getCurrentError() != null);
-            boolean showMsg = (dataStreams.isEmpty()) && (client.getStatusMessage() != null);
-
-            if (showError || showMsg) {
-                mainInfoText.append("<p>" + client.getName() + ":<br/>");
-                if (showMsg)
-                    mainInfoText.append(client.getStatusMessage() + "<br/>");
-                if (showError) {
-                    Throwable errorObj = client.getCurrentError();
-                    String errorMsg = errorObj.getMessage().trim();
-                    if (!errorMsg.endsWith("."))
-                        errorMsg += ". ";
-                    if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
-                        errorMsg += errorObj.getCause().getMessage();
-                    mainInfoText.append("<font color='red'>" + errorMsg + "</font>");
-                }
-                mainInfoText.append("</p>");
+            if (dataStreams.isEmpty() && client.getStatusMessage() != null) {
+                detailHtml.append(client.getStatusMessage() + "<br/>");
             }
-        }
 
-        mainInfoText.append("<p>");
-        for (SOSTClient client : provider.getSostClients()) {
-            mainInfoText.append("SOS-T Client<p>");
-            Map<String, StreamInfo> dataStreams = client.getDataStreams();
             long now = System.currentTimeMillis();
+            boolean allOk = !hasError && !dataStreams.isEmpty();
             for (Entry<String, StreamInfo> stream : dataStreams.entrySet()) {
-                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
+                detailHtml.append("<b>" + stream.getKey() + " : </b>");
                 long lastEventTime = stream.getValue().lastEventTime;
                 long dt = now - lastEventTime;
-                if (lastEventTime == Long.MIN_VALUE)
-                    mainInfoText.append("<font color='red'>NO OBS</font>");
-                else if (dt > stream.getValue().measPeriodMs)
-                    mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
-                else
-                    mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-                if (stream.getValue().errorCount > 0) {
-                    mainInfoText.append("<font color='red'> (");
-                    mainInfoText.append(stream.getValue().errorCount);
-                    mainInfoText.append(")</font>");
+                if (lastEventTime == Long.MIN_VALUE) {
+                    detailHtml.append("<font color='red'>NO OBS</font>");
+                    allOk = false;
+                } else if (dt > stream.getValue().measPeriodMs) {
+                    detailHtml.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
+                    allOk = false;
+                } else {
+                    detailHtml.append("<font color='green'>OK (" + dt + "ms ago)</font>");
                 }
-                mainInfoText.append("<br/>");
+                if (stream.getValue().errorCount > 0) {
+                    detailHtml.append("<font color='red'> (" + stream.getValue().errorCount + ")</font>");
+                    allOk = false;
+                }
+                detailHtml.append("<br/>");
             }
+
+            updateServerCard(clientId, serverName, clientMode, allOk, hasError, detailHtml.toString());
         }
 
         for (ConSysApiClientModule client : provider.getConSysClients()) {
-            mainInfoText.append("ConSysApi Client<p>");
+            String clientId = client.getLocalID();
+            activeClientIds.add(clientId);
+            String serverName = extractServerName(client.getName(), "Connected Systems");
+            String clientMode = "Connected Systems";
+
             Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
+            StringBuffer detailHtml = new StringBuffer();
+            boolean hasError = false;
+
+            if (client.getCurrentError() != null) {
+                hasError = true;
+                Throwable errorObj = client.getCurrentError();
+                String errorMsg = errorObj.getMessage() != null ? errorObj.getMessage().trim() : "Unknown error";
+                if (!errorMsg.endsWith(".")) errorMsg += ". ";
+                if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
+                    errorMsg += errorObj.getCause().getMessage();
+                detailHtml.append("<font color='red'>" + errorMsg + "</font><br/>");
+            }
+            if (dataStreams.isEmpty() && client.getStatusMessage() != null) {
+                detailHtml.append(client.getStatusMessage() + "<br/>");
+            }
+
             long now = System.currentTimeMillis();
+            boolean allOk = !hasError && !dataStreams.isEmpty();
             for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet()) {
-                mainInfoText.append("<b>" + stream.getKey() + " : </b>");
+                detailHtml.append("<b>" + stream.getKey() + " : </b>");
                 long lastEventTime = stream.getValue().lastEventTime;
                 long dt = now - lastEventTime;
-                if (lastEventTime == Long.MIN_VALUE)
-                    mainInfoText.append("<font color='red'>NO OBS</font>");
-                else if (dt > stream.getValue().measPeriodMs)
-                    mainInfoText.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
-                else
-                    mainInfoText.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-                if (stream.getValue().errorCount > 0) {
-                    mainInfoText.append("<font color='red'> (");
-                    mainInfoText.append(stream.getValue().errorCount);
-                    mainInfoText.append(")</font>");
+                if (lastEventTime == Long.MIN_VALUE) {
+                    detailHtml.append("<font color='red'>NO OBS</font>");
+                    allOk = false;
+                } else if (dt > stream.getValue().measPeriodMs) {
+                    detailHtml.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
+                    allOk = false;
+                } else {
+                    detailHtml.append("<font color='green'>OK (" + dt + "ms ago)</font>");
                 }
-                mainInfoText.append("<br/>");
+                if (stream.getValue().errorCount > 0) {
+                    detailHtml.append("<font color='red'> (" + stream.getValue().errorCount + ")</font>");
+                    allOk = false;
+                }
+                detailHtml.append("<br/>");
             }
-        }
-        mainInfoText.append("<p>");
 
-        if (mainInfoText.length() > 5)
-            mainInfoText.setLength(mainInfoText.length() - 5);
-        mainInfoText.append("</p>");
+            updateServerCard(clientId, serverName, clientMode, allOk, hasError, detailHtml.toString());
+        }
+
+        Set<String> staleIds = new HashSet<>(serverCardViews.keySet());
+        staleIds.removeAll(activeClientIds);
+        for (String id : staleIds) {
+            View card = serverCardViews.remove(id);
+            if (card != null) serverStatusContainer.removeView(card);
+            expandedServers.remove(id);
+        }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
         MainActivity activity = (MainActivity) requireActivity();
         boolean serveOrStore = activity.shouldServe(prefs) || activity.shouldStore(prefs);
-        if (provider.getSostClients().isEmpty() && serveOrStore) {
-            mainInfoText.append("No Sensors Set to Push Remotely");
-        }
-        if (provider.getConSysClients().isEmpty() && serveOrStore) {
-            mainInfoText.append("No Sensors Set to Push Remotely");
+        boolean noClients = provider.getSostClients().isEmpty() && provider.getConSysClients().isEmpty();
+
+        View emptyView = serverStatusContainer.findViewWithTag("empty_status");
+        if (noClients && serveOrStore) {
+            if (emptyView == null) {
+                TextView tv = new TextView(requireContext());
+                tv.setTag("empty_status");
+                tv.setText("No Sensors Set to Push Remotely");
+                tv.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant));
+                tv.setTextSize(14);
+                tv.setGravity(android.view.Gravity.CENTER);
+                int pad = (int) (16 * getResources().getDisplayMetrics().density);
+                tv.setPadding(pad, pad, pad, pad);
+                serverStatusContainer.addView(tv);
+            }
+        } else if (emptyView != null) {
+            serverStatusContainer.removeView(emptyView);
         }
 
         AndroidSensorsDriver sensors = provider.getAndroidSensors();
@@ -434,9 +454,86 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     protected synchronized void newStatusMessage(String msg) {
-        mainInfoText.setLength(0);
-        mainInfoText.append(msg);
-        displayHandler.post(() -> mainInfoArea.setText(mainInfoText.toString()));
+        displayHandler.post(() -> {
+            serverStatusContainer.removeAllViews();
+            serverCardViews.clear();
+            TextView tv = new TextView(requireContext());
+            tv.setText(msg);
+            tv.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurface));
+            tv.setTextSize(14);
+            int pad = (int) (16 * getResources().getDisplayMetrics().density);
+            tv.setPadding(pad, pad, pad, pad);
+            serverStatusContainer.addView(tv);
+        });
+    }
+
+    private String extractServerName(String clientName, String fallback) {
+        if (clientName != null && clientName.contains(" -> ")) {
+            return clientName.substring(clientName.lastIndexOf(" -> ") + 4);
+        }
+        return fallback;
+    }
+
+    private void updateServerCard(String clientId, String serverName, String clientMode,
+                                  boolean allOk, boolean hasError, String detailHtml) {
+        View card = serverCardViews.get(clientId);
+
+        if (card == null) {
+            card = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.item_server_status, serverStatusContainer, false);
+            serverCardViews.put(clientId, card);
+            serverStatusContainer.addView(card);
+
+            final View cardRef = card;
+            final String idRef = clientId;
+            View header = card.findViewById(R.id.server_status_header);
+            header.setOnClickListener(v -> {
+                boolean expanded = expandedServers.contains(idRef);
+                TextView details = cardRef.findViewById(R.id.server_status_details);
+                ImageButton toggle = cardRef.findViewById(R.id.btn_toggle_server_details);
+                if (expanded) {
+                    expandedServers.remove(idRef);
+                    details.setVisibility(View.GONE);
+                    toggle.setImageResource(R.drawable.ic_expand_more);
+                } else {
+                    expandedServers.add(idRef);
+                    details.setVisibility(View.VISIBLE);
+                    toggle.setImageResource(R.drawable.ic_expand_less);
+                }
+            });
+        }
+
+        TextView nameView = card.findViewById(R.id.server_status_name);
+        TextView modeView = card.findViewById(R.id.server_status_mode);
+        nameView.setText(serverName);
+        modeView.setText(clientMode);
+
+        View dot = card.findViewById(R.id.server_status_dot);
+        if (dot.getBackground() instanceof GradientDrawable) {
+            GradientDrawable bg = (GradientDrawable) dot.getBackground();
+            int colorRes;
+            if (hasError) colorRes = R.color.status_stopped;
+            else if (allOk) colorRes = R.color.status_started;
+            else colorRes = R.color.status_initializing;
+            bg.setColor(ContextCompat.getColor(requireContext(), colorRes));
+        }
+
+        if (card instanceof MaterialCardView) {
+            int strokeColorRes;
+            if (hasError) strokeColorRes = R.color.status_stopped;
+            else if (allOk) strokeColorRes = R.color.status_started;
+            else strokeColorRes = R.color.md_theme_outline;
+            ((MaterialCardView) card).setStrokeColor(
+                    ContextCompat.getColor(requireContext(), strokeColorRes));
+        }
+
+        TextView details = card.findViewById(R.id.server_status_details);
+        details.setText(Html.fromHtml(detailHtml));
+        boolean expanded = expandedServers.contains(clientId);
+        details.setVisibility(expanded ? View.VISIBLE : View.GONE);
+
+        ImageButton toggle = card.findViewById(R.id.btn_toggle_server_details);
+        toggle.setImageResource(expanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
     }
 
     private void updateVideoStatusCard() {
@@ -457,18 +554,12 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
-    private void toggleStatusExpanded() {
-        statusExpanded = !statusExpanded;
-        mainInfoScroll.setVisibility(statusExpanded ? View.VISIBLE : View.GONE);
-        btnToggleStatus.setImageResource(statusExpanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
-    }
-
     private void toggleVideoPreview() {
         videoPreviewVisible = !videoPreviewVisible;
         if (videoPreviewVisible) {
             textureView.setVisibility(View.VISIBLE);
             btnToggleVideo.setText("Hide");
-            mainInfoArea.setBackgroundColor(getResources().getColor(R.color.overlay_light, requireActivity().getTheme()));
+            serverStatusContainer.setBackgroundColor(getResources().getColor(R.color.overlay_light, requireActivity().getTheme()));
             showVideo();
         } else {
             hideVideoPreview();
@@ -479,7 +570,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         videoPreviewVisible = false;
         textureView.setVisibility(View.GONE);
         if (btnToggleVideo != null) btnToggleVideo.setText("Show");
-        mainInfoArea.setBackgroundColor(0x00000000);
+        serverStatusContainer.setBackgroundColor(0x00000000);
     }
 
     protected void showVideo() {
@@ -506,7 +597,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
 
-    // ==================== Event Subscriber ====================
 
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
