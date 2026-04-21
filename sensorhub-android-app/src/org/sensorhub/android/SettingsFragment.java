@@ -47,7 +47,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         manageServerProfiles();
         setupDiscoveryToggle();
-
     }
 
     @Override
@@ -87,6 +86,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         Preference rules = findPreference("rules_link");
 
         if (enableDiscovery != null) {
+            boolean isDiscovery = enableDiscovery.isChecked();
+            setVisibility(isDiscovery, rules);
+
             enableDiscovery.setOnPreferenceChangeListener((pref, value) -> {
                 boolean isEnabled = (Boolean) value;
                 setVisibility(isEnabled, rules);

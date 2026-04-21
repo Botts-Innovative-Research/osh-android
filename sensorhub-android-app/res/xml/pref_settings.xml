@@ -34,7 +34,6 @@
     </PreferenceCategory>
 
 
-
     <!-- SERVICES -->
     <PreferenceCategory android:title="Services">
         <SwitchPreferenceCompat
