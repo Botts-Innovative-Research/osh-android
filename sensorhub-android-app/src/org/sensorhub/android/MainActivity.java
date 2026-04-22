@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     String deviceID;
     String runName;
 
+    private Fragment activeFragment;
     private BroadcastReceiver broadcastReceiver;
 
     enum Sensors {
@@ -635,24 +636,34 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         Fragment homeFragment = new DashboardFragment();
         Fragment sensorsFragment = new SensorsFragment();
         Fragment settingsFragment = new SettingsFragment();
+
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.flFragment, homeFragment, "dashboard")
+                .add(R.id.flFragment, sensorsFragment, "sensors")
+                .add(R.id.flFragment, settingsFragment, "settings")
+                .hide(sensorsFragment)
+                .hide(settingsFragment)
+                .commit();
+
+        activeFragment = homeFragment;
+
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.dashboard:
-                    setCurrentFragment(homeFragment);
+                    switchFragment(homeFragment);
                     break;
                 case R.id.sensors:
-                    setCurrentFragment(sensorsFragment);
+                    switchFragment(sensorsFragment);
                     break;
                 case R.id.settings:
-                    setCurrentFragment(settingsFragment);
+                    switchFragment(settingsFragment);
                     break;
             }
             return true;
         });
 
-        setCurrentFragment(homeFragment);
         bottomNav.setSelectedItemId(R.id.dashboard);
 
         hasBluetoothPermissions();
@@ -667,11 +678,14 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         requestBatteryOptimizationExemption();
     }
 
-    private void setCurrentFragment(Fragment fragment) {
+    private void switchFragment(Fragment fragment) {
+        if (fragment == activeFragment) return;
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.flFragment, fragment)
+                .hide(activeFragment)
+                .show(fragment)
                 .commit();
+        activeFragment = fragment;
     }
 
     @Override
