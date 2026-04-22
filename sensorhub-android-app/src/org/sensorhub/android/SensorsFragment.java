@@ -220,17 +220,19 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         }
 
         // Frame rates and resolutions from camera
+        Camera camera = null;
         try {
-            Camera camera = Camera.open(0);
+            camera = Camera.open(0);
             Camera.Parameters camParams = camera.getParameters();
             for (int frameRate : camParams.getSupportedPreviewFrameRates())
                 frameRateList.add(Integer.toString(frameRate));
             for (Camera.Size imgSize : camParams.getSupportedPreviewSizes())
                 resList.add(imgSize.width + "x" + imgSize.height);
-            camera.release();
         } catch (Exception e) {
             frameRateList.add("30");
             resList.add("640x480");
+        } finally {
+            if (camera != null) camera.release();
         }
 
         ListPreference frameRatePrefList = findPreference("video_framerate");
@@ -250,16 +252,16 @@ public class SensorsFragment extends PreferenceFragmentCompat {
     }
 
     private void updateCameraSettings(int cameraId) {
+        Camera camera = null;
         try {
             frameRateList.clear();
             resList.clear();
-            Camera camera = Camera.open(cameraId);
+            camera = Camera.open(cameraId);
             Camera.Parameters camParams = camera.getParameters();
             for (int frameRate : camParams.getSupportedPreviewFrameRates())
                 frameRateList.add(Integer.toString(frameRate));
             for (Camera.Size imgSize : camParams.getSupportedPreviewSizes())
                 resList.add(imgSize.width + "x" + imgSize.height);
-            camera.release();
 
             ListPreference frameRatePrefList = findPreference("video_framerate");
             if (frameRatePrefList != null) {
@@ -273,6 +275,8 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             }
         } catch (Exception e) {
             Log.e("SensorsFragment", "Error updating camera settings", e);
+        } finally {
+            if (camera != null) camera.release();
         }
     }
 

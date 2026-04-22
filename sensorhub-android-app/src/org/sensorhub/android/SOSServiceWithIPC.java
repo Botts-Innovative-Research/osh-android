@@ -14,12 +14,16 @@ import org.vast.xml.DOMHelper;
 import org.vast.xml.DOMHelperException;
 import org.w3c.dom.Element;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class SOSServiceWithIPC extends SOSService
 {
+    private static final Logger log = LoggerFactory.getLogger(SOSServiceWithIPC.class);
     public static final String SQAN_TEST = "SA";
     private static final String SQAN_EXTRA = "channel";
     public static final String ACTION_SOS = "org.sofwerx.ogc.ACTION_SOS";
@@ -91,15 +95,15 @@ public class SOSServiceWithIPC extends SOSService
         }
         catch (DOMHelperException e)
         {
-            e.printStackTrace();
+            log.error("Error parsing IPC request DOM", e);
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            log.error("IO error handling IPC request", e);
         }
         catch (OWSException e)
         {
-            e.printStackTrace();
+            log.error("OWS error handling IPC request", e);
         }
         // OGCException e
         /**

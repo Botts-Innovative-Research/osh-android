@@ -14,10 +14,7 @@
 
 package org.sensorhub.android;
 
-import static org.sensorhub.android.SensorHubService.context;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -126,6 +123,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.FutureTask;
 
 import javax.net.ssl.HostnameVerifier;
@@ -369,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         discoveryServiceConfig.name= "Discovery Service";
         discoveryServiceConfig.autoStart = true;
 
-        File outFile = new File(context.getFilesDir(), "rules.txt");
+        File outFile = new File(getApplicationContext().getFilesDir(), "rules.txt");
         String rulesLink = prefs.getString("rules_link", "");
         FutureTask<Void> downloadTask = new java.util.concurrent.FutureTask<>(() -> {
             URL rulesUrl = new URL(rulesLink);
@@ -621,7 +619,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     }
 
 
-    @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -843,6 +840,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
             version = pInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
+            log.warn("Could not retrieve package version", e);
         }
 
         String message = "A software platform for building smart sensor networks and the Internet of Things\n\n";

@@ -140,6 +140,13 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         super.onPause();
     }
 
+    @Override
+    public void onDestroyView() {
+        stopRefreshingStatus();
+        displayHandler.removeCallbacksAndMessages(null);
+        super.onDestroyView();
+    }
+
     private void updateFabIcon() {
         if (fab == null) return;
         if (provider.isOshStarted()) {

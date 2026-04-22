@@ -1,8 +1,8 @@
 ext.oshCoreVersion = '2.0.0-beta'
 ext.compileSdkVersion = 33
-ext.minSdkVersion = 34
+ext.minSdkVersion = 33
 ext.targetSdkVersion = 30
-ext.buildToolsVersion = "30.0.2"
+ext.buildToolsVersion = "34.0.0"
 version = '4.0.0'
 
 buildscript {

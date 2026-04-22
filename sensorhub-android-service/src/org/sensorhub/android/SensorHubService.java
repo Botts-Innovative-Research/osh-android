@@ -42,8 +42,8 @@ public class SensorHubService extends Service
     private Handler msgHandler;
     SensorHubAndroid sensorhub;
     boolean hasVideo;
-    static Context context;
-    static SurfaceTexture videoTex;
+    private static Context appContext;
+    private static SurfaceTexture videoTex;
 
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
@@ -66,7 +66,7 @@ public class SensorHubService extends Service
 
         try
         {
-            SensorHubService.context = getApplicationContext();
+            SensorHubService.appContext = getApplicationContext();
 
             SensorHubService.videoTex = new SurfaceTexture(1);
             SensorHubService.videoTex.detachFromGLContext();
@@ -92,7 +92,7 @@ public class SensorHubService extends Service
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            log.error("Error: " + e.getMessage());
         }
     }
 
@@ -270,7 +270,6 @@ public class SensorHubService extends Service
             SensorHubService.videoTex.release();
             SensorHubService.videoTex = null;
         }
-        SensorHubService.context = null;
         super.onDestroy();
     }
 
@@ -317,6 +316,6 @@ public class SensorHubService extends Service
 
     public static Context getContext()
     {
-        return context;
+        return appContext;
     }
 }

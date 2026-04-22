@@ -7,6 +7,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -131,46 +132,69 @@ public class ServerProfilesActivity extends AppCompatActivity implements ServerA
         oauthSwitch.setVisibility(clientModeSwitch.isChecked() ? View.VISIBLE : View.GONE);
         updateOAuthVisibility.run();
 
-        new MaterialAlertDialogBuilder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(isEdit ? "Edit Server" : "Add Server")
                 .setView(dialogView)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String name = nameInput.getText().toString().trim();
-                    String host = hostInput.getText().toString().trim();
-                    String portStr = portInput.getText().toString().trim();
-
-                    if (name.isEmpty() || host.isEmpty() || portStr.isEmpty()) {
-                        Toast.makeText(this, "Name, host, and port are required",
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    ServerProfile profile = isEdit ? existing : new ServerProfile();
-                    profile.name = name;
-                    profile.host = host;
-                    profile.port = Integer.parseInt(portStr);
-                    profile.endpointPath = endpointInput.getText().toString().trim();
-                    profile.username = usernameInput.getText().toString().trim();
-                    profile.enableTls = tlsSwitch.isChecked();
-                    profile.disableSslCheck = sslSwitch.isChecked();
-                    profile.useConSysClient = clientModeSwitch.isChecked();
-                    profile.oAuthEnabled = oauthSwitch.isChecked();
-
-                    repo.save(profile);
-
-                    repo.setPassword(profile.id,
-                            passwordInput.getText().toString().trim());
-                    repo.setOAuthClientId(profile.id,
-                            clientIdInput.getText().toString().trim());
-                    repo.setOAuthClientSecret(profile.id,
-                            clientSecretInput.getText().toString().trim());
-                    repo.setOAuthTokenEndpoint(profile.id,
-                            tokenInput.getText().toString().trim());
-
-                    refreshList();
-                })
+                .setPositiveButton("Save", null)
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String name = nameInput.getText().toString().trim();
+            String host = hostInput.getText().toString().trim();
+            String portStr = portInput.getText().toString().trim();
+            String endpoint = endpointInput.getText().toString().trim();
+
+            if (name.isEmpty() || host.isEmpty() || portStr.isEmpty()) {
+                Toast.makeText(this, "Name, host, and port are required", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (host.contains(" ") || host.contains("://")) {
+                Toast.makeText(this, "Host should not include a protocol (e.g. http://)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int port;
+            try {
+                port = Integer.parseInt(portStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Port should be a number", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (port < 1 || port > 65535) {
+                Toast.makeText(this, "Port should be between 1 and 65535", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!endpoint.isEmpty() && !endpoint.startsWith("/")) {
+               endpoint = "/" + endpoint;
+            }
+            
+
+            ServerProfile profile = isEdit ? existing : new ServerProfile();
+            profile.name = name;
+            profile.host = host;
+            profile.port = port;
+            profile.endpointPath = endpoint;
+            profile.username = usernameInput.getText().toString().trim();
+            profile.enableTls = tlsSwitch.isChecked();
+            profile.disableSslCheck = sslSwitch.isChecked();
+            profile.useConSysClient = clientModeSwitch.isChecked();
+            profile.oAuthEnabled = oauthSwitch.isChecked();
+
+            repo.save(profile);
+
+            repo.setPassword(profile.id, passwordInput.getText().toString().trim());
+            repo.setOAuthClientId(profile.id, clientIdInput.getText().toString().trim());
+            repo.setOAuthClientSecret(profile.id, clientSecretInput.getText().toString().trim());
+            repo.setOAuthTokenEndpoint(profile.id, tokenInput.getText().toString().trim());
+
+            refreshList();
+            dialog.dismiss();
+        });
     }
 
     private void refreshList() {
