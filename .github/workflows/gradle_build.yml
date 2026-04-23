@@ -10,16 +10,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure SSH for private submodules
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          repository: Botts-Innovative-Research/osh-android
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'zulu'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -27,12 +33,12 @@ jobs:
       - name: Build APK
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          ./gradlew build -x test -x osgi -x lintDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: osh-android-latest-APK
+          name: osh-android-APK
           path: sensorhub-android-app/build/outputs/apk/debug/sensorhub-android-app-debug.apk
 
       - name: Create GitHub Release
