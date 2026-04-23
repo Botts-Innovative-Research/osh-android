@@ -1,5 +1,6 @@
 package org.sensorhub.android;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,24 +19,31 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
+import android.os.SystemClock;
+
+import com.ctc.wstx.stax.WstxInputFactory;
+import com.ctc.wstx.stax.WstxOutputFactory;
 
 import org.sensorhub.api.common.SensorHubException;
 import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.impl.SensorHub;
 import org.sensorhub.impl.SensorHubConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vast.xml.XMLImplFinder;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class SensorHubService extends Service
 {
+    private static final Logger log = LoggerFactory.getLogger(SensorHubService.class);
     final IBinder binder = new LocalBinder();
     private HandlerThread msgThread;
     private Handler msgHandler;
     SensorHubAndroid sensorhub;
     boolean hasVideo;
-    static Context context;
-    static SurfaceTexture videoTex;
+    private static Context appContext;
+    private static SurfaceTexture videoTex;
 
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
@@ -58,10 +66,8 @@ public class SensorHubService extends Service
 
         try
         {
-            // keep handle to Android context so it can be retrieved by OSH components
-            SensorHubService.context = getApplicationContext();
+            SensorHubService.appContext = getApplicationContext();
 
-            // create video surface texture here so it's not destroyed when pausing the app
             SensorHubService.videoTex = new SurfaceTexture(1);
             SensorHubService.videoTex.detachFromGLContext();
 
@@ -69,8 +75,8 @@ public class SensorHubService extends Service
             //Dexter.loadFromAssets(this.getApplicationContext(), "stax-api-1.0-2.dex");
 
             // set default StAX implementation
-            XMLImplFinder.setStaxInputFactory(com.ctc.wstx.stax.WstxInputFactory.class.newInstance());
-            XMLImplFinder.setStaxOutputFactory(com.ctc.wstx.stax.WstxOutputFactory.class.newInstance());
+            XMLImplFinder.setStaxInputFactory(WstxInputFactory.class.newInstance());
+            XMLImplFinder.setStaxOutputFactory(WstxOutputFactory.class.newInstance());
 
             // set default DOM implementation
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -82,12 +88,11 @@ public class SensorHubService extends Service
             msgThread.start();
             msgHandler = new Handler(msgThread.getLooper());
 
-            // Start as foreground service with notification
             startForegroundService();
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            log.error("Error: " + e.getMessage());
         }
     }
 
@@ -169,18 +174,30 @@ public class SensorHubService extends Service
 
         this.hasVideo = hasVideo;
 
-        // Acquire wake locks BEFORE starting the hub
+        if (hasVideo) {
+            if (videoTex != null) {
+                videoTex.release();
+            }
+            videoTex = new SurfaceTexture(1);
+            videoTex.detachFromGLContext();
+        }
+
         acquireWakeLocks();
 
         msgHandler.post(new Runnable() {
             public void run() {
-                // create and start sensorhub instance
                 sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
                 try {
                     sensorhub.start();
                 } catch (SensorHubException e) {
-                    e.printStackTrace();
-                    // Release locks if startup fails
+                    log.error("Error starting SensorHub: " + e.getMessage());
+                    try {
+                        sensorhub.stop();
+                    } catch (Exception ex) {
+                        log.error("Error stopping failed SensorHub", ex);
+                    }
+                    sensorhub = null;
+                    SensorHubService.this.hasVideo = false;
                     releaseWakeLocks();
                 }
             }
@@ -203,7 +220,7 @@ public class SensorHubService extends Service
                 .getSystemService(Context.WIFI_SERVICE);
         if (wifiManager != null && wifiLock == null) {
             wifiLock = wifiManager.createWifiLock(
-                    WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                    WifiManager.WIFI_MODE_FULL_LOW_LATENCY,
                     "SensorHub::WiFiLock"
             );
             wifiLock.acquire();
@@ -226,31 +243,12 @@ public class SensorHubService extends Service
 
     public synchronized void stopSensorHub()
     {
-        if (sensorhub == null)
-            return;
+        if (sensorhub != null) {
+            sensorhub.stop();
+            sensorhub = null;
+        }
 
         this.hasVideo = false;
-
-        final SensorHubAndroid hubToStop = sensorhub;
-        sensorhub = null;
-
-        final java.util.concurrent.CountDownLatch stopLatch = new java.util.concurrent.CountDownLatch(1);
-
-        msgHandler.post(new Runnable() {
-            public void run() {
-                try {
-                    hubToStop.stop();
-                } finally {
-                    stopLatch.countDown();
-                }
-            }
-        });
-
-        try {
-            stopLatch.await(15, java.util.concurrent.TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         releaseWakeLocks();
     }
@@ -272,10 +270,24 @@ public class SensorHubService extends Service
             SensorHubService.videoTex.release();
             SensorHubService.videoTex = null;
         }
-        SensorHubService.context = null;
         super.onDestroy();
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        log.info("Task removed, scheduling restart");
+        Intent restartIntent = new Intent(getApplicationContext(), SensorHubService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(
+                getApplicationContext(), 1, restartIntent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
+        );
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.ELAPSED_REALTIME,
+                    SystemClock.elapsedRealtime() + 1000, pendingIntent);
+        }
+        super.onTaskRemoved(rootIntent);
+    }
 
     @Override
     public IBinder onBind(Intent intent)
@@ -304,6 +316,6 @@ public class SensorHubService extends Service
 
     public static Context getContext()
     {
-        return context;
+        return appContext;
     }
 }

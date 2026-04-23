@@ -64,7 +64,7 @@ public class ProxySensor extends SWEVirtualSensor {
                     try {
                         stopSOSStreams();
                     } catch (SensorHubException e) {
-                        e.printStackTrace();
+                        Log.e(TAG, "Error stopping SOS streams", e);
                     }
                 }
             }
