@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="md_theme_primary">#D35400</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+
+    <color name="md_theme_primaryContainer">#24160A</color>
+    <color name="md_theme_onPrimaryContainer">#E6B89C</color>
+
+    <color name="md_theme_primaryDark">#C24E00</color>
+
+    <color name="md_theme_secondary">#9A9A9A</color>
+    <color name="md_theme_onSecondary">#0A0A0A</color>
+
+    <color name="md_theme_secondaryContainer">#242424</color>
+    <color name="md_theme_onSecondaryContainer">#F5F5F5</color>
+
+    <color name="md_theme_tertiary">#B84A0D</color>
+    <color name="md_theme_onTertiary">#FFFFFF</color>
+
+    <color name="md_theme_tertiaryContainer">#1C0A00</color>
+    <color name="md_theme_onTertiaryContainer">#E6B89C</color>
+
+    <color name="md_theme_error">#CF6679</color>
+    <color name="md_theme_onError">#1C0006</color>
+
+    <color name="md_theme_errorContainer">#4A0011</color>
+    <color name="md_theme_onErrorContainer">#FFB3BA</color>
+
+    <color name="md_theme_background">#0A0A0A</color>
+
+    <color name="md_theme_onBackground">#F5F5F5</color>
+
+    <color name="md_theme_surface">#141414</color>
+    <color name="md_theme_onSurface">#F5F5F5</color>
+
+    <color name="md_theme_surfaceVariant">#1C1C1C</color>
+    <color name="md_theme_onSurfaceVariant">#9A9A9A</color>
+
+    <color name="md_theme_outline">#2E2E2E</color>
+
+    <color name="surface_base">#0A0A0A</color>
+    <color name="surface_low">#141414</color>
+    <color name="surface_card">#1C1C1C</color>
+    <color name="surface_elevated">#242424</color>
+
+    <color name="text_primary">#F5F5F5</color>
+    <color name="text_secondary">#9A9A9A</color>
+    <color name="text_muted">#5A5A5A</color>
+
+    <!-- Subtle Orange System -->
+    <color name="accent_orange">#D35400</color>
+    <color name="accent_orange_dark">#C24E00</color>
+    <color name="accent_orange_dim">#1AD35400</color>
+
+    <color name="toolbar_bg">#141414</color>
+    <color name="toolbar_title">#F5F5F5</color>
+
+    <color name="bottom_nav_bg">#141414</color>
+    <color name="bottom_nav_selected">#D35400</color>
+    <color name="bottom_nav_unselected">#6A6A6A</color>
+
+    <color name="status_started">#4CAF50</color>
+    <color name="status_stopped">#F44336</color>
+    <color name="status_initializing">#FF9800</color>
+    <color name="status_unknown">#5A5A5A</color>
+
+    <color name="overlay_light">#1AFFFFFF</color>
+    <color name="overlay_dark">#99000000</color>
+
+    <color name="card_info_bg">#1C1C1C</color>
+
+</resources>

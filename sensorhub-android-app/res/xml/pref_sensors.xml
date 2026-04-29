@@ -1,337 +1,480 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <EditTextPreference
-        android:defaultValue=""
-        android:inputType="text"
-        android:key="uid_extension"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="Sensors UID Extension" />
 
-    <PreferenceCategory android:title="Android Sensors">
+        <EditTextPreference
+            android:defaultValue=""
+            android:inputType="text"
+            android:key="uid_extension"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Sensors UID Extension"
+            android:layout="@layout/preference_item" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="accel_enabled"
             android:summary="Enable streaming of accelerometer data"
-            android:title="Accelerometer Data" />
+            android:title="Accelerometer Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="accel_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Accelerometer Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="gyro_enabled"
             android:summary="Enable streaming of gyroscope data"
-            android:title="Gyroscope Data" />
+            android:title="Gyroscope Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="gyro_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Gyroscope Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="mag_enabled"
             android:summary="Enable streaming of magnetometer data"
-            android:title="Magnetometer Data" />
+            android:title="Magnetometer Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="mag_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Magnetometer Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="orient_quat_enabled"
             android:summary="Enable streaming of orientation data"
-            android:title="Orientation Data (Quaternions)" />
+            android:title="Orientation Data (Quaternions)"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="orient_quat_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Orientation Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="orient_euler_enabled"
             android:summary="Enable streaming of orientation data"
-            android:title="Orientation Data (Euler Angles)" />
+            android:title="Orientation Data (Euler Angles)"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="orient_euler_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Orientation Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="gps_enabled"
             android:summary="Enable streaming of GPS location data"
-            android:title="GPS Location Data" />
+            android:title="GPS Location Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="gps_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="GPS Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="netloc_enabled"
             android:summary="Enable streaming of network location data"
-            android:title="Network Location Data" />
+            android:title="Network Location Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="netloc_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Network Location Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
-            android:defaultValue="false"
+            <!--   VIDEO  Start   -->
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
             android:key="cam_enabled"
             android:summary="Enable streaming of video data"
-            android:title="Video Data" />
+            android:title="Video Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="cam_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Video Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <ListPreference
+            android:key="video_codec"
+            android:visible="false"
+            android:title="Codec"
+            android:defaultValue="JPEG"
+            android:entries="@array/video_codec_list"
+            android:entryValues="@array/video_codec_list"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item"/>
+        <ListPreference
+            android:key="video_framerate"
+            android:visible="false"
+            android:title="Frame Rate"
+            android:defaultValue="30"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item"/>
+        <ListPreference
+            android:key="video_resolution"
+            android:visible="false"
+            android:title="Resolution"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item"/>
+        <ListPreference
+            android:key="camera_select"
+            android:visible="false"
+            android:title="Camera"
+            android:defaultValue="0"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item"/>
+        <!--   VIDEO  END   -->
+
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="video_roll_enabled"
             android:summary="Include video roll data in video frame header"
-            android:title="Video Roll Data" />
+            android:title="Video Roll Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="video_roll_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Video Roll Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="audio_enabled"
             android:summary="Enable streaming of audio data"
-            android:title="Audio Data" />
+            android:title="Audio Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="audio_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Audio Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <!-- AUDIO -->
+        <ListPreference
+            android:key="audio_codec"
+            android:visible="false"
+            android:title="Codec"
+            android:defaultValue="AAC"
+            android:entries="@array/audio_codec_list"
+            android:entryValues="@array/audio_codec_list"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item" />
+
+        <ListPreference
+            android:key="audio_samplerate"
+            android:visible="false"
+            android:title="Sample Rate"
+            android:defaultValue="8000"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item" />
+
+        <ListPreference
+            android:key="audio_bitrate"
+            android:visible="false"
+            android:title="Bitrate (kbps)"
+            android:defaultValue="64"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_list_item" />
+
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="meshtastic_enabled"
             android:summary="Enable streaming of Meshtastic data (sensor must be connected via Bluetooth on startup)"
-            android:title="Meshtastic Data" />
+            android:title="Meshtastic Data"
+            android:layout="@layout/preference_switch_item" />
 
-        <ListPreference
+        <Preference
             android:key="meshtastic_device_address"
+            android:visible="false"
             android:title="Select Meshtastic Device"
-            android:entries="@array/bluetooth_mac_address_list"
-            android:entryValues="@array/bluetooth_mac_address_list"
-            android:summary="Choose a paired Meshtastic Bluetooth device"
-            android:dialogTitle="Select Device"
-            />
+            android:summary="Tap to select or enter device address"
+            android:layout="@layout/preference_list_item" />
 
         <MultiSelectListPreference
             android:key="meshtastic_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="Meshtastic Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="wardriving_enabled"
+            android:summary="Enable streaming of Wardriving Sensor"
+            android:title="Wardriving Data"
+            android:layout="@layout/preference_switch_item" />
+
+        <MultiSelectListPreference
+            android:key="wardriving_options"
+            android:visible="false"
+            android:title="Wardriving Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item" />
 
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="polar_enabled"
             android:summary="Enable streaming of Polar Heart Sensor (sensor must be connected via Bluetooth LE)"
-            android:title="Polar Heart Rate Data" />
+            android:title="Polar Heart Rate Data"
+            android:layout="@layout/preference_switch_item" />
 
-        <ListPreference
+        <Preference
             android:key="polar_device_address"
+            android:visible="false"
             android:title="Select Polar HR Device"
-            android:entries="@array/bluetooth_mac_address_list"
-            android:entryValues="@array/bluetooth_mac_address_list"
-            android:summary="Choose a paired Polar HR Bluetooth device"
-            android:dialogTitle="Select Device"
-            />
+            android:summary="Tap to select or enter device address"
+            android:layout="@layout/preference_list_item" />
 
         <MultiSelectListPreference
             android:key="polar_options"
+            android:visible="false"
             android:title="Polar Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item" />
 
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="kestrel_enabled"
             android:summary="Enable streaming of Kestrel Weather Meter"
-            android:title="Kestrel Weather Meter" />
+            android:title="Kestrel Weather Meter"
+            android:layout="@layout/preference_switch_item" />
 
         <Preference
-            android:key="scan_ble_devices"
-            android:title="Scan for BLE Devices"
-            android:summary="Refresh the list of BLE Devices"
-            />
-
-        <ListPreference
             android:key="kestrel_device_address"
+            android:visible="false"
             android:title="Select Kestrel Device"
-            android:entries="@array/bluetooth_scanned_address_list"
-            android:entryValues="@array/bluetooth_scanned_address_list"
-            android:summary="Choose a scanned Kestrel Bluetooth device"
-            android:dialogTitle="Select Device"
-            />
+            android:summary="Tap to select or enter device address"
+            android:layout="@layout/preference_list_item" />
 
         <MultiSelectListPreference
             android:key="kestrel_options"
+            android:visible="false"
             android:title="Kestrel Weather Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="controller_enabled"
+            android:summary="Enable streaming of USB Controller (controller must be connected to device via USB on startup)"
+            android:title="Controller"
+            android:layout="@layout/preference_switch_item" />
+
+        <MultiSelectListPreference
+            android:key="controller_options"
+            android:visible="false"
+            android:title="Controller Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="trupulse_enabled"
             android:summary="Enable streaming of TruPulse range finder data (sensor must be connected via Bluetooth on startup)"
-            android:title="TruPulse Range Finder Data" />
+            android:title="TruPulse Range Finder Data"
+            android:layout="@layout/preference_switch_item" />
 
         <ListPreference
             android:key="trupulse_datasource"
-            android:enabled="false"
+            android:visible="false"
             android:title="TruPulse Data Source"
             android:summary="%s"
             android:entries="@array/trupulse_datasource_list"
             android:entryValues="@array/trupulse_datasource_values"
-            android:defaultValue="@string/trupulse_datasource_default" />
+            android:defaultValue="@string/trupulse_datasource_default"
+            android:layout="@layout/preference_list_item"/>
 
         <MultiSelectListPreference
             android:key="trupulse_options"
-            android:enabled="false"
+            android:visible="false"
             android:title="TruPulse Output Options"
             android:summary="Options for pushing data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-
-        <ListPreference
+        <Preference
             android:key="trupulse_device_address"
+            android:visible="false"
             android:title="Select TruPulse Device"
-            android:entries="@array/bluetooth_mac_address_list"
-            android:entryValues="@array/bluetooth_mac_address_list"
-            android:summary="Choose a paired TruPulse LRF  device"
-            android:dialogTitle="Select Device"
-        />
+            android:summary="Tap to select or enter device address"
+            android:layout="@layout/preference_list_item" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
+            android:visible="false"
             android:key="trupulse_simu"
             android:summary="Use simulated TruPulse data instead of the actual sensor data"
-            android:title="Use Simulated TruPulse Data" />
+            android:title="Use Simulated TruPulse Data"
+            android:layout="@layout/preference_switch_item" />
 
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="angel_enabled"
             android:summary="Enable streaming of Angel Sensor health data (sensor must be connected via Bluetooth LE on startup)"
-            android:title="Angel Sensor Health Data" />
+            android:title="Angel Sensor Health Data"
+            android:layout="@layout/preference_switch_item" />
 
         <EditTextPreference
             android:defaultValue="00:07:80:03:0E:0A"
+            android:visible="false"
             android:inputType="text"
             android:key="angel_address"
             android:singleLine="true"
-            android:title="Angel Sensor Bluetooth Address" />
+            android:title="Angel Sensor Bluetooth Address"
+            android:layout="@layout/preference_item"/>
 
         <MultiSelectListPreference
             android:key="angel_options"
+            android:visible="false"
             android:title="Angel Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="flirone_enabled"
             android:summary="Enable streaming of FLIR One thermal camera data when connected on USB port"
-            android:title="FLIR One Thermal Camera Data" />
+            android:title="FLIR One Thermal Camera Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="flir_options"
+            android:visible="false"
             android:title="FLIR Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:key="ste_radpager_enabled"
             android:defaultValue="false"
             android:summary="Enable streaming of STE RadPager data (sensor must be connected via Bluetooth LE on startup)"
-            android:title="STE RadPager Data" />
+            android:title="STE RadPager Data"
+            android:layout="@layout/preference_switch_item" />
 
         <MultiSelectListPreference
             android:key="ste_radpager_options"
+            android:visible="false"
             android:title="STE RadPager Output Options"
             android:summary="Options for pushing sensor data"
             android:entries="@array/sos_option_list"
             android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults" />
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 
+        <!-- TEMPLATE DRIVER -->
+        <SwitchPreferenceCompat
+            android:key="template_enabled"
+            android:defaultValue="false"
+            android:summary="Enable streaming of template driver"
+            android:title="Template Driver Data"
+            android:layout="@layout/preference_switch_item" />
 
-    </PreferenceCategory>
+        <Preference
+            android:key="template_device_address"
+            android:visible="false"
+            android:title="Select template Device"
+            android:summary="Tap to select or enter device address"
+            android:layout="@layout/preference_list_item" />
 
-
+        <MultiSelectListPreference
+            android:key="template_options"
+            android:visible="false"
+            android:title="Template Driver Output Options"
+            android:summary="Options for pushing sensor data"
+            android:entries="@array/sos_option_list"
+            android:entryValues="@array/sos_option_values"
+            android:defaultValue="@array/sos_option_defaults"
+            android:layout="@layout/preference_list_item"/>
 </PreferenceScreen>

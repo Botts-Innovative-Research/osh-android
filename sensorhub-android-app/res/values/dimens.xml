@@ -1,7 +1,25 @@
 <resources>
-
-    <!-- Default screen margins, per the Android Design guidelines. -->
+    <!-- Screen margins -->
     <dimen name="activity_horizontal_margin">0dp</dimen>
     <dimen name="activity_vertical_margin">0dp</dimen>
 
+    <!-- Content padding -->
+    <dimen name="content_padding">16dp</dimen>
+    <dimen name="content_padding_small">8dp</dimen>
+    <dimen name="content_padding_large">24dp</dimen>
+
+    <!-- Card dimensions -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="card_margin">12dp</dimen>
+
+    <!-- Status indicator -->
+    <dimen name="status_dot_size">12dp</dimen>
+
+    <!-- Toolbar -->
+    <dimen name="toolbar_elevation">4dp</dimen>
+
+    <!-- Info overlay -->
+    <dimen name="info_card_margin">12dp</dimen>
+    <dimen name="info_card_padding">12dp</dimen>
 </resources>
