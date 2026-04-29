@@ -242,9 +242,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         deviceID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
         sensorhubConfig = new InMemoryConfigDb(new ModuleClassFinder());
 
-        Boolean isApiServiceEnabled = prefs.getBoolean("api_service", true);
+        Boolean isApiServiceEnabled = prefs.getBoolean("csapi_service", true);
         Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
-        Boolean isDiscoveryServiceEnabled = prefs.getBoolean("discovery_service", true);
+        Boolean isDiscoveryServiceEnabled = prefs.getBoolean("discovery_service", false);
 
         ServerProfileRepository serverRepo = new ServerProfileRepository(this);
         List<ServerProfile> enabledServers = serverRepo.getEnabled();

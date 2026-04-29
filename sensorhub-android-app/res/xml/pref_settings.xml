@@ -36,6 +36,21 @@
 
     <!-- SERVICES -->
     <PreferenceCategory android:title="Services">
+
+        <SwitchPreferenceCompat
+            android:id="@+id/sos_service_switch"
+            android:key="sos_service"
+            android:title="Enable SOS Service"
+            android:defaultValue="true"
+            android:layout="@layout/preference_switch_item" />
+
+        <SwitchPreferenceCompat
+            android:id="@+id/csapi_service_switch"
+            android:key="csapi_service"
+            android:title="Enable Connected Systems Service"
+            android:defaultValue="true"
+            android:layout="@layout/preference_switch_item" />
+
         <SwitchPreferenceCompat
             android:id="@+id/discovery_service_switch"
             android:key="discovery_service"
