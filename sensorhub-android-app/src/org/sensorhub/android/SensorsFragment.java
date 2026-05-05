@@ -56,6 +56,7 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         {"wardriving_enabled", "wardriving_options"},
         {"controller_enabled", "controller_options"},
         {"template_enabled", "template_device_address", "template_options"},
+        {"garmin_enabled", "garmin_device_address", "garmin_options"},
 
     };
 
@@ -65,7 +66,8 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         "polar_device_address",
         "kestrel_device_address",
         "trupulse_device_address",
-        "template_device_address"
+        "template_device_address",
+        "garmin_device_address",
     };
 
     private ArrayList<String> frameRateList = new ArrayList<>();

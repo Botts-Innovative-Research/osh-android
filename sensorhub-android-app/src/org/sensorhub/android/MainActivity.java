@@ -46,6 +46,7 @@ import android.os.PowerManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.botts.impl.driver.garmin.GarminConfig;
 import com.botts.impl.service.discovery.DiscoveryService;
 import com.botts.impl.service.discovery.DiscoveryServiceConfig;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -172,7 +173,8 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         Kestrel,
         Wardriving,
         Controller,
-        Template
+        Template,
+        Garmin
     }
 
     private final ServiceConnection sConn = new ServiceConnection()
@@ -566,6 +568,26 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(templateConfig);
         }
 
+        // Garmin
+        enabled = prefs.getBoolean("garmin_enabled", false);
+        if (enabled) {
+//            BleConfig bleConf = new BleConfig();
+//            bleConf.id = "BLE_NETWORK";
+//            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
+//            bleConf.androidContext = this.getApplicationContext();
+//            bleConf.autoStart = true;
+//            sensorhubConfig.add(bleConf);
+
+            GarminConfig garminConfig = new GarminConfig();
+            garminConfig.id = "GARMIN";
+            garminConfig.name = "Garmin [" + deviceName + "]";
+            garminConfig.autoStart = true;
+            garminConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+//            garminConfig.networkID = bleConf.id;
+//            garminConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
+            sensorhubConfig.add(garminConfig);
+        }
+
         //---------- SERVICES ---------------------
         if (isApiServiceEnabled) {
             sensorhubConfig.add(conSysApiService);
@@ -921,6 +943,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         }  else if (Sensors.Template.equals(sensor)) {
             return prefs.getBoolean("template_enabled", false)
                     && prefs.getStringSet("template_options", Collections.emptySet()).contains("PUSH_REMOTE");
+        } else if (Sensors.Garmin.equals(sensor)) {
+            return prefs.getBoolean("garmin_enabled", false)
+                    && prefs.getStringSet("garmin_options", Collections.emptySet()).contains("PUSH_REMOTE");
         }
 
         return false;

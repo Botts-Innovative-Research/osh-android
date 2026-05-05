@@ -30,6 +30,7 @@ def repos = [
 //        'sensors/others/sensorhub-driver-meshtastic',
                 'sensors/weather/sensorhub-driver-kestrel',
                 'sensors/health/sensorhub-driver-angelsensor',
+                'sensors/health/sensorhub-driver-garmin',
                 'processing/sensorhub-process-vecmath',
                 'processing/sensorhub-process-geoloc'
         ],
