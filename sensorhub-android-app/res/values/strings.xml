@@ -13,10 +13,62 @@
     <string name="sos_settings">SOS Settings (Required)</string>
     <string name="sost_settings">SOS-T Settings (Optional)</string>
     <string name="sensor_android">Android Sensor</string>
-    <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
-    <string name="sensor_meshtastic">Meshtastic Sensor</string>
     <string name="sensor_angel">Angel Sensor</string>
+    <string name="sensor_meshtastic">Meshtastic Sensor</string>
+    <string name="sensor_wardriving">Wardriving Sensor</string>
+    <string name="sensor_polar">Polar Heart Monitor Sensor</string>
+    <string name="sensor_kestrel">Kestrel Sensor</string>
+    <string name="sensor_controller">Controller Sensor</string>
+    <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
     <string name="sensor_flirone">Flirone Sensor</string>
+    <string name="sensor_ste">STE Radiation Pager Sensor</string>
+    <string name="sensor_template">Template Sensor</string>
+    <string name="sensor_accelerometer">Accelerometer Data</string>
+    <string name="sensor_gyroscope">Gyroscope Data</string>
+    <string name="sensor_magnetometer">Magnetometer Data</string>
+    <string name="sensor_orientation_quat">Orientation Data (Quaternions)</string>
+    <string name="sensor_orientation_euler">Orientation Data (Euler Angles)</string>
+    <string name="sensor_gps">GPS Location Data</string>
+    <string name="sensor_network_location">Network Location Data</string>
+    <string name="sensor_video">Video Data</string>
+    <string name="sensor_video_roll">Video Roll Data</string>
+    <string name="sensor_audio">Audio Data</string>
+
+    <string name="device_name">Device Name</string>
+    <string name="device_ip_address">Device IP Address</string>
+    <string name="server_profiles">Server Profiles</string>
+    <string name="manage_servers">Manage Servers</string>
+    <string name="services">Services</string>
+    <string name="enable_sos_service">Enable SOS Service</string>
+    <string name="enable_csapi_service">Enable Connected Systems Service</string>
+    <string name="enable_discovery_service">Enable Discovery Service</string>
+
+    <string name="run_name">Run Name</string>
+
+    <string name="summary_accel">Enable streaming of accelerometer data</string>
+    <string name="summary_gyro">Enable streaming of gyroscope data</string>
+    <string name="summary_mag">Enable streaming of magnetometer data</string>
+    <string name="summary_orientation">Enable streaming of orientation data</string>
+    <string name="summary_gps">Enable streaming of GPS location data</string>
+    <string name="summary_netloc">Enable streaming of network location data</string>
+    <string name="summary_video">Enable streaming of video data</string>
+    <string name="summary_video_roll">Include video roll data in video frame header</string>
+    <string name="summary_audio">Enable streaming of audio data</string>
+    <string name="summary_meshtastic">Enable streaming of Meshtastic data (sensor must be connected via Bluetooth on startup)</string>
+    <string name="summary_wardriving">Enable streaming of Wardriving Sensor</string>
+    <string name="summary_polar">Enable streaming of Polar Heart Sensor (sensor must be connected via Bluetooth LE)</string>
+    <string name="summary_kestrel">Enable streaming of Kestrel Weather Meter</string>
+    <string name="summary_controller">Enable streaming of USB Controller (controller must be connected to device via USB on startup)</string>
+    <string name="summary_trupulse">Enable streaming of TruPulse range finder data (sensor must be connected via Bluetooth on startup)</string>
+    <string name="summary_trupulse_simu">Use simulated TruPulse data instead of the actual sensor data</string>
+    <string name="summary_angel">Enable streaming of Angel Sensor health data (sensor must be connected via Bluetooth LE on startup)</string>
+    <string name="summary_flirone">Enable streaming of FLIR One thermal camera data when connected on USB port</string>
+    <string name="summary_ste">Enable streaming of STE RadPager data (sensor must be connected via Bluetooth LE on startup)</string>
+    <string name="summary_template">Enable streaming of template driver</string>
+    <string name="summary_push_options">Options for pushing data</string>
+    <string name="summary_select_device">Tap to select or enter device address</string>
+    <string name="pref_uid_extension">Sensors UID Extension</string>
+    <string name="server_profile_summary">Add, edit, or remove servers</string>
 
     <string-array name="video_codec_list">
         <item>JPEG</item>

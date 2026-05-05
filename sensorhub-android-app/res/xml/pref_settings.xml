@@ -12,7 +12,7 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Device Name"
+            android:title="@string/device_name"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
         <Preference
@@ -20,7 +20,7 @@
             android:key="nop_ipAddress"
             android:selectable="false"
             android:summary=""
-            android:title="Device IP Address"
+            android:title="@string/device_ip_address"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
 
@@ -28,8 +28,8 @@
     <PreferenceCategory android:title="Server Profiles">
         <Preference
             android:key="manage_servers"
-            android:title="Manage Servers"
-            android:summary="Add, edit, or remove servers"
+            android:title="@string/manage_servers"
+            android:summary="@string/server_profile_summary"
             android:layout="@layout/preference_list_item" />
     </PreferenceCategory>
 
@@ -40,21 +40,21 @@
         <SwitchPreferenceCompat
             android:id="@+id/sos_service_switch"
             android:key="sos_service"
-            android:title="Enable SOS Service"
+            android:title="@string/enable_sos_service"
             android:defaultValue="true"
             android:layout="@layout/preference_switch_item" />
 
         <SwitchPreferenceCompat
             android:id="@+id/csapi_service_switch"
             android:key="csapi_service"
-            android:title="Enable Connected Systems Service"
+            android:title="@string/enable_csapi_service"
             android:defaultValue="true"
             android:layout="@layout/preference_switch_item" />
 
         <SwitchPreferenceCompat
             android:id="@+id/discovery_service_switch"
             android:key="discovery_service"
-            android:title="Enable Discovery Service"
+            android:title="@string/enable_discovery_service"
             android:defaultValue="false"
             android:layout="@layout/preference_switch_item" />
 
