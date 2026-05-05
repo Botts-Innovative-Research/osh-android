@@ -3,7 +3,7 @@ ext.compileSdkVersion = 33
 ext.minSdkVersion = 33
 ext.targetSdkVersion = 30
 ext.buildToolsVersion = "34.0.0"
-version = '4.0.0'
+version = '4.0.1'
 
 buildscript {
     repositories {
