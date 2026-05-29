@@ -241,4 +241,13 @@
         <item name="android:background">@drawable/bg_status_chip</item>
     </style>
 
+    <style name="ToggleButton.AddSensor" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:backgroundTint">@color/toggle_bg_selector</item>
+        <item name="backgroundTint">@color/toggle_bg_selector</item>
+        <item name="android:textColor">@color/toggle_text_selector</item>
+        <item name="rippleColor">@color/accent_orange_dim</item>
+        <item name="strokeColor">@color/accent_orange_dim</item>
+        <item name="cornerRadius">18px</item>
+    </style>
+
 </resources>

@@ -35,8 +35,16 @@ public class PolarConfig extends SensorConfig
         this.moduleClass = Polar.class.getCanonicalName();
     }
 
-    public String device_name;
+    /** Polar device ID printed on the device (e.g. "A1B2C3D4") */
+    public String deviceId;
     public String uid_extension;
+    public boolean enablePpi = true;
+
+    /** Enable ECG waveform streaming (H10 only) */
+    public boolean enableEcg = false;
+
+    /** Enable accelerometer streaming (H10 only) */
+    public boolean enableAccelerometer = false;
 
     public static String getUid() {
         Context context = SensorHubService.getContext();

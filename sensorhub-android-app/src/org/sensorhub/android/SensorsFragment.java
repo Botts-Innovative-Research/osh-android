@@ -36,38 +36,36 @@ import java.util.Set;
 public class SensorsFragment extends PreferenceFragmentCompat {
 
     private static final String[][] SWITCH_DEPENDENTS = {
-        {"accel_enabled", "accel_options"},
-        {"gyro_enabled", "gyro_options"},
-        {"mag_enabled", "mag_options"},
-        {"orient_quat_enabled", "orient_quat_options"},
-        {"orient_euler_enabled","orient_euler_options"},
-        {"gps_enabled", "gps_options"},
-        {"netloc_enabled", "netloc_options"},
-        {"cam_enabled", "cam_options", "video_codec", "video_framerate", "video_resolution", "camera_select"},
-        {"video_roll_enabled", "video_roll_options"},
-        {"audio_enabled", "audio_options", "audio_codec", "audio_samplerate", "audio_bitrate"},
-        {"meshtastic_enabled", "meshtastic_device_address", "meshtastic_options"},
-        {"polar_enabled", "polar_device_address", "polar_options"},
-        {"kestrel_enabled", "kestrel_device_address", "kestrel_options"},
-        {"trupulse_enabled", "trupulse_datasource", "trupulse_options", "trupulse_device_address", "trupulse_simu"},
-        {"angel_enabled", "angel_address", "angel_options"},
-        {"flirone_enabled", "flir_options"},
-        {"ste_radpager_enabled","ste_radpager_options"},
-        {"wardriving_enabled", "wardriving_options"},
-        {"controller_enabled", "controller_options"},
-        {"template_enabled", "template_device_address", "template_options"},
-        {"garmin_enabled", "garmin_device_address", "garmin_options"},
-
+        {"accel_enabled"},
+        {"gyro_enabled"},
+        {"mag_enabled"},
+        {"orient_quat_enabled"},
+        {"orient_euler_enabled"},
+        {"gps_enabled"},
+        {"netloc_enabled"},
+        {"cam_enabled", "video_codec", "video_framerate", "video_resolution", "camera_select"},
+        {"video_roll_enabled"},
+        {"audio_enabled", "audio_codec", "audio_samplerate", "audio_bitrate"},
+        {"meshtastic_enabled", "meshtastic_device_address"},
+        {"polar_enabled", "polar_device_address"},
+        {"kestrel_enabled", "kestrel_device_address"},
+        {"trupulse_enabled", "trupulse_datasource", "trupulse_device_address", "trupulse_simu"},
+        {"angel_enabled", "angel_address"},
+        {"flirone_enabled"},
+        {"ste_radpager_enabled"},
+        {"wardriving_enabled"},
+        {"controller_enabled"},
+        {"template_enabled", "template_device_address"},
     };
 
     /** Keys of Preferences that use the Bluetooth device picker dialog */
     private static final String[] BT_DEVICE_PREF_KEYS = {
         "meshtastic_device_address",
+        "angel_address",
         "polar_device_address",
         "kestrel_device_address",
         "trupulse_device_address",
         "template_device_address",
-        "garmin_device_address",
     };
 
     private ArrayList<String> frameRateList = new ArrayList<>();
@@ -176,7 +174,7 @@ public class SensorsFragment extends PreferenceFragmentCompat {
 
         new AlertDialog.Builder(requireContext())
             .setTitle("Enter Device Name or Address")
-            .setMessage("Enter a device name (e.g. \"Ballistic\") or MAC address. Names are matched from the start, case-insensitive.")
+            .setMessage("Enter a device name (e.g. \"Enviro\", \"TP\") or MAC address. Names are matched from the start, case-insensitive.")
             .setView(container)
             .setPositiveButton("OK", (dialog, which) -> {
                 String address = input.getText().toString().trim();

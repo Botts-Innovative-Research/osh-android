@@ -100,7 +100,7 @@ public class AndroidOrientationEulerOutput extends AndroidSensorOutput implement
         AndroidOrientationQuatOutput.getQuaternionFromVector(att, e.values);
         att.normalize();
         
-        // Y direction in phone ref frame
+        // Y direction in phone ref frame ( the top of the screen )
         look.x = 0;
         look.y = 1;
         look.z = 0;
