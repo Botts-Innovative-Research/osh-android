@@ -25,7 +25,7 @@
             android:layout="@layout/preference_item" />
 
     <!--  Server Management  -->
-    <PreferenceCategory android:title="Server Profiles">
+    <PreferenceCategory android:title="Server Profiles (Optional)">
         <Preference
             android:key="manage_servers"
             android:title="@string/manage_servers"
@@ -41,6 +41,7 @@
             android:id="@+id/sos_service_switch"
             android:key="sos_service"
             android:title="@string/enable_sos_service"
+            android:summary="@string/summary_sos"
             android:defaultValue="true"
             android:layout="@layout/preference_switch_item" />
 
@@ -48,12 +49,14 @@
             android:id="@+id/csapi_service_switch"
             android:key="csapi_service"
             android:title="@string/enable_csapi_service"
+            android:summary="@string/summary_csapi"
             android:defaultValue="true"
             android:layout="@layout/preference_switch_item" />
 
         <SwitchPreferenceCompat
             android:id="@+id/discovery_service_switch"
             android:key="discovery_service"
+            android:summary="@string/summary_discovery"
             android:title="@string/enable_discovery_service"
             android:defaultValue="false"
             android:layout="@layout/preference_switch_item" />

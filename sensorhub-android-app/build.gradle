@@ -64,21 +64,6 @@ android {
         applicationId "com.georobotix.android"
     }
 
-    //https://developer.android.com/build/build-variants#groovy
-//    flavorDimensions += "version" // maybe dont need
-//    productFlavors {
-//        create("free") {
-//            dimension = "version"
-//            applicationIdSuffix = ".free"
-//            buildConfigField("boolean", "IS_PREMIUM", "false")
-//        }
-//        create("premium") {
-//            dimension = "version"
-//            applicationIdSuffix = ".premium"
-//            buildConfigField("boolean", "IS_PREMIUM", "true")
-//        }
-//    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

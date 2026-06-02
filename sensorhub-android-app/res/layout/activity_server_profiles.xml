@@ -18,7 +18,24 @@
             android:background="@color/toolbar_bg"
             app:titleTextColor="@color/toolbar_title"
             app:title="Server Profiles"
-            app:navigationIcon="@drawable/ic_arrow_back" />
+            app:navigationIcon="@drawable/ic_arrow_back">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_server"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:text="Add"
+                android:textColor="@color/md_theme_onPrimary"
+                app:backgroundTint="@color/accent_orange"
+                app:icon="@drawable/ic_add"
+                app:iconTint="@color/md_theme_onPrimary"
+                app:iconGravity="textStart"
+                app:cornerRadius="20dp" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -32,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="No server profiles configured.\nTap + to add one."
+            android:text="No server profiles configured.\nTap Add to create one."
             android:textColor="@color/md_theme_onSurfaceVariant"
             android:textSize="14sp"
             android:visibility="gone" />
@@ -42,21 +59,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:padding="@dimen/content_padding"
-            android:paddingBottom="80dp" />
+            android:padding="@dimen/content_padding" />
 
     </FrameLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_server"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Add server"
-        app:srcCompat="@drawable/ic_add"
-        app:tint="@android:color/white"
-        app:backgroundTint="@color/md_theme_surfaceVariant" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

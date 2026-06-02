@@ -10,471 +10,255 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/pref_uid_extension"
+            android:summary="An ID attached to the end of each systems UID"
             android:layout="@layout/preference_item" />
 
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="accel_enabled"
-            android:summary="@string/summary_accel"
-            android:title="@string/sensor_accelerometer"
-            android:layout="@layout/preference_switch_item" />
+        <PreferenceCategory android:title="ON-DEVICE">
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="accel_enabled"
+                    android:summary="@string/summary_accel"
+                    android:title="@string/sensor_accelerometer"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="gyro_enabled"
+                    android:summary="@string/summary_gyro"
+                    android:title="@string/sensor_gyroscope"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="mag_enabled"
+                    android:summary="@string/summary_mag"
+                    android:title="@string/sensor_magnetometer"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="orient_quat_enabled"
+                    android:summary="@string/summary_orientation"
+                    android:title="@string/sensor_orientation_quat"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="orient_euler_enabled"
+                    android:summary="@string/summary_orientation"
+                    android:title="@string/sensor_orientation_euler"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="gps_enabled"
+                    android:summary="@string/summary_gps"
+                    android:title="@string/sensor_gps"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="netloc_enabled"
+                    android:summary="@string/summary_netloc"
+                    android:title="@string/sensor_network_location"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="cam_enabled"
+                    android:summary="@string/summary_video"
+                    android:title="@string/sensor_video"
+                    android:layout="@layout/preference_switch_item" />
+                <ListPreference
+                    android:key="video_codec"
+                    android:visible="false"
+                    android:title="Codec"
+                    android:defaultValue="JPEG"
+                    android:entries="@array/video_codec_list"
+                    android:entryValues="@array/video_codec_list"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item"/>
+                <ListPreference
+                    android:key="video_framerate"
+                    android:visible="false"
+                    android:title="Frame Rate"
+                    android:defaultValue="30"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item"/>
+                <ListPreference
+                    android:key="video_resolution"
+                    android:visible="false"
+                    android:title="Resolution"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item"/>
+                <ListPreference
+                    android:key="camera_select"
+                    android:visible="false"
+                    android:title="Camera"
+                    android:defaultValue="0"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item"/>
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="video_roll_enabled"
+                    android:summary="@string/summary_video_roll"
+                    android:title="@string/sensor_video_roll"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="audio_enabled"
+                    android:summary="@string/summary_audio"
+                    android:title="@string/sensor_audio"
+                    android:layout="@layout/preference_switch_item" />
+                <ListPreference
+                    android:key="audio_codec"
+                    android:visible="false"
+                    android:title="Codec"
+                    android:defaultValue="AAC"
+                    android:entries="@array/audio_codec_list"
+                    android:entryValues="@array/audio_codec_list"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item" />
+                <ListPreference
+                    android:key="audio_samplerate"
+                    android:visible="false"
+                    android:title="Sample Rate"
+                    android:defaultValue="8000"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item" />
+                <ListPreference
+                    android:key="audio_bitrate"
+                    android:visible="false"
+                    android:title="Bitrate (kbps)"
+                    android:defaultValue="64"
+                    app:useSimpleSummaryProvider="true"
+                    android:layout="@layout/preference_list_item" />
+        </PreferenceCategory>
 
-        <MultiSelectListPreference
-            android:key="accel_options"
-            android:visible="false"
-            android:title="Accelerometer Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
+        <PreferenceCategory android:title="Bluetooth Peripherals">
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="meshtastic_enabled"
+                    android:summary="@string/summary_meshtastic"
+                    android:title="@string/sensor_meshtastic"
+                    android:layout="@layout/preference_switch_item" />
+                <Preference
+                    android:key="meshtastic_device_address"
+                    android:visible="false"
+                    android:title="Select Meshtastic Device"
+                    android:summary="@string/summary_select_device"
+                    android:layout="@layout/preference_list_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="wardriving_enabled"
+                    android:summary="@string/summary_wardriving"
+                    android:title="@string/sensor_wardriving"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="polar_enabled"
+                    android:summary="@string/summary_polar"
+                    android:title="@string/sensor_polar"
+                    android:layout="@layout/preference_switch_item" />
+                <Preference
+                    android:key="polar_device_address"
+                    android:visible="false"
+                    android:title="Select Polar HR Device"
+                    android:summary="@string/summary_select_device"
+                    android:layout="@layout/preference_list_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="garmin_enabled"
+                    android:summary="@string/summary_garmin"
+                    android:title="Garmin Wearable"
+                    android:layout="@layout/preference_switch_item" />
+                <Preference
+                    android:key="garmin_device_address"
+                    android:visible="false"
+                    android:title="Select Garmin Device"
+                    android:summary="Tap to select or enter device address"
+                    android:layout="@layout/preference_list_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="kestrel_enabled"
+                    android:summary="@string/summary_kestrel"
+                    android:title="@string/sensor_kestrel"
+                    android:layout="@layout/preference_switch_item" />
+                <Preference
+                    android:key="kestrel_device_address"
+                    android:visible="false"
+                    android:title="Select Kestrel Device"
+                    android:summary="@string/summary_select_device"
+                    android:layout="@layout/preference_list_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="trupulse_enabled"
+                    android:summary="@string/summary_trupulse"
+                    android:title="@string/sensor_trupulse"
+                    android:layout="@layout/preference_switch_item" />
+                <ListPreference
+                    android:key="trupulse_datasource"
+                    android:visible="false"
+                    android:title="TruPulse Data Source"
+                    android:summary="%s"
+                    android:entries="@array/trupulse_datasource_list"
+                    android:entryValues="@array/trupulse_datasource_values"
+                    android:defaultValue="@string/trupulse_datasource_default"
+                    android:layout="@layout/preference_list_item"/>
+                <Preference
+                    android:key="trupulse_device_address"
+                    android:visible="false"
+                    android:title="Select TruPulse Device"
+                    android:summary="@string/summary_select_device"
+                    android:layout="@layout/preference_list_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:visible="false"
+                    android:key="trupulse_simu"
+                    android:summary="@string/summary_trupulse_simu"
+                    android:title="Use Simulated TruPulse Data"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="angel_enabled"
+                    android:summary="@string/summary_angel"
+                    android:title="@string/sensor_angel"
+                    android:layout="@layout/preference_switch_item" />
+                <EditTextPreference
+                    android:defaultValue="00:07:80:03:0E:0A"
+                    android:visible="false"
+                    android:inputType="text"
+                    android:key="angel_address"
+                    android:singleLine="true"
+                    android:title="@string/sensor_angel"
+                    android:layout="@layout/preference_item"/>
+                <SwitchPreferenceCompat
+                    android:key="ste_radpager_enabled"
+                    android:defaultValue="false"
+                    android:summary="@string/summary_ste"
+                    android:title="@string/sensor_ste"
+                    android:layout="@layout/preference_switch_item" />
+        </PreferenceCategory>
 
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="gyro_enabled"
-            android:summary="@string/summary_gyro"
-            android:title="@string/sensor_gyroscope"
-            android:layout="@layout/preference_switch_item" />
+        <PreferenceCategory android:title="Others">
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="controller_enabled"
+                    android:summary="@string/summary_controller"
+                    android:title="@string/sensor_controller"
+                    android:layout="@layout/preference_switch_item" />
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="flirone_enabled"
+                    android:summary="@string/summary_flirone"
+                    android:title="@string/sensor_flirone"
+                    android:layout="@layout/preference_switch_item" />
+                <!-- TEMPLATE DRIVER -->
+                <SwitchPreferenceCompat
+                    android:key="template_enabled"
+                    android:defaultValue="false"
+                    android:summary="@string/summary_template"
+                    android:title="@string/sensor_template"
+                    android:layout="@layout/preference_switch_item" />
+                <Preference
+                    android:key="template_device_address"
+                    android:visible="false"
+                    android:title="Select template Device"
+                    android:summary="@string/summary_select_device"
+                    android:layout="@layout/preference_list_item" />
+        </PreferenceCategory>
 
-        <MultiSelectListPreference
-            android:key="gyro_options"
-            android:visible="false"
-            android:title="Gyroscope Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="mag_enabled"
-            android:summary="@string/summary_mag"
-            android:title="@string/sensor_magnetometer"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="mag_options"
-            android:visible="false"
-            android:title="Magnetometer Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="orient_quat_enabled"
-            android:summary="@string/summary_orientation"
-            android:title="@string/sensor_orientation_quat"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="orient_quat_options"
-            android:visible="false"
-            android:title="Orientation Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="orient_euler_enabled"
-            android:summary="@string/summary_orientation"
-            android:title="@string/sensor_orientation_euler"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="orient_euler_options"
-            android:visible="false"
-            android:title="Orientation Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="gps_enabled"
-            android:summary="@string/summary_gps"
-            android:title="@string/sensor_gps"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="gps_options"
-            android:visible="false"
-            android:title="GPS Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="netloc_enabled"
-            android:summary="@string/summary_netloc"
-            android:title="@string/sensor_network_location"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="netloc_options"
-            android:visible="false"
-            android:title="Network Location Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-            <!--   VIDEO  Start   -->
-        <SwitchPreferenceCompat
-            android:defaultValue="true"
-            android:key="cam_enabled"
-            android:summary="@string/summary_video"
-            android:title="@string/sensor_video"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="cam_options"
-            android:visible="false"
-            android:title="Video Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <ListPreference
-            android:key="video_codec"
-            android:visible="false"
-            android:title="Codec"
-            android:defaultValue="JPEG"
-            android:entries="@array/video_codec_list"
-            android:entryValues="@array/video_codec_list"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item"/>
-        <ListPreference
-            android:key="video_framerate"
-            android:visible="false"
-            android:title="Frame Rate"
-            android:defaultValue="30"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item"/>
-        <ListPreference
-            android:key="video_resolution"
-            android:visible="false"
-            android:title="Resolution"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item"/>
-        <ListPreference
-            android:key="camera_select"
-            android:visible="false"
-            android:title="Camera"
-            android:defaultValue="0"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item"/>
-        <!--   VIDEO  END   -->
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="video_roll_enabled"
-            android:summary="@string/summary_video_roll"
-            android:title="@string/sensor_video_roll"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="video_roll_options"
-            android:visible="false"
-            android:title="Video Roll Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="audio_enabled"
-            android:summary="@string/summary_audio"
-            android:title="@string/sensor_audio"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="audio_options"
-            android:visible="false"
-            android:title="Audio Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <!-- AUDIO -->
-        <ListPreference
-            android:key="audio_codec"
-            android:visible="false"
-            android:title="Codec"
-            android:defaultValue="AAC"
-            android:entries="@array/audio_codec_list"
-            android:entryValues="@array/audio_codec_list"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item" />
-
-        <ListPreference
-            android:key="audio_samplerate"
-            android:visible="false"
-            android:title="Sample Rate"
-            android:defaultValue="8000"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item" />
-
-        <ListPreference
-            android:key="audio_bitrate"
-            android:visible="false"
-            android:title="Bitrate (kbps)"
-            android:defaultValue="64"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_list_item" />
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="meshtastic_enabled"
-            android:summary="@string/summary_meshtastic"
-            android:title="@string/sensor_meshtastic"
-            android:layout="@layout/preference_switch_item" />
-
-        <Preference
-            android:key="meshtastic_device_address"
-            android:visible="false"
-            android:title="Select Meshtastic Device"
-            android:summary="@string/summary_select_device"
-            android:layout="@layout/preference_list_item" />
-
-        <MultiSelectListPreference
-            android:key="meshtastic_options"
-            android:visible="false"
-            android:title="Meshtastic Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="wardriving_enabled"
-            android:summary="@string/summary_wardriving"
-            android:title="@string/sensor_wardriving"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="wardriving_options"
-            android:visible="false"
-            android:title="Wardriving Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item" />
-
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="polar_enabled"
-            android:summary="@string/summary_polar"
-            android:title="@string/sensor_polar"
-            android:layout="@layout/preference_switch_item" />
-
-        <Preference
-            android:key="polar_device_address"
-            android:visible="false"
-            android:title="Select Polar HR Device"
-            android:summary="@string/summary_select_device"
-            android:layout="@layout/preference_list_item" />
-
-        <MultiSelectListPreference
-            android:key="polar_options"
-            android:visible="false"
-            android:title="Polar Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item" />
-
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="kestrel_enabled"
-            android:summary="@string/summary_kestrel"
-            android:title="@string/sensor_kestrel"
-            android:layout="@layout/preference_switch_item" />
-
-        <Preference
-            android:key="kestrel_device_address"
-            android:visible="false"
-            android:title="Select Kestrel Device"
-            android:summary="@string/summary_select_device"
-            android:layout="@layout/preference_list_item" />
-
-        <MultiSelectListPreference
-            android:key="kestrel_options"
-            android:visible="false"
-            android:title="Kestrel Weather Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="controller_enabled"
-            android:summary="@string/summary_controller"
-            android:title="@string/sensor_controller"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="controller_options"
-            android:visible="false"
-            android:title="Controller Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="trupulse_enabled"
-            android:summary="@string/summary_trupulse"
-            android:title="@string/sensor_trupulse"
-            android:layout="@layout/preference_switch_item" />
-
-        <ListPreference
-            android:key="trupulse_datasource"
-            android:visible="false"
-            android:title="TruPulse Data Source"
-            android:summary="%s"
-            android:entries="@array/trupulse_datasource_list"
-            android:entryValues="@array/trupulse_datasource_values"
-            android:defaultValue="@string/trupulse_datasource_default"
-            android:layout="@layout/preference_list_item"/>
-
-        <MultiSelectListPreference
-            android:key="trupulse_options"
-            android:visible="false"
-            android:title="TruPulse Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <Preference
-            android:key="trupulse_device_address"
-            android:visible="false"
-            android:title="Select TruPulse Device"
-            android:summary="@string/summary_select_device"
-            android:layout="@layout/preference_list_item" />
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:visible="false"
-            android:key="trupulse_simu"
-            android:summary="@string/summary_trupulse_simu"
-            android:title="Use Simulated TruPulse Data"
-            android:layout="@layout/preference_switch_item" />
-
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="angel_enabled"
-            android:summary="@string/summary_angel"
-            android:title="@string/sensor_angel"
-            android:layout="@layout/preference_switch_item" />
-
-        <EditTextPreference
-            android:defaultValue="00:07:80:03:0E:0A"
-            android:visible="false"
-            android:inputType="text"
-            android:key="angel_address"
-            android:singleLine="true"
-            android:title="Angel Sensor Bluetooth Address"
-            android:layout="@layout/preference_item"/>
-
-        <MultiSelectListPreference
-            android:key="angel_options"
-            android:visible="false"
-            android:title="Angel Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item" />
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="flirone_enabled"
-            android:summary="@string/summary_flirone"
-            android:title="@string/sensor_flirone"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="flir_options"
-            android:visible="false"
-            android:title="FLIR Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <SwitchPreferenceCompat
-            android:key="ste_radpager_enabled"
-            android:defaultValue="false"
-            android:summary="@string/summary_ste"
-            android:title="@string/sensor_ste"
-            android:layout="@layout/preference_switch_item" />
-
-        <MultiSelectListPreference
-            android:key="ste_radpager_options"
-            android:visible="false"
-            android:title="STE RadPager Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
-
-        <!-- TEMPLATE DRIVER -->
-        <SwitchPreferenceCompat
-            android:key="template_enabled"
-            android:defaultValue="false"
-            android:summary="@string/summary_template"
-            android:title="@string/sensor_template"
-            android:layout="@layout/preference_switch_item" />
-
-        <Preference
-            android:key="template_device_address"
-            android:visible="false"
-            android:title="Select template Device"
-            android:summary="@string/summary_select_device"
-            android:layout="@layout/preference_list_item" />
-
-        <MultiSelectListPreference
-            android:key="template_options"
-            android:visible="false"
-            android:title="Template Driver Output Options"
-            android:summary="@string/summary_push_options"
-            android:entries="@array/sos_option_list"
-            android:entryValues="@array/sos_option_values"
-            android:defaultValue="@array/sos_option_defaults"
-            android:layout="@layout/preference_list_item"/>
 </PreferenceScreen>

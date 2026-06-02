@@ -41,11 +41,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.os.PowerManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+//import com.botts.impl.sensor.garmin.GarminConfig;
+import com.botts.impl.sensor.garmin.GarminConfig;
 import com.botts.impl.service.discovery.DiscoveryService;
 import com.botts.impl.service.discovery.DiscoveryServiceConfig;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -84,8 +87,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
-import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
-import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
 import org.sensorhub.impl.sensor.ste.STERadPagerConfig;
 import org.sensorhub.impl.sensor.template.TemplateConfig;
@@ -110,20 +111,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.FutureTask;
 
 import javax.net.ssl.HostnameVerifier;
@@ -156,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     String runName;
 
     private Fragment activeFragment;
+    private TextView toolbarTitle;
     private BroadcastReceiver broadcastReceiver;
 
     enum Sensors {
@@ -172,7 +169,8 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         Kestrel,
         Wardriving,
         Controller,
-        Template
+        Template,
+        Garmin
     }
 
     private final ServiceConnection sConn = new ServiceConnection()
@@ -396,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         sensorhubConfig.add(sensorsConfig);
 
-        if (isPushingSensor(Sensors.Android)) {
+        if (isPushingAnySensor()) {
             for (ServerProfile sp : enabledServers) {
                 URL profileUrl = sp.buildClientUrl();
                 if (profileUrl == null) {
@@ -505,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             polarConfig.name = "Polar Heart [" + deviceName + "]";
             polarConfig.autoStart = true;
             polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            polarConfig.device_name = prefs.getString("polar_device_address", "");
+            polarConfig.deviceId = prefs.getString("polar_device_address", "");
             polarConfig.uid_extension = prefs.getString("uid_extension", "");
             sensorhubConfig.add(polarConfig);
         }
@@ -564,6 +562,19 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             templateConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
             templateConfig.uid_extension = prefs.getString("uid_extension", "");
             sensorhubConfig.add(templateConfig);
+        }
+
+        // Garmin
+        enabled = prefs.getBoolean("garmin_enabled", false);
+        if (enabled) {
+            GarminConfig garminConfig = new GarminConfig();
+            garminConfig.id = "GARMIN";
+            garminConfig.name = "Garmin [" + deviceName + "]";
+            garminConfig.autoStart = true;
+            garminConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            garminConfig.sdkLicenseKey = BuildConfig.GARMIN_SDK_KEY;
+            garminConfig.deviceAddress = prefs.getString("garmin_device_address", "");
+            sensorhubConfig.add(garminConfig);
         }
 
         //---------- SERVICES ---------------------
@@ -628,6 +639,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbarTitle = findViewById(R.id.toolbar_title);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -652,13 +664,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         bottomNav.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.dashboard:
-                    switchFragment(homeFragment);
+                    switchFragment(homeFragment, getString(R.string.app_name));
                     break;
                 case R.id.sensors:
-                    switchFragment(sensorsFragment);
+                    switchFragment(sensorsFragment, getString(R.string.tab_sensors));
                     break;
                 case R.id.settings:
-                    switchFragment(settingsFragment);
+                    switchFragment(settingsFragment, getString(R.string.tab_settings));
                     break;
             }
             return true;
@@ -678,7 +690,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         requestBatteryOptimizationExemption();
     }
 
-    private void switchFragment(Fragment fragment) {
+    private void switchFragment(Fragment fragment, String title) {
         if (fragment == activeFragment) return;
         getSupportFragmentManager()
                 .beginTransaction()
@@ -686,6 +698,10 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
                 .show(fragment)
                 .commit();
         activeFragment = fragment;
+        if (toolbarTitle != null) {
+            toolbarTitle.setText(title);
+        }
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -696,17 +712,22 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        boolean onDashboard = activeFragment instanceof DashboardFragment;
+        for (int i = 0; i < menu.size(); i++) {
+            menu.getItem(i).setVisible(onDashboard);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
         if (id == R.id.action_about)
         {
             showAboutPopup();
-            return true;
-        }
-        else if (id == R.id.action_meshtastic)
-        {
-            showMeshtasticDialog();
             return true;
         }
         else if(id == R.id.action_status) {
@@ -800,53 +821,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         return super.dispatchGenericMotionEvent(event);
     }
 
-
-    protected void showMeshtasticDialog() {
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_meshtastic, null);
-
-        EditText messageInput = dialogView.findViewById(R.id.msg_input);
-        EditText destinationIdText = dialogView.findViewById(R.id.destination_nodeId);
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle("Send Meshtastic Message");
-        builder.setView(dialogView);
-
-        builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String msg = messageInput.getText().toString();
-                String destinationId = destinationIdText.getText().toString();
-                try {
-                    sendMeshtasticMessage(msg, destinationId);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-
-    private void sendMeshtasticMessage(String message, String nodeId) throws IOException {
-        ModuleRegistry reg = boundService.getSensorHub().getModuleRegistry();
-        MeshtasticSensor meshy = reg.getModuleByType(MeshtasticSensor.class);
-
-        IStreamingControlInterface textMessageControl = meshy.getCommandInputs().get(TextMessageControl.NAME);
-
-        DataBlock cmdData = textMessageControl.getCommandDescription().createDataBlock();
-        cmdData.setStringValue(0, message);
-        cmdData.setIntValue(1, Integer.parseInt(nodeId));
-
-        var cmd = new CommandData.Builder()
-                .withCommandStream(BigId.NONE)
-                .withSender(deviceID)
-                .withParams(cmdData)
-                .build();
-
-        textMessageControl.submitCommand(cmd);
-    }
-
     protected void showAboutPopup() {
         String version = "?";
 
@@ -871,58 +845,52 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (Sensors.Android.equals(sensor)) {
-            if (prefs.getBoolean("accel_enabled", false)
-                    && prefs.getStringSet("accel_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("accel_enabled", false))
                 return true;
-            if (prefs.getBoolean("gyro_enabled", false)
-                    && prefs.getStringSet("gyro_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("gyro_enabled", false))
                 return true;
-            if (prefs.getBoolean("mag_enabled", false)
-                    && prefs.getStringSet("mag_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("mag_enabled", false))
                 return true;
-            if (prefs.getBoolean("orient_quat_enabled", false)
-                    && prefs.getStringSet("orient_quat_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("orient_quat_enabled", false))
                 return true;
-            if (prefs.getBoolean("orient_euler_enabled", false)
-                    && prefs.getStringSet("orient_euler_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("orient_euler_enabled", false))
                 return true;
-            if (prefs.getBoolean("gps_enabled", false)
-                    && prefs.getStringSet("gps_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("gps_enabled", false))
                 return true;
-            if (prefs.getBoolean("netloc_enabled", false)
-                    && prefs.getStringSet("netloc_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("netloc_enabled", false))
                 return true;
-            if (prefs.getBoolean("cam_enabled", false)
-                    && prefs.getStringSet("cam_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("cam_enabled", false))
                 return true;
-            if (prefs.getBoolean("audio_enabled", false)
-                    && prefs.getStringSet("audio_options", Collections.emptySet()).contains("PUSH_REMOTE"))
+            if (prefs.getBoolean("audio_enabled", false))
                 return true;
         } else if (Sensors.TruPulse.equals(sensor) || Sensors.TruPulseSim.equals(sensor)) {
-            return prefs.getBoolean("trupulse_enabled", false)
-                    && prefs.getStringSet("trupulse_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("trupulse_enabled", false);
         } else if (Sensors.BLELocation.equals(sensor)) {
-            return prefs.getBoolean("ble_enable", false) && prefs.getStringSet("ble_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("ble_enable", false);
         } else if (Sensors.Meshtastic.equals(sensor)) {
-            return prefs.getBoolean("meshtastic_enabled", false)
-                    && prefs.getStringSet("meshtastic_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("meshtastic_enabled", false);
         } else if (Sensors.PolarHRMonitor.equals(sensor)) {
-            return prefs.getBoolean("polar_enabled", false)
-                    && prefs.getStringSet("polar_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("polar_enabled", false);
         } else if (Sensors.Kestrel.equals(sensor)) {
-            return prefs.getBoolean("kestrel_enabled", false)
-                    && prefs.getStringSet("kestrel_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("kestrel_enabled", false);
         } else if (Sensors.Wardriving.equals(sensor)) {
-            return prefs.getBoolean("wardriving_enabled", false)
-                    && prefs.getStringSet("wardriving_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("wardriving_enabled", false);
         } else if (Sensors.Controller.equals(sensor)) {
-            return prefs.getBoolean("controller_enabled", false)
-                    && prefs.getStringSet("controller_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("controller_enabled", false);
         }  else if (Sensors.Template.equals(sensor)) {
-            return prefs.getBoolean("template_enabled", false)
-                    && prefs.getStringSet("template_options", Collections.emptySet()).contains("PUSH_REMOTE");
+            return prefs.getBoolean("template_enabled", false);
+        } else if (Sensors.Garmin.equals(sensor)) {
+            return prefs.getBoolean("garmin_enabled", false);
         }
 
+        return false;
+    }
+
+    boolean isPushingAnySensor() {
+        for (Sensors sensor : Sensors.values()) {
+            if (isPushingSensor(sensor))
+                return true;
+        }
         return false;
     }
 

@@ -34,14 +34,14 @@ public class PolarDescriptor implements IModuleProvider
     @Override
     public String getModuleName()
     {
-        return "Polar Heart Rate Driver";
+        return "Polar H9/H10 Driver";
     }
 
 
     @Override
     public String getModuleDescription()
     {
-        return "Driver supporting Polar H9 and H10 Heart Rate Sensors";
+        return "Driver for Polar H9/H10 sensors supporting HR, Battery, PPI, ECG, and Accelerometer via Polar SDK";
     }
 
 

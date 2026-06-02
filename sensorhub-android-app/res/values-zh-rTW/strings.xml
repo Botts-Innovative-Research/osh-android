@@ -10,8 +10,6 @@
     <string name="action_proxy">啟動代理</string>
     <string name="action_stop_proxy">停止代理</string>
     <string name="action_meshtastic">Meshtastic 訊息</string>
-    <string name="sos_settings">SOS 設定（必填）</string>
-    <string name="sost_settings">SOS-T 設定（選填）</string>
     <string name="sensor_android">Android 感測器</string>
     <string name="sensor_trupulse">TruPulse 測距感測器</string>
     <string name="sensor_meshtastic">Meshtastic 感測器</string>
@@ -64,10 +62,16 @@
     <string name="summary_flirone">啟用 FLIR One 熱像儀資料串流（透過 USB 連接時）</string>
     <string name="summary_ste">啟用 STE RadPager 資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
     <string name="summary_template">啟用範本驅動程式串流</string>
+    <string name="summary_garmin">Stream biometric data from the Garmin Wearable Sensor</string>
+
+    <string name="summary_csapi"></string>
+    <string name="summary_sos"></string>
+    <string name="summary_discovery"></string>
+
     <string name="summary_push_options">資料推送選項</string>
     <string name="summary_select_device">點擊以選擇或輸入裝置位址</string>
     <string name="pref_uid_extension">感測器 UID 延伸</string>
-    <string name="server_profile_summary">新增、編輯或刪除伺服器</string>
+    <string name="server_profile_summary">選用 — 新增伺服器以遠端推送資料。未設定伺服器時，資料僅於本機提供。</string>
 
     <string-array name="orientation_angle_list">
         <item>四元數</item>

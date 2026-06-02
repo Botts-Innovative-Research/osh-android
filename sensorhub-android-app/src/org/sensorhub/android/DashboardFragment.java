@@ -37,6 +37,9 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import org.sensorhub.api.command.CommandData;
+import org.sensorhub.api.command.IStreamingControlInterface;
+import org.sensorhub.api.common.BigId;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
 import org.sensorhub.api.module.ModuleEvent;
@@ -48,6 +51,8 @@ import org.sensorhub.impl.sensor.android.AndroidSensorsConfig;
 import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
+import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
+import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 
 import java.text.SimpleDateFormat;
@@ -62,6 +67,8 @@ import java.util.concurrent.Flow;
 
 import android.widget.LinearLayout;
 
+import net.opengis.swe.v20.DataBlock;
+
 
 public class DashboardFragment extends Fragment implements TextureView.SurfaceTextureListener, Flow.Subscriber<Event>
 {
@@ -69,6 +76,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private TextureView textureView;
     private MaterialCardView videoStatusCard;
     private MaterialButton btnToggleVideo;
+    private MaterialCardView meshtasticCard;
+
     private View videoStatusDot;
     private FloatingActionButton fab;
     private LinearLayout serverStatusContainer;
@@ -110,6 +119,9 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
         btnToggleVideo.setOnClickListener(v -> toggleVideoPreview());
 
+        meshtasticCard = view.findViewById(R.id.meshtastic_card);
+        view.findViewById(R.id.btn_meshtastic_msg).setOnClickListener(v -> showMeshtasticDialog());
+
         serverStatusContainer = view.findViewById(R.id.server_status_container);
 
         fab = view.findViewById(R.id.fab_toggle);
@@ -131,6 +143,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         if (provider.isOshStarted()) {
             startRefreshingStatus();
             updateVideoStatusCard();
+            updateMeshtasticCard();
         }
     }
 
@@ -164,6 +177,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         hideVideoPreview();
         clearTextureView();
         videoStatusCard.setVisibility(View.GONE);
+        if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
         newStatusMessage("SensorHub Stopped");
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
@@ -271,6 +285,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                 serverCardViews.clear();
                 startRefreshingStatus();
                 updateVideoStatusCard();
+                updateMeshtasticCard();
                 if (videoPreviewVisible)
                     showVideo();
             }
@@ -588,6 +603,75 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
+    private void updateMeshtasticCard() {
+        if (meshtasticCard == null) return;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        boolean meshtasticEnabled = prefs.getBoolean("meshtastic_enabled", false);
+        boolean show = meshtasticEnabled && provider.isOshStarted();
+        meshtasticCard.setVisibility(show ? View.VISIBLE : View.GONE);
+
+        if (show) {
+            View dot = meshtasticCard.findViewById(R.id.meshtastic_status_dot);
+            if (dot != null && dot.getBackground() instanceof GradientDrawable) {
+                GradientDrawable bg = (GradientDrawable) dot.getBackground();
+                bg.setColor(ContextCompat.getColor(requireContext(), R.color.status_started));
+            }
+        }
+    }
+
+    private void showMeshtasticDialog() {
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_meshtastic, null);
+
+        EditText messageInput = dialogView.findViewById(R.id.msg_input);
+        EditText destinationIdText = dialogView.findViewById(R.id.destination_nodeId);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Send Meshtastic Message")
+                .setView(dialogView)
+                .setPositiveButton("Send", (dialog, id) -> {
+                    String msg = messageInput.getText().toString();
+                    String destinationId = destinationIdText.getText().toString();
+                    sendMeshtasticMessage(msg, destinationId);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void sendMeshtasticMessage(String message, String nodeId) {
+        SensorHubService service = provider.getBoundService();
+        if (service == null || service.getSensorHub() == null) {
+            Toast.makeText(requireContext(), "SensorHub not running", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            ModuleRegistry reg = (ModuleRegistry) service.getSensorHub().getModuleRegistry();
+            MeshtasticSensor meshy = reg.getModuleByType(MeshtasticSensor.class);
+
+            IStreamingControlInterface textMessageControl =
+                    meshy.getCommandInputs().get(TextMessageControl.NAME);
+
+            DataBlock cmdData = textMessageControl.getCommandDescription().createDataBlock();
+            cmdData.setStringValue(0, message);
+            cmdData.setIntValue(1, Integer.parseInt(nodeId));
+
+            String deviceID = android.provider.Settings.Secure.getString(
+                    requireContext().getContentResolver(),
+                    android.provider.Settings.Secure.ANDROID_ID);
+
+            var cmd = new CommandData.Builder()
+                    .withCommandStream(BigId.NONE)
+                    .withSender(deviceID)
+                    .withParams(cmdData)
+                    .build();
+
+            textMessageControl.submitCommand(cmd);
+            Toast.makeText(requireContext(), "Message sent", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
+        }
+    }
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
         if (videoPreviewVisible) showVideo();
