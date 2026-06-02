@@ -4,13 +4,6 @@
     tools:context="org.sensorhub.android.MainActivity">
 
     <item
-        android:id="@+id/action_meshtastic"
-        android:orderInCategory="103"
-        android:icon="@drawable/ic_message"
-        android:title="@string/action_meshtastic"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_about"
         android:orderInCategory="120"
         android:title="@string/action_about"
