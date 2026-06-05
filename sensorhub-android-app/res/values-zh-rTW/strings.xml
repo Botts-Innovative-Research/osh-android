@@ -37,37 +37,103 @@
     <string name="server_profiles">伺服器配置</string>
     <string name="manage_servers">管理伺服器</string>
     <string name="services">服務</string>
-    <string name="enable_sos_service">SOS 服務</string>
-    <string name="enable_csapi_service">Connected Systems 服務</string>
-    <string name="enable_discovery_service">探索服務</string>
+    <string name="enable_sos_service">啟用 SOS 服務</string>
+    <string name="enable_csapi_service">啟用連線系統服務</string>
+    <string name="enable_discovery_service">啟用探索服務</string>
+    <string name="run_name">執行名稱</string>
 
-    <string name="summary_accel">串流即時加速度計運動資料</string>
-    <string name="summary_gyro">串流即時陀螺儀旋轉資料</string>
-    <string name="summary_mag">串流磁力計方向和磁場資料</string>
-    <string name="summary_orientation">串流裝置方向和姿態資料</string>
-    <string name="summary_gps">串流 GPS 定位和移動資料</string>
-    <string name="summary_netloc">串流網路定位資料</string>
-    <string name="summary_video">從裝置相機串流即時影像</string>
-    <string name="summary_video_roll">將裝置翻轉中繼資料附加到影像幀標頭</string>
-    <string name="summary_audio">從裝置麥克風串流即時音訊</string>
-    <string name="summary_meshtastic">啟動時透過藍牙連接 Meshtastic 裝置</string>
-    <string name="summary_wardriving">串流附近無線網路掃描資料</string>
-    <string name="summary_polar">透過藍牙低功耗連接 Polar 心率感測器</string>
-    <string name="summary_kestrel">從 Kestrel 氣象儀串流環境資料</string>
-    <string name="summary_controller">啟動時連接支援的 USB 控制器</string>
-    <string name="summary_trupulse">從 TruPulse 測距儀串流距離和角度資料</string>
-    <string name="summary_trupulse_simu">使用模擬 TruPulse 測量資料進行測試</string>
-    <string name="summary_angel">從 Angel Sensor 串流生物特徵資料</string>
-    <string name="summary_flirone">從連接的 FLIR One 相機串流熱影像</string>
-    <string name="summary_ste">啟動時透過藍牙低功耗連接 STE RadPager</string>
-    <string name="summary_template">啟用範本感測器驅動程式用於開發和測試</string>
-    <string name="summary_push_options">推送資料選項</string>
-    <string name="summary_csapi">提供此裝置感測器資料的 OGC 標準 REST API。</string>
-    <string name="summary_sos">透過 HTTP 以 XML 格式提供感測器資料的舊版 API</string>
-    <string name="summary_discovery">基於可定義規則集提供探索功能的服務</string>
+    <string name="summary_accel">啟用加速度計資料串流</string>
+    <string name="summary_gyro">啟用陀螺儀資料串流</string>
+    <string name="summary_mag">啟用磁力計資料串流</string>
+    <string name="summary_orientation">啟用方向資料串流</string>
+    <string name="summary_gps">啟用 GPS 定位資料串流</string>
+    <string name="summary_netloc">啟用網路定位資料串流</string>
+    <string name="summary_video">啟用影片資料串流</string>
+    <string name="summary_video_roll">在影片幀標頭中包含影片滾動資料</string>
+    <string name="summary_audio">啟用音訊資料串流</string>
+    <string name="summary_meshtastic">啟用 Meshtastic 資料串流（感測器須在啟動時透過藍牙連接）</string>
+    <string name="summary_wardriving">啟用雷達偵測感測器串流</string>
+    <string name="summary_polar">啟用 Polar 心率感測器串流（感測器須透過藍牙 LE 連接）</string>
+    <string name="summary_kestrel">啟用紅隼氣象儀串流</string>
+    <string name="summary_controller">啟用 USB 控制器串流（控制器須在啟動時透過 USB 連接）</string>
+    <string name="summary_trupulse">啟用 TruPulse 測距儀資料串流（感測器須在啟動時透過藍牙連接）</string>
+    <string name="summary_trupulse_simu">使用模擬 TruPulse 資料取代實際感測器資料</string>
+    <string name="summary_angel">啟用 Angel 感測器健康資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
+    <string name="summary_flirone">啟用 FLIR One 熱像儀資料串流（透過 USB 連接時）</string>
+    <string name="summary_ste">啟用 STE RadPager 資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
+    <string name="summary_template">啟用範本驅動程式串流</string>
+    <string name="summary_garmin">Stream biometric data from the Garmin Wearable Sensor</string>
+
+    <string name="summary_csapi"></string>
+    <string name="summary_sos"></string>
+    <string name="summary_discovery"></string>
+
+    <string name="summary_push_options">資料推送選項</string>
     <string name="summary_select_device">點擊以選擇或輸入裝置位址</string>
-    <string name="pref_uid_extension">感測器 UID 擴充</string>
-    <string name="server_profile_summary">選填 — 新增伺服器以遠端推送資料。如無伺服器，資料將在本機提供。</string>
+    <string name="pref_uid_extension">感測器 UID 延伸</string>
+    <string name="server_profile_summary">選用 — 新增伺服器以遠端推送資料。未設定伺服器時，資料僅於本機提供。</string>
+
+    <string-array name="orientation_angle_list">
+        <item>四元數</item>
+        <item>歐拉角</item>
+    </string-array>
+
+    <string-array name="location_type_list">
+        <item>GPS</item>
+        <item>網路</item>
+    </string-array>
+
+    <string-array name="sos_option_list">
+        <item>可擷取</item>
+        <item>本機儲存</item>
+        <item>遠端推送</item>
+    </string-array>
+
+    <string name="trupulse_device_name">Trupulse 裝置名稱</string>
+    <string-array name="trupulse_datasource_list">
+        <item>串流實體裝置</item>
+        <item>模擬虛擬裝置</item>
+    </string-array>
+    <string name="trupulse_datasource_default">STREAM</string>
+
+
+    <string-array name="spot_report_feature_type_list">
+        <item>選擇報告項目</item>
+        <item>道路封閉</item>
+        <item>淹水</item>
+        <item>醫療</item>
+        <item>救助</item>
+    </string-array>
+
+    <string-array name="ble_location_method_list">
+        <item>最近信標</item>
+        <item>三邊測量</item>
+    </string-array>
+
+    <string-array name="spot_report_location_source_list">
+        <item>GPS</item>
+        <item>雷射測距儀</item>
+        <item>網路</item>
+    </string-array>
+
+    <string name="spot_report">現場報告</string>
+    <string name="spot_name_field">名稱：</string>
+    <string name="spot_description_field">描述：</string>
+    <string name="spot_take_image_button">拍攝</string>
+    <string name="spot_reset_image_button">重設</string>
+    <string name="spot_submit_report_button">提交報告</string>
+    <string name="spot_name_description">報告名稱</string>
+
+    <string name="spot_report_radius">半徑：</string>
+    <string name="spot_report_latitude">緯度：</string>
+    <string name="spot_report_longitude">經度：</string>
+    <string name="spot_report_ft">英尺</string>
+
+    <string-array name="spot_report_closure_type">
+        <item>選擇...</item>
+        <item>公共</item>
+        <item>全部</item>
+    </string-array>
 
 
     <string name="tab_sensors">感測器</string>
