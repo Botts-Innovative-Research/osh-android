@@ -6,5 +6,5 @@
     <locale android:name="fr" />
     <locale android:name="it" />
     <locale android:name="pt" />
-    <locale android:name="zh-rTW" />
+    <locale android:name="zh-TW" />
 </locale-config>
