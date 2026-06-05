@@ -248,5 +248,4 @@
     <string name="msg_no_protocol">主機不應包含協定（例如 http://）</string>
     <string name="msg_port_number">連接埠應為數字</string>
     <string name="msg_port_range">連接埠應介於 1 到 65535 之間</string>
-
 </resources>
