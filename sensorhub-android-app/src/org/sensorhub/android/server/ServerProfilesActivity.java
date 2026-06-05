@@ -2,6 +2,7 @@ package org.sensorhub.android.server;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
@@ -9,7 +10,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -76,19 +76,26 @@ public class ServerProfilesActivity extends AppCompatActivity implements ServerA
 
     @Override
     public void onDeleteRequested(ServerProfile profile) {
-        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.title_delete_server)
-                .setMessage(getString(R.string.msg_delete_server, profile.name))
-                .setIcon(R.drawable.ic_delete)
-                .setPositiveButton(R.string.btn_delete, (d, w) -> {
-                    repo.delete(profile.id);
-                    refreshList();
-                })
-                .setNegativeButton(R.string.btn_cancel, null);
+        View dialogView = LayoutInflater.from(this)
+                .inflate(R.layout.dialog_confirm_delete, null);
 
-        AlertDialog dialog = builder.show();
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                .setTextColor(ContextCompat.getColor(this, R.color.design_default_color_error));
+        ((TextView) dialogView.findViewById(R.id.dialog_message))
+                .setText(getString(R.string.msg_delete_server, profile.name));
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.title_delete_server)
+                .setIcon(R.drawable.ic_delete)
+                .setView(dialogView)
+                .create();
+
+        dialogView.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btn_delete).setOnClickListener(v -> {
+            repo.delete(profile.id);
+            refreshList();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void refreshList() {

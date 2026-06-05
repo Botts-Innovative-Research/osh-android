@@ -1,8 +1,11 @@
 package org.sensorhub.android;
 
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,13 +16,16 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.EditText;
-import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -27,15 +33,8 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.GradientDrawable;
-import android.widget.Toast;
-
-import androidx.core.content.ContextCompat;
+import net.opengis.swe.v20.DataBlock;
 
 import org.sensorhub.api.command.CommandData;
 import org.sensorhub.api.command.IStreamingControlInterface;
@@ -64,10 +63,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Flow;
-
-import android.widget.LinearLayout;
-
-import net.opengis.swe.v20.DataBlock;
 
 
 public class DashboardFragment extends Fragment implements TextureView.SurfaceTextureListener, Flow.Subscriber<Event>
@@ -193,57 +188,50 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
 
     protected synchronized void showRunNamePopup() {
-        MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(requireContext());
-        alert.setTitle(R.string.title_run_name);
-        alert.setMessage(getString(R.string.msg_enter_run_name));
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_run_name, null);
 
-        TextInputLayout inputLayout = new TextInputLayout(requireContext());
-        inputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
-        inputLayout.setHint(getString(R.string.title_run_name));
-
-        TextInputEditText input = new TextInputEditText(inputLayout.getContext());
+        TextInputEditText input = dialogView.findViewById(R.id.run_name_input);
         input.getText().append("Run-");
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
         input.getText().append(formatter.format(new Date()));
-        inputLayout.addView(input);
 
-        int padding = (int) (24 * getResources().getDisplayMetrics().density);
-        FrameLayout container = new FrameLayout(requireContext());
-        container.setPadding(padding, 0, padding, 0);
-        container.addView(inputLayout);
-        alert.setView(container);
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.title_run_name)
+                .setIcon(R.drawable.ic_play)
+                .setView(dialogView)
+                .create();
 
-        alert.setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                String runName = input.getText().toString();
+        dialogView.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btn_ok).setOnClickListener(v -> {
+            dialog.dismiss();
+            requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            String runName = input.getText().toString();
 
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
-                provider.updateConfig(prefs, runName);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+            provider.updateConfig(prefs, runName);
 
-                AndroidSensorsConfig androidSensorConfig = (AndroidSensorsConfig) provider.getSensorhubConfig().get("ANDROID_SENSORS");
-                VideoEncoderConfig videoConfig = androidSensorConfig.videoConfig;
+            AndroidSensorsConfig androidSensorConfig = (AndroidSensorsConfig) provider.getSensorhubConfig().get("ANDROID_SENSORS");
+            VideoEncoderConfig videoConfig = androidSensorConfig.videoConfig;
 
-                boolean cameraInUse = (androidSensorConfig.activateBackCamera || androidSensorConfig.activateFrontCamera);
-                boolean improperVideoSettings = (videoConfig.selectedPreset < 0 || videoConfig.selectedPreset >= videoConfig.presets.length);
+            boolean cameraInUse = (androidSensorConfig.activateBackCamera || androidSensorConfig.activateFrontCamera);
+            boolean improperVideoSettings = (videoConfig.selectedPreset < 0 || videoConfig.selectedPreset >= videoConfig.presets.length);
 
-                if (cameraInUse && improperVideoSettings) {
-                    showVideoConfigErrorPopup();
-                    newStatusMessage(getString(R.string.video_config_error));
-                } else {
-                    Toast.makeText(requireContext(), R.string.starting_sensorhub, Toast.LENGTH_SHORT).show();
-                    newStatusMessage(getString(R.string.starting_sensorhub));
-                    provider.getSostClients().clear();
-                    provider.getConSysClients().clear();
-                    provider.startSensorHub();
+            if (cameraInUse && improperVideoSettings) {
+                showVideoConfigErrorPopup();
+                newStatusMessage(getString(R.string.video_config_error));
+            } else {
+                Toast.makeText(requireContext(), R.string.starting_sensorhub, Toast.LENGTH_SHORT).show();
+                newStatusMessage(getString(R.string.starting_sensorhub));
+                provider.getSostClients().clear();
+                provider.getConSysClients().clear();
+                provider.startSensorHub();
 
-                    waitForHubReady();
-                }
+                waitForHubReady();
             }
         });
 
-        alert.setNegativeButton(R.string.btn_cancel, (dialog, whichButton) -> {});
-        alert.show();
+        dialog.show();
     }
 
     private static final int HUB_POLL_INTERVAL_MS = 200;
@@ -298,11 +286,19 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     protected void showVideoConfigErrorPopup() {
-        new MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.app_name)
-            .setMessage(R.string.video_config_error_msg)
-            .setPositiveButton(R.string.btn_ok, (dialog, id) -> {})
-            .show();
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_buttons_ok, null);
+
+        ((TextView) dialogView.findViewById(R.id.dialog_message))
+                .setText(R.string.video_config_error_msg);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.app_name)
+                .setView(dialogView)
+                .create();
+
+        dialogView.findViewById(R.id.btn_ok).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     protected void startRefreshingStatus() {
@@ -625,16 +621,20 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         EditText messageInput = dialogView.findViewById(R.id.msg_input);
         EditText destinationIdText = dialogView.findViewById(R.id.destination_nodeId);
 
-        new MaterialAlertDialogBuilder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.title_send_meshtastic)
                 .setView(dialogView)
-                .setPositiveButton(R.string.btn_send, (dialog, id) -> {
-                    String msg = messageInput.getText().toString();
-                    String destinationId = destinationIdText.getText().toString();
-                    sendMeshtasticMessage(msg, destinationId);
-                })
-                .setNegativeButton(R.string.btn_cancel, null)
-                .show();
+                .create();
+
+        dialogView.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btn_send).setOnClickListener(v -> {
+            String msg = messageInput.getText().toString();
+            String destinationId = destinationIdText.getText().toString();
+            sendMeshtasticMessage(msg, destinationId);
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void sendMeshtasticMessage(String message, String nodeId) {

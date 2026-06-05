@@ -12,6 +12,11 @@ import android.os.Bundle;
 import android.os.LocaleList;
 import android.preference.PreferenceManager;
 
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -41,12 +46,20 @@ public class AppPreferencesFragment extends PreferenceFragmentCompat {
         Preference aboutPref = findPreference("app_about");
         if (aboutPref != null) {
             aboutPref.setOnPreferenceClickListener(preference -> {
-                new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.about_description)
-                    .setIcon(R.drawable.ic_launcher)
-                    .setPositiveButton(R.string.btn_ok, null)
-                    .show();
+                View dialogView = LayoutInflater.from(requireContext())
+                        .inflate(R.layout.dialog_buttons_ok, null);
+
+                ((TextView) dialogView.findViewById(R.id.dialog_message))
+                        .setText(R.string.about_description);
+
+                AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.app_name)
+                        .setIcon(R.drawable.ic_launcher)
+                        .setView(dialogView)
+                        .create();
+
+                dialogView.findViewById(R.id.btn_ok).setOnClickListener(v -> dialog.dismiss());
+                dialog.show();
                 return true;
             });
         }
