@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory>
+        <EditTextPreference
+            android:defaultValue="MyDevice"
+            android:inputType="text"
+            android:key="device_name"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/device_name"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/pref_value_top" />
+        <Preference
+            android:enabled="true"
+            android:key="nop_ipAddress"
+            android:selectable="false"
+            android:summary=""
+            android:title="@string/device_ip_address"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/pref_value_mid" />
+        <Preference
+            android:key="app_version"
+            android:title="@string/title_version"
+            android:selectable="false"
+            android:layout="@layout/pref_value_bottom" />
+    </PreferenceCategory>
+
+    <PreferenceCategory>
+        <Preference
+            android:key="app_notifications"
+            android:title="@string/title_notifications"
+            android:icon="@drawable/ic_notifications"
+            android:selectable="false"
+            android:layout="@layout/pref_icon_mid" />
+        <Preference
+            android:key="app_language"
+            android:title="@string/title_language"
+            android:icon="@drawable/ic_language"
+            android:layout="@layout/pref_icon_bottom" />
+    </PreferenceCategory>
+
+    <PreferenceCategory>
+        <Preference
+            android:key="app_about"
+            android:title="@string/title_about"
+            android:icon="@drawable/ic_info"
+            android:layout="@layout/pref_icon_top" />
+        <Preference
+            android:key="app_help"
+            android:title="@string/title_help_faq"
+            android:icon="@drawable/ic_help"
+            android:layout="@layout/pref_icon_bottom" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

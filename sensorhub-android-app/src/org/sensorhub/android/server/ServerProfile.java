@@ -1,4 +1,4 @@
-package org.sensorhub.android;
+package org.sensorhub.android.server;
 
 import org.json.JSONException;
 import org.json.JSONObject;

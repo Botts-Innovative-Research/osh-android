@@ -137,13 +137,13 @@ public class SensorsFragment extends PreferenceFragmentCompat {
             }
         }
 
-        names.add("Enter name or address manually...");
+        names.add(getString(R.string.manual_entry_option));
         addresses.add(null);
 
         String[] displayNames = names.toArray(new String[0]);
 
         new AlertDialog.Builder(requireContext())
-            .setTitle("Select Device")
+            .setTitle(R.string.title_select_device)
             .setItems(displayNames, (dialog, which) -> {
                 if (addresses.get(which) == null) {
                     showManualAddressDialog(prefKey);
@@ -151,14 +151,14 @@ public class SensorsFragment extends PreferenceFragmentCompat {
                     saveDeviceAddress(prefKey, addresses.get(which), displayNames[which]);
                 }
             })
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.btn_cancel, null)
             .show();
     }
 
     private void showManualAddressDialog(String prefKey) {
         EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint("e.g. Ballistic or AA:BB:CC:DD:EE:FF");
+        input.setHint(R.string.hint_manual_device);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
         String current = prefs.getString(prefKey, "");
@@ -173,16 +173,16 @@ public class SensorsFragment extends PreferenceFragmentCompat {
         container.addView(input);
 
         new AlertDialog.Builder(requireContext())
-            .setTitle("Enter Device Name or Address")
-            .setMessage("Enter a device name (e.g. \"Enviro\", \"TP\") or MAC address. Names are matched from the start, case-insensitive.")
+            .setTitle(R.string.title_enter_device)
+            .setMessage(R.string.msg_enter_device)
             .setView(container)
-            .setPositiveButton("OK", (dialog, which) -> {
+            .setPositiveButton(R.string.btn_ok, (dialog, which) -> {
                 String address = input.getText().toString().trim();
                 if (!address.isEmpty()) {
                     saveDeviceAddress(prefKey, address, address);
                 }
             })
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.btn_cancel, null)
             .show();
     }
 

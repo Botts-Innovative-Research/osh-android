@@ -3,16 +3,4 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="org.sensorhub.android.MainActivity">
 
-    <item
-        android:id="@+id/action_about"
-        android:orderInCategory="120"
-        android:title="@string/action_about"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_status"
-        android:orderInCategory="104"
-        android:title="@string/action_status"
-        app:showAsAction="never" />
-
 </menu>
