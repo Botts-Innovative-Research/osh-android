@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
 
 public class AppPreferencesFragment extends PreferenceFragmentCompat {
     private static final String[] LANGUAGE_LABELS = {"English", "中文 (台灣)", "Español", "Français", "Deutsch", "Italiano", "Português"};
-    private static final String[] LANGUAGE_VALUES = {"en", "zh-rTW", "es", "fr", "de", "it", "pt", };
+    private static final String[] LANGUAGE_VALUES = {"en", "zh-TW", "es", "fr", "de", "it", "pt"};
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.pref_app, rootKey);
