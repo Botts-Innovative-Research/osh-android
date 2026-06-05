@@ -7,7 +7,9 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -74,15 +76,19 @@ public class ServerProfilesActivity extends AppCompatActivity implements ServerA
 
     @Override
     public void onDeleteRequested(ServerProfile profile) {
-        new MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.title_delete_server)
                 .setMessage(getString(R.string.msg_delete_server, profile.name))
+                .setIcon(R.drawable.ic_delete)
                 .setPositiveButton(R.string.btn_delete, (d, w) -> {
                     repo.delete(profile.id);
                     refreshList();
                 })
-                .setNegativeButton(R.string.btn_cancel, null)
-                .show();
+                .setNegativeButton(R.string.btn_cancel, null);
+
+        AlertDialog dialog = builder.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setTextColor(ContextCompat.getColor(this, R.color.design_default_color_error));
     }
 
     private void refreshList() {

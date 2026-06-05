@@ -62,7 +62,6 @@
     <string name="summary_flirone">啟用 FLIR One 熱像儀資料串流（透過 USB 連接時）</string>
     <string name="summary_ste">啟用 STE RadPager 資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
     <string name="summary_template">啟用範本驅動程式串流</string>
-    <string name="summary_garmin">Stream biometric data from the Garmin Wearable Sensor</string>
 
     <string name="summary_csapi"></string>
     <string name="summary_sos"></string>
