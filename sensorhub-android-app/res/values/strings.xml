@@ -362,7 +362,7 @@
     <string name="empty_server_profiles">No server profiles configured.\nTap + to create one.</string>
     <string name="content_desc_add_server">Add server profile</string>
     <string name="title_delete_server">Delete Server</string>
-    <string name="msg_delete_server">Remove \"%s\"?</string>
+    <string name="msg_delete_server">Do you want to delete \"%s\"?</string>
 
     <!-- Edit Server Profile -->
     <string name="section_client">CLIENT</string>
@@ -419,8 +419,15 @@
     <string name="msg_port_range">Port should be between 1 and 65535</string>
 
     <!-- Garmin -->
-    <string name="title_license_required">License Key Required</string>
-    <string name="msg_garmin_license">Garmin Health SDK license key is not configured. Add it to gradle.properties.</string>
-    <string name="title_garmin_sdk_error">Garmin SDK Error</string>
-    <string name="msg_garmin_sdk_init_failed">Failed to initialize Garmin Health SDK: %s</string>
+    <string name="title_scan_failed">Scan Failed</string>
+    <string name="title_pairing_timeout">Pairing Timeout</string>
+    <string name="msg_pairing_timeout">Authentication timed out. Please try again.</string>
+    <string name="title_pairing">Pairing…</string>
+    <string name="title_paired_successfully">Paired Successfully</string>
+    <string name="msg_paired_with">Paired with %s</string>
+    <string name="title_pairing_failed">Pairing Failed</string>
+    <string name="msg_pairing_failed">Failed to pair: %s</string>
+    <string name="btn_stop">Stop</string>
+    <string name="btn_keep_scanning">Keep scanning…</string>
+    <string name="unable_to_get_ip">Unable to get IP Address</string>
 </resources>
