@@ -15,16 +15,13 @@
 package org.sensorhub.android;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -32,45 +29,33 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings.Secure;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.os.PowerManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-//import com.botts.impl.sensor.garmin.GarminConfig;
-import com.botts.impl.sensor.garmin.GarminConfig;
 import com.botts.impl.service.discovery.DiscoveryService;
 import com.botts.impl.service.discovery.DiscoveryServiceConfig;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import net.opengis.swe.v20.DataBlock;
 
 import org.sensorhub.android.comm.BluetoothCommProvider;
 import org.sensorhub.android.comm.BluetoothCommProviderConfig;
 import org.sensorhub.android.comm.ble.BleConfig;
 import org.sensorhub.android.comm.ble.BleNetwork;
-import org.sensorhub.api.command.CommandData;
-import org.sensorhub.api.command.IStreamingControlInterface;
-import org.sensorhub.api.common.BigId;
-import org.sensorhub.api.module.IModule;
+import org.sensorhub.android.server.ServerProfile;
+import org.sensorhub.android.server.ServerProfileRepository;
 import org.sensorhub.api.module.IModuleConfigRepository;
-import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.api.sensor.SensorConfig;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClientConfig;
-import org.sensorhub.impl.module.ModuleRegistry;
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig;
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig;
 import org.sensorhub.impl.module.InMemoryConfigDb;
@@ -82,9 +67,6 @@ import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig;
 import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset;
 import org.sensorhub.impl.sensor.controller.ControllerConfig;
 import org.sensorhub.impl.sensor.controller.ControllerDriver;
-
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import org.sensorhub.impl.sensor.kestrel.KestrelConfig;
 import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig;
 import org.sensorhub.impl.sensor.polar.PolarConfig;
@@ -107,7 +89,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -115,7 +96,6 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -144,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     ArrayList<SOSTClient> sostClients = new ArrayList<>();
     ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<>();
 
-    URL url;
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
 
@@ -169,8 +148,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         Kestrel,
         Wardriving,
         Controller,
-        Template,
-        Garmin
+        Template
     }
 
     private final ServiceConnection sConn = new ServiceConnection()
@@ -257,18 +235,18 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         if (disableSslCheck)
         {
             TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        X509Certificate[] myTrustedAnchors = new X509Certificate[0];
-                        return myTrustedAnchors;
+                    new X509TrustManager() {
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            X509Certificate[] myTrustedAnchors = new X509Certificate[0];
+                            return myTrustedAnchors;
+                        }
+                        public void checkClientTrusted(
+                                java.security.cert.X509Certificate[] certs, String authType) {
+                        }
+                        public void checkServerTrusted(
+                                java.security.cert.X509Certificate[] certs, String authType) {
+                        }
                     }
-                    public void checkClientTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                    public void checkServerTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                }
             };
 
             try {
@@ -394,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         sensorhubConfig.add(sensorsConfig);
 
-        if (isPushingAnySensor()) {
+        if (isPushingSensor(Sensors.Android)) {
             for (ServerProfile sp : enabledServers) {
                 URL profileUrl = sp.buildClientUrl();
                 if (profileUrl == null) {
@@ -564,19 +542,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             sensorhubConfig.add(templateConfig);
         }
 
-        // Garmin
-        enabled = prefs.getBoolean("garmin_enabled", false);
-        if (enabled) {
-            GarminConfig garminConfig = new GarminConfig();
-            garminConfig.id = "GARMIN";
-            garminConfig.name = "Garmin [" + deviceName + "]";
-            garminConfig.autoStart = true;
-            garminConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            garminConfig.sdkLicenseKey = BuildConfig.GARMIN_SDK_KEY;
-            garminConfig.deviceAddress = prefs.getString("garmin_device_address", "");
-            sensorhubConfig.add(garminConfig);
-        }
-
         //---------- SERVICES ---------------------
         if (isApiServiceEnabled) {
             sensorhubConfig.add(conSysApiService);
@@ -634,6 +599,8 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -641,23 +608,43 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         setSupportActionBar(toolbar);
         toolbarTitle = findViewById(R.id.toolbar_title);
 
+        findViewById(R.id.btn_app_preferences).setOnClickListener(v ->
+                startActivity(new Intent(this, AppPreferencesActivity.class)));
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
-        Fragment homeFragment = new DashboardFragment();
-        Fragment sensorsFragment = new SensorsFragment();
-        Fragment settingsFragment = new SettingsFragment();
+        Fragment homeFragment;
+        Fragment sensorsFragment;
+        Fragment settingsFragment;
 
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.flFragment, homeFragment, "dashboard")
-                .add(R.id.flFragment, sensorsFragment, "sensors")
-                .add(R.id.flFragment, settingsFragment, "settings")
-                .hide(sensorsFragment)
-                .hide(settingsFragment)
-                .commit();
+        if (savedInstanceState == null) {
+            homeFragment = new DashboardFragment();
+            sensorsFragment = new SensorsFragment();
+            settingsFragment = new SettingsFragment();
 
-        activeFragment = homeFragment;
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.flFragment, homeFragment, "dashboard")
+                    .add(R.id.flFragment, sensorsFragment, "sensors")
+                    .add(R.id.flFragment, settingsFragment, "settings")
+                    .hide(sensorsFragment)
+                    .hide(settingsFragment)
+                    .commit();
+
+            activeFragment = homeFragment;
+        } else {
+            homeFragment = getSupportFragmentManager().findFragmentByTag("dashboard");
+            sensorsFragment = getSupportFragmentManager().findFragmentByTag("sensors");
+            settingsFragment = getSupportFragmentManager().findFragmentByTag("settings");
+
+            if (settingsFragment != null && !settingsFragment.isHidden())
+                activeFragment = settingsFragment;
+            else if (sensorsFragment != null && !sensorsFragment.isHidden())
+                activeFragment = sensorsFragment;
+            else
+                activeFragment = homeFragment;
+        }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
@@ -676,7 +663,9 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             return true;
         });
 
-        bottomNav.setSelectedItemId(R.id.dashboard);
+        if (savedInstanceState == null) {
+            bottomNav.setSelectedItemId(R.id.dashboard);
+        }
 
         hasBluetoothPermissions();
         checkForPermissions();
@@ -701,84 +690,8 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         if (toolbarTitle != null) {
             toolbarTitle.setText(title);
         }
-        invalidateOptionsMenu();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu)
-    {
-        boolean onDashboard = activeFragment instanceof DashboardFragment;
-        for (int i = 0; i < menu.size(); i++) {
-            menu.getItem(i).setVisible(onDashboard);
-        }
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        int id = item.getItemId();
-        if (id == R.id.action_about)
-        {
-            showAboutPopup();
-            return true;
-        }
-        else if(id == R.id.action_status) {
-            Intent statusIntent = new Intent(this, AppStatusActivity.class);
-
-            if (boundService != null && boundService.sensorhub != null) {
-                ModuleRegistry moduleRegistry = boundService.sensorhub.getModuleRegistry();
-                Collection<IModule<?>> modules = moduleRegistry.getLoadedModules();
-
-                for (IModule module : modules) {
-                    var moduleConf = module.getConfiguration();
-
-                    if (moduleConf instanceof ModuleConfig) {
-                        String status = module.getCurrentState().name();
-                        String moduleId = ((ModuleConfig) moduleConf).id;
-
-                        switch (moduleId) {
-                            case "HTTP_SERVER_0":
-                                statusIntent.putExtra("httpStatus", status);
-                                break;
-                            case "SOS_SERVICE":
-                                statusIntent.putExtra("sosService", status);
-                                break;
-                            case "CON_SYS_SERVICE":
-                                statusIntent.putExtra("conSysService", status);
-                                break;
-                            case "DISCOVERY_SERVICE":
-                                statusIntent.putExtra("discoveryService", status);
-                                break;
-                            case "ANDROID_SENSORS":
-                                statusIntent.putExtra("androidSensorStatus", status);
-                                break;
-                            case "ANDROID_SENSORS#storage":
-                                statusIntent.putExtra("sensorStorageStatus", status);
-                                break;
-                        }
-                    }
-                }
-            } else {
-                statusIntent.putExtra("sosService", "N/A");
-                statusIntent.putExtra("conSysService", "N/A");
-                statusIntent.putExtra("httpStatus", "N/A");
-                statusIntent.putExtra("androidSensorStatus", "N/A");
-                statusIntent.putExtra("sensorStorageStatus", "N/A");
-            }
-
-            startActivity(statusIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     protected void onDestroy()
@@ -821,25 +734,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         return super.dispatchGenericMotionEvent(event);
     }
 
-    protected void showAboutPopup() {
-        String version = "?";
 
-        try {
-            PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
-            version = pInfo.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            log.warn("Could not retrieve package version", e);
-        }
-
-        String message = "A software platform for building smart sensor networks and the Internet of Things\n\n";
-        message += "Version: " + version + "\n";
-
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("OpenSensorHub");
-        alert.setMessage(message);
-        alert.setIcon(R.drawable.ic_launcher);
-        alert.show();
-    }
 
     boolean isPushingSensor(Sensors sensor) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -879,17 +774,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             return prefs.getBoolean("controller_enabled", false);
         }  else if (Sensors.Template.equals(sensor)) {
             return prefs.getBoolean("template_enabled", false);
-        } else if (Sensors.Garmin.equals(sensor)) {
-            return prefs.getBoolean("garmin_enabled", false);
-        }
-
-        return false;
-    }
-
-    boolean isPushingAnySensor() {
-        for (Sensors sensor : Sensors.values()) {
-            if (isPushingSensor(sensor))
-                return true;
         }
         return false;
     }

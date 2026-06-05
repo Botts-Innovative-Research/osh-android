@@ -1,4 +1,4 @@
-package org.sensorhub.android;
+package org.sensorhub.android.server;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
+
+import org.sensorhub.android.R;
 
 import java.util.List;
 

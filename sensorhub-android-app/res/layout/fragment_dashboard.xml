@@ -58,7 +58,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Video Stream"
+                            android:text="@string/video_stream"
                             android:textColor="@color/md_theme_onSurface"
                             android:textSize="14sp"
                             android:fontFamily="sans-serif-medium" />
@@ -74,11 +74,22 @@
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_flip_camera"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:visibility="gone"
+                        android:contentDescription="@string/content_desc_switch_camera"
+                        app:icon="@drawable/ic_flip_camera"
+                        app:iconTint="@color/md_theme_onSurface"
+                        app:iconSize="20dp" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_toggle_video"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:text="Show"
+                        android:text="@string/btn_show"
                         android:textSize="12sp"
                         app:backgroundTint="@color/md_theme_primaryContainer"
                         app:cornerRadius="18dp" />
@@ -124,7 +135,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Meshtastic"
+                            android:text="@string/meshtastic_label"
                             android:textColor="@color/md_theme_onSurface"
                             android:textSize="14sp"
                             android:fontFamily="sans-serif-medium" />
@@ -133,7 +144,7 @@
                             android:id="@+id/meshtastic_info"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Connected"
+                            android:text="@string/meshtastic_connected"
                             android:textColor="@color/md_theme_onSurfaceVariant"
                             android:textSize="12sp"
                             android:layout_marginTop="2dp" />
@@ -145,7 +156,7 @@
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:text="Message"
+                        android:text="@string/btn_message"
                         android:textSize="12sp"
                         app:icon="@drawable/ic_message"
                         app:iconSize="16dp"

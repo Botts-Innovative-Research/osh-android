@@ -1,4 +1,4 @@
-package org.sensorhub.android;
+package org.sensorhub.android.server;
 
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +11,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textfield.TextInputEditText;
+
+import org.sensorhub.android.R;
 
 public class EditServerProfileActivity extends AppCompatActivity {
 
@@ -39,7 +41,7 @@ public class EditServerProfileActivity extends AppCompatActivity {
         profile = isEdit ? repo.getById(profileId) : new ServerProfile();
 
         if (isEdit && profile == null) {
-            Toast.makeText(this, "Profile not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_profile_not_found, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -56,7 +58,7 @@ public class EditServerProfileActivity extends AppCompatActivity {
 
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.edit_profile_toolbar);
-        toolbar.setTitle(isEdit ? "Edit Server" : "Add Server");
+        toolbar.setTitle(isEdit ? getString(R.string.title_edit_server) : getString(R.string.btn_add_server));
         toolbar.setNavigationOnClickListener(v -> finish());
     }
 
@@ -136,12 +138,12 @@ public class EditServerProfileActivity extends AppCompatActivity {
         String endpoint = endpointInput.getText().toString().trim();
 
         if (name.isEmpty() || host.isEmpty() || portStr.isEmpty()) {
-            Toast.makeText(this, "Name, host, and port are required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_name_host_port_required, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (host.contains(" ") || host.contains("://")) {
-            Toast.makeText(this, "Host should not include a protocol (e.g. http://)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_no_protocol, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -149,11 +151,11 @@ public class EditServerProfileActivity extends AppCompatActivity {
         try {
             port = Integer.parseInt(portStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Port should be a number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_port_number, Toast.LENGTH_SHORT).show();
             return;
         }
         if (port < 1 || port > 65535) {
-            Toast.makeText(this, "Port should be between 1 and 65535", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_port_range, Toast.LENGTH_SHORT).show();
             return;
         }
 

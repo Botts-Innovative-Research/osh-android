@@ -170,7 +170,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     private void stopHub() {
-        Toast.makeText(requireContext(), "Stopping SensorHub", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.stopping_sensorhub, Toast.LENGTH_SHORT).show();
         stopRefreshingStatus();
         provider.stopSensorHub();
         updateFabIcon();
@@ -178,7 +178,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         clearTextureView();
         videoStatusCard.setVisibility(View.GONE);
         if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
-        newStatusMessage("SensorHub Stopped");
+        newStatusMessage(getString(R.string.sensorhub_stopped));
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -194,12 +194,12 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
     protected synchronized void showRunNamePopup() {
         MaterialAlertDialogBuilder alert = new MaterialAlertDialogBuilder(requireContext());
-        alert.setTitle("Run Name");
-        alert.setMessage("Please enter the name for this run");
+        alert.setTitle(R.string.title_run_name);
+        alert.setMessage(getString(R.string.msg_enter_run_name));
 
         TextInputLayout inputLayout = new TextInputLayout(requireContext());
         inputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
-        inputLayout.setHint("Run Name");
+        inputLayout.setHint(getString(R.string.title_run_name));
 
         TextInputEditText input = new TextInputEditText(inputLayout.getContext());
         input.getText().append("Run-");
@@ -213,7 +213,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         container.addView(inputLayout);
         alert.setView(container);
 
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 String runName = input.getText().toString();
@@ -229,10 +229,10 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
                 if (cameraInUse && improperVideoSettings) {
                     showVideoConfigErrorPopup();
-                    newStatusMessage("Video Config Error: Check Settings");
+                    newStatusMessage(getString(R.string.video_config_error));
                 } else {
-                    Toast.makeText(requireContext(), "Starting SensorHub...", Toast.LENGTH_SHORT).show();
-                    newStatusMessage("Starting SensorHub...");
+                    Toast.makeText(requireContext(), R.string.starting_sensorhub, Toast.LENGTH_SHORT).show();
+                    newStatusMessage(getString(R.string.starting_sensorhub));
                     provider.getSostClients().clear();
                     provider.getConSysClients().clear();
                     provider.startSensorHub();
@@ -242,7 +242,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             }
         });
 
-        alert.setNegativeButton("Cancel", (dialog, whichButton) -> {});
+        alert.setNegativeButton(R.string.btn_cancel, (dialog, whichButton) -> {});
         alert.show();
     }
 
@@ -292,17 +292,16 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         } else if (hubPollAttempts < HUB_POLL_MAX_ATTEMPTS) {
             displayHandler.postDelayed(this::pollHubReady, HUB_POLL_INTERVAL_MS);
         } else {
-            newStatusMessage("SensorHub failed to start");
+            newStatusMessage(getString(R.string.sensorhub_start_failed));
             updateFabIcon();
         }
     }
 
     protected void showVideoConfigErrorPopup() {
-        String message = "Check Video Settings and ensure the resolution for the selected preset has been set.";
         new MaterialAlertDialogBuilder(requireContext())
-            .setTitle("OpenSensorHub")
-            .setMessage(message)
-            .setPositiveButton("OK", (dialog, id) -> {})
+            .setTitle(R.string.app_name)
+            .setMessage(R.string.video_config_error_msg)
+            .setPositiveButton(R.string.btn_ok, (dialog, id) -> {})
             .show();
     }
 
@@ -443,7 +442,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             if (emptyView == null) {
                 TextView tv = new TextView(requireContext());
                 tv.setTag("empty_status");
-                tv.setText("No Sensors Set to Push Remotely");
+                tv.setText(R.string.no_sensors_push);
                 tv.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant));
                 tv.setTextSize(14);
                 tv.setGravity(android.view.Gravity.CENTER);
@@ -580,7 +579,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         videoPreviewVisible = !videoPreviewVisible;
         if (videoPreviewVisible) {
             textureView.setVisibility(View.VISIBLE);
-            btnToggleVideo.setText("Hide");
+            btnToggleVideo.setText(R.string.btn_hide);
             serverStatusContainer.setBackgroundColor(getResources().getColor(R.color.overlay_light, requireActivity().getTheme()));
             showVideo();
         } else {
@@ -591,7 +590,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private void hideVideoPreview() {
         videoPreviewVisible = false;
         textureView.setVisibility(View.GONE);
-        if (btnToggleVideo != null) btnToggleVideo.setText("Show");
+        if (btnToggleVideo != null) btnToggleVideo.setText(R.string.btn_show);
         serverStatusContainer.setBackgroundColor(0x00000000);
     }
 
@@ -627,21 +626,21 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         EditText destinationIdText = dialogView.findViewById(R.id.destination_nodeId);
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Send Meshtastic Message")
+                .setTitle(R.string.title_send_meshtastic)
                 .setView(dialogView)
-                .setPositiveButton("Send", (dialog, id) -> {
+                .setPositiveButton(R.string.btn_send, (dialog, id) -> {
                     String msg = messageInput.getText().toString();
                     String destinationId = destinationIdText.getText().toString();
                     sendMeshtasticMessage(msg, destinationId);
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.btn_cancel, null)
                 .show();
     }
 
     private void sendMeshtasticMessage(String message, String nodeId) {
         SensorHubService service = provider.getBoundService();
         if (service == null || service.getSensorHub() == null) {
-            Toast.makeText(requireContext(), "SensorHub not running", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_sensorhub_not_running, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -667,9 +666,9 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                     .build();
 
             textMessageControl.submitCommand(cmd);
-            Toast.makeText(requireContext(), "Message sent", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_message_sent, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_message_failed, Toast.LENGTH_SHORT).show();
         }
     }
     @Override

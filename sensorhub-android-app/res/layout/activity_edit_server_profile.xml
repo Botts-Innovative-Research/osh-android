@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardBackgroundColor="@color/md_theme_surface"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/md_theme_outline"
@@ -52,10 +52,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CLIENT"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/section_client"
+                        style="@style/TextAccent"
                         android:letterSpacing="0.05" />
 
                     <View
@@ -79,7 +77,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="CS API Client" />
+                            android:text="@string/btn_csapi_client" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_type_sos"
@@ -87,7 +85,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="SOS-T Client" />
+                            android:text="@string/btn_sost_client" />
 
                     </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -98,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardBackgroundColor="@color/md_theme_surface"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/md_theme_outline"
@@ -113,10 +111,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CONNECTION"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/section_connection"
+                        style="@style/TextAccent"
                         android:letterSpacing="0.05" />
 
                     <View
@@ -129,7 +125,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Server name"
+                        android:hint="@string/hint_server_name"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_marginBottom="8dp">
                         <com.google.android.material.textfield.TextInputEditText
@@ -149,7 +145,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="2"
-                            android:hint="Host / IP"
+                            android:hint="@string/hint_host_ip"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_marginEnd="8dp"
                             android:layout_marginBottom="8dp">
@@ -165,7 +161,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="Port"
+                            android:hint="@string/hint_port"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_marginBottom="8dp">
                             <com.google.android.material.textfield.TextInputEditText
@@ -181,7 +177,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Endpoint path"
+                        android:hint="@string/hint_endpoint_path"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_marginBottom="8dp">
                         <com.google.android.material.textfield.TextInputEditText
@@ -196,7 +192,7 @@
                         android:id="@+id/switch_tls"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Enable TLS"
+                        android:text="@string/switch_enable_tls"
                         android:textColor="@color/md_theme_onSurface"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp" />
@@ -205,7 +201,7 @@
                         android:id="@+id/switch_disable_ssl"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Disable SSL Validation"
+                        android:text="@string/switch_disable_ssl"
                         android:textColor="@color/md_theme_onSurface"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
@@ -218,7 +214,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardBackgroundColor="@color/md_theme_surface"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/md_theme_outline"
@@ -233,10 +229,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="AUTHENTICATION"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/section_authentication"
+                        style="@style/TextAccent"
                         android:letterSpacing="0.05" />
 
                     <View
@@ -261,7 +255,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="None" />
+                            android:text="@string/auth_none" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_auth_basic"
@@ -269,7 +263,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Basic" />
+                            android:text="@string/auth_basic" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_auth_oauth"
@@ -277,7 +271,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="OAuth" />
+                            android:text="@string/auth_oauth" />
 
                     </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -291,7 +285,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Username"
+                            android:hint="@string/hint_username"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_marginBottom="8dp">
                             <com.google.android.material.textfield.TextInputEditText
@@ -305,7 +299,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Password"
+                            android:hint="@string/hint_password"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             app:endIconMode="password_toggle">
                             <com.google.android.material.textfield.TextInputEditText
@@ -328,7 +322,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Token Endpoint"
+                            android:hint="@string/hint_token_endpoint"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_marginBottom="8dp">
                             <com.google.android.material.textfield.TextInputEditText
@@ -342,7 +336,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Client ID"
+                            android:hint="@string/hint_client_id"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_marginBottom="8dp">
                             <com.google.android.material.textfield.TextInputEditText
@@ -356,7 +350,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Client Secret"
+                            android:hint="@string/hint_client_secret"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             app:endIconMode="password_toggle">
                             <com.google.android.material.textfield.TextInputEditText
@@ -376,7 +370,7 @@
                 android:id="@+id/btn_save"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:text="Add Server"
+                android:text="@string/btn_add_server"
                 android:textColor="@color/md_theme_onPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"

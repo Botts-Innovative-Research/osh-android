@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenSensorHub</string>
+    <string name="hello_world">Configure los ajustes y toque el botón de reproducción para iniciar SmartHub</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="action_start">Iniciar SmartHub</string>
+    <string name="action_stop">Detener SmartHub</string>
+    <string name="action_status">Estado de la app</string>
+    <string name="action_about">Acerca de</string>
+    <string name="action_proxy">Iniciar proxy</string>
+    <string name="action_stop_proxy">Detener proxy</string>
+    <string name="action_meshtastic">Mensaje Meshtastic</string>
+    <string name="sensor_android">Sensor Android</string>
+    <string name="sensor_angel">Monitor de salud Angel</string>
+    <string name="sensor_meshtastic">Radio Meshtastic</string>
+    <string name="sensor_wardriving">Escaneo de redes</string>
+    <string name="sensor_polar">Monitor cardíaco Polar</string>
+    <string name="sensor_kestrel">Estación Kestrel</string>
+    <string name="sensor_controller">Controlador USB</string>
+    <string name="sensor_trupulse">Telémetro TruPulse</string>
+    <string name="sensor_flirone">Flirone</string>
+    <string name="sensor_ste">Detector de radiación STE</string>
+    <string name="sensor_template">Plantilla</string>
+    <string name="sensor_accelerometer">Acelerómetro</string>
+    <string name="sensor_gyroscope">Giroscopio</string>
+    <string name="sensor_magnetometer">Magnetómetro</string>
+    <string name="sensor_orientation_quat">Orientación (cuaterniones)</string>
+    <string name="sensor_orientation_euler">Orientación (ángulos de Euler)</string>
+    <string name="sensor_gps">Ubicación GPS</string>
+    <string name="sensor_network_location">Ubicación por red</string>
+    <string name="sensor_video">Datos de vídeo</string>
+    <string name="sensor_video_roll">Rotación de vídeo</string>
+    <string name="sensor_audio">Audio</string>
+
+    <string name="device_name">Nombre del dispositivo</string>
+    <string name="device_ip_address">Dirección IP del dispositivo</string>
+    <string name="server_profiles">Perfiles de servidor</string>
+    <string name="manage_servers">Administrar servidores</string>
+    <string name="services">Servicios</string>
+    <string name="enable_sos_service">Servicio SOS</string>
+    <string name="enable_csapi_service">Servicio Connected Systems</string>
+    <string name="enable_discovery_service">Servicio de descubrimiento</string>
+
+    <string name="summary_accel">Transmitir datos de movimiento del acelerómetro en tiempo real</string>
+    <string name="summary_gyro">Transmitir datos de rotación del giroscopio en tiempo real</string>
+    <string name="summary_mag">Transmitir datos de dirección y campo magnético del magnetómetro</string>
+    <string name="summary_orientation">Transmitir datos de orientación y actitud del dispositivo</string>
+    <string name="summary_gps">Transmitir datos de ubicación y movimiento por GPS</string>
+    <string name="summary_netloc">Transmitir datos de ubicación basados en red</string>
+    <string name="summary_video">Transmitir vídeo en vivo desde la cámara del dispositivo</string>
+    <string name="summary_video_roll">Adjuntar metadatos de rotación del dispositivo a los encabezados de fotogramas</string>
+    <string name="summary_audio">Transmitir audio en vivo desde el micrófono del dispositivo</string>
+    <string name="summary_meshtastic">Conectar a un dispositivo Meshtastic por Bluetooth al iniciar</string>
+    <string name="summary_wardriving">Transmitir datos de escaneo de redes inalámbricas cercanas</string>
+    <string name="summary_polar">Conectar a un sensor cardíaco Polar por Bluetooth LE</string>
+    <string name="summary_kestrel">Transmitir datos ambientales desde una estación Kestrel</string>
+    <string name="summary_controller">Conectar a un controlador USB compatible al iniciar</string>
+    <string name="summary_trupulse">Transmitir datos de distancia y ángulo desde un telémetro TruPulse</string>
+    <string name="summary_trupulse_simu">Usar mediciones simuladas de TruPulse para pruebas</string>
+    <string name="summary_angel">Transmitir datos biométricos desde el Angel Sensor</string>
+    <string name="summary_flirone">Transmitir imágenes térmicas desde una cámara FLIR One conectada</string>
+    <string name="summary_ste">Conectar a un STE RadPager por Bluetooth LE al iniciar</string>
+    <string name="summary_template">Habilitar el controlador de sensor de plantilla para desarrollo y pruebas</string>
+    <string name="summary_push_options">Opciones para enviar datos</string>
+    <string name="summary_csapi">API REST estándar OGC que sirve los datos de sensores de este dispositivo.</string>
+    <string name="summary_sos">API heredada que sirve datos de sensores en XML por HTTP</string>
+    <string name="summary_discovery">Servicio que proporciona descubrimiento basado en conjuntos de reglas definibles</string>
+    <string name="summary_select_device">Toque para seleccionar o ingresar la dirección del dispositivo</string>
+    <string name="pref_uid_extension">Extensión UID de sensores</string>
+    <string name="server_profile_summary">Opcional — agregue servidores para enviar datos de forma remota. Sin servidores, los datos se sirven localmente.</string>
+
+    <string name="tab_sensors">Sensores</string>
+    <string name="tab_dashboard">Inicio</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="app_preferences">Preferencias de la app</string>
+
+    <string name="meshtastic_msg">¡Escriba un mensaje!</string>
+    <string name="message_hint">¡Escriba un mensaje!</string>
+    <string name="meshtastic_nodeId">Ingrese el ID del nodo de destino (entero)</string>
+    <string name="destination_node_hint">Ingrese el ID del nodo de destino (entero)</string>
+
+    <!-- App Preferences -->
+    <string name="title_notifications">Notificaciones</string>
+    <string name="title_language">Idioma</string>
+    <string name="title_version">Versión</string>
+    <string name="title_about">Acerca de la aplicación</string>
+    <string name="title_help_faq">Ayuda / Preguntas frecuentes</string>
+    <string name="title_language_dialog">Idioma</string>
+    <string name="about_description">Una plataforma de software para construir redes de sensores inteligentes y el Internet de las Cosas</string>
+
+    <!-- Sensor Preferences -->
+    <string name="category_on_device">INTEGRADOS</string>
+    <string name="category_bluetooth">Periféricos Bluetooth</string>
+    <string name="category_others">Otros</string>
+    <string name="title_codec">Códec</string>
+    <string name="title_frame_rate">Tasa de fotogramas</string>
+    <string name="title_resolution">Resolución</string>
+    <string name="title_camera">Cámara</string>
+    <string name="title_sample_rate">Tasa de muestreo</string>
+    <string name="title_bitrate">Tasa de bits (kbps)</string>
+    <string name="title_select_meshtastic">Seleccionar dispositivo Meshtastic</string>
+    <string name="title_select_polar">Seleccionar dispositivo Polar HR</string>
+    <string name="title_select_kestrel">Seleccionar dispositivo Kestrel</string>
+    <string name="title_trupulse_datasource">Fuente de datos TruPulse</string>
+    <string name="title_select_trupulse">Seleccionar dispositivo TruPulse</string>
+    <string name="title_use_simulated_trupulse">Usar datos simulados de TruPulse</string>
+    <string name="title_select_template">Seleccionar dispositivo de plantilla</string>
+    <string name="summary_uid_extension">Un ID adjunto al final del UID de cada sistema</string>
+    <string name="title_discovery_rules">URL del archivo de reglas de descubrimiento</string>
+
+    <!-- Dashboard -->
+    <string name="video_stream">Transmisión de vídeo</string>
+    <string name="switch_camera">Cambiar cámara</string>
+    <string name="btn_show">Mostrar</string>
+    <string name="btn_hide">Ocultar</string>
+    <string name="meshtastic_label">Meshtastic</string>
+    <string name="meshtastic_connected">Conectado</string>
+    <string name="btn_message">Mensaje</string>
+    <string name="title_sensors">Sensores</string>
+    <string name="no_sensors_push">No hay sensores configurados para envío remoto</string>
+    <string name="title_run_name">Nombre de ejecución</string>
+    <string name="msg_enter_run_name">Ingrese el nombre para esta ejecución</string>
+    <string name="title_send_meshtastic">Enviar mensaje Meshtastic</string>
+
+    <!-- Server Profiles -->
+    <string name="empty_server_profiles">No hay perfiles de servidor configurados.\nToque + para crear uno.</string>
+    <string name="content_desc_add_server">Agregar perfil de servidor</string>
+    <string name="title_delete_server">Eliminar servidor</string>
+    <string name="msg_delete_server">¿Eliminar \"%s\"?</string>
+
+    <!-- Edit Server Profile -->
+    <string name="section_client">CLIENTE</string>
+    <string name="btn_csapi_client">Cliente CS API</string>
+    <string name="btn_sost_client">Cliente SOS-T</string>
+    <string name="section_connection">CONEXIÓN</string>
+    <string name="hint_server_name">Nombre del servidor</string>
+    <string name="hint_host_ip">Host / IP</string>
+    <string name="hint_port">Puerto</string>
+    <string name="hint_endpoint_path">Ruta del endpoint</string>
+    <string name="switch_enable_tls">Habilitar TLS</string>
+    <string name="switch_disable_ssl">Deshabilitar validación SSL</string>
+    <string name="section_authentication">AUTENTICACIÓN</string>
+    <string name="auth_none">Ninguno</string>
+    <string name="auth_basic">Básico</string>
+    <string name="auth_oauth">OAuth</string>
+    <string name="hint_username">Usuario</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="hint_token_endpoint">Endpoint de token</string>
+    <string name="hint_client_id">ID de cliente</string>
+    <string name="hint_client_secret">Secreto de cliente</string>
+    <string name="btn_add_server">Agregar servidor</string>
+
+    <!-- Dialogs -->
+    <string name="btn_ok">Aceptar</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_delete">Eliminar</string>
+    <string name="btn_send">Enviar</string>
+    <string name="title_select_device">Seleccionar dispositivo</string>
+    <string name="title_enter_device">Ingrese nombre o dirección del dispositivo</string>
+    <string name="msg_enter_device">Ingrese un nombre de dispositivo (ej. \"Ballistic\") o dirección MAC. Los nombres se comparan desde el inicio, sin distinción de mayúsculas.</string>
+    <string name="title_edit_server">Editar servidor</string>
+    <string name="sensor_garmin">Wearable Garmin</string>
+    <string name="title_select_garmin">Seleccionar dispositivo Garmin</string>
+    <string name="hint_manual_device">ej. Ballistic o AA:BB:CC:DD:EE:FF</string>
+    <string name="manual_entry_option">Ingresar nombre o dirección manualmente…</string>
+    <string name="scan_new_devices">Buscar nuevos dispositivos…</string>
+    <string name="content_desc_switch_camera">Cambiar cámara</string>
+    <string name="summary_garmin">Transmitir datos biométricos de salud desde un wearable Garmin</string>
+
+    <!-- Mensajes de estado -->
+    <string name="stopping_sensorhub">Deteniendo SensorHub</string>
+    <string name="sensorhub_stopped">SensorHub detenido</string>
+    <string name="starting_sensorhub">Iniciando SensorHub…</string>
+    <string name="sensorhub_start_failed">SensorHub no pudo iniciar</string>
+    <string name="video_config_error">Error de configuración de vídeo: Revise los ajustes</string>
+    <string name="video_config_error_msg">Revise los ajustes de vídeo y asegúrese de que la resolución para el preset seleccionado esté configurada.</string>
+    <string name="msg_sensorhub_not_running">SensorHub no está en ejecución</string>
+    <string name="msg_message_sent">Mensaje enviado</string>
+    <string name="msg_message_failed">Error al enviar el mensaje</string>
+    <string name="msg_profile_not_found">Perfil no encontrado</string>
+    <string name="msg_name_host_port_required">Nombre, host y puerto son obligatorios</string>
+    <string name="msg_no_protocol">El host no debe incluir un protocolo (ej. http://)</string>
+    <string name="msg_port_number">El puerto debe ser un número</string>
+    <string name="msg_port_range">El puerto debe estar entre 1 y 65535</string>
+
+    <!-- Garmin -->
+</resources>

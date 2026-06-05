@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OpenSensorHub</string>
-    <string name="hello_world">設定參數並點擊播放按鈕以啟動 SmartHub</string>
+    <string name="hello_world">配置設定並點擊播放按鈕以啟動 SmartHub</string>
     <string name="action_settings">設定</string>
     <string name="action_start">啟動 SmartHub</string>
     <string name="action_stop">停止 SmartHub</string>
@@ -11,30 +11,30 @@
     <string name="action_stop_proxy">停止代理</string>
     <string name="action_meshtastic">Meshtastic 訊息</string>
     <string name="sensor_android">Android 感測器</string>
-    <string name="sensor_trupulse">TruPulse 測距感測器</string>
-    <string name="sensor_meshtastic">Meshtastic 感測器</string>
-    <string name="sensor_angel">Angel 感測器</string>
-    <string name="sensor_flirone">Flirone 感測器</string>
+    <string name="sensor_angel">Angel 健康監測器</string>
+    <string name="sensor_meshtastic">Meshtastic 無線電</string>
+    <string name="sensor_wardriving">無線網路掃描</string>
     <string name="sensor_polar">Polar 心率監測器</string>
-    <string name="sensor_controller">控制器</string>
-    <string name="sensor_kestrel">紅隼感測器</string>
-    <string name="sensor_wardriving">雷達偵測感測器</string>
-    <string name="sensor_ste">STE輻射尋呼機 感測器</string>
-    <string name="sensor_template">範本 感測器</string>
-    <string name="sensor_accelerometer">加速度計資料</string>
-    <string name="sensor_gyroscope">陀螺儀資料</string>
-    <string name="sensor_magnetometer">磁力計資料</string>
-    <string name="sensor_orientation_quat">方向資料（四元數）</string>
-    <string name="sensor_orientation_euler">方向資料（歐拉角）</string>
-    <string name="sensor_gps">GPS 定位資料</string>
-    <string name="sensor_network_location">網路定位資料</string>
-    <string name="sensor_video">影片資料</string>
-    <string name="sensor_video_roll">影片滾動資料</string>
-    <string name="sensor_audio">音訊資料</string>
+    <string name="sensor_kestrel">Kestrel 氣象儀</string>
+    <string name="sensor_controller">USB 控制器</string>
+    <string name="sensor_trupulse">TruPulse 測距儀</string>
+    <string name="sensor_flirone">Flirone</string>
+    <string name="sensor_ste">STE 輻射偵測器</string>
+    <string name="sensor_template">範本</string>
+    <string name="sensor_accelerometer">加速度計</string>
+    <string name="sensor_gyroscope">陀螺儀</string>
+    <string name="sensor_magnetometer">磁力計</string>
+    <string name="sensor_orientation_quat">方向（四元數）</string>
+    <string name="sensor_orientation_euler">方向（歐拉角）</string>
+    <string name="sensor_gps">GPS 定位</string>
+    <string name="sensor_network_location">網路定位</string>
+    <string name="sensor_video">影像資料</string>
+    <string name="sensor_video_roll">影像翻轉</string>
+    <string name="sensor_audio">音訊</string>
 
     <string name="device_name">裝置名稱</string>
     <string name="device_ip_address">裝置 IP 位址</string>
-    <string name="server_profiles">伺服器設定檔</string>
+    <string name="server_profiles">伺服器配置</string>
     <string name="manage_servers">管理伺服器</string>
     <string name="services">服務</string>
     <string name="enable_sos_service">啟用 SOS 服務</string>
@@ -135,87 +135,119 @@
         <item>全部</item>
     </string-array>
 
-    <string-array name="spot_report_action_items">
-        <item>選擇...</item>
-        <item>開放</item>
-        <item>關閉</item>
-    </string-array>
-
-    <string name="spot_report_action">動作：</string>
-    <string name="spot_report_id">參考編號：</string>
-    <string name="spot_report_closure_type">類型：</string>
-
-    <string-array name="spot_report_flood_feature_type">
-        <item>選擇...</item>
-        <item>渠道排水</item>
-        <item>地表</item>
-    </string-array>
-
-    <string-array name="spot_report_observation_modes">
-        <item>選擇...</item>
-        <item>儀器</item>
-        <item>目視</item>
-        <item>模型</item>
-    </string-array>
-
-    <string name="spot_report_flood_feature">特徵類型：</string>
-    <string name="spot_report_depth">深度：</string>
-    <string name="spot_report_observation_mode">觀測模式：</string>
-
-    <string name="spot_report_med_sign">描述醫療狀況...</string>
-    <string name="spot_report_med_value">輸入測量值（血壓、體溫等）...</string>
-    <string name="spot_report_med_emergency">緊急狀況（是/否）</string>
-
-    <string-array name="spot_report_aid_types">
-        <item>選擇...</item>
-        <item>環境</item>
-        <item>健康</item>
-        <item>安全</item>
-        <item>服務</item>
-    </string-array>
-
-    <string name="spot_report_aid_type">救助類型：</string>
-    <string name="spot_report_aid_num">人數：</string>
-    <string name="spot_report_aid_urgency">緊急程度：</string>
-    <string name="spot_report_aid_description">描述所需救助...</string>
-    <string name="spot_report_aid_reporter">輸入您的姓名或編號</string>
-
-    <string-array name="spot_report_tracked_resource">
-        <item>選擇...</item>
-        <item>人員</item>
-        <item>車輛</item>
-        <item>裝置</item>
-    </string-array>
-
-    <string-array name="spot_report_tracked_method">
-        <item>選擇...</item>
-        <item>GPS</item>
-        <item>藍牙信標</item>
-        <item>WiFi</item>
-        <item>行動網路</item>
-        <item>UWB</item>
-        <item>無</item>
-    </string-array>
-
-    <string name="spot_report_track_resource_label">追蹤資源：</string>
-    <string name="spot_report_track_method_label">追蹤方法：</string>
-    <string name="spot_report_track_id">輸入資源編號</string>
-    <string name="spot_report_track_label">輸入資源標籤</string>
-
-    <string-array name="unit_list">
-        <item>英寸</item>
-        <item>密耳</item>
-        <item>tmoa</item>
-        <item>smoa</item>
-        <item>格</item>
-        <item>公分</item>
-    </string-array>
 
     <string name="tab_sensors">感測器</string>
     <string name="tab_dashboard">首頁</string>
     <string name="tab_settings">設定</string>
+    <string name="app_preferences">應用程式偏好設定</string>
+
     <string name="meshtastic_msg">輸入訊息！</string>
     <string name="message_hint">輸入訊息！</string>
     <string name="meshtastic_nodeId">輸入目標節點 ID（整數）</string>
     <string name="destination_node_hint">輸入目標節點 ID（整數）</string>
+
+    <!-- App Preferences -->
+    <string name="title_notifications">通知</string>
+    <string name="title_language">語言</string>
+    <string name="title_version">版本</string>
+    <string name="title_about">關於應用程式</string>
+    <string name="title_help_faq">幫助 / 常見問題</string>
+    <string name="title_language_dialog">語言</string>
+    <string name="about_description">用於建構智慧感測器網路和物聯網的軟體平台</string>
+
+    <!-- Sensor Preferences -->
+    <string name="category_on_device">內建裝置</string>
+    <string name="category_bluetooth">藍牙周邊裝置</string>
+    <string name="category_others">其他</string>
+    <string name="title_codec">編解碼器</string>
+    <string name="title_frame_rate">幀率</string>
+    <string name="title_resolution">解析度</string>
+    <string name="title_camera">相機</string>
+    <string name="title_sample_rate">取樣率</string>
+    <string name="title_bitrate">位元率 (kbps)</string>
+    <string name="title_select_meshtastic">選擇 Meshtastic 裝置</string>
+    <string name="title_select_polar">選擇 Polar HR 裝置</string>
+    <string name="title_select_kestrel">選擇 Kestrel 裝置</string>
+    <string name="title_trupulse_datasource">TruPulse 資料來源</string>
+    <string name="title_select_trupulse">選擇 TruPulse 裝置</string>
+    <string name="title_use_simulated_trupulse">使用模擬 TruPulse 資料</string>
+    <string name="title_select_template">選擇範本裝置</string>
+    <string name="summary_uid_extension">附加到每個系統 UID 末端的識別碼</string>
+    <string name="title_discovery_rules">探索規則檔案的 URL</string>
+
+    <!-- Dashboard -->
+    <string name="video_stream">影像串流</string>
+    <string name="switch_camera">切換相機</string>
+    <string name="btn_show">顯示</string>
+    <string name="btn_hide">隱藏</string>
+    <string name="meshtastic_label">Meshtastic</string>
+    <string name="meshtastic_connected">已連接</string>
+    <string name="btn_message">訊息</string>
+    <string name="title_sensors">感測器</string>
+    <string name="no_sensors_push">沒有設定為遠端推送的感測器</string>
+    <string name="title_run_name">執行名稱</string>
+    <string name="msg_enter_run_name">請輸入此次執行的名稱</string>
+    <string name="title_send_meshtastic">傳送 Meshtastic 訊息</string>
+
+    <!-- Server Profiles -->
+    <string name="empty_server_profiles">尚未配置伺服器。\n點擊 + 建立一個。</string>
+    <string name="content_desc_add_server">新增伺服器配置</string>
+    <string name="title_delete_server">刪除伺服器</string>
+    <string name="msg_delete_server">移除「%s」？</string>
+
+    <!-- Edit Server Profile -->
+    <string name="section_client">用戶端</string>
+    <string name="btn_csapi_client">CS API 用戶端</string>
+    <string name="btn_sost_client">SOS-T 用戶端</string>
+    <string name="section_connection">連線</string>
+    <string name="hint_server_name">伺服器名稱</string>
+    <string name="hint_host_ip">主機 / IP</string>
+    <string name="hint_port">連接埠</string>
+    <string name="hint_endpoint_path">端點路徑</string>
+    <string name="switch_enable_tls">啟用 TLS</string>
+    <string name="switch_disable_ssl">停用 SSL 驗證</string>
+    <string name="section_authentication">認證</string>
+    <string name="auth_none">無</string>
+    <string name="auth_basic">基本</string>
+    <string name="auth_oauth">OAuth</string>
+    <string name="hint_username">使用者名稱</string>
+    <string name="hint_password">密碼</string>
+    <string name="hint_token_endpoint">權杖端點</string>
+    <string name="hint_client_id">用戶端 ID</string>
+    <string name="hint_client_secret">用戶端密鑰</string>
+    <string name="btn_add_server">新增伺服器</string>
+
+    <!-- Dialogs -->
+    <string name="btn_ok">確定</string>
+    <string name="btn_cancel">取消</string>
+    <string name="btn_delete">刪除</string>
+    <string name="btn_send">傳送</string>
+    <string name="title_select_device">選擇裝置</string>
+    <string name="title_enter_device">輸入裝置名稱或位址</string>
+    <string name="msg_enter_device">輸入裝置名稱（例如「Ballistic」）或 MAC 位址。名稱從開頭比對，不分大小寫。</string>
+    <string name="title_edit_server">編輯伺服器</string>
+    <string name="sensor_garmin">Garmin 穿戴裝置</string>
+    <string name="title_select_garmin">選擇 Garmin 裝置</string>
+    <string name="hint_manual_device">例如 Ballistic 或 AA:BB:CC:DD:EE:FF</string>
+    <string name="manual_entry_option">手動輸入名稱或位址…</string>
+    <string name="scan_new_devices">掃描新裝置…</string>
+    <string name="content_desc_switch_camera">切換相機</string>
+    <string name="summary_garmin">從 Garmin 穿戴裝置串流健康生物特徵資料</string>
+
+    <!-- 狀態訊息 -->
+    <string name="stopping_sensorhub">正在停止 SensorHub</string>
+    <string name="sensorhub_stopped">SensorHub 已停止</string>
+    <string name="starting_sensorhub">正在啟動 SensorHub…</string>
+    <string name="sensorhub_start_failed">SensorHub 啟動失敗</string>
+    <string name="video_config_error">影像配置錯誤：請檢查設定</string>
+    <string name="video_config_error_msg">請檢查影像設定，確認所選預設的解析度已設定。</string>
+    <string name="msg_sensorhub_not_running">SensorHub 未在執行</string>
+    <string name="msg_message_sent">訊息已傳送</string>
+    <string name="msg_message_failed">訊息傳送失敗</string>
+    <string name="msg_profile_not_found">找不到配置</string>
+    <string name="msg_name_host_port_required">名稱、主機和連接埠為必填</string>
+    <string name="msg_no_protocol">主機不應包含協定（例如 http://）</string>
+    <string name="msg_port_number">連接埠應為數字</string>
+    <string name="msg_port_range">連接埠應介於 1 到 65535 之間</string>
+
 </resources>

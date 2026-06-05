@@ -3,29 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
 
-    <!-- Device info -->
-    <EditTextPreference
-            android:textAlignment="viewStart"
-            android:defaultValue="MyDevice"
-            android:inputType="text"
-            android:key="device_name"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/device_name"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-        <Preference
-            android:enabled="true"
-            android:key="nop_ipAddress"
-            android:selectable="false"
-            android:summary=""
-            android:title="@string/device_ip_address"
-            app:useSimpleSummaryProvider="true"
-            android:layout="@layout/preference_item" />
-
     <!--  Server Management  -->
-    <PreferenceCategory android:title="Server Profiles (Optional)">
+    <PreferenceCategory android:title="@string/server_profiles">
         <Preference
             android:key="manage_servers"
             android:title="@string/manage_servers"
@@ -35,7 +14,7 @@
 
 
     <!-- SERVICES -->
-    <PreferenceCategory android:title="Services">
+    <PreferenceCategory android:title="@string/services">
 
         <SwitchPreferenceCompat
             android:id="@+id/sos_service_switch"
@@ -68,7 +47,7 @@
             android:visible="false"
             android:key="rules_link"
             android:singleLine="true"
-            android:title="URL to Discovery Rules.txt"
+            android:title="@string/title_discovery_rules"
             android:layout="@layout/preference_item"/>
     </PreferenceCategory>
 

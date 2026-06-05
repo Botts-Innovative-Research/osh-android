@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenSensorHub</string>
+    <string name="hello_world">Configure as definições e toque no botão de reprodução para iniciar o SmartHub</string>
+    <string name="action_settings">Configurações</string>
+    <string name="action_start">Iniciar SmartHub</string>
+    <string name="action_stop">Parar SmartHub</string>
+    <string name="action_status">Status do aplicativo</string>
+    <string name="action_about">Sobre</string>
+    <string name="action_proxy">Iniciar proxy</string>
+    <string name="action_stop_proxy">Parar proxy</string>
+    <string name="action_meshtastic">Mensagem Meshtastic</string>
+    <string name="sensor_android">Sensor Android</string>
+    <string name="sensor_angel">Monitor de saúde Angel</string>
+    <string name="sensor_meshtastic">Rádio Meshtastic</string>
+    <string name="sensor_wardriving">Varredura de redes</string>
+    <string name="sensor_polar">Monitor cardíaco Polar</string>
+    <string name="sensor_kestrel">Estação meteorológica Kestrel</string>
+    <string name="sensor_controller">Controlador USB</string>
+    <string name="sensor_trupulse">Telêmetro TruPulse</string>
+    <string name="sensor_flirone">Flirone</string>
+    <string name="sensor_ste">Dosímetro STE RadPager</string>
+    <string name="sensor_template">Modelo</string>
+    <string name="sensor_accelerometer">Acelerômetro</string>
+    <string name="sensor_gyroscope">Giroscópio</string>
+    <string name="sensor_magnetometer">Magnetômetro</string>
+    <string name="sensor_orientation_quat">Orientação (Quaternions)</string>
+    <string name="sensor_orientation_euler">Orientação (Ângulos de Euler)</string>
+    <string name="sensor_gps">Localização GPS</string>
+    <string name="sensor_network_location">Localização por rede</string>
+    <string name="sensor_video">Dados de vídeo</string>
+    <string name="sensor_video_roll">Rotação de vídeo</string>
+    <string name="sensor_audio">Áudio</string>
+
+    <string name="device_name">Nome do dispositivo</string>
+    <string name="device_ip_address">Endereço IP do dispositivo</string>
+    <string name="server_profiles">Perfis de servidor</string>
+    <string name="manage_servers">Gerenciar servidores</string>
+    <string name="services">Serviços</string>
+    <string name="enable_sos_service">Serviço SOS</string>
+    <string name="enable_csapi_service">Serviço Connected Systems</string>
+    <string name="enable_discovery_service">Serviço de descoberta</string>
+
+    <string name="summary_accel">Transmitir dados de movimento do acelerômetro em tempo real</string>
+    <string name="summary_gyro">Transmitir dados de rotação do giroscópio em tempo real</string>
+    <string name="summary_mag">Transmitir dados de direção e campo magnético do magnetômetro</string>
+    <string name="summary_orientation">Transmitir dados de orientação e atitude do dispositivo</string>
+    <string name="summary_gps">Transmitir dados de localização e movimento por GPS</string>
+    <string name="summary_netloc">Transmitir dados de localização baseados em rede</string>
+    <string name="summary_video">Transmitir vídeo ao vivo da câmera do dispositivo</string>
+    <string name="summary_video_roll">Anexar metadados de rotação do dispositivo aos cabeçalhos de quadros de vídeo</string>
+    <string name="summary_audio">Transmitir áudio ao vivo do microfone do dispositivo</string>
+    <string name="summary_meshtastic">Conectar a um dispositivo Meshtastic via Bluetooth ao iniciar</string>
+    <string name="summary_wardriving">Transmitir dados de varredura de redes sem fio próximas</string>
+    <string name="summary_polar">Conectar a um sensor cardíaco Polar via Bluetooth LE</string>
+    <string name="summary_kestrel">Transmitir dados ambientais de uma estação meteorológica Kestrel</string>
+    <string name="summary_controller">Conectar a um controlador USB compatível ao iniciar</string>
+    <string name="summary_trupulse">Transmitir dados de distância e ângulo de um telêmetro TruPulse</string>
+    <string name="summary_trupulse_simu">Usar medições simuladas do TruPulse para testes</string>
+    <string name="summary_angel">Transmitir dados biométricos do Angel Sensor</string>
+    <string name="summary_flirone">Transmitir imagens térmicas de uma câmera FLIR One conectada</string>
+    <string name="summary_ste">Conectar a um STE RadPager via Bluetooth LE ao iniciar</string>
+    <string name="summary_template">Habilitar o driver de sensor modelo para desenvolvimento e testes</string>
+    <string name="summary_push_options">Opções para envio de dados</string>
+    <string name="summary_csapi">API REST padrão OGC servindo dados de sensores deste dispositivo.</string>
+    <string name="summary_sos">API legada servindo dados de sensores em XML via HTTP</string>
+    <string name="summary_discovery">Serviço que fornece descoberta baseada em conjuntos de regras definíveis</string>
+    <string name="summary_select_device">Toque para selecionar ou inserir o endereço do dispositivo</string>
+    <string name="pref_uid_extension">Extensão UID dos sensores</string>
+    <string name="server_profile_summary">Opcional — adicione servidores para enviar dados remotamente. Sem servidores, os dados são servidos localmente.</string>
+
+    <string-array name="video_codec_list">
+        <item>JPEG</item>
+        <item>H264</item>
+        <item>H265</item>
+        <item>VP9</item>
+        <item>VP8</item>
+    </string-array>
+
+    <string-array name="video_framerate">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+
+    <string-array name="video_resolution_list">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+
+    <string-array name="orientation_angle_list">
+        <item>Quaternion</item>
+        <item>Euler</item>
+    </string-array>
+    <string-array name="orientation_angle_values">
+        <item>QUATERNION</item>
+        <item>EULER</item>
+    </string-array>
+    <string-array name="orientation_angle_defaults">
+        <item>QUATERNION</item>
+    </string-array>
+
+    <string-array name="location_type_list">
+        <item>GPS</item>
+        <item>Rede</item>
+    </string-array>
+    <string-array name="location_type_values">
+        <item>GPS</item>
+        <item>NETWORK</item>
+    </string-array>
+    <string-array name="location_type_defaults">
+        <item>GPS</item>
+    </string-array>
+
+    <string-array name="sos_option_list">
+        <item>Recuperável</item>
+        <item>Armazenar localmente</item>
+        <item>Enviar remotamente</item>
+    </string-array>
+    <string-array name="sos_option_values">
+        <item>FETCH_LOCAL</item>
+        <item>STORE_LOCAL</item>
+        <item>PUSH_REMOTE</item>
+    </string-array>
+    <string-array name="sos_option_defaults">
+        <item>PUSH_REMOTE</item>
+    </string-array>
+
+    <string name="trupulse_device_name">Nome do dispositivo TruPulse</string>
+    <string-array name="trupulse_datasource_list">
+        <item>Dispositivo físico em fluxo</item>
+        <item>Simular dispositivo virtual</item>
+    </string-array>
+    <string-array name="trupulse_datasource_values">
+        <item>STREAM</item>
+        <item>SIMULATED</item>
+    </string-array>
+    <string name="trupulse_datasource_default">STREAM</string>
+
+    <string-array name="spot_report_feature_type_list">
+        <item>Selecionar item a reportar</item>
+        <item>Fechamento de rua</item>
+        <item>Inundação</item>
+        <item>Médico</item>
+        <item>Assistência</item>
+    </string-array>
+
+    <string-array name="ble_location_method_list">
+        <item>Beacon mais próximo</item>
+        <item>Trilateração</item>
+    </string-array>
+    <string-array name="ble_location_method_values">
+        <item>NEAREST</item>
+        <item>TRILATERATION</item>
+    </string-array>
+    <string-array name="ble_location_method_defaults">
+        <item>NEAREST</item>
+    </string-array>
+
+    <string-array name="spot_report_location_source_list">
+        <item>GPS</item>
+        <item>Telêmetro a laser</item>
+        <item>Rede</item>
+    </string-array>
+
+    <string name="spot_report">Relatório de situação</string>
+    <string name="spot_name_field">NOME:</string>
+    <string name="spot_description_field">DESCRIÇÃO:</string>
+    <string name="spot_take_image_button">CAPTURAR</string>
+    <string name="spot_reset_image_button"> REDEFINIR </string>
+    <string name="spot_submit_report_button">ENVIAR RELATÓRIO</string>
+    <string name="spot_name_description">Um nome para o relatório</string>
+
+    <string name="spot_report_radius">Raio:</string>
+    <string name="spot_report_latitude">Lat:</string>
+    <string name="spot_report_longitude">Lon:</string>
+    <string name="spot_report_ft">Pés</string>
+
+    <string-array name="spot_report_closure_type">
+        <item>Selecionar...</item>
+        <item>Público</item>
+        <item>Todos</item>
+    </string-array>
+
+    <string-array name="spot_report_action_items">
+        <item>Selecionar...</item>
+        <item>Abrir</item>
+        <item>Fechar</item>
+    </string-array>
+
+    <string name="spot_report_action">Ação:</string>
+    <string name="spot_report_id">Ref. ID:</string>
+
+    <string name="spot_report_closure_type">Tipo:</string>
+
+    <string-array name="spot_report_flood_feature_type">
+        <item>Selecionar...</item>
+        <item>Drenagem de canal</item>
+        <item>Superfície terrestre</item>
+    </string-array>
+
+    <string-array name="spot_report_observation_modes">
+        <item>Selecionar...</item>
+        <item>Medidor</item>
+        <item>Visual</item>
+        <item>Modelo</item>
+    </string-array>
+
+    <string name="spot_report_flood_feature">Tipo de feição:</string>
+    <string name="spot_report_depth">Profundidade:</string>
+    <string name="spot_report_observation_mode">Modo obs.:</string>
+
+    <string name="spot_report_med_sign">Descrever condição médica...</string>
+    <string name="spot_report_med_value">Inserir medição (PA, Temp., etc.)...</string>
+    <string name="spot_report_med_emergency">Emergência (V/F)</string>
+
+    <string-array name="spot_report_aid_types">
+        <item>Selecionar...</item>
+        <item>Ambiental</item>
+        <item>Saúde</item>
+        <item>Segurança</item>
+        <item>Serviços</item>
+    </string-array>
+
+    <string-array name="spot_report_aid_urgency_value">
+        <item>Selecionar...</item>
+        <item>5</item>
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+        <item>1</item>
+    </string-array>
+
+    <string name="spot_report_aid_type">Tipo de assistência:</string>
+    <string name="spot_report_aid_num">Nº de pessoas:</string>
+    <string name="spot_report_aid_urgency">Urgência:</string>
+    <string name="spot_report_aid_description">Descrever assistência necessária...</string>
+    <string name="spot_report_aid_reporter">Insira seu nome ou identificação</string>
+
+    <string-array name="spot_report_tracked_resource">
+        <item>Selecionar...</item>
+        <item>Pessoa</item>
+        <item>Veículo</item>
+        <item>Dispositivo</item>
+    </string-array>
+
+    <string-array name="spot_report_tracked_method">
+        <item>Selecionar...</item>
+        <item>GPS</item>
+        <item>Beacon Bluetooth</item>
+        <item>WiFi</item>
+        <item>Celular</item>
+        <item>UWB</item>
+        <item>N/D</item>
+    </string-array>
+
+    <string name="spot_report_track_resource_label">Recurso rastreado:</string>
+    <string name="spot_report_track_method_label">Método de rastreamento:</string>
+    <string name="spot_report_track_id">Inserir ID do recurso</string>
+    <string name="spot_report_track_label">Inserir rótulo do recurso</string>
+
+    <string-array name="audio_codec_list">
+        <item>AAC</item>
+        <item>AMR-NB</item>
+        <item>AMR-WB</item>
+        <item>FLAC</item>
+        <item>VORBIS</item>
+        <item>OPUS</item>
+        <item>PCM</item>
+    </string-array>
+
+    <string-array name="caliber_list">
+        <item>0.172</item>
+        <item>0.204</item>
+        <item>0.222</item>
+        <item>0.224</item>
+        <item>0.257</item>
+    </string-array>
+
+    <string-array name="unit_list">
+        <item>polegadas</item>
+        <item>mil</item>
+        <item>tmoa</item>
+        <item>smoa</item>
+        <item>cliques</item>
+        <item>cm</item>
+    </string-array>
+
+    <string-array name="left_right">
+        <item>E</item>
+        <item>D</item>
+    </string-array>
+
+    <string-array name="bluetooth_mac_address_list">
+        <item></item>
+    </string-array>
+
+    <string-array name="bluetooth_scanned_address_list">
+        <item></item>
+    </string-array>
+
+    <string name="tab_sensors">Sensores</string>
+    <string name="tab_dashboard">Início</string>
+    <string name="tab_settings">Configurações</string>
+    <string name="app_preferences">Preferências do aplicativo</string>
+
+    <string name="meshtastic_msg">Digite uma mensagem!</string>
+    <string name="message_hint">Digite uma mensagem!</string>
+    <string name="meshtastic_nodeId">Insira o ID do nó de destino (inteiro)</string>
+    <string name="destination_node_hint">Insira o ID do nó de destino (inteiro)</string>
+
+    <!-- Preferências do aplicativo -->
+    <string name="title_notifications">Notificações</string>
+    <string name="title_language">Idioma</string>
+    <string name="title_version">Versão</string>
+    <string name="title_about">Sobre o aplicativo</string>
+    <string name="title_help_faq">Ajuda / Perguntas frequentes</string>
+    <string name="title_language_dialog">Idioma</string>
+    <string name="about_description">Uma plataforma de software para construir redes de sensores inteligentes e a Internet das Coisas</string>
+
+    <!-- Preferências dos sensores -->
+    <string name="category_on_device">INTEGRADOS</string>
+    <string name="category_bluetooth">Periféricos Bluetooth</string>
+    <string name="category_others">Outros</string>
+    <string name="title_codec">Codec</string>
+    <string name="title_frame_rate">Taxa de quadros</string>
+    <string name="title_resolution">Resolução</string>
+    <string name="title_camera">Câmera</string>
+    <string name="title_sample_rate">Taxa de amostragem</string>
+    <string name="title_bitrate">Taxa de bits (kbps)</string>
+    <string name="title_select_meshtastic">Selecionar dispositivo Meshtastic</string>
+    <string name="title_select_polar">Selecionar dispositivo Polar HR</string>
+    <string name="title_select_kestrel">Selecionar dispositivo Kestrel</string>
+    <string name="title_trupulse_datasource">Fonte de dados TruPulse</string>
+    <string name="title_select_trupulse">Selecionar dispositivo TruPulse</string>
+    <string name="title_use_simulated_trupulse">Usar dados simulados do TruPulse</string>
+    <string name="title_select_template">Selecionar dispositivo modelo</string>
+    <string name="summary_uid_extension">Um ID anexado ao final do UID de cada sistema</string>
+    <string name="title_discovery_rules">URL do arquivo Discovery Rules.txt</string>
+
+    <!-- Painel -->
+    <string name="video_stream">Transmissão de vídeo</string>
+    <string name="switch_camera">Alternar câmera</string>
+    <string name="btn_show">Mostrar</string>
+    <string name="btn_hide">Ocultar</string>
+    <string name="meshtastic_label">Meshtastic</string>
+    <string name="meshtastic_connected">Conectado</string>
+    <string name="btn_message">Mensagem</string>
+    <string name="title_sensors">Sensores</string>
+    <string name="no_sensors_push">Nenhum sensor configurado para envio remoto</string>
+    <string name="title_run_name">Nome da execução</string>
+    <string name="msg_enter_run_name">Insira o nome para esta execução</string>
+    <string name="title_send_meshtastic">Enviar mensagem Meshtastic</string>
+
+    <!-- Perfis de servidor -->
+    <string name="empty_server_profiles">Nenhum perfil de servidor configurado.\nToque + para criar um.</string>
+    <string name="content_desc_add_server">Adicionar perfil de servidor</string>
+    <string name="title_delete_server">Excluir servidor</string>
+    <string name="msg_delete_server">Remover \"%s\"?</string>
+
+    <!-- Editar perfil de servidor -->
+    <string name="section_client">CLIENTE</string>
+    <string name="btn_csapi_client">Cliente CS API</string>
+    <string name="btn_sost_client">Cliente SOS-T</string>
+    <string name="section_connection">CONEXÃO</string>
+    <string name="hint_server_name">Nome do servidor</string>
+    <string name="hint_host_ip">Host / IP</string>
+    <string name="hint_port">Porta</string>
+    <string name="hint_endpoint_path">Caminho do endpoint</string>
+    <string name="switch_enable_tls">Habilitar TLS</string>
+    <string name="switch_disable_ssl">Desabilitar validação SSL</string>
+    <string name="section_authentication">AUTENTICAÇÃO</string>
+    <string name="auth_none">Nenhum</string>
+    <string name="auth_basic">Básico</string>
+    <string name="auth_oauth">OAuth</string>
+    <string name="hint_username">Usuário</string>
+    <string name="hint_password">Senha</string>
+    <string name="hint_token_endpoint">Endpoint de token</string>
+    <string name="hint_client_id">ID do cliente</string>
+    <string name="hint_client_secret">Segredo do cliente</string>
+    <string name="btn_add_server">Adicionar servidor</string>
+
+    <!-- Diálogos -->
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_delete">Excluir</string>
+    <string name="btn_send">Enviar</string>
+    <string name="title_select_device">Selecionar dispositivo</string>
+    <string name="title_enter_device">Inserir nome ou endereço do dispositivo</string>
+    <string name="msg_enter_device">Insira um nome de dispositivo (ex. \"Ballistic\") ou endereço MAC. Os nomes são comparados desde o início, sem distinção de maiúsculas.</string>
+    <string name="title_edit_server">Editar servidor</string>
+    <string name="sensor_garmin">Wearable Garmin</string>
+    <string name="title_select_garmin">Selecionar dispositivo Garmin</string>
+    <string name="hint_manual_device">ex. Ballistic ou AA:BB:CC:DD:EE:FF</string>
+    <string name="manual_entry_option">Inserir nome ou endereço manualmente…</string>
+    <string name="scan_new_devices">Procurar novos dispositivos…</string>
+    <string name="content_desc_switch_camera">Alternar câmera</string>
+    <string name="summary_garmin">Transmitir dados biométricos de saúde do wearable Garmin</string>
+
+    <!-- Mensagens de status -->
+    <string name="stopping_sensorhub">Parando SensorHub</string>
+    <string name="sensorhub_stopped">SensorHub parado</string>
+    <string name="starting_sensorhub">Iniciando SensorHub…</string>
+    <string name="sensorhub_start_failed">Falha ao iniciar SensorHub</string>
+    <string name="video_config_error">Erro de configuração de vídeo: Verifique as configurações</string>
+    <string name="video_config_error_msg">Verifique as configurações de vídeo e certifique-se de que a resolução para o preset selecionado foi definida.</string>
+    <string name="msg_sensorhub_not_running">SensorHub não está em execução</string>
+    <string name="msg_message_sent">Mensagem enviada</string>
+    <string name="msg_message_failed">Falha ao enviar mensagem</string>
+    <string name="msg_profile_not_found">Perfil não encontrado</string>
+    <string name="msg_name_host_port_required">Nome, host e porta são obrigatórios</string>
+    <string name="msg_no_protocol">O host não deve incluir um protocolo (ex. http://)</string>
+    <string name="msg_port_number">A porta deve ser um número</string>
+    <string name="msg_port_range">A porta deve estar entre 1 e 65535</string>
+
+</resources>

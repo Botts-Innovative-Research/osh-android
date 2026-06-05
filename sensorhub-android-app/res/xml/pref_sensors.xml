@@ -10,10 +10,10 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/pref_uid_extension"
-            android:summary="An ID attached to the end of each systems UID"
+            android:summary="@string/summary_uid_extension"
             android:layout="@layout/preference_item" />
 
-        <PreferenceCategory android:title="ON-DEVICE">
+        <PreferenceCategory android:title="@string/category_on_device">
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="accel_enabled"
@@ -65,7 +65,7 @@
                 <ListPreference
                     android:key="video_codec"
                     android:visible="false"
-                    android:title="Codec"
+                    android:title="@string/title_codec"
                     android:defaultValue="JPEG"
                     android:entries="@array/video_codec_list"
                     android:entryValues="@array/video_codec_list"
@@ -74,20 +74,20 @@
                 <ListPreference
                     android:key="video_framerate"
                     android:visible="false"
-                    android:title="Frame Rate"
+                    android:title="@string/title_frame_rate"
                     android:defaultValue="30"
                     app:useSimpleSummaryProvider="true"
                     android:layout="@layout/preference_list_item"/>
                 <ListPreference
                     android:key="video_resolution"
                     android:visible="false"
-                    android:title="Resolution"
+                    android:title="@string/title_resolution"
                     app:useSimpleSummaryProvider="true"
                     android:layout="@layout/preference_list_item"/>
                 <ListPreference
                     android:key="camera_select"
                     android:visible="false"
-                    android:title="Camera"
+                    android:title="@string/title_camera"
                     android:defaultValue="0"
                     app:useSimpleSummaryProvider="true"
                     android:layout="@layout/preference_list_item"/>
@@ -106,7 +106,7 @@
                 <ListPreference
                     android:key="audio_codec"
                     android:visible="false"
-                    android:title="Codec"
+                    android:title="@string/title_codec"
                     android:defaultValue="AAC"
                     android:entries="@array/audio_codec_list"
                     android:entryValues="@array/audio_codec_list"
@@ -115,20 +115,20 @@
                 <ListPreference
                     android:key="audio_samplerate"
                     android:visible="false"
-                    android:title="Sample Rate"
+                    android:title="@string/title_sample_rate"
                     android:defaultValue="8000"
                     app:useSimpleSummaryProvider="true"
                     android:layout="@layout/preference_list_item" />
                 <ListPreference
                     android:key="audio_bitrate"
                     android:visible="false"
-                    android:title="Bitrate (kbps)"
+                    android:title="@string/title_bitrate"
                     android:defaultValue="64"
                     app:useSimpleSummaryProvider="true"
                     android:layout="@layout/preference_list_item" />
         </PreferenceCategory>
 
-        <PreferenceCategory android:title="Bluetooth Peripherals">
+        <PreferenceCategory android:title="@string/category_bluetooth">
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="meshtastic_enabled"
@@ -138,7 +138,7 @@
                 <Preference
                     android:key="meshtastic_device_address"
                     android:visible="false"
-                    android:title="Select Meshtastic Device"
+                    android:title="@string/title_select_meshtastic"
                     android:summary="@string/summary_select_device"
                     android:layout="@layout/preference_list_item" />
                 <SwitchPreferenceCompat
@@ -156,20 +156,20 @@
                 <Preference
                     android:key="polar_device_address"
                     android:visible="false"
-                    android:title="Select Polar HR Device"
+                    android:title="@string/title_select_polar"
                     android:summary="@string/summary_select_device"
                     android:layout="@layout/preference_list_item" />
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="garmin_enabled"
                     android:summary="@string/summary_garmin"
-                    android:title="Garmin Wearable"
+                    android:title="@string/sensor_garmin"
                     android:layout="@layout/preference_switch_item" />
                 <Preference
                     android:key="garmin_device_address"
                     android:visible="false"
-                    android:title="Select Garmin Device"
-                    android:summary="Tap to select or enter device address"
+                    android:title="@string/title_select_garmin"
+                    android:summary="@string/summary_select_device"
                     android:layout="@layout/preference_list_item" />
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
@@ -180,7 +180,7 @@
                 <Preference
                     android:key="kestrel_device_address"
                     android:visible="false"
-                    android:title="Select Kestrel Device"
+                    android:title="@string/title_select_kestrel"
                     android:summary="@string/summary_select_device"
                     android:layout="@layout/preference_list_item" />
                 <SwitchPreferenceCompat
@@ -192,7 +192,7 @@
                 <ListPreference
                     android:key="trupulse_datasource"
                     android:visible="false"
-                    android:title="TruPulse Data Source"
+                    android:title="@string/title_trupulse_datasource"
                     android:summary="%s"
                     android:entries="@array/trupulse_datasource_list"
                     android:entryValues="@array/trupulse_datasource_values"
@@ -201,7 +201,7 @@
                 <Preference
                     android:key="trupulse_device_address"
                     android:visible="false"
-                    android:title="Select TruPulse Device"
+                    android:title="@string/title_select_trupulse"
                     android:summary="@string/summary_select_device"
                     android:layout="@layout/preference_list_item" />
                 <SwitchPreferenceCompat
@@ -209,7 +209,7 @@
                     android:visible="false"
                     android:key="trupulse_simu"
                     android:summary="@string/summary_trupulse_simu"
-                    android:title="Use Simulated TruPulse Data"
+                    android:title="@string/title_use_simulated_trupulse"
                     android:layout="@layout/preference_switch_item" />
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
@@ -233,7 +233,7 @@
                     android:layout="@layout/preference_switch_item" />
         </PreferenceCategory>
 
-        <PreferenceCategory android:title="Others">
+        <PreferenceCategory android:title="@string/category_others">
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
                     android:key="controller_enabled"
@@ -256,7 +256,7 @@
                 <Preference
                     android:key="template_device_address"
                     android:visible="false"
-                    android:title="Select template Device"
+                    android:title="@string/title_select_template"
                     android:summary="@string/summary_select_device"
                     android:layout="@layout/preference_list_item" />
         </PreferenceCategory>

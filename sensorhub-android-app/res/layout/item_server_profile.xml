@@ -9,8 +9,8 @@
     android:layout_marginTop="6dp"
     android:layout_marginBottom="6dp"
     app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_elevation"
-    app:cardBackgroundColor="@color/md_theme_background"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/surface_card"
     app:strokeColor="@color/md_theme_outline"
     app:strokeWidth="1dp">
 
@@ -66,6 +66,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_edit"
             android:scaleType="centerInside"
+            app:tint="@color/text_secondary"
             android:contentDescription="Edit server profile" />
 
     </LinearLayout>
