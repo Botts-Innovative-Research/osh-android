@@ -3,6 +3,7 @@ package org.sensorhub.android.server;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
@@ -10,32 +11,60 @@ import org.json.JSONException;
 import org.sensorhub.android.SecurePrefs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class ServerProfileRepository {
+public class ServerProfileRepository implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String KEY_PROFILES_JSON = "server_profiles_json";
+
+    private static volatile ServerProfileRepository instance;
+
     private final Context context;
     private final SharedPreferences prefs;
+    private volatile List<ServerProfile> cachedProfiles;
 
-    public ServerProfileRepository(Context context) {
+    private ServerProfileRepository(@NonNull Context context) {
         this.context = context.getApplicationContext();
         this.prefs = PreferenceManager.getDefaultSharedPreferences(this.context);
+        this.prefs.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    public static ServerProfileRepository getInstance(@NonNull Context context) {
+        if (instance == null) {
+            synchronized (ServerProfileRepository.class) {
+                if (instance == null) {
+                    instance = new ServerProfileRepository(context);
+                }
+            }
+        }
+        return instance;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (KEY_PROFILES_JSON.equals(key)) {
+            cachedProfiles = null;
+        }
     }
 
     public List<ServerProfile> getAll() {
+        List<ServerProfile> cached = cachedProfiles;
+        if (cached != null) return Collections.unmodifiableList(cached);
+
         List<ServerProfile> profiles = new ArrayList<>();
         String json = prefs.getString(KEY_PROFILES_JSON, null);
-        if (json == null) return profiles;
-
-        try {
-            JSONArray arr = new JSONArray(json);
-            for (int i = 0; i < arr.length(); i++) {
-                profiles.add(ServerProfile.fromJson(arr.getJSONObject(i)));
+        if (json != null) {
+            try {
+                JSONArray arr = new JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    profiles.add(ServerProfile.fromJson(arr.getJSONObject(i)));
+                }
+            } catch (JSONException e) {
+                // corrupted data, return empty
             }
-        } catch (JSONException e) {
-            // corrupted data, return empty
         }
-        return profiles;
+        cachedProfiles = profiles;
+        return Collections.unmodifiableList(profiles);
     }
 
     public List<ServerProfile> getEnabled() {
@@ -54,7 +83,7 @@ public class ServerProfileRepository {
     }
 
     public void save(ServerProfile profile) {
-        List<ServerProfile> all = getAll();
+        List<ServerProfile> all = new ArrayList<>(getAll());
         boolean found = false;
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).id.equals(profile.id)) {
@@ -68,7 +97,7 @@ public class ServerProfileRepository {
     }
 
     public void delete(String id) {
-        List<ServerProfile> all = getAll();
+        List<ServerProfile> all = new ArrayList<>(getAll());
         all.removeIf(p -> p.id.equals(id));
         persist(all);
         SecurePrefs.removeByPrefix(context, "profile_" + id + "_");
@@ -83,7 +112,7 @@ public class ServerProfileRepository {
     }
 
     public String getPassword(String profileId) {
-        return SecurePrefs.get(context, "profile_" + profileId + "_password", null);
+        return SecurePrefs.get(context, "profile_" + profileId + "_password", "");
     }
 
     public void setPassword(String profileId, String password) {
@@ -123,5 +152,6 @@ public class ServerProfileRepository {
             }
         }
         prefs.edit().putString(KEY_PROFILES_JSON, arr.toString()).apply();
+        cachedProfiles = profiles;
     }
 }

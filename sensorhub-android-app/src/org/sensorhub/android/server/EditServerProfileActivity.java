@@ -34,7 +34,7 @@ public class EditServerProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_server_profile);
 
-        repo = new ServerProfileRepository(this);
+        repo = ServerProfileRepository.getInstance(this);
 
         String profileId = getIntent().getStringExtra(EXTRA_PROFILE_ID);
         isEdit = profileId != null;

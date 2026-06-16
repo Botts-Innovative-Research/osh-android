@@ -92,7 +92,7 @@ public class ServerProfile {
     }
 
     public String getDisplaySummary() {
-        return host + ":" + port + (endpointPath != null ? endpointPath : "");
+        return (enableTls ? "https://" : "http://") + host + ":" + port + (endpointPath != null ? endpointPath : "");
     }
 
     public String getClientModeLabel() {

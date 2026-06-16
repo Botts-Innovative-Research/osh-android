@@ -23,8 +23,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +39,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.location.LocationProvider;
+
+import com.botts.impl.sensor.garmin.GarminConfig;
 import com.botts.impl.service.discovery.DiscoveryService;
 import com.botts.impl.service.discovery.DiscoveryServiceConfig;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -97,6 +100,7 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -115,14 +119,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     public static final String ACTION_BROADCAST_RECEIVER = "org.sensorhub.android.BROADCAST_RECEIVER";
     public static final String ANDROID_SENSORS_MODULE_ID = "ANDROID_SENSORS";
     public static final Date ANDROID_SENSORS_LAST_UPDATED = new Date(Instant.now().toEpochMilli());
-    public static final Date TRUPULSE_SENSOR_LAST_UPDATED = ANDROID_SENSORS_LAST_UPDATED;
     private static final Logger log = LoggerFactory.getLogger(MainActivity.class);
 
     SensorHubService boundService;
     IModuleConfigRepository sensorhubConfig;
     boolean oshStarted = false;
-    ArrayList<SOSTClient> sostClients = new ArrayList<>();
-    ArrayList<ConSysApiClientModule> conSysClients = new ArrayList<>();
+    CopyOnWriteArrayList<SOSTClient> sostClients = new CopyOnWriteArrayList<>();
+    CopyOnWriteArrayList<ConSysApiClientModule> conSysClients = new CopyOnWriteArrayList<>();
 
     AndroidSensorsDriver androidSensors;
     boolean showVideo;
@@ -179,10 +182,10 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     public IModuleConfigRepository getSensorhubConfig() { return sensorhubConfig; }
 
     @Override
-    public ArrayList<SOSTClient> getSostClients() { return sostClients; }
+    public List<SOSTClient> getSostClients() { return sostClients; }
 
     @Override
-    public ArrayList<ConSysApiClientModule> getConSysClients() { return conSysClients; }
+    public List<ConSysApiClientModule> getConSysClients() { return conSysClients; }
 
     @Override
     public AndroidSensorsDriver getAndroidSensors() { return androidSensors; }
@@ -222,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         Boolean isSosServiceEnabled = prefs.getBoolean("sos_service", true);
         Boolean isDiscoveryServiceEnabled = prefs.getBoolean("discovery_service", false);
 
-        ServerProfileRepository serverRepo = new ServerProfileRepository(this);
+        ServerProfileRepository serverRepo = ServerProfileRepository.getInstance(this);
         List<ServerProfile> enabledServers = serverRepo.getEnabled();
 
         boolean disableSslCheck = false;
@@ -372,7 +375,156 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         sensorhubConfig.add(sensorsConfig);
 
-        if (isPushingSensor(Sensors.Android)) {
+        // TruPulse sensor
+        if (prefs.getBoolean("trupulse_enabled", false)) {
+            TruPulseConfig trupulseConfig = new TruPulseConfig();
+
+            if (sensorsConfig.activateGpsLocation) {
+                String gpsOutputName = null;
+                if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION))
+                {
+                    LocationManager locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+                    List<String> locProviders = locationManager.getAllProviders();
+                    for (String provName: locProviders)
+                    {
+                        LocationProvider locProvider = locationManager.getProvider(provName);
+                        if (locProvider.requiresSatellite())
+                            gpsOutputName = locProvider.getName().replaceAll(" ", "_") + "_data";
+                    }
+                }
+
+                trupulseConfig = new TruPulseWithGeolocConfig();
+                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = "urn:osh:android" + sensorsConfig.getAndroidSensorsUidWithExt();
+                ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
+            }
+
+            trupulseConfig.id = "TRUPULSE_SENSOR";
+            trupulseConfig.name = "TruPulse Range Finder [" + deviceName + "]";
+            trupulseConfig.autoStart = true;
+            trupulseConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            trupulseConfig.serialNumber = deviceID;
+
+            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
+            btConf.protocol.deviceName = prefs.getString("trupulse_device_address", "");
+            if (prefs.getBoolean("trupulse_simu", false)) {
+                btConf.moduleClass = SimulatedDataStream.class.getCanonicalName();
+            } else {
+                btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
+                trupulseConfig.connection.connectTimeout = 100000;
+                trupulseConfig.connection.reconnectAttempts = 10;
+            }
+            trupulseConfig.commSettings = btConf;
+
+            sensorhubConfig.add(trupulseConfig);
+        }
+
+        // STE Rad Pager sensor
+        if (prefs.getBoolean("ste_radpager_enabled", false)) {
+            STERadPagerConfig steRadPagerConfig = new STERadPagerConfig();
+            steRadPagerConfig.id = "STE_RADPAGER_SENSOR";
+            steRadPagerConfig.name = "STE Rad Pager [" + deviceName + "]";
+            steRadPagerConfig.autoStart = true;
+            steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+
+            sensorhubConfig.add(steRadPagerConfig);
+        }
+
+        // Meshtastic sensor
+        if (prefs.getBoolean("meshtastic_enabled", false)) {
+            MeshtasticConfig meshtasticConfig = new MeshtasticConfig();
+            meshtasticConfig.id = "MESHTASTIC_SENSOR";
+            meshtasticConfig.name = "Meshtastic [" + deviceName + "]";
+            meshtasticConfig.autoStart = true;
+            meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
+            meshtasticConfig.uid_extension = prefs.getString("uid_extension", "");
+
+            sensorhubConfig.add(meshtasticConfig);
+        }
+
+        // Polar heart rate sensor
+        if (prefs.getBoolean("polar_enabled", false)) {
+            PolarConfig polarConfig = new PolarConfig();
+            polarConfig.id = "POLAR_HEART_SENSOR";
+            polarConfig.name = "Polar Heart [" + deviceName + "]";
+            polarConfig.autoStart = true;
+            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            polarConfig.deviceId = prefs.getString("polar_device_address", "");
+            polarConfig.uid_extension = prefs.getString("uid_extension", "");
+
+            sensorhubConfig.add(polarConfig);
+        }
+
+        // Kestrel weather sensor
+        if (prefs.getBoolean("kestrel_enabled", false)) {
+            BleConfig bleConf = new BleConfig();
+            bleConf.id = "BLE_NETWORK";
+            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
+            bleConf.androidContext = this.getApplicationContext();
+            bleConf.autoStart = true;
+            sensorhubConfig.add(bleConf);
+
+            KestrelConfig kestrelConfig = new KestrelConfig();
+            kestrelConfig.id = "KESTREL_WEATHER";
+            kestrelConfig.name = "Kestrel Weather [" + deviceName + "]";
+            kestrelConfig.autoStart = true;
+            kestrelConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            kestrelConfig.networkID = bleConf.id;
+            kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
+
+            sensorhubConfig.add(kestrelConfig);
+        }
+
+        // Garmin sensor
+        if (prefs.getBoolean("garmin_enabled", false)) {
+            GarminConfig garminConfig = new GarminConfig();
+            garminConfig.id = "GARMIN";
+            garminConfig.name = "Garmin [" + deviceName + "]";
+            garminConfig.autoStart = true;
+            garminConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            garminConfig.deviceAddress = prefs.getString("garmin_device_address", "");
+            garminConfig.sdkLicenseKey = BuildConfig.GARMIN_SDK_KEY;
+
+            sensorhubConfig.add(garminConfig);
+        }
+
+        // Controller
+        if (prefs.getBoolean("controller_enabled", false)) {
+            ControllerConfig controllerConfig = new ControllerConfig();
+            controllerConfig.id = "CONTROLLER";
+            controllerConfig.name = "Controller [" + deviceName + "]";
+            controllerConfig.autoStart = true;
+            controllerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            controllerConfig.uid_extension = prefs.getString("uid_extension", "");
+
+            sensorhubConfig.add(controllerConfig);
+        }
+
+        // Wardriving sensor
+        if (prefs.getBoolean("wardriving_enabled", false)) {
+            WardrivingConfig wardrivingConfig = new WardrivingConfig();
+            wardrivingConfig.id = "WARDRIVING_";
+            wardrivingConfig.name = "Wardriving [" + deviceName + "]";
+            wardrivingConfig.autoStart = true;
+            wardrivingConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            wardrivingConfig.uid_extension = prefs.getString("uid_extension", "");
+
+            sensorhubConfig.add(wardrivingConfig);
+        }
+
+        // Template driver
+        if (prefs.getBoolean("template_enabled", false)) {
+            TemplateConfig templateConfig = new TemplateConfig();
+            templateConfig.id = "TEMPLATE_DRIVER_";
+            templateConfig.name = "Template [" + deviceName + "]";
+            templateConfig.autoStart = true;
+            templateConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
+            templateConfig.uid_extension = prefs.getString("uid_extension", "");
+
+            sensorhubConfig.add(templateConfig);
+        }
+
+        if (isAnySensorEnabled(prefs)) {
             for (ServerProfile sp : enabledServers) {
                 URL profileUrl = sp.buildClientUrl();
                 if (profileUrl == null) {
@@ -404,144 +556,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             basicStorageConfig.autoStart = true;
         }
 
-        // TruPulse sensor
-        boolean enabled = prefs.getBoolean("trupulse_enabled", false);
-        if (enabled)
-        {
-            TruPulseConfig trupulseConfig = new TruPulseConfig();
-
-            if (sensorsConfig.activateGpsLocation)
-            {
-                String gpsOutputName = null;
-                if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION))
-                {
-                    LocationManager locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-                    List<String> locProviders = locationManager.getAllProviders();
-                    for (String provName: locProviders)
-                    {
-                        LocationProvider locProvider = locationManager.getProvider(provName);
-                        if (locProvider.requiresSatellite())
-                            gpsOutputName = locProvider.getName().replaceAll(" ", "_") + "_data";
-                    }
-                }
-
-                trupulseConfig = new TruPulseWithGeolocConfig();
-                ((TruPulseWithGeolocConfig)trupulseConfig).locationSourceUID = "urn:osh:android" + sensorsConfig.getAndroidSensorsUidWithExt();
-                ((TruPulseWithGeolocConfig)trupulseConfig).locationOutputName = gpsOutputName;
-            }
-
-            trupulseConfig.id = "TRUPULSE_SENSOR";
-            trupulseConfig.name = "TruPulse Range Finder [" + deviceName + "]";
-            trupulseConfig.autoStart = true;
-            trupulseConfig.lastUpdated = TRUPULSE_SENSOR_LAST_UPDATED;
-            trupulseConfig.serialNumber = deviceID;
-            BluetoothCommProviderConfig btConf = new BluetoothCommProviderConfig();
-            btConf.protocol.deviceName = prefs.getString("trupulse_device_address", "");
-            if (prefs.getBoolean("trupulse_simu", false))
-                btConf.moduleClass = SimulatedDataStream.class.getCanonicalName();
-            else {
-                btConf.moduleClass = BluetoothCommProvider.class.getCanonicalName();
-                trupulseConfig.connection.connectTimeout = 100000;
-                trupulseConfig.connection.reconnectAttempts = 10;
-            }
-            trupulseConfig.commSettings = btConf;
-            sensorhubConfig.add(trupulseConfig);
-        }
-
-        // STE Rad Pager sensor
-        enabled = prefs.getBoolean("ste_radpager_enabled", false);
-        if (enabled) {
-            STERadPagerConfig steRadPagerConfig = new STERadPagerConfig();
-            steRadPagerConfig.id = "STE_RADPAGER_SENSOR";
-            steRadPagerConfig.name = "STE Rad Pager [" + deviceName + "]";
-            steRadPagerConfig.autoStart = true;
-            steRadPagerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            sensorhubConfig.add(steRadPagerConfig);
-        }
-
-        // Meshtastic Sensor
-        enabled = prefs.getBoolean("meshtastic_enabled", false);
-        if (enabled)
-        {
-            MeshtasticConfig meshtasticConfig = new MeshtasticConfig();
-            meshtasticConfig.id = "MESHTASTIC_SENSOR";
-            meshtasticConfig.name = "Meshtastic [" + deviceName + "]";
-            meshtasticConfig.autoStart = true;
-            meshtasticConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "");
-            meshtasticConfig.uid_extension = prefs.getString("uid_extension", "");
-            sensorhubConfig.add(meshtasticConfig);
-        }
-
-        // Polar heart Sensor
-        enabled = prefs.getBoolean("polar_enabled", false);
-        if (enabled) {
-            PolarConfig polarConfig = new PolarConfig();
-            polarConfig.id = "POLAR_HEART_SENSOR";
-            polarConfig.name = "Polar Heart [" + deviceName + "]";
-            polarConfig.autoStart = true;
-            polarConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            polarConfig.deviceId = prefs.getString("polar_device_address", "");
-            polarConfig.uid_extension = prefs.getString("uid_extension", "");
-            sensorhubConfig.add(polarConfig);
-        }
-
-        // Kestrel Weather
-        enabled = prefs.getBoolean("kestrel_enabled", false);
-        if (enabled) {
-            BleConfig bleConf = new BleConfig();
-            bleConf.id = "BLE_NETWORK";
-            bleConf.moduleClass = BleNetwork.class.getCanonicalName();
-            bleConf.androidContext = this.getApplicationContext();
-            bleConf.autoStart = true;
-            sensorhubConfig.add(bleConf);
-
-            KestrelConfig kestrelConfig = new KestrelConfig();
-            kestrelConfig.id = "KESTREL_WEATHER";
-            kestrelConfig.name = "Kestrel Weather [" + deviceName + "]";
-            kestrelConfig.autoStart = true;
-            kestrelConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            kestrelConfig.networkID = bleConf.id;
-            kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
-            sensorhubConfig.add(kestrelConfig);
-        }
-
-        // Wardriving
-        enabled = prefs.getBoolean("wardriving_enabled", false);
-        if (enabled) {
-            WardrivingConfig wardrivingConfig = new WardrivingConfig();
-            wardrivingConfig.id = "WARDRIVING_";
-            wardrivingConfig.name = "Wardriving [" + deviceName + "]";
-            wardrivingConfig.autoStart = true;
-            wardrivingConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            wardrivingConfig.uid_extension = prefs.getString("uid_extension", "");
-            sensorhubConfig.add(wardrivingConfig);
-        }
-
-        // USB Controller
-        enabled = prefs.getBoolean("controller_enabled", false);
-        if (enabled) {
-            ControllerConfig controllerConfig = new ControllerConfig();
-            controllerConfig.id = "CONTROLLER";
-            controllerConfig.name = "Controller [" + deviceName + "]";
-            controllerConfig.autoStart = true;
-            controllerConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            controllerConfig.uid_extension = prefs.getString("uid_extension", "");
-            sensorhubConfig.add(controllerConfig);
-        }
-
-        // Template Driver
-        enabled = prefs.getBoolean("template_enabled", false);
-        if (enabled) {
-            TemplateConfig templateConfig = new TemplateConfig();
-            templateConfig.id = "TEMPLATE_DRIVER_";
-            templateConfig.name = "Template [" + deviceName + "]";
-            templateConfig.autoStart = true;
-            templateConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            templateConfig.uid_extension = prefs.getString("uid_extension", "");
-            sensorhubConfig.add(templateConfig);
-        }
-
         //---------- SERVICES ---------------------
         if (isApiServiceEnabled) {
             sensorhubConfig.add(conSysApiService);
@@ -552,7 +566,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         if (isDiscoveryServiceEnabled) {
             sensorhubConfig.add(discoveryServiceConfig);
         }
-
     }
 
     protected void addSosTConfig(SensorConfig sensorConf, ServerProfile profile, URL serverUrl, String user, String pwd)
@@ -736,46 +749,24 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
 
 
-    boolean isPushingSensor(Sensors sensor) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        if (Sensors.Android.equals(sensor)) {
-            if (prefs.getBoolean("accel_enabled", false))
-                return true;
-            if (prefs.getBoolean("gyro_enabled", false))
-                return true;
-            if (prefs.getBoolean("mag_enabled", false))
-                return true;
-            if (prefs.getBoolean("orient_quat_enabled", false))
-                return true;
-            if (prefs.getBoolean("orient_euler_enabled", false))
-                return true;
-            if (prefs.getBoolean("gps_enabled", false))
-                return true;
-            if (prefs.getBoolean("netloc_enabled", false))
-                return true;
-            if (prefs.getBoolean("cam_enabled", false))
-                return true;
-            if (prefs.getBoolean("audio_enabled", false))
-                return true;
-        } else if (Sensors.TruPulse.equals(sensor) || Sensors.TruPulseSim.equals(sensor)) {
-            return prefs.getBoolean("trupulse_enabled", false);
-        } else if (Sensors.BLELocation.equals(sensor)) {
-            return prefs.getBoolean("ble_enable", false);
-        } else if (Sensors.Meshtastic.equals(sensor)) {
-            return prefs.getBoolean("meshtastic_enabled", false);
-        } else if (Sensors.PolarHRMonitor.equals(sensor)) {
-            return prefs.getBoolean("polar_enabled", false);
-        } else if (Sensors.Kestrel.equals(sensor)) {
-            return prefs.getBoolean("kestrel_enabled", false);
-        } else if (Sensors.Wardriving.equals(sensor)) {
-            return prefs.getBoolean("wardriving_enabled", false);
-        } else if (Sensors.Controller.equals(sensor)) {
-            return prefs.getBoolean("controller_enabled", false);
-        }  else if (Sensors.Template.equals(sensor)) {
-            return prefs.getBoolean("template_enabled", false);
-        }
-        return false;
+    boolean isAnySensorEnabled(SharedPreferences prefs) {
+        return prefs.getBoolean("accel_enabled", false)
+                || prefs.getBoolean("gyro_enabled", false)
+                || prefs.getBoolean("mag_enabled", false)
+                || prefs.getBoolean("orient_quat_enabled", false)
+                || prefs.getBoolean("orient_euler_enabled", false)
+                || prefs.getBoolean("gps_enabled", false)
+                || prefs.getBoolean("netloc_enabled", false)
+                || prefs.getBoolean("cam_enabled", false)
+                || prefs.getBoolean("audio_enabled", false)
+                || prefs.getBoolean("trupulse_enabled", false)
+                || prefs.getBoolean("ble_enabled", false)
+                || prefs.getBoolean("meshtastic_enabled", false)
+                || prefs.getBoolean("polar_enabled", false)
+                || prefs.getBoolean("kestrel_enabled", false)
+                || prefs.getBoolean("wardriving_enabled", false)
+                || prefs.getBoolean("controller_enabled", false)
+                || prefs.getBoolean("template_enabled", false);
     }
 
     boolean shouldServe(SharedPreferences prefs) {
@@ -886,7 +877,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
                     String sensorId = intent.getStringExtra("sensorId");
                     ArrayList<String> properties = intent.getStringArrayListExtra("properties");
 
-                    if (sosEndpointUrl == null || name == null || sensorId == null || properties.size() == 0) {
+                    if (sosEndpointUrl == null || name == null || sensorId == null || properties == null || properties.size() == 0) {
                         return;
                     }
 

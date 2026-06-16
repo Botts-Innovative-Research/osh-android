@@ -45,7 +45,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
 
     private void updateServerProfilesSummary(Preference pref) {
-        ServerProfileRepository repo = new ServerProfileRepository(requireContext());
+        ServerProfileRepository repo = ServerProfileRepository.getInstance(requireContext());
         int total = repo.getAll().size();
         int enabled = repo.getEnabled().size();
         if (total == 0) {
