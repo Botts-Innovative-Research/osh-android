@@ -39,11 +39,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 
-import com.botts.impl.sensor.garmin.GarminConfig;
 import com.botts.impl.service.discovery.DiscoveryService;
 import com.botts.impl.service.discovery.DiscoveryServiceConfig;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -473,19 +471,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "");
 
             sensorhubConfig.add(kestrelConfig);
-        }
-
-        // Garmin sensor
-        if (prefs.getBoolean("garmin_enabled", false)) {
-            GarminConfig garminConfig = new GarminConfig();
-            garminConfig.id = "GARMIN";
-            garminConfig.name = "Garmin [" + deviceName + "]";
-            garminConfig.autoStart = true;
-            garminConfig.lastUpdated = ANDROID_SENSORS_LAST_UPDATED;
-            garminConfig.deviceAddress = prefs.getString("garmin_device_address", "");
-            garminConfig.sdkLicenseKey = BuildConfig.GARMIN_SDK_KEY;
-
-            sensorhubConfig.add(garminConfig);
         }
 
         // Controller
