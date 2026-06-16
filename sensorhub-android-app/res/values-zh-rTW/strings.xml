@@ -40,7 +40,6 @@
     <string name="enable_sos_service">啟用 SOS 服務</string>
     <string name="enable_csapi_service">啟用連線系統服務</string>
     <string name="enable_discovery_service">啟用探索服務</string>
-    <string name="run_name">執行名稱</string>
 
     <string name="summary_accel">啟用加速度計資料串流</string>
     <string name="summary_gyro">啟用陀螺儀資料串流</string>
@@ -62,7 +61,6 @@
     <string name="summary_flirone">啟用 FLIR One 熱像儀資料串流（透過 USB 連接時）</string>
     <string name="summary_ste">啟用 STE RadPager 資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
     <string name="summary_template">啟用範本驅動程式串流</string>
-    <string name="summary_garmin">Stream biometric data from the Garmin Wearable Sensor</string>
 
     <string name="summary_csapi"></string>
     <string name="summary_sos"></string>
@@ -250,4 +248,25 @@
     <string name="msg_port_number">連接埠應為數字</string>
     <string name="msg_port_range">連接埠應介於 1 到 65535 之間</string>
 
+    <!-- Garmin -->
+    <string name="title_license_required">需要授權金鑰</string>
+    <string name="msg_garmin_license">Garmin Health SDK 授權金鑰尚未配置。請將其新增至 gradle.properties。</string>
+    <string name="title_garmin_sdk_error">Garmin SDK 錯誤</string>
+    <string name="msg_garmin_sdk_init_failed">無法初始化 Garmin Health SDK：%s</string>
+    <string name="title_scan_failed">掃描失敗</string>
+    <string name="msg_garmin_scan_failed">Garmin 裝置掃描失敗（錯誤碼 %d）</string>
+    <string name="title_scanning_garmin">正在掃描 Garmin 裝置…</string>
+    <string name="msg_scanning_garmin">請確認 Garmin 裝置在附近且處於配對模式。</string>
+    <string name="title_found_garmin_devices">找到 %d 個 Garmin 裝置</string>
+    <string name="title_pairing_timeout">配對逾時</string>
+    <string name="msg_pairing_timeout">認證逾時，請重試。</string>
+    <string name="title_pairing">配對中…</string>
+    <string name="msg_pairing_with">正在與 %s 配對。\n如有提示，請在 Garmin 裝置上確認。</string>
+    <string name="title_paired_successfully">配對成功</string>
+    <string name="msg_paired_with">已與 %s 配對</string>
+    <string name="title_pairing_failed">配對失敗</string>
+    <string name="msg_pairing_failed">配對失敗：%s</string>
+    <string name="btn_stop">停止</string>
+    <string name="btn_keep_scanning">繼續掃描…</string>
+    <string name="unable_to_get_ip">無法取得 IP 位址</string>
 </resources>

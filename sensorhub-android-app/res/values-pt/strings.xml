@@ -416,4 +416,25 @@
     <string name="msg_port_number">A porta deve ser um número</string>
     <string name="msg_port_range">A porta deve estar entre 1 e 65535</string>
 
+    <!-- Garmin -->
+    <string name="title_license_required">Chave de licença necessária</string>
+    <string name="msg_garmin_license">A chave de licença do SDK Garmin Health não está configurada. Adicione-a em gradle.properties.</string>
+    <string name="title_garmin_sdk_error">Erro do SDK Garmin</string>
+    <string name="msg_garmin_sdk_init_failed">Falha ao inicializar o SDK Garmin Health: %s</string>
+    <string name="title_scan_failed">Falha na varredura</string>
+    <string name="msg_garmin_scan_failed">Varredura do dispositivo Garmin falhou (erro %d)</string>
+    <string name="title_scanning_garmin">Procurando dispositivos Garmin…</string>
+    <string name="msg_scanning_garmin">Certifique-se de que o dispositivo Garmin está próximo e em modo de emparelhamento.</string>
+    <string name="title_found_garmin_devices">Encontrado(s) %d dispositivo(s) Garmin</string>
+    <string name="title_pairing_timeout">Tempo de emparelhamento esgotado</string>
+    <string name="msg_pairing_timeout">A autenticação expirou. Por favor, tente novamente.</string>
+    <string name="title_pairing">Emparelhando…</string>
+    <string name="msg_pairing_with">Emparelhando com %s.\nConfirme no seu dispositivo Garmin se solicitado.</string>
+    <string name="title_paired_successfully">Emparelhado com sucesso</string>
+    <string name="msg_paired_with">Emparelhado com %s</string>
+    <string name="title_pairing_failed">Falha no emparelhamento</string>
+    <string name="msg_pairing_failed">Falha ao emparelhar: %s</string>
+    <string name="btn_stop">Parar</string>
+    <string name="btn_keep_scanning">Continuar procurando…</string>
+    <string name="unable_to_get_ip">Não foi possível obter o endereço IP</string>
 </resources>
