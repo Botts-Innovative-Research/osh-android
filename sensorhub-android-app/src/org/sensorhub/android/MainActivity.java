@@ -135,23 +135,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     private TextView toolbarTitle;
     private BroadcastReceiver broadcastReceiver;
 
-    enum Sensors {
-        Android,
-        TruPulse,
-        TruPulseSim,
-        Angel,
-        FlirOne,
-        DJIDrone,
-        ProxySensor,
-        BLELocation,
-        Meshtastic,
-        PolarHRMonitor,
-        Kestrel,
-        Wardriving,
-        Controller,
-        Template
-    }
-
     private final ServiceConnection sConn = new ServiceConnection()
     {
         public void onServiceConnected(ComponentName className, IBinder service)
