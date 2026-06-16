@@ -8,7 +8,8 @@
  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  for the specific language governing rights and limitations under the License.
 
- Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
+ The Initial Developer is Botts Innovative Research Inc. Portions created by the Initial
+ Developer are Copyright (C) 2025 the Initial Developer. All Rights Reserved.
 
  ******************************* END LICENSE BLOCK ***************************/
 

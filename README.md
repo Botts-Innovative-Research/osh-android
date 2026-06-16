@@ -20,6 +20,7 @@ An Android application that collects sensor data from phones and tablets and str
 - Meshtastic mesh radio (Bluetooth)
 - STE radiation pager
 - BLE beacons
+- Garmin Wearable Sensor
 
 ## Requirements
 

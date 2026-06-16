@@ -1,16 +1,17 @@
 /***************************** BEGIN LICENSE BLOCK ***************************
 
-The contents of this file are subject to the Mozilla Public License, v. 2.0.
-If a copy of the MPL was not distributed with this file, You can obtain one
-at http://mozilla.org/MPL/2.0/.
+ The contents of this file are subject to the Mozilla Public License, v. 2.0.
+ If a copy of the MPL was not distributed with this file, You can obtain one
+ at http://mozilla.org/MPL/2.0/.
 
-Software distributed under the License is distributed on an "AS IS" basis,
-WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-for the specific language governing rights and limitations under the License.
- 
-Copyright (C) 2012-2015 Sensia Software LLC. All Rights Reserved.
- 
-******************************* END LICENSE BLOCK ***************************/
+ Software distributed under the License is distributed on an "AS IS" basis,
+ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ for the specific language governing rights and limitations under the License.
+
+ The Initial Developer is Botts Innovative Research Inc. Portions created by the Initial
+ Developer are Copyright (C) 2025 the Initial Developer. All Rights Reserved.
+
+ ******************************* END LICENSE BLOCK ***************************/
 
 package org.sensorhub.impl.sensor.polar;
 
@@ -34,8 +35,16 @@ public class PolarConfig extends SensorConfig
         this.moduleClass = Polar.class.getCanonicalName();
     }
 
-    public String device_name;
+    /** Polar device ID printed on the device (e.g. "A1B2C3D4") */
+    public String deviceId;
     public String uid_extension;
+    public boolean enablePpi = true;
+
+    /** Enable ECG waveform streaming (H10 only) */
+    public boolean enableEcg = false;
+
+    /** Enable accelerometer streaming (H10 only) */
+    public boolean enableAccelerometer = false;
 
     public static String getUid() {
         Context context = SensorHubService.getContext();

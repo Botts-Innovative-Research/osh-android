@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/faq_header_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="20dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp"
+    android:textColor="@color/md_theme_primary"
+    android:textSize="14sp"
+    android:fontFamily="sans-serif-medium"
+    android:textAllCaps="true"
+    android:letterSpacing="0.05" />

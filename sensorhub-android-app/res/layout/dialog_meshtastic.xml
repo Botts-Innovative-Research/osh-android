@@ -1,42 +1,50 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="@dimen/content_padding_large">
 
-<!--    <TextView-->
-<!--        android:id="@+id/nodeId_label"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:padding="10dp"-->
-<!--        android:background="#FFFFFF"-->
-<!--        android:text="@string/meshtastic_nodeId" />-->
-
-    <EditText
-        android:id="@+id/destination_nodeId"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/content_padding"
         android:hint="@string/destination_node_hint"
-        android:minLines="3"
-        android:gravity="top"
-        android:inputType="textMultiLine" />
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusBottomEnd="8dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-<!--    <TextView-->
-<!--        android:id="@+id/message_label"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:padding="10dp"-->
-<!--        android:background="#FFFFFF"-->
-<!--        android:text="@string/meshtastic_msg" />-->
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/destination_nodeId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="2"
+            android:gravity="top"
+            android:inputType="textMultiLine" />
 
-    <EditText
-        android:id="@+id/msg_input"
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/message_hint"
-        android:minLines="3"
-        android:gravity="top"
-        android:inputType="textMultiLine" />
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusBottomEnd="8dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/msg_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="3"
+            android:gravity="top"
+            android:inputType="textMultiLine" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

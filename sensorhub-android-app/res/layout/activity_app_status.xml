@@ -1,134 +1,341 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".AppStatusActivity">
 
-    <TextView
-        android:id="@+id/sos_service_status_label"
-        android:layout_width="215dp"
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:padding="10dp"
-        android:text="@string/sosServiceStatusLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:fitsSystemWindows="true">
 
-    <TextView
-        android:id="@+id/sos_service_state"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="10dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="@+id/sos_service_status_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/sos_service_status_label"
-        app:layout_constraintTop_toTopOf="@+id/sos_service_status_label" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/status_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/toolbar_bg"
+            app:titleTextColor="@color/toolbar_title"
+            app:title="@string/app_status_main_fragment"
+            app:navigationIcon="@drawable/ic_arrow_back" />
 
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/consys_service_status_label"
-        android:layout_width="215dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:padding="10dp"
-        android:text="@string/conSysServiceStatusLabel"
-        app:layout_constraintEnd_toEndOf="@+id/sos_service_status_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sos_service_status_label" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <TextView
-        android:id="@+id/consys_service_state"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="10dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="@+id/consys_service_status_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/consys_service_status_label"
-        app:layout_constraintTop_toTopOf="@+id/consys_service_status_label"
-        />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/content_padding">
 
-    <TextView
-        android:id="@+id/http_server_status_label"
-        android:layout_width="215dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:padding="10dp"
-        android:text="@string/httpServerStatusLabel"
-        app:layout_constraintEnd_toEndOf="@+id/consys_service_status_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/consys_service_status_label" />
+            <!-- SOS Service Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/md_theme_surface">
 
-    <TextView
-        android:id="@+id/http_service_state"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="10dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="@+id/http_server_status_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/http_server_status_label"
-        app:layout_constraintTop_toTopOf="@+id/http_server_status_label" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/content_padding">
 
-    <TextView
-        android:id="@+id/android_sensor_status_label"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/http_server_status_label"
-        android:layout_marginStart="8dp"
-        android:padding="10dp"
-        android:text="@string/sensorServiceStatusLabel"
-        app:layout_constraintEnd_toEndOf="@+id/http_server_status_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/http_server_status_label" />
+                    <View
+                        android:id="@+id/sos_status_dot"
+                        android:layout_width="@dimen/status_dot_size"
+                        android:layout_height="@dimen/status_dot_size"
+                        android:background="@drawable/status_dot_background" />
 
-    <TextView
-        android:id="@+id/sensor_service_state"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="10dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="@+id/android_sensor_status_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/android_sensor_status_label"
-        app:layout_constraintTop_toTopOf="@+id/android_sensor_status_label" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/content_padding">
 
-    <TextView
-        android:id="@+id/storage_service_status_label"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/android_sensor_status_label"
-        android:layout_marginStart="8dp"
-        android:padding="10dp"
-        android:text="@string/storageServiceStatusLabel"
-        app:layout_constraintEnd_toEndOf="@+id/android_sensor_status_label"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/android_sensor_status_label" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sosServiceStatusLabel"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" />
 
-    <TextView
-        android:id="@+id/storage_service_state"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="10dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="@+id/storage_service_status_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/storage_service_status_label"
-        app:layout_constraintTop_toTopOf="@+id/storage_service_status_label" />
+                        <TextView
+                            android:id="@+id/sos_service_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Started" />
 
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-</androidx.constraintlayout.widget.ConstraintLayout >
+            <!-- ConSys Service Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/md_theme_surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/content_padding">
+
+                    <View
+                        android:id="@+id/consys_status_dot"
+                        android:layout_width="@dimen/status_dot_size"
+                        android:layout_height="@dimen/status_dot_size"
+                        android:background="@drawable/status_dot_background" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/content_padding">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/conSysServiceStatusLabel"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/consys_service_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Started" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Discovery Service Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/md_theme_surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/content_padding">
+
+                    <View
+                        android:id="@+id/discovery_status_dot"
+                        android:layout_width="@dimen/status_dot_size"
+                        android:layout_height="@dimen/status_dot_size"
+                        android:background="@drawable/status_dot_background" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/content_padding">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/discoveryServiceStatusLabel"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/discovery_service_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Started" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- HTTP Server Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/md_theme_surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/content_padding">
+
+                    <View
+                        android:id="@+id/http_status_dot"
+                        android:layout_width="@dimen/status_dot_size"
+                        android:layout_height="@dimen/status_dot_size"
+                        android:background="@drawable/status_dot_background" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/content_padding">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/httpServerStatusLabel"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/http_service_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Started" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Android Sensor Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/md_theme_surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/content_padding">
+
+                    <View
+                        android:id="@+id/sensor_status_dot"
+                        android:layout_width="@dimen/status_dot_size"
+                        android:layout_height="@dimen/status_dot_size"
+                        android:background="@drawable/status_dot_background" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/content_padding">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sensorServiceStatusLabel"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/sensor_service_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Started" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Storage Service Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/md_theme_surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/content_padding">
+
+                    <View
+                        android:id="@+id/storage_status_dot"
+                        android:layout_width="@dimen/status_dot_size"
+                        android:layout_height="@dimen/status_dot_size"
+                        android:background="@drawable/status_dot_background" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/content_padding">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/storageServiceStatusLabel"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/storage_service_state"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Started" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

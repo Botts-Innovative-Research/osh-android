@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpenSensorHub SmartHub</string>
-    <string name="hello_world">Please configure and start SmartHub using the Options Menu</string>
+    <string name="app_name">OpenSensorHub</string>
+    <string name="hello_world">Configure settings and tap the play button to start SmartHub</string>
     <string name="action_settings">Settings</string>
     <string name="action_start">Start SmartHub</string>
     <string name="action_stop">Stop SmartHub</string>
@@ -10,19 +10,87 @@
     <string name="action_proxy">Start Proxy</string>
     <string name="action_stop_proxy">Stop Proxy</string>
     <string name="action_meshtastic">Meshtastic Msg</string>
-    <string name="sos_settings">SOS Settings (Required)</string>
-    <string name="sost_settings">SOS-T Settings (Optional)</string>
     <string name="sensor_android">Android Sensor</string>
-    <string name="sensor_trupulse">TruPulse Range Finder Sensor</string>
-    <string name="sensor_meshtastic">Meshtastic Sensor</string>
-    <string name="sensor_angel">Angel Sensor</string>
-    <string name="sensor_flirone">Flirone Sensor</string>
+    <string name="sensor_angel">Angel Health Monitor</string>
+    <string name="sensor_meshtastic">Meshtastic Radio</string>
+    <string name="sensor_wardriving">Wardriving</string>
+    <string name="sensor_polar">Polar Heart Monitor</string>
+    <string name="sensor_kestrel">Kestrel Weather Meter</string>
+    <string name="sensor_controller">USB Controller</string>
+    <string name="sensor_trupulse">TruPulse Range Finder</string>
+    <string name="sensor_flirone">Flirone</string>
+    <string name="sensor_ste">STE Radiation Pager</string>
+    <string name="sensor_template">Template</string>
+    <string name="sensor_accelerometer">Accelerometer</string>
+    <string name="sensor_gyroscope">Gyroscope</string>
+    <string name="sensor_magnetometer">Magnetometer</string>
+    <string name="sensor_orientation_quat">Orientation (Quaternions)</string>
+    <string name="sensor_orientation_euler">Orientation (Euler Angles)</string>
+    <string name="sensor_gps">GPS Location</string>
+    <string name="sensor_network_location">Network Location</string>
+    <string name="sensor_video">Video Data</string>
+    <string name="sensor_video_roll">Video Roll</string>
+    <string name="sensor_audio">Audio</string>
+
+    <string name="device_name">Device Name</string>
+    <string name="device_ip_address">Device IP Address</string>
+    <string name="server_profiles">Server Profiles</string>
+    <string name="manage_servers">Manage Servers</string>
+    <string name="services">Services</string>
+    <string name="enable_sos_service">SOS Service</string>
+    <string name="enable_csapi_service">Connected Systems Service</string>
+    <string name="enable_discovery_service">Discovery Service</string>
+
+    <string name="summary_accel">Stream real-time accelerometer motion data</string>
+    <string name="summary_gyro">Stream real-time gyroscope rotation data</string>
+    <string name="summary_mag">Stream magnetometer heading and magnetic field data</string>
+    <string name="summary_orientation">Stream device orientation and attitude data</string>
+    <string name="summary_gps">Stream GPS-based location and movement data</string>
+    <string name="summary_netloc">Stream network-based location data</string>
+    <string name="summary_video">Stream live video from the device camera</string>
+    <string name="summary_video_roll">Attach device roll metadata to video frame headers</string>
+    <string name="summary_audio">Stream live audio from the device microphone</string>
+    <string name="summary_meshtastic">Connect to a Meshtastic device over Bluetooth during startup</string>
+    <string name="summary_wardriving">Stream nearby wireless network scan data</string>
+    <string name="summary_polar">Connect to a Polar heart rate sensor over Bluetooth LE</string>
+    <string name="summary_kestrel">Stream environmental data from a Kestrel weather meter</string>
+    <string name="summary_controller">Connect to a supported USB controller during startup</string>
+    <string name="summary_trupulse">Stream distance and angle data from a TruPulse rangefinder</string>
+    <string name="summary_trupulse_simu">Use simulated TruPulse measurements for testing</string>
+    <string name="summary_garmin">Stream health biometric data from Garmin Wearable</string>
+    <string name="summary_angel">Stream biometric data from the Angel Sensor</string>
+    <string name="summary_flirone">Stream thermal imagery from a connected FLIR One camera</string>
+    <string name="summary_ste">Connect to an STE RadPager over Bluetooth LE during startup</string>
+    <string name="summary_template">Enable the template sensor driver for development and testing</string>
+    <string name="summary_push_options">Options for pushing data</string>
+    <string name="summary_csapi">OGC standard REST API serving this device’s sensor data.</string>
+    <string name="summary_sos">Legacy API serving sensor data as XML over HTTP</string>
+    <string name="summary_discovery">Service providing discovery based on definable rulesets</string>
+    <string name="summary_select_device">Tap to select or enter device address</string>
+    <string name="pref_uid_extension">Sensors UID Extension</string>
+    <string name="server_profile_summary">Optional — add servers to push data remotely. Without servers, data is served locally.</string>
+
+
     <string-array name="video_codec_list">
         <item>JPEG</item>
         <item>H264</item>
         <item>H265</item>
         <item>VP9</item>
         <item>VP8</item>
+    </string-array>
+
+    <string-array name="video_framerate">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+
+    <string-array name="video_resolution_list">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
     </string-array>
 
     <string-array name="orientation_angle_list">
@@ -236,8 +304,123 @@
     <string-array name="bluetooth_scanned_address_list">
         <item></item>
     </string-array>
+
+    <string name="tab_sensors">Sensors</string>
+    <string name="tab_dashboard">Home</string>
+    <string name="tab_settings">Settings</string>
+    <string name="app_preferences">App Preferences</string>
+
     <string name="meshtastic_msg">Enter a message!</string>
     <string name="message_hint">Enter a message!</string>
     <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>
     <string name="destination_node_hint">Enter the destination Node ID (integer)</string>
+
+    <!-- App Preferences -->
+    <string name="title_notifications">Notifications</string>
+    <string name="title_language">Language</string>
+    <string name="title_version">Version</string>
+    <string name="title_about">About application</string>
+    <string name="title_help_faq">Help / FAQ</string>
+    <string name="title_language_dialog">Language</string>
+    <string name="about_description">A software platform for building smart sensor networks and the Internet of Things</string>
+
+    <!-- Sensor Preferences -->
+    <string name="category_on_device">ON-DEVICE</string>
+    <string name="category_bluetooth">Bluetooth Peripherals</string>
+    <string name="category_others">Others</string>
+    <string name="title_codec">Codec</string>
+    <string name="title_frame_rate">Frame Rate</string>
+    <string name="title_resolution">Resolution</string>
+    <string name="title_camera">Camera</string>
+    <string name="title_sample_rate">Sample Rate</string>
+    <string name="title_bitrate">Bitrate (kbps)</string>
+    <string name="title_select_meshtastic">Select Meshtastic Device</string>
+    <string name="title_select_polar">Select Polar HR Device</string>
+    <string name="title_select_kestrel">Select Kestrel Device</string>
+    <string name="title_trupulse_datasource">TruPulse Data Source</string>
+    <string name="title_select_trupulse">Select TruPulse Device</string>
+    <string name="title_use_simulated_trupulse">Use Simulated TruPulse Data</string>
+    <string name="title_select_template">Select template Device</string>
+    <string name="summary_uid_extension">An ID attached to the end of each systems UID</string>
+    <string name="title_discovery_rules">URL to Discovery Rules.txt</string>
+
+    <!-- Dashboard -->
+    <string name="video_stream">Video Stream</string>
+    <string name="switch_camera">Switch Camera</string>
+    <string name="btn_show">Show</string>
+    <string name="btn_hide">Hide</string>
+    <string name="meshtastic_label">Meshtastic</string>
+    <string name="meshtastic_connected">Connected</string>
+    <string name="btn_message">Message</string>
+    <string name="title_sensors">Sensors</string>
+    <string name="no_sensors_push">No Sensors Set to Push Remotely</string>
+    <string name="title_run_name">Run Name</string>
+    <string name="msg_enter_run_name">Please enter the name for this run</string>
+    <string name="title_send_meshtastic">Send Meshtastic Message</string>
+
+    <!-- Server Profiles -->
+    <string name="empty_server_profiles">No server profiles configured.\nTap + to create one.</string>
+    <string name="content_desc_add_server">Add server profile</string>
+    <string name="title_delete_server">Delete Server</string>
+    <string name="msg_delete_server">Remove \"%s\"?</string>
+
+    <!-- Edit Server Profile -->
+    <string name="section_client">CLIENT</string>
+    <string name="btn_csapi_client">CS API Client</string>
+    <string name="btn_sost_client">SOS-T Client</string>
+    <string name="section_connection">CONNECTION</string>
+    <string name="hint_server_name">Server name</string>
+    <string name="hint_host_ip">Host / IP</string>
+    <string name="hint_port">Port</string>
+    <string name="hint_endpoint_path">Endpoint path</string>
+    <string name="switch_enable_tls">Enable TLS</string>
+    <string name="switch_disable_ssl">Disable SSL Validation</string>
+    <string name="section_authentication">AUTHENTICATION</string>
+    <string name="auth_none">None</string>
+    <string name="auth_basic">Basic</string>
+    <string name="auth_oauth">OAuth</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_token_endpoint">Token Endpoint</string>
+    <string name="hint_client_id">Client ID</string>
+    <string name="hint_client_secret">Client Secret</string>
+    <string name="btn_add_server">Add Server</string>
+
+    <!-- Dialogs -->
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_send">Send</string>
+    <string name="title_select_device">Select Device</string>
+    <string name="title_enter_device">Enter Device Name or Address</string>
+    <string name="msg_enter_device">Enter a device name (e.g. \"Ballistic\") or MAC address. Names are matched from the start, case-insensitive.</string>
+    <string name="title_edit_server">Edit Server</string>
+    <string name="sensor_garmin">Garmin Wearable</string>
+    <string name="title_select_garmin">Select Garmin Device</string>
+    <string name="hint_manual_device">e.g. Ballistic or AA:BB:CC:DD:EE:FF</string>
+    <string name="manual_entry_option">Enter name or address manually…</string>
+    <string name="scan_new_devices">Scan for new devices…</string>
+    <string name="content_desc_switch_camera">Switch Camera</string>
+
+    <!-- Status Messages -->
+    <string name="stopping_sensorhub">Stopping SensorHub</string>
+    <string name="sensorhub_stopped">SensorHub Stopped</string>
+    <string name="starting_sensorhub">Starting SensorHub…</string>
+    <string name="sensorhub_start_failed">SensorHub failed to start</string>
+    <string name="video_config_error">Video Config Error: Check Settings</string>
+    <string name="video_config_error_msg">Check Video Settings and ensure the resolution for the selected preset has been set.</string>
+    <string name="msg_sensorhub_not_running">SensorHub not running</string>
+    <string name="msg_message_sent">Message sent</string>
+    <string name="msg_message_failed">Failed to send message</string>
+    <string name="msg_profile_not_found">Profile not found</string>
+    <string name="msg_name_host_port_required">Name, host, and port are required</string>
+    <string name="msg_no_protocol">Host should not include a protocol (e.g. http://)</string>
+    <string name="msg_port_number">Port should be a number</string>
+    <string name="msg_port_range">Port should be between 1 and 65535</string>
+
+    <!-- Garmin -->
+    <string name="title_license_required">License Key Required</string>
+    <string name="msg_garmin_license">Garmin Health SDK license key is not configured. Add it to gradle.properties.</string>
+    <string name="title_garmin_sdk_error">Garmin SDK Error</string>
+    <string name="msg_garmin_sdk_init_failed">Failed to initialize Garmin Health SDK: %s</string>
 </resources>
