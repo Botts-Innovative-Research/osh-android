@@ -416,4 +416,25 @@
     <string name="msg_port_number">La porta deve essere un numero</string>
     <string name="msg_port_range">La porta deve essere compresa tra 1 e 65535</string>
 
+    <!-- Garmin -->
+    <string name="title_license_required">Chiave di licenza richiesta</string>
+    <string name="msg_garmin_license">La chiave di licenza del SDK Garmin Health non è configurata. Aggiungila in gradle.properties.</string>
+    <string name="title_garmin_sdk_error">Errore SDK Garmin</string>
+    <string name="msg_garmin_sdk_init_failed">Inizializzazione SDK Garmin Health fallita: %s</string>
+    <string name="title_scan_failed">Scansione fallita</string>
+    <string name="msg_garmin_scan_failed">Scansione dispositivo Garmin fallita (errore %d)</string>
+    <string name="title_scanning_garmin">Ricerca dispositivi Garmin…</string>
+    <string name="msg_scanning_garmin">Assicurati che il dispositivo Garmin sia vicino e in modalità di associazione.</string>
+    <string name="title_found_garmin_devices">Trovati %d dispositivo/i Garmin</string>
+    <string name="title_pairing_timeout">Timeout associazione</string>
+    <string name="msg_pairing_timeout">L\'autenticazione è scaduta. Riprova.</string>
+    <string name="title_pairing">Associazione…</string>
+    <string name="msg_pairing_with">Associazione con %s.\nConferma sul dispositivo Garmin se richiesto.</string>
+    <string name="title_paired_successfully">Associazione riuscita</string>
+    <string name="msg_paired_with">Associato con %s</string>
+    <string name="title_pairing_failed">Associazione fallita</string>
+    <string name="msg_pairing_failed">Associazione fallita: %s</string>
+    <string name="btn_stop">Ferma</string>
+    <string name="btn_keep_scanning">Continua la ricerca…</string>
+    <string name="unable_to_get_ip">Impossibile ottenere l\'indirizzo IP</string>
 </resources>

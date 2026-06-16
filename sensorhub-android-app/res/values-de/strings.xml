@@ -416,4 +416,25 @@
     <string name="msg_port_number">Port muss eine Zahl sein</string>
     <string name="msg_port_range">Port muss zwischen 1 und 65535 liegen</string>
 
+    <!-- Garmin -->
+    <string name="title_license_required">Lizenzschlüssel erforderlich</string>
+    <string name="msg_garmin_license">Der Garmin Health SDK-Lizenzschlüssel ist nicht konfiguriert. Fügen Sie ihn in gradle.properties hinzu.</string>
+    <string name="title_garmin_sdk_error">Garmin SDK-Fehler</string>
+    <string name="msg_garmin_sdk_init_failed">Garmin Health SDK konnte nicht initialisiert werden: %s</string>
+    <string name="title_scan_failed">Scan fehlgeschlagen</string>
+    <string name="msg_garmin_scan_failed">Garmin-Geräte-Scan fehlgeschlagen (Fehler %d)</string>
+    <string name="title_scanning_garmin">Suche nach Garmin-Geräten…</string>
+    <string name="msg_scanning_garmin">Stellen Sie sicher, dass Ihr Garmin-Gerät in der Nähe und im Kopplungsmodus ist.</string>
+    <string name="title_found_garmin_devices">%d Garmin-Gerät(e) gefunden</string>
+    <string name="title_pairing_timeout">Kopplungs-Zeitüberschreitung</string>
+    <string name="msg_pairing_timeout">Authentifizierung ist abgelaufen. Bitte versuchen Sie es erneut.</string>
+    <string name="title_pairing">Kopplung…</string>
+    <string name="msg_pairing_with">Kopplung mit %s.\nBitte bestätigen Sie auf Ihrem Garmin-Gerät, wenn Sie dazu aufgefordert werden.</string>
+    <string name="title_paired_successfully">Erfolgreich gekoppelt</string>
+    <string name="msg_paired_with">Gekoppelt mit %s</string>
+    <string name="title_pairing_failed">Kopplung fehlgeschlagen</string>
+    <string name="msg_pairing_failed">Kopplung fehlgeschlagen: %s</string>
+    <string name="btn_stop">Stopp</string>
+    <string name="btn_keep_scanning">Weiter suchen…</string>
+    <string name="unable_to_get_ip">IP-Adresse konnte nicht ermittelt werden</string>
 </resources>

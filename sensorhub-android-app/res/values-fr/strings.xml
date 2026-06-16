@@ -416,4 +416,25 @@
     <string name="msg_port_number">Le port doit être un nombre</string>
     <string name="msg_port_range">Le port doit être compris entre 1 et 65535</string>
 
+    <!-- Garmin -->
+    <string name="title_license_required">Clé de licence requise</string>
+    <string name="msg_garmin_license">La clé de licence du SDK Garmin Health n\'est pas configurée. Ajoutez-la dans gradle.properties.</string>
+    <string name="title_garmin_sdk_error">Erreur du SDK Garmin</string>
+    <string name="msg_garmin_sdk_init_failed">Échec de l\'initialisation du SDK Garmin Health : %s</string>
+    <string name="title_scan_failed">Échec du scan</string>
+    <string name="msg_garmin_scan_failed">Le scan de l\'appareil Garmin a échoué (erreur %d)</string>
+    <string name="title_scanning_garmin">Recherche d\'appareils Garmin…</string>
+    <string name="msg_scanning_garmin">Assurez-vous que votre appareil Garmin est à proximité et en mode d\'appairage.</string>
+    <string name="title_found_garmin_devices">%d appareil(s) Garmin trouvé(s)</string>
+    <string name="title_pairing_timeout">Délai d\'appairage expiré</string>
+    <string name="msg_pairing_timeout">L\'authentification a expiré. Veuillez réessayer.</string>
+    <string name="title_pairing">Appairage…</string>
+    <string name="msg_pairing_with">Appairage avec %s.\nVeuillez confirmer sur votre appareil Garmin si demandé.</string>
+    <string name="title_paired_successfully">Appairage réussi</string>
+    <string name="msg_paired_with">Appairé avec %s</string>
+    <string name="title_pairing_failed">Échec de l\'appairage</string>
+    <string name="msg_pairing_failed">Échec de l\'appairage : %s</string>
+    <string name="btn_stop">Arrêter</string>
+    <string name="btn_keep_scanning">Continuer la recherche…</string>
+    <string name="unable_to_get_ip">Impossible d\'obtenir l\'adresse IP</string>
 </resources>
