@@ -158,7 +158,6 @@ public class SensorHubService extends Service
                     .setContentText("Collecting and transmitting sensor data")
                     .setContentIntent(pendingIntent)
                     .setOngoing(true)
-                    .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
                     .setPriority(Notification.PRIORITY_LOW)
                     .build();
         }
@@ -183,6 +182,7 @@ public class SensorHubService extends Service
         }
 
         acquireWakeLocks();
+        startForegroundService();
 
         msgHandler.post(new Runnable() {
             public void run() {
@@ -212,7 +212,7 @@ public class SensorHubService extends Service
                     PowerManager.PARTIAL_WAKE_LOCK,
                     "SensorHub::DataCollection"
             );
-            wakeLock.acquire();
+            wakeLock.acquire(10000);
         }
 
         // Acquire WiFi lock to keep WiFi active
@@ -243,14 +243,22 @@ public class SensorHubService extends Service
 
     public synchronized void stopSensorHub()
     {
-        if (sensorhub != null) {
-            sensorhub.stop();
-            sensorhub = null;
-        }
+        msgHandler.post(() -> {
+            if (sensorhub != null) {
+                try {
+                    sensorhub.stop();
+                } catch (Exception e) {
+                    log.error("Error stopping SensorHub", e);
+                }
+                sensorhub = null;
+            }
+        });
 
         this.hasVideo = false;
 
         releaseWakeLocks();
+
+        stopForeground(true);
     }
 
 

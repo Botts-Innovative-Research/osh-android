@@ -5,15 +5,15 @@ import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.sensor.android.AndroidSensorsDriver;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface SensorHubServiceProvider {
     SensorHubService getBoundService();
     boolean isOshStarted();
     void setOshStarted(boolean started);
     IModuleConfigRepository getSensorhubConfig();
-    ArrayList<SOSTClient> getSostClients();
-    ArrayList<ConSysApiClientModule> getConSysClients();
+    List<SOSTClient> getSostClients();
+    List<ConSysApiClientModule> getConSysClients();
     AndroidSensorsDriver getAndroidSensors();
     void setAndroidSensors(AndroidSensorsDriver driver);
     boolean getShowVideo();

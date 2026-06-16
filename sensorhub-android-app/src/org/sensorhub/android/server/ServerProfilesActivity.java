@@ -42,7 +42,7 @@ public class ServerProfilesActivity extends AppCompatActivity implements ServerA
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        repo = new ServerProfileRepository(this);
+        repo = ServerProfileRepository.getInstance(this);
 
         recyclerView = findViewById(R.id.server_list);
         emptyText = findViewById(R.id.empty_text);
