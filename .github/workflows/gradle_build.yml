@@ -33,7 +33,7 @@ jobs:
       - name: Build APK
         run: |
           chmod +x ./gradlew
-          ./gradlew build -x test -x osgi -x lintDebug
+          ./gradlew build -x test -x osgi -x lintDebug -x javadoc
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
