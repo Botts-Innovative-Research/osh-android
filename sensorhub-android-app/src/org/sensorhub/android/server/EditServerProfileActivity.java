@@ -51,6 +51,7 @@ public class EditServerProfileActivity extends AppCompatActivity {
         setupListeners();
         if (isEdit) populateFields();
         updateSslVisibility();
+        updateEndpointAutofill();
 
         MaterialButton saveButton = findViewById(R.id.btn_save);
         saveButton.setOnClickListener(v -> saveProfile());
@@ -101,6 +102,17 @@ public class EditServerProfileActivity extends AppCompatActivity {
         }
     }
 
+
+    private void updateEndpointAutofill() {
+        profileTypeToggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            if (checkedId == R.id.btn_type_consys) {
+                endpointInput.setText("/sensorhub/api");
+            } else if (checkedId == R.id.btn_type_sos) {
+                endpointInput.setText("/sensorhub/sos");
+            }
+        });
+    }
     private void populateFields() {
         nameInput.setText(profile.name);
         hostInput.setText(profile.host);
