@@ -43,6 +43,7 @@ import org.sensorhub.impl.sensor.AbstractSensorModule;
 import org.sensorhub.impl.sensor.android.audio.AndroidAudioOutputAAC;
 import org.sensorhub.impl.sensor.android.audio.AndroidAudioOutputOPUS;
 import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig;
+import org.sensorhub.impl.sensor.android.video.AndroidCameraOutput;
 import org.sensorhub.impl.sensor.android.video.AndroidCameraOutputH264;
 import org.sensorhub.impl.sensor.android.video.AndroidCameraOutputH265;
 import org.sensorhub.impl.sensor.android.video.AndroidCameraOutputMJPEG;
@@ -77,6 +78,7 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
     LocationManager locationManager;
     SensorMLBuilder smlBuilder;
     List<PhysicalComponent> smlComponents;
+    AndroidCameraOutput currentCameraOutput;
 
 
     public AndroidSensorsDriver()
@@ -148,7 +150,13 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
 
         // create data interfaces for cameras
         if (androidContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
+        {
             createCameraOutputs(androidContext);
+
+            // register camera control (front/back switching + zoom)
+            if (currentCameraOutput != null)
+                addControlInput(new AndroidCameraControl(this));
+        }
 
         // create data interfaces for audio
         if (androidContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_MICROPHONE))
@@ -273,6 +281,8 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
     {
         addOutput(output, false);
         smlComponents.add(smlBuilder.getComponentDescription(cameraId));
+        if (output instanceof AndroidCameraOutput)
+            currentCameraOutput = (AndroidCameraOutput) output;
         log.info("Getting data from camera #" + cameraId);
     }
 
@@ -292,7 +302,27 @@ public class AndroidSensorsDriver extends AbstractSensorModule<AndroidSensorsCon
         log.info("Getting data from audio source " + srcName);
     }
 
-    
+
+    public void switchCamera(int newCameraId) throws SensorException
+    {
+        if (currentCameraOutput == null)
+            throw new SensorException("No camera output to switch");
+
+        currentCameraOutput.switchCamera(newCameraId);
+        config.selectedCameraId = newCameraId;
+        log.info("Switched to camera #{}", newCameraId);
+    }
+
+
+    public void setCameraZoom(int zoomLevel) throws SensorException
+    {
+        if (currentCameraOutput == null)
+            throw new SensorException("No camera output to set zoom on");
+
+        currentCameraOutput.setZoom(zoomLevel);
+    }
+
+
     @Override
     protected void doStop() throws SensorException
     {
