@@ -420,6 +420,85 @@ public abstract class AndroidCameraOutput extends AbstractSensorOutput<AndroidSe
     }
 
 
+    public void switchCamera(int newCameraId) throws SensorException
+    {
+        if (newCameraId == this.cameraId)
+            return;
+
+        if (camera != null)
+        {
+            camera.stopPreview();
+            camera.setPreviewCallbackWithBuffer(null);
+            camera.release();
+            camera = null;
+        }
+
+        if (mCodec != null)
+        {
+            mCodec.stop();
+            mCodec.release();
+            mCodec = null;
+        }
+
+        if (bgLooper != null)
+        {
+            bgLooper.quit();
+            bgLooper = null;
+        }
+
+        codecInfoData = null;
+
+        this.cameraId = newCameraId;
+        initCam();
+        initCodec();
+
+        if (mCodec != null)
+            mCodec.start();
+
+        try
+        {
+            if (previewTexture != null)
+                camera.setPreviewTexture(previewTexture);
+            camera.startPreview();
+        }
+        catch (Exception e)
+        {
+            throw new SensorException("Cannot restart camera preview after switch", e);
+        }
+    }
+
+
+    public void setZoom(int zoomLevel) throws SensorException
+    {
+        if (camera == null)
+            throw new SensorException("Camera is not initialized");
+        if (bgLooper == null)
+            throw new SensorException("Camera looper is not running");
+
+        new Handler(bgLooper).post(() -> {
+            try
+            {
+                Camera.Parameters params = camera.getParameters();
+                if (!params.isZoomSupported())
+                {
+                    log.warn("Zoom is not supported on camera {}", cameraId);
+                    return;
+                }
+
+                int maxZoom = params.getMaxZoom();
+                int clampedZoom = Math.max(0, Math.min(zoomLevel, maxZoom));
+                params.setZoom(clampedZoom);
+                camera.setParameters(params);
+                log.info("Zoom set to {}/{} on camera #{}", clampedZoom, maxZoom, cameraId);
+            }
+            catch (Exception e)
+            {
+                log.error("Failed to set zoom on camera {}", cameraId, e);
+            }
+        });
+    }
+
+
     @Override
     public void stop()
     {

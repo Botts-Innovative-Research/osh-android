@@ -401,6 +401,8 @@
     <string name="manual_entry_option">Enter name or address manually…</string>
     <string name="scan_new_devices">Scan for new devices…</string>
     <string name="content_desc_switch_camera">Switch Camera</string>
+    <string name="content_desc_zoom_in">Zoom In</string>
+    <string name="content_desc_zoom_out">Zoom Out</string>
 
     <!-- Status Messages -->
     <string name="stopping_sensorhub">Stopping SensorHub</string>

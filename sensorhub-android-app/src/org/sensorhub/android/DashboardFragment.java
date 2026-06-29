@@ -76,6 +76,11 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private TextureView textureView;
     private MaterialCardView videoStatusCard;
     private MaterialButton btnToggleVideo;
+    private MaterialButton btnFlipCamera;
+    private MaterialButton btnZoomIn;
+    private MaterialButton btnZoomOut;
+    private LinearLayout videoControlsOverlay;
+    private int currentZoomLevel = 0;
     private MaterialCardView meshtasticCard;
 
     private View videoStatusDot;
@@ -118,6 +123,16 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         videoStatusDot = view.findViewById(R.id.video_status_dot);
 
         btnToggleVideo.setOnClickListener(v -> toggleVideoPreview());
+
+        videoControlsOverlay = view.findViewById(R.id.video_controls_overlay);
+
+        btnFlipCamera = view.findViewById(R.id.btn_flip_camera);
+        btnFlipCamera.setOnClickListener(v -> flipCamera());
+
+        btnZoomIn = view.findViewById(R.id.btn_zoom_in);
+        btnZoomIn.setOnClickListener(v -> adjustZoom(1));
+        btnZoomOut = view.findViewById(R.id.btn_zoom_out);
+        btnZoomOut.setOnClickListener(v -> adjustZoom(-1));
 
         meshtasticCard = view.findViewById(R.id.meshtastic_card);
         view.findViewById(R.id.btn_meshtastic_msg).setOnClickListener(v -> showMeshtasticDialog());
@@ -177,6 +192,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         hideVideoPreview();
         clearTextureView();
         videoStatusCard.setVisibility(View.GONE);
+        if (videoControlsOverlay != null) videoControlsOverlay.setVisibility(View.GONE);
+        currentZoomLevel = 0;
         if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
         newStatusMessage(getString(R.string.sensorhub_stopped));
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -562,6 +579,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         boolean hasVideo = service != null && service.hasVideo();
 
         videoStatusCard.setVisibility(hasVideo ? View.VISIBLE : View.GONE);
+        updateVideoControlsVisibility();
 
         if (hasVideo && videoInfoText.length() > 0) {
             videoInfoArea.setText(videoInfoText.toString());
@@ -581,15 +599,80 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             textureView.setVisibility(View.VISIBLE);
             btnToggleVideo.setText(R.string.btn_hide);
             serverStatusContainer.setBackgroundColor(getResources().getColor(R.color.overlay_light, requireActivity().getTheme()));
+            updateVideoControlsVisibility();
             showVideo();
         } else {
             hideVideoPreview();
         }
     }
 
+    @SuppressWarnings("deprecation")
+    private void updateVideoControlsVisibility() {
+        SensorHubService service = provider.getBoundService();
+        boolean hasVideo = service != null && service.hasVideo();
+
+        if (videoControlsOverlay != null)
+            videoControlsOverlay.setVisibility(hasVideo && videoPreviewVisible ? View.VISIBLE : View.GONE);
+
+        if (btnFlipCamera != null) {
+            boolean showFlip = hasVideo && android.hardware.Camera.getNumberOfCameras() > 1;
+            btnFlipCamera.setVisibility(showFlip ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void flipCamera() {
+        AndroidSensorsDriver sensors = provider.getAndroidSensors();
+        if (sensors == null) return;
+
+        try {
+            int currentId = sensors.getConfiguration().selectedCameraId;
+            android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+            android.hardware.Camera.getCameraInfo(currentId, info);
+
+            String targetFacing = (info.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK)
+                    ? "FRONT" : "BACK";
+
+            int targetId = -1;
+            int targetFacingInt = "FRONT".equals(targetFacing)
+                    ? android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT
+                    : android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK;
+
+            for (int i = 0; i < android.hardware.Camera.getNumberOfCameras(); i++) {
+                android.hardware.Camera.CameraInfo camInfo = new android.hardware.Camera.CameraInfo();
+                android.hardware.Camera.getCameraInfo(i, camInfo);
+                if (camInfo.facing == targetFacingInt) {
+                    targetId = i;
+                    break;
+                }
+            }
+
+            if (targetId >= 0) {
+                sensors.switchCamera(targetId);
+                currentZoomLevel = 0;
+                Toast.makeText(requireContext(), "Switched to " + targetFacing.toLowerCase() + " camera", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Failed to switch camera", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void adjustZoom(int direction) {
+        AndroidSensorsDriver sensors = provider.getAndroidSensors();
+        if (sensors == null) return;
+
+        try {
+            currentZoomLevel = Math.max(0, currentZoomLevel + direction);
+            sensors.setCameraZoom(currentZoomLevel);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Zoom not supported", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void hideVideoPreview() {
         videoPreviewVisible = false;
         textureView.setVisibility(View.GONE);
+        if (videoControlsOverlay != null) videoControlsOverlay.setVisibility(View.GONE);
         if (btnToggleVideo != null) btnToggleVideo.setText(R.string.btn_show);
         serverStatusContainer.setBackgroundColor(0x00000000);
     }
