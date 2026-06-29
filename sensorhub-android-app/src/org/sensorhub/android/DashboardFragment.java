@@ -184,19 +184,38 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
-    private void stopHub() {
-        Toast.makeText(requireContext(), R.string.stopping_sensorhub, Toast.LENGTH_SHORT).show();
-        stopRefreshingStatus();
-        provider.stopSensorHub();
+    private void showFabProgress() {
+        if (fab == null) return;
+        fab.setImageResource(R.drawable.ic_loading_animated);
+        fab.setEnabled(false);
+    }
+
+    private void hideFabProgress() {
+        if (fab == null) return;
+        fab.setEnabled(true);
         updateFabIcon();
+    }
+
+    private void stopHub() {
+        showFabProgress();
+        newStatusMessage(getString(R.string.stopping_sensorhub));
+        stopRefreshingStatus();
         hideVideoPreview();
         clearTextureView();
         videoStatusCard.setVisibility(View.GONE);
         if (videoControlsOverlay != null) videoControlsOverlay.setVisibility(View.GONE);
         currentZoomLevel = 0;
         if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
-        newStatusMessage(getString(R.string.sensorhub_stopped));
-        requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        provider.stopSensorHub();
+
+        // Brief delay to let the service finish stopping on its background thread
+        displayHandler.postDelayed(() -> {
+            if (!isAdded()) return;
+            hideFabProgress();
+            updateFabIcon();
+            newStatusMessage(getString(R.string.sensorhub_stopped));
+            requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }, 1000);
     }
 
     private void clearTextureView() {
@@ -248,7 +267,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                     showVideoConfigErrorPopup();
                     newStatusMessage(getString(R.string.video_config_error));
                 } else {
-                    Toast.makeText(requireContext(), R.string.starting_sensorhub, Toast.LENGTH_SHORT).show();
+                    showFabProgress();
                     newStatusMessage(getString(R.string.starting_sensorhub));
                     provider.getSostClients().clear();
                     provider.getConSysClients().clear();
@@ -297,6 +316,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
             if (!provider.isOshStarted()) {
                 provider.setOshStarted(true);
+                hideFabProgress();
                 updateFabIcon();
                 serverStatusContainer.removeAllViews();
                 serverCardViews.clear();
@@ -309,6 +329,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         } else if (hubPollAttempts < HUB_POLL_MAX_ATTEMPTS) {
             displayHandler.postDelayed(this::pollHubReady, HUB_POLL_INTERVAL_MS);
         } else {
+            hideFabProgress();
             newStatusMessage(getString(R.string.sensorhub_start_failed));
             updateFabIcon();
         }
