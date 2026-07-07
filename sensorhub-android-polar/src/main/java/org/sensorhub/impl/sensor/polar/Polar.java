@@ -164,27 +164,38 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
         return deviceConnected;
     }
 
+    private void startPpiStreaming() {
+        logger.info("startPpiStreaming called, ppiOutput={}", ppiOutput);
+        if (ppiOutput == null) {
+            logger.warn("PPI output is null, skipping PPI streaming");
+            return;
+        }
+
+        String deviceId = config.deviceId;
+        logger.info("Starting PPI streaming for device: {}", deviceId);
+        Disposable ppiDisposable = api.startPpiStreaming(deviceId)
+                .subscribe(
+                        ppiData -> {
+                            logger.info("PPI data received, {} samples", ppiData.getSamples().size());
+                            for (PolarPpiData.PolarPpiSample sample : ppiData.getSamples()) {
+                                logger.info("PPI sample: ppi={} ms, hr={} bpm, skinContact={}",
+                                        sample.getPpi(), sample.getHr(), sample.getSkinContactStatus());
+                                ppiOutput.setData(
+                                        sample.getPpi(),
+                                        sample.getHr(),
+                                        sample.getSkinContactSupported(),
+                                        sample.getSkinContactStatus()
+                                );
+                            }
+                        },
+                        error -> logger.error("PPI streaming error", error)
+                );
+        disposables.add(ppiDisposable);
+        logger.info("PPI streaming subscribed successfully");
+    }
+
     private void startStreaming(Set<? extends PolarBleApi.PolarDeviceDataType> availableTypes) {
         String deviceId = config.deviceId;
-
-        if (ppiOutput != null && availableTypes.contains(PolarBleApi.PolarDeviceDataType.PPI)) {
-            Disposable ppiDisposable = api.startPpiStreaming(deviceId)
-                    .subscribe(
-                            ppiData -> {
-                                for (PolarPpiData.PolarPpiSample sample : ppiData.getSamples()) {
-                                    ppiOutput.setData(
-                                            sample.getPpi(),
-                                            sample.getHr(),
-                                            sample.getSkinContactSupported(),
-                                            sample.getSkinContactStatus()
-                                    );
-                                }
-                            },
-                            error -> logger.error("PPI streaming error", error)
-                    );
-            disposables.add(ppiDisposable);
-            logger.info("PPI streaming started");
-        }
 
         // ECG streaming H10 only
         if (ecgOutput != null && availableTypes.contains(PolarBleApi.PolarDeviceDataType.ECG)) {
@@ -270,7 +281,12 @@ public class Polar extends AbstractSensorModule<PolarConfig> {
             public void bleSdkFeatureReady(@NonNull String identifier,
                                            @NonNull PolarBleApi.PolarBleSdkFeature feature) {
                 super.bleSdkFeatureReady(identifier, feature);
-                logger.info("SDK feature ready: {}", feature);
+                logger.info("SDK feature ready: {} for device: {}", feature, identifier);
+
+                if (feature == PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING) {
+                    logger.info("Online streaming feature ready, starting PPI");
+                    startPpiStreaming();
+                }
             }
 
             @Override
