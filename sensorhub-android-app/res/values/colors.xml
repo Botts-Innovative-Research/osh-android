@@ -68,6 +68,7 @@
     <color name="overlay_light">#1AFFFFFF</color>
     <color name="overlay_dark">#99000000</color>
 
-    <color name="card_info_bg">#2C2C2C</color>
+    <color name="card_info_bg">#212121</color>
+    <color name="dialog_bg">#212121</color>
 
 </resources>

@@ -52,9 +52,21 @@
         <item name="materialCardViewStyle">@style/AppCard</item>
         <item name="materialButtonStyle">@style/AppButton</item>
         <item name="textInputStyle">@style/AppTextInput</item>
+        <item name="materialAlertDialogTheme">@style/AppDialog</item>
+        <item name="alertDialogTheme">@style/AppDialog</item>
 
     </style>
 
+    <style name="AppDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/dialog_bg</item>
+        <item name="android:backgroundTint">@color/dialog_bg</item>
+        <item name="android:windowBackground">@color/dialog_bg</item>
+        <item name="colorOnSurface">@android:color/white</item>
+        <item name="colorOnSurfaceVariant">@android:color/white</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+    </style>
 
     <!-- =========================
          TOOLBAR STYLE

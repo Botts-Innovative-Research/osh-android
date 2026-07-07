@@ -639,6 +639,24 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             boolean showFlip = hasVideo && android.hardware.Camera.getNumberOfCameras() > 1;
             btnFlipCamera.setVisibility(showFlip ? View.VISIBLE : View.GONE);
         }
+
+        boolean isBackCamera = isBackCameraActive();
+        if (btnZoomIn != null) btnZoomIn.setVisibility(isBackCamera ? View.VISIBLE : View.GONE);
+        if (btnZoomOut != null) btnZoomOut.setVisibility(isBackCamera ? View.VISIBLE : View.GONE);
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isBackCameraActive() {
+        AndroidSensorsDriver sensors = provider.getAndroidSensors();
+        if (sensors == null) return true;
+        try {
+            int cameraId = sensors.getConfiguration().selectedCameraId;
+            android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+            android.hardware.Camera.getCameraInfo(cameraId, info);
+            return info.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK;
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -671,6 +689,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             if (targetId >= 0) {
                 sensors.switchCamera(targetId);
                 currentZoomLevel = 0;
+                updateVideoControlsVisibility();
                 Toast.makeText(requireContext(), "Switched to " + targetFacing.toLowerCase() + " camera", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
