@@ -43,7 +43,7 @@
         <item name="android:statusBarColor">@color/surface_base</item>
         <item name="android:navigationBarColor">@color/surface_low</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
 
         <item name="toolbarStyle">@style/AppToolbar</item>
         <item name="materialCardViewStyle">@style/AppCard</item>
@@ -77,6 +77,8 @@
         <item name="titleTextAppearance">@style/ToolbarTitle</item>
         <item name="navigationIconTint">@color/toolbar_title</item>
         <item name="android:elevation">0dp</item>
+        <item name="navigationIconTint">@color/toolbar_title</item>
+
     </style>
 
     <style name="ToolbarTitle">
