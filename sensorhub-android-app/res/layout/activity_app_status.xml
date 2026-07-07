@@ -55,7 +55,7 @@
                         android:id="@+id/sos_status_dot"
                         android:layout_width="@dimen/status_dot_size"
                         android:layout_height="@dimen/status_dot_size"
-                        android:background="@drawable/status_dot_background" />
+                        android:background="@drawable/ic_circle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -105,7 +105,7 @@
                         android:id="@+id/consys_status_dot"
                         android:layout_width="@dimen/status_dot_size"
                         android:layout_height="@dimen/status_dot_size"
-                        android:background="@drawable/status_dot_background" />
+                        android:background="@drawable/ic_circle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -155,7 +155,7 @@
                         android:id="@+id/discovery_status_dot"
                         android:layout_width="@dimen/status_dot_size"
                         android:layout_height="@dimen/status_dot_size"
-                        android:background="@drawable/status_dot_background" />
+                        android:background="@drawable/ic_circle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -205,7 +205,7 @@
                         android:id="@+id/http_status_dot"
                         android:layout_width="@dimen/status_dot_size"
                         android:layout_height="@dimen/status_dot_size"
-                        android:background="@drawable/status_dot_background" />
+                        android:background="@drawable/ic_circle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -255,7 +255,7 @@
                         android:id="@+id/sensor_status_dot"
                         android:layout_width="@dimen/status_dot_size"
                         android:layout_height="@dimen/status_dot_size"
-                        android:background="@drawable/status_dot_background" />
+                        android:background="@drawable/ic_circle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -305,7 +305,7 @@
                         android:id="@+id/storage_status_dot"
                         android:layout_width="@dimen/status_dot_size"
                         android:layout_height="@dimen/status_dot_size"
-                        android:background="@drawable/status_dot_background" />
+                        android:background="@drawable/ic_circle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
