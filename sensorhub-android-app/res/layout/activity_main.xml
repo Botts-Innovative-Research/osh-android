@@ -83,7 +83,7 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="75dp"
-        android:background="@color/md_theme_secondaryContainer"
+        android:background="@color/md_theme_background"
         app:itemIconTint="@color/bottom_nav_selector"
         app:itemTextColor="@color/bottom_nav_selector"
         app:menu="@menu/bottom_nav_menu"
