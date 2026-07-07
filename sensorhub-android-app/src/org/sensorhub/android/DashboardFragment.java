@@ -878,7 +878,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             if (targetId >= 0) {
                 sensors.switchCamera(targetId);
                 currentZoomLevel = 0;
-                updateVideoControlsVisibility();
                 Toast.makeText(requireContext(), "Switched to " + targetFacing.toLowerCase() + " camera", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
