@@ -35,12 +35,10 @@
             android:layout_marginTop="2dp" />
     </LinearLayout>
 
-    <Switch
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/switchWidget"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:focusable="false"
-        android:clickable="false"
-        android:thumbTint="@color/switch_thumb_selector"
-        android:trackTint="@color/switch_track_selector" />
+        android:clickable="false" />
 </LinearLayout>
