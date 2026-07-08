@@ -133,7 +133,7 @@ public class Wardriving extends AbstractSensorModule<WardrivingConfig> {
         };
 
         IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        context.registerReceiver(wifiReceiver, filter);
+        context.registerReceiver(wifiReceiver, filter, Context.RECEIVER_EXPORTED);
 
         // start GPS location updates
         startLocationUpdates();

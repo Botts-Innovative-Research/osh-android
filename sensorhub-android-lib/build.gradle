@@ -47,9 +47,10 @@ android {
     targetSdkVersion rootProject.targetSdkVersion
   }
 
-  packagingOptions {
-    exclude '**/empty'
-    exclude 'META-INF/rxjava.properties'
+  packaging {
+    resources {
+      excludes += ['**/empty', 'META-INF/rxjava.properties']
+    }
   }
 
   sourceSets {
@@ -61,7 +62,7 @@ android {
     }
   }
 
-  lintOptions {
+  lint {
     abortOnError false
   }
 }

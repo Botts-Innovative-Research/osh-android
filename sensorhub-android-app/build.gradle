@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 description = 'OSH Android App'
 ext.details = 'OSH app for Android'
@@ -35,6 +36,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'com.github.tony19:logback-android:3.0.0'
 
+    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 allprojects {
@@ -69,10 +72,10 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude '**/empty'
-        exclude 'META-INF/rxjava.properties'
+    packaging {
+        resources {
+            excludes += ['META-INF/LICENSE', '**/empty', 'META-INF/rxjava.properties', 'META-INF/INDEX.LIST']
+        }
     }
 
 
@@ -85,17 +88,12 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         abortOnError false
     }
+
     buildFeatures {
         viewBinding true
-    }
-
-    packagingOptions {
-        resources {
-            excludes += ["META-INF/INDEX.LIST"]
-        }
     }
 
 }

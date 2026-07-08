@@ -35,7 +35,7 @@ android {
     targetSdkVersion rootProject.targetSdkVersion
   }
 
-  lintOptions {
+  lint {
     abortOnError false
   }
 

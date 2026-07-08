@@ -630,16 +630,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.dashboard:
-                    switchFragment(homeFragment, getString(R.string.app_name));
-                    break;
-                case R.id.sensors:
-                    switchFragment(sensorsFragment, getString(R.string.tab_sensors));
-                    break;
-                case R.id.settings:
-                    switchFragment(settingsFragment, getString(R.string.tab_settings));
-                    break;
+            int id = item.getItemId();
+            if (id == R.id.dashboard) {
+                switchFragment(homeFragment, getString(R.string.app_name));
+            } else if (id == R.id.sensors) {
+                switchFragment(sensorsFragment, getString(R.string.tab_sensors));
+            } else if (id == R.id.settings) {
+                switchFragment(settingsFragment, getString(R.string.tab_settings));
             }
             return true;
         });
@@ -865,6 +862,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         };
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_BROADCAST_RECEIVER);
-        registerReceiver(broadcastReceiver, filter);
+        registerReceiver(broadcastReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
     }
 }
