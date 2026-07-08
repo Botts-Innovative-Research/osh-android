@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,44 +41,6 @@ fun OSHTopAppBarWithLogo(
         modifier = modifier,
         navigationIcon = navigationIcon,
         actions = actions,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = ToolbarBg,
-            titleContentColor = ToolbarTitle,
-            navigationIconContentColor = ToolbarTitle,
-            actionIconContentColor = ToolbarTitle
-        )
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun OSHTopAppBarWithLogoAndActions(
-    title: String,
-    modifier: Modifier = Modifier,
-    navigationIcon: @Composable () -> Unit = {},
-) {
-    TopAppBar(
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "OSH Logo",
-                    modifier = Modifier.size(32.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(title)
-            }
-        },
-        modifier = modifier,
-        navigationIcon = navigationIcon,
-        actions = {
-            IconButton(onClick = { /* do something */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "Localized description"
-                )
-            }
-        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = ToolbarBg,
             titleContentColor = ToolbarTitle,
@@ -157,11 +118,3 @@ private fun TopAppBarWithBackPreview() {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, backgroundColor = 0xFF121212)
-@Composable
-private fun TopAppBarWithLogoAndActionPreview() {
-    OSHTheme {
-        OSHTopAppBarWithLogoAndActions(title = "Settings")
-    }
-}

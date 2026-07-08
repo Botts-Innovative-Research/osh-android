@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import org.sensorhub.android.ui.theme.*
 
-private val PillShape = RoundedCornerShape(10)
+private val PillShape = RoundedCornerShape(25)
 
 @Composable
 fun OSHButton(
