@@ -41,6 +41,32 @@ fun OSHButton(
 }
 
 @Composable
+fun OSHTonalButton(
+    onClick: () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = PillShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = SecondaryContainer,
+            contentColor = OnPrimary
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 12.dp,
+            disabledElevation = 0.dp
+        )
+    ) {
+        Text(text)
+    }
+}
+
+@Composable
 fun OSHOutlinedButton(
     onClick: () -> Unit,
     text: String,
@@ -92,6 +118,7 @@ private fun ButtonPreview() {
     OSHTheme {
         Column {
             OSHButton(onClick = {}, text = "Primary Button")
+            OSHTonalButton(onClick = {}, text = "Secondary Button")
             Spacer(modifier = Modifier.height(8.dp))
             OSHOutlinedButton(onClick = {}, text = "Outlined Button")
             Spacer(modifier = Modifier.height(8.dp))
