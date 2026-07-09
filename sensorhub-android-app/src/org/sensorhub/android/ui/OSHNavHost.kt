@@ -13,6 +13,8 @@ import org.sensorhub.android.ui.screens.HelpFaqScreen
 import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
 import org.sensorhub.android.ui.screens.ServersScreen
+import org.sensorhub.android.ui.screens.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.SettingsScreen
 
 @Composable
 fun OSHNavHost(
@@ -48,6 +50,12 @@ fun OSHNavHost(
 
             HelpFaqScreen(
                 items = faqItems,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.ServerProfiles.route) {
+            ServerProfilesScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
