@@ -82,10 +82,9 @@ fun AppPreferencesScreen(
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
-            stringResource(R.string.app_preferences),
-                onBackClick = {
+                stringResource(R.string.app_preferences),
+                onBackClick = onBackClick
 
-                }
             )
         },
     ) { innerPadding ->
