@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
+import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 
 
@@ -23,7 +24,7 @@ fun SensorsScreen(navController: NavController = rememberNavController()) {
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_sensors),
                 actions = {
-                    IconButton(onClick = { /* open app preferences */ }) {
+                    IconButton(onClick = { navController.navigate(Screen.AppPreferences.route)}) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = ""

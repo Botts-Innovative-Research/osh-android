@@ -41,7 +41,7 @@ fun HelpFaqScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
             items(items) { item ->
                 when (item) {
@@ -52,12 +52,13 @@ fun HelpFaqScreen(
                             color = Primary,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(horizontal = 4.dp, vertical = 12.dp)
                         )
                     }
                     is FaqItem.Entry -> {
                         OSHExpandableCard(
                             title = item.question,
+                            modifier = Modifier.padding(vertical = 4.dp),
                             expandedContent = {
                                 Text(
                                     text = item.answer,

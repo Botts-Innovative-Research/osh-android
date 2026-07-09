@@ -27,15 +27,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.Navbar
+import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableCard
 import org.sensorhub.android.ui.components.OSHClickableCardWithIcon
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
-import org.sensorhub.android.ui.components.OSHEditableRow
 import org.sensorhub.android.ui.components.OSHInfoRow
-import org.sensorhub.android.ui.components.OSHRowWithIcon
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
+import org.sensorhub.android.ui.components.OSHTextInputDialog
 import org.sensorhub.android.ui.components.OSHSwitchCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
@@ -44,7 +44,8 @@ import org.sensorhub.android.ui.theme.Secondary
 
 @Composable
 fun AppPreferencesScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navController: NavController = rememberNavController()
 ) {
     var deviceName by remember { mutableStateOf("") }
     var deviceHost by remember { mutableStateOf("") }
@@ -67,12 +68,31 @@ fun AppPreferencesScreen(
     }
 
     if (showNotificationDialog) {
+        OSHAlertDialogWithoutDismiss(
+            onConfirmation = { showNotificationDialog = false },
+            dialogText = "Not yet implemented",
+            dialogTitle = "Notifications",
+            icon = Icons.Filled.Info
+        )
+    }
 
+    if (showDeviceNameEdit) {
+        OSHTextInputDialog(
+            onDismissRequest = { showDeviceNameEdit = false },
+            onConfirmation = { newName ->
+                deviceName = newName
+                showDeviceNameEdit = false
+            },
+            dialogTitle = stringResource(R.string.device_name),
+            dialogText = stringResource(R.string.device_name),
+            icon = Icons.Filled.Info,
+            initialValue = deviceName.ifEmpty { "MyDevice" }
+        )
     }
 
     if (showAboutAppDialog) {
         OSHAlertDialogWithoutDismiss(
-            onConfirmation = { showLanguageDialog = false },
+            onConfirmation = { showAboutAppDialog = false },
             dialogText = stringResource(R.string.about_description),
             dialogTitle = stringResource(R.string.app_name),
             icon = Icons.Filled.Info
@@ -84,7 +104,6 @@ fun AppPreferencesScreen(
             OSHTopAppBarWithBack(
                 stringResource(R.string.app_preferences),
                 onBackClick = onBackClick
-
             )
         },
     ) { innerPadding ->
@@ -93,7 +112,7 @@ fun AppPreferencesScreen(
         ) {
 
             OSHCard {
-                OSHEditableRow(
+                OSHInfoRow(
                     label = stringResource(R.string.device_name),
                     value = deviceName.ifEmpty { "MyDevice" },
                     onClick = { showDeviceNameEdit = true }
@@ -133,7 +152,7 @@ fun AppPreferencesScreen(
                     title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.Default.Help,
                     contentDescription = stringResource(R.string.title_help_faq),
-                    onClick = { /* navigate to help/faq screen */ }
+                    onClick = { navController.navigate(Screen.HelpFaq.route)}
                 )
             }
 

@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,7 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.sensorhub.android.ui.theme.*
+import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.SecondaryContainer
+import org.sensorhub.android.ui.theme.TextPrimary
 
 @Composable
 fun OSHCard(
@@ -36,8 +36,10 @@ fun OSHCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth().padding(20.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SecondaryContainer,
             contentColor = TextPrimary
@@ -49,56 +51,6 @@ fun OSHCard(
     )
 }
 
-@Composable
-fun OSHRowWithIcon(
-    title: String,
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector,
-    contentDescription: String,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Icon(imageVector, contentDescription = contentDescription)
-        Spacer(modifier = Modifier.width(15.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(Icons.Filled.ChevronRight, contentDescription = null)
-    }
-}
-
-@Composable
-fun OSHClickableRowWithIcon(
-    title: String,
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Icon(imageVector, contentDescription = contentDescription)
-        Spacer(modifier = Modifier.width(15.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(Icons.Filled.ChevronRight, contentDescription = null)
-    }
-}
 
 @Composable
 fun OSHClickableCardWithIcon(
@@ -108,37 +60,15 @@ fun OSHClickableCardWithIcon(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    Card(
-        onClick = onCardClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp,
-        ),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Icon(imageVector, contentDescription = contentDescription)
-            Spacer(modifier = Modifier.width(15.dp))
-
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(Icons.Filled.ChevronRight, contentDescription = null)
-
-        }
+    OSHCard()
+     {
+        OSHClickableRowWithIcon(
+            title = title,
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = modifier,
+            onClick = onCardClick
+        )
     }
 }
 
@@ -149,20 +79,7 @@ fun OSHClickableCard(
     subtitle: String,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        onClick = onCardClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp,
-        ),
-    ) {
+    OSHCard(modifier = modifier.clickable { onCardClick() }) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -182,7 +99,6 @@ fun OSHClickableCard(
             Spacer(modifier = Modifier.width(10.dp))
 
             Icon(Icons.Filled.ChevronRight, contentDescription = null)
-
         }
     }
 }
@@ -196,43 +112,13 @@ fun OSHSwitchCard(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp,
+    OSHCard(modifier = modifier) {
+        OSHSwitchRow(
+            title = title,
+            subtitle = subtitle,
+            checked = checked,
+            onCheckedChange = onCheckedChange
         )
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            OSHSwitch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
-            )
-        }
     }
 }
 
@@ -247,100 +133,20 @@ fun OSHActionCard(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp,
-        )
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+    OSHCard(modifier = modifier) {
+        OSHSwitchRow(
+            title = title,
+            subtitle = subtitle,
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            trailingContent = {
+                IconButton(onClick = { onClicked() }) {
+                    Icon(
+                        imageVector = imageVector,
+                        contentDescription = contentDescription
+                    )
+                }
             }
-
-            OSHSwitch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
-            )
-            IconButton(onClick = { onClicked() }) {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = contentDescription
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OSHInfoRow(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-fun OSHEditableRow(
-    label: String,
-    value: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -350,7 +156,7 @@ fun OSHEditableRow(
 private fun DeviceInfoCardPreview() {
     OSHTheme {
         OSHCard {
-            OSHEditableRow(
+            OSHInfoRow(
                 label = "Device Name",
                 value = "MyDevice",
                 onClick = {}
@@ -363,7 +169,7 @@ private fun DeviceInfoCardPreview() {
                 label = "Version",
                 value = "1.0.0"
             )
-            OSHRowWithIcon(
+            OSHClickableRowWithIcon(
                 title = "Language",
                 imageVector = Icons.Default.Language,
                 contentDescription = "Select in app language"
