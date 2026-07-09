@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import org.sensorhub.android.ui.screens.AppStatusScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.screens.FaqItem
 import org.sensorhub.android.ui.screens.HelpFaqScreen
@@ -31,6 +32,11 @@ fun OSHNavHost(
         }
         composable(Screen.Servers.route) {
             ServersScreen(navController = navController)
+        }
+        composable(Screen.AppStatus.route) {
+            AppStatusScreen(
+                onBackClick = { navController.popBackStack() }
+            )
         }
         composable(Screen.HelpFaq.route) {
             val context = LocalContext.current
