@@ -20,10 +20,10 @@ fun OSHNavHost(
         modifier = modifier
     ) {
         composable(Screen.Dashboard.route) {
-            HomeScreen()
+            HomeScreen(navController = navController)
         }
         composable(Screen.Sensors.route) {
-            SensorsScreen()
+            SensorsScreen(navController = navController)
         }
         composable(Screen.Servers.route) {
             ServersScreen(navController = navController)

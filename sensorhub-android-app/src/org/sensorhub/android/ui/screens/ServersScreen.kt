@@ -35,7 +35,7 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_servers),
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { /* open app preferences */ }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = ""
