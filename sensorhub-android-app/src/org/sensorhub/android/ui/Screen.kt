@@ -7,4 +7,5 @@ sealed class Screen(val route: String) {
     object ServerProfiles : Screen("server_profiles_screen")
     object AppStatus : Screen("app_status_screen")
     object HelpFaq : Screen("help_faq_screen")
+    object AppPreferences : Screen("app_prefs_screen")
 }

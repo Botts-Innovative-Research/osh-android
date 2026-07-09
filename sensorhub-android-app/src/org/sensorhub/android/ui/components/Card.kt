@@ -1,5 +1,6 @@
 package org.sensorhub.android.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -34,10 +35,10 @@ fun OSHCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth().padding(16.dp),
-        shape = RoundedCornerShape(24.dp),
+        modifier = modifier.fillMaxWidth().padding(20.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Secondary,
+            containerColor = SecondaryContainer,
             contentColor = TextPrimary
         ),
         elevation = CardDefaults.cardElevation(
@@ -195,6 +196,80 @@ fun OSHActionCard(
                     contentDescription = contentDescription
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun OSHInfoRow(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun OSHEditableRow(
+    label: String,
+    value: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun DeviceInfoCardPreview() {
+    OSHTheme {
+        OSHCard {
+            OSHEditableRow(
+                label = "Device Name",
+                value = "MyDevice",
+                onClick = {}
+            )
+            OSHInfoRow(
+                label = "Device IP Address",
+                value = "192.168.1.42"
+            )
+            OSHInfoRow(
+                label = "Version",
+                value = "1.0.0"
+            )
         }
     }
 }
