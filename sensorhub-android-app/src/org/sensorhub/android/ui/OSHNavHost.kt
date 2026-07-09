@@ -55,6 +55,8 @@ fun OSHNavHost(
             )
         }
         composable(Screen.AppPreferences.route) {
+            val context = LocalContext.current
+
             AppPreferencesScreen(
                 onBackClick = { navController.popBackStack() }
             )

@@ -21,9 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.sensorhub.android.R
 import org.sensorhub.android.ui.Navbar
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
@@ -44,7 +46,6 @@ import org.sensorhub.android.ui.theme.Secondary
 fun AppPreferencesScreen(
     onBackClick: () -> Unit
 ) {
-//TODO need to pull hardcoded names/titles/ labels/ from resources !!!!!
     var deviceName by remember { mutableStateOf("") }
     var deviceHost by remember { mutableStateOf("") }
     var appVersion by remember { mutableStateOf("") }
@@ -57,7 +58,7 @@ fun AppPreferencesScreen(
     if(showLanguageDialog) {
         OSHSingleChoiceDialog(
             onDismissRequest = { showLanguageDialog = false },
-            dialogTitle = "Language",
+            dialogTitle = stringResource(R.string.title_language_dialog),
             icon = Icons.Filled.Language,
             options = listOf("English", "中文 (台灣)", "Español", "Français", "Deutsch"),
             selectedIndex = 0,
@@ -72,8 +73,8 @@ fun AppPreferencesScreen(
     if (showAboutAppDialog) {
         OSHAlertDialogWithoutDismiss(
             onConfirmation = { showLanguageDialog = false },
-            dialogText = "A software platform for building smart sensor networks and the internet of things",
-            dialogTitle = "OpenSensorHub",
+            dialogText = stringResource(R.string.about_description),
+            dialogTitle = stringResource(R.string.app_name),
             icon = Icons.Filled.Info
         )
     }
@@ -81,7 +82,7 @@ fun AppPreferencesScreen(
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
-            "App Preferences",
+            stringResource(R.string.app_preferences),
                 onBackClick = {
 
                 }
@@ -94,51 +95,46 @@ fun AppPreferencesScreen(
 
             OSHCard {
                 OSHEditableRow(
-                    label = "Device Name",
-                    value = "MyDevice",
-                    onClick = {}
+                    label = stringResource(R.string.device_name),
+                    value = deviceName.ifEmpty { "MyDevice" },
+                    onClick = { showDeviceNameEdit = true }
                 )
                 OSHInfoRow(
-                    label = "Device IP Address",
+                    label = stringResource(R.string.device_ip_address),
                     value = deviceHost
                 )
                 OSHInfoRow(
-                    label = "Version",
+                    label = stringResource(R.string.title_version),
                     value = appVersion
                 )
             }
 
             OSHCard {
                 OSHClickableRowWithIcon(
-                    title = "Notifications",
+                    title = stringResource(R.string.title_notifications),
                     imageVector = Icons.Default.Notifications,
-                    contentDescription = "Select in app language",
+                    contentDescription = stringResource(R.string.title_notifications),
                     onClick = { showNotificationDialog = true }
-
                 )
                 OSHClickableRowWithIcon(
-                    title = "Language",
+                    title = stringResource(R.string.title_language),
                     imageVector = Icons.Default.Language,
-                    contentDescription = "Select in app language",
-                    onClick = {showLanguageDialog = true }
-
+                    contentDescription = stringResource(R.string.title_language),
+                    onClick = { showLanguageDialog = true }
                 )
             }
             OSHCard {
                 OSHClickableRowWithIcon(
-                    title = "About application",
+                    title = stringResource(R.string.title_about),
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Select in app language",
+                    contentDescription = stringResource(R.string.title_about),
                     onClick = { showAboutAppDialog = true }
-
                 )
-
                 OSHClickableRowWithIcon(
-                    title = "Help/FAQ",
+                    title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.Default.Help,
-                    contentDescription = "Select in app language",
-                    onClick = { /* navigate to help/faq screen*/}
-
+                    contentDescription = stringResource(R.string.title_help_faq),
+                    onClick = { /* navigate to help/faq screen */ }
                 )
             }
 
