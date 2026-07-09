@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
-import org.sensorhub.android.ui.screens.SettingsScreen
+import org.sensorhub.android.ui.screens.ServersScreen
 
 @Composable
 fun OSHNavHost(
@@ -25,8 +25,8 @@ fun OSHNavHost(
         composable(Screen.Sensors.route) {
             SensorsScreen()
         }
-        composable(Screen.Settings.route) {
-            SettingsScreen(navController = navController)
+        composable(Screen.Servers.route) {
+            ServersScreen(navController = navController)
         }
     }
 }

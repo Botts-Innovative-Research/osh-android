@@ -2,6 +2,10 @@ package org.sensorhub.android.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,20 +17,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.ui.Navbar
-import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHClickableCard
 import org.sensorhub.android.ui.components.OSHSwitchCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
-fun SettingsScreen(navController: NavController = rememberNavController()) {
+fun ServersScreen(navController: NavController = rememberNavController()) {
     var sosEnabled by remember { mutableStateOf(false) }
     var csApiEnabled by remember { mutableStateOf(false) }
     var discoveryEnabled by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { OSHTopAppBarWithLogo("Settings") },
+        topBar = {
+            OSHTopAppBarWithLogo(
+            "Servers",
+                actions = {
+                    IconButton(onClick = { /* do something */ }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = "App preferences"
+                        )
+                    }
+                },
+            ) },
         bottomBar = { Navbar(navController = navController) }
     ) { innerPadding ->
         Column(
@@ -55,19 +69,14 @@ fun SettingsScreen(navController: NavController = rememberNavController()) {
                 checked = discoveryEnabled,
                 onCheckedChange = { discoveryEnabled = it }
             )
-            OSHClickableCard(
-                onCardClick = { navController.navigate(Screen.HelpFaq.route) },
-                title = "Help / FAQ",
-                subtitle = ""
-            )
         }
     }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
-private fun SettingsScreenPreview() {
+private fun ServersScreenPreview() {
     OSHTheme {
-        SettingsScreen()
+        ServersScreen()
     }
 }

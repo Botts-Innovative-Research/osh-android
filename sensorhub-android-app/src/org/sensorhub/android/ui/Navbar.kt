@@ -1,6 +1,7 @@
 package org.sensorhub.android.ui
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Settings
@@ -38,9 +39,9 @@ fun Navbar(
             route = Screen.Sensors.route
         ),
         NavigationItem(
-            title = "Settings",
-            icon = Icons.Default.Settings,
-            route = Screen.Settings.route
+            title = "Servers",
+            icon = Icons.Default.Dns,
+            route = Screen.Servers.route
         )
     )
 
