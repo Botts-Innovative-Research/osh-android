@@ -56,7 +56,7 @@ val ToolbarBg = Color(0xFFE64A19)
 val ToolbarTitle = Color(0xFFFFFFFF)
 
 // Bottom Nav
-val BottomNavBg = Color(0xFF1E1E1E)
+val BottomNavBg = Color(0xFF121212)
 val BottomNavSelected = Color(0xFFE64A19)
 val BottomNavUnselected = Color(0xFF757575)
 
