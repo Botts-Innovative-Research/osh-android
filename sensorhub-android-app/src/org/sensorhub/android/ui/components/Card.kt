@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -48,13 +49,64 @@ fun OSHCard(
     )
 }
 
+@Composable
+fun OSHRowWithIcon(
+    title: String,
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    contentDescription: String,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Icon(imageVector, contentDescription = contentDescription)
+        Spacer(modifier = Modifier.width(15.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(Icons.Filled.ChevronRight, contentDescription = null)
+    }
+}
 
 @Composable
-fun OSHClickableCard(
+fun OSHClickableRowWithIcon(
+    title: String,
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Icon(imageVector, contentDescription = contentDescription)
+        Spacer(modifier = Modifier.width(15.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(Icons.Filled.ChevronRight, contentDescription = null)
+    }
+}
+
+@Composable
+fun OSHClickableCardWithIcon(
     onCardClick: () -> Unit,
     title: String,
-    subtitle: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    contentDescription: String
 ) {
     Card(
         onClick = onCardClick,
@@ -68,7 +120,48 @@ fun OSHClickableCard(
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp,
-        )
+        ),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Icon(imageVector, contentDescription = contentDescription)
+            Spacer(modifier = Modifier.width(15.dp))
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(Icons.Filled.ChevronRight, contentDescription = null)
+
+        }
+    }
+}
+
+@Composable
+fun OSHClickableCard(
+    onCardClick: () -> Unit,
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        onClick = onCardClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SecondaryContainer,
+            contentColor = TextPrimary
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp,
+        ),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -270,6 +363,11 @@ private fun DeviceInfoCardPreview() {
                 label = "Version",
                 value = "1.0.0"
             )
+            OSHRowWithIcon(
+                title = "Language",
+                imageVector = Icons.Default.Language,
+                contentDescription = "Select in app language"
+            )
         }
     }
 }
@@ -331,6 +429,12 @@ private fun SettingsItemPreview() {
                 onCardClick = {},
                 title = "Manage Sensors",
                 subtitle = "1 of 2 server(s) enabled",
+            )
+            OSHClickableCardWithIcon (
+                onCardClick = {},
+                title = "Language",
+                imageVector = Icons.Default.Language,
+                contentDescription = "Select in app language"
             )
         }
     }
