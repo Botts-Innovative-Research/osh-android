@@ -21,6 +21,8 @@ import org.sensorhub.android.ui.components.OSHClickableCard
 import org.sensorhub.android.ui.components.OSHSwitchCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
+import androidx.compose.ui.res.stringResource
+import org.sensorhub.android.R
 
 @Composable
 fun ServersScreen(navController: NavController = rememberNavController()) {
@@ -31,12 +33,12 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
-            "Servers",
+                title = stringResource(R.string.tab_servers),
                 actions = {
                     IconButton(onClick = { /* do something */ }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "App preferences"
+                            contentDescription = ""
                         )
                     }
                 },
@@ -48,24 +50,24 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
         ) {
             OSHClickableCard(
                 onCardClick = {},
-                title = "Manage Servers",
+                title = stringResource(R.string.manage_servers),
                 subtitle = "0 of 0 server(s) enabled"
             )
             OSHSwitchCard(
-                title = "SOS-T Service",
-                subtitle = "OGC SOS Transactional service",
+                title = stringResource(R.string.enable_sos_service),
+                subtitle = stringResource(R.string.summary_sos),
                 checked = sosEnabled,
                 onCheckedChange = { sosEnabled = it }
             )
             OSHSwitchCard(
-                title = "Connected Systems Service",
-                subtitle = "OGC Connected Systems API service",
+                title = stringResource(R.string.enable_csapi_service),
+                subtitle = stringResource(R.string.summary_csapi),
                 checked = csApiEnabled,
                 onCheckedChange = { csApiEnabled = it }
             )
             OSHSwitchCard(
-                title = "Discovery Service",
-                subtitle = "Sensor discovery based on rulesets",
+                title = stringResource(R.string.enable_discovery_service),
+                subtitle = stringResource(R.string.summary_discovery),
                 checked = discoveryEnabled,
                 onCheckedChange = { discoveryEnabled = it }
             )
