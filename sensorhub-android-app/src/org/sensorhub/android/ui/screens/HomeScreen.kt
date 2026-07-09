@@ -21,7 +21,7 @@ fun HomeScreen(navController: NavController = rememberNavController()) {
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
-                title = stringResource(R.string.tab_dashboard),
+                title = stringResource(R.string.app_name),
                 actions = {
                     IconButton(onClick = { /* open app preferences */ }) {
                         Icon(
