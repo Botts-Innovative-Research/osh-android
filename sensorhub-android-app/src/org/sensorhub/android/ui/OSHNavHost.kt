@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import org.sensorhub.android.ui.screens.AppPreferencesScreen
 import org.sensorhub.android.ui.screens.AppStatusScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.screens.FaqItem
@@ -53,7 +54,13 @@ fun OSHNavHost(
                 onBackClick = { navController.popBackStack() }
             )
         }
+        composable(Screen.AppPreferences.route) {
+            val context = LocalContext.current
 
+            AppPreferencesScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
         composable(Screen.ServerProfiles.route) {
             val context = LocalContext.current
 //            val servers = context.resources.getStringArray(R.id.server_profiles_toolbar)
@@ -66,6 +73,7 @@ fun OSHNavHost(
         }
     }
 }
+
 
 private fun buildFaqItems(
     questions: Array<String>,
