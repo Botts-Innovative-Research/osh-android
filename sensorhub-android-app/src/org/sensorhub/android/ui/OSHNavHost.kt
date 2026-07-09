@@ -14,7 +14,8 @@ import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
 import org.sensorhub.android.ui.screens.ServersScreen
 import org.sensorhub.android.ui.screens.ServerProfilesScreen
-import org.sensorhub.android.ui.screens.SettingsScreen
+import org.sensorhub.android.server.ServerProfile
+import org.sensorhub.android.ui.screens.ServerProfileItems
 
 @Composable
 fun OSHNavHost(
@@ -55,8 +56,13 @@ fun OSHNavHost(
         }
 
         composable(Screen.ServerProfiles.route) {
+            val context = LocalContext.current
+            val servers = context.resources.getStringArray(R.id.server_profiles_toolbar)
+
+            val serverProfileItems = buildServerProfileItems()
             ServerProfilesScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                items = serverProfileItems
             )
         }
     }
@@ -78,4 +84,12 @@ private fun buildFaqItems(
         items.add(FaqItem.Entry(questions[i], answers[i]))
     }
     return items
+}
+
+private fun buildServerProfileItems(
+
+): List<ServerProfileItem> {
+    val items = mutableListOf<ServerProfileItem>()
+
+    return items;
 }
