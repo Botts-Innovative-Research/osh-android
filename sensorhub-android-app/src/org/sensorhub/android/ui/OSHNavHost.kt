@@ -12,10 +12,9 @@ import org.sensorhub.android.ui.screens.FaqItem
 import org.sensorhub.android.ui.screens.HelpFaqScreen
 import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
+import org.sensorhub.android.ui.screens.ServerProfileItem
 import org.sensorhub.android.ui.screens.ServersScreen
 import org.sensorhub.android.ui.screens.ServerProfilesScreen
-import org.sensorhub.android.server.ServerProfile
-import org.sensorhub.android.ui.screens.ServerProfileItems
 
 @Composable
 fun OSHNavHost(
@@ -57,7 +56,7 @@ fun OSHNavHost(
 
         composable(Screen.ServerProfiles.route) {
             val context = LocalContext.current
-            val servers = context.resources.getStringArray(R.id.server_profiles_toolbar)
+//            val servers = context.resources.getStringArray(R.id.server_profiles_toolbar)
 
             val serverProfileItems = buildServerProfileItems()
             ServerProfilesScreen(
