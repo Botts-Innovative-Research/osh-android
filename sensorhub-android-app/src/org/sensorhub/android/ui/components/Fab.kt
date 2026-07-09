@@ -60,10 +60,10 @@ fun OSHFAB(
 
 @Composable
 fun OSHAddFAB(
-    onClick: ((Boolean) -> Unit)? = null,
+    onClick: () -> Unit = {},
 ) {
     FloatingActionButton(
-        onClick = { onClick },
+        onClick = onClick,
         containerColor = SecondaryContainer,
         contentColor = OnPrimary
 
