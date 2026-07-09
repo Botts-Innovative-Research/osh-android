@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import org.sensorhub.android.R
+import org.sensorhub.android.ui.screens.AppStatusScreen
 import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
 import org.sensorhub.android.ui.screens.ServersScreen
@@ -28,6 +30,12 @@ fun OSHNavHost(
         composable(Screen.Servers.route) {
             ServersScreen(navController = navController)
         }
+        composable(Screen.AppStatus.route) {
+            AppStatusScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
     }
 }
 

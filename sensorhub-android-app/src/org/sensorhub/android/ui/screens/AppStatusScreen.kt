@@ -1,22 +1,49 @@
 package org.sensorhub.android.ui.screens
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
+import org.sensorhub.android.ui.theme.Background
+import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
-fun AppStatusScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "App Status Screen",
-            style = MaterialTheme.typography.headlineLarge
+fun AppStatusScreen(
+    onBackClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            OSHTopAppBarWithBack(
+                title = "App Status",
+                onBackClick = onBackClick
+            )
+        },
+        containerColor = Background
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+
+        }
+    }
+}
+
+
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun AppStatusScreenPreview() {
+    OSHTheme {
+        AppStatusScreen(
+            onBackClick = {}
         )
     }
 }
