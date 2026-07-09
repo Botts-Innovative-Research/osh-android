@@ -30,17 +30,17 @@ fun Navbar(
         NavigationItem(
             title = "Dashboard",
             icon = Icons.Default.Home,
-            route = Screen.Dashboard.rout
+            route = Screen.Dashboard.route
         ),
         NavigationItem(
             title = "Sensors",
             icon = Icons.Default.Sensors,
-            route = Screen.Sensors.rout
+            route = Screen.Sensors.route
         ),
         NavigationItem(
             title = "Settings",
             icon = Icons.Default.Settings,
-            route = Screen.Settings.rout
+            route = Screen.Settings.route
         )
     )
 
