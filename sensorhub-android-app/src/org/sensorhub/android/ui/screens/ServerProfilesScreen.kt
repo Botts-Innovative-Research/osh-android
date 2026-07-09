@@ -16,6 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHActionCard
 import org.sensorhub.android.ui.components.OSHAddFAB
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
@@ -25,7 +28,8 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun ServerProfilesScreen(
     items: List<ServerProfileItem>,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navController: NavController = rememberNavController()
 ) {
     Scaffold(
         topBar = {
@@ -35,7 +39,9 @@ fun ServerProfilesScreen(
             )
         },
         floatingActionButton = {
-            OSHAddFAB(onClick = {})
+            OSHAddFAB(
+                onClick = { navController.navigate(Screen.ServerForm.route)}
+            )
         },
         containerColor = Background
     ) { padding ->
@@ -53,7 +59,7 @@ fun ServerProfilesScreen(
                     subtitle = "${item.host}:${item.port}${item.endpointPath}",
                     checked = enabled,
                     onCheckedChange = { enabled = it },
-                    onClick = { /* navigate to edit */ },
+                    onClick = { navController.navigate(Screen.ServerForm.route)},
                     imageVector = Icons.Filled.Edit,
                     contentDescription = "Edit ${item.name}"
                 )

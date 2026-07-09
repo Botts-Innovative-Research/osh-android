@@ -13,6 +13,7 @@ import org.sensorhub.android.ui.screens.FaqItem
 import org.sensorhub.android.ui.screens.HelpFaqScreen
 import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
+import org.sensorhub.android.ui.screens.ServerFormScreen
 import org.sensorhub.android.ui.screens.ServerProfileItem
 import org.sensorhub.android.ui.screens.ServersScreen
 import org.sensorhub.android.ui.screens.ServerProfilesScreen
@@ -70,7 +71,16 @@ fun OSHNavHost(
             val serverProfileItems = buildServerProfileItems()
             ServerProfilesScreen(
                 onBackClick = { navController.popBackStack() },
-                items = serverProfileItems
+                items = serverProfileItems,
+                navController = navController
+            )
+        }
+
+        composable(Screen.ServerForm.route) {
+            val context = LocalContext.current
+
+            ServerFormScreen(
+                onBackClick = { navController.popBackStack() },
             )
         }
     }

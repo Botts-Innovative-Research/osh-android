@@ -108,7 +108,8 @@ fun AppPreferencesScreen(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
         ) {
 
             OSHCard {

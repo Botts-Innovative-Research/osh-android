@@ -51,7 +51,8 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
             ) },
     ) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
         ) {
             OSHClickableCardWithIcon (
                 title = stringResource(R.string.manage_servers),
