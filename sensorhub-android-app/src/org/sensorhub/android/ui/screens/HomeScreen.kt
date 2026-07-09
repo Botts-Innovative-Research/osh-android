@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.Navbar
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 
 
@@ -32,7 +31,6 @@ fun HomeScreen(navController: NavController = rememberNavController()) {
                     }
                 },
             ) },
-        bottomBar = { Navbar(navController = navController) }
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)

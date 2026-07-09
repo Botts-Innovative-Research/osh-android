@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.sensorhub.android.ui.Navbar
 import org.sensorhub.android.ui.components.OSHClickableCard
 import org.sensorhub.android.ui.components.OSHSwitchCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
@@ -43,7 +42,6 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
                     }
                 },
             ) },
-        bottomBar = { Navbar(navController = navController) }
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
