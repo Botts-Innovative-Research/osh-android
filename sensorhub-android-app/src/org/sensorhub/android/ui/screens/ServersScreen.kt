@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHCard
+import org.sensorhub.android.ui.components.OSHClickableCardWithIcon
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHSwitchRow
 
@@ -52,15 +53,14 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
-            OSHCard {
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.manage_servers),
+            OSHClickableCardWithIcon (
+                title = stringResource(R.string.manage_servers),
 //                    subtitle = "0 of 0 server(s) enabled",
-                    imageVector = Icons.Default.Cloud,
-                    contentDescription = stringResource(R.string.manage_servers),
-                    onClick = { navController.navigate(Screen.ServerProfiles.route)}
-                )
-            }
+                imageVector = Icons.Default.Cloud,
+                contentDescription = stringResource(R.string.manage_servers),
+                onClick = { navController.navigate(Screen.ServerProfiles.route)}
+            )
+
 
             OSHCard {
                 OSHSwitchRow(

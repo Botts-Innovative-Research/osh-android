@@ -53,7 +53,7 @@ fun ServerProfilesScreen(
                     subtitle = "${item.host}:${item.port}${item.endpointPath}",
                     checked = enabled,
                     onCheckedChange = { enabled = it },
-                    onClicked = { /* navigate to edit */ },
+                    onClick = { /* navigate to edit */ },
                     imageVector = Icons.Filled.Edit,
                     contentDescription = "Edit ${item.name}"
                 )

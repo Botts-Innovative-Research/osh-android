@@ -54,7 +54,7 @@ fun OSHCard(
 
 @Composable
 fun OSHClickableCardWithIcon(
-    onCardClick: () -> Unit,
+    onClick: () -> Unit,
     title: String,
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
@@ -67,19 +67,21 @@ fun OSHClickableCardWithIcon(
             imageVector = imageVector,
             contentDescription = contentDescription,
             modifier = modifier,
-            onClick = onCardClick
+            onClick = onClick
         )
     }
 }
 
 @Composable
 fun OSHClickableCard(
-    onCardClick: () -> Unit,
+    onClick: () -> Unit,
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
 ) {
-    OSHCard(modifier = modifier.clickable { onCardClick() }) {
+    OSHCard(
+        modifier = modifier.clickable { onClick() }
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -128,7 +130,7 @@ fun OSHActionCard(
     subtitle: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    onClicked: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
     contentDescription: String
@@ -140,7 +142,7 @@ fun OSHActionCard(
             checked = checked,
             onCheckedChange = onCheckedChange,
             trailingContent = {
-                IconButton(onClick = { onClicked() }) {
+                IconButton(onClick = { onClick() }) {
                     Icon(
                         imageVector = imageVector,
                         contentDescription = contentDescription
@@ -232,12 +234,12 @@ private fun SettingsItemPreview() {
     OSHTheme {
         Column {
             OSHClickableCard(
-                onCardClick = {},
+                onClick = {},
                 title = "Manage Sensors",
                 subtitle = "1 of 2 server(s) enabled",
             )
             OSHClickableCardWithIcon (
-                onCardClick = {},
+                onClick = {},
                 title = "Language",
                 imageVector = Icons.Default.Language,
                 contentDescription = "Select in app language"
@@ -256,7 +258,7 @@ private fun ServerItemsCard() {
                 subtitle = "http:localhost:8080/sensorhub/api",
                 checked = true,
                 onCheckedChange = {},
-                onClicked = {},
+                 onClick = {},
                 imageVector = Icons.Filled.Edit,
                 contentDescription = "Edit Server"
             )
