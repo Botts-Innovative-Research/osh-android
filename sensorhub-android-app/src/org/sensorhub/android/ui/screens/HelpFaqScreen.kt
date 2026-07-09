@@ -19,6 +19,9 @@ import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.Primary
 import org.sensorhub.android.ui.theme.TextSecondary
+import org.sensorhub.android.R
+import androidx.compose.ui.res.stringResource
+
 
 @Composable
 fun HelpFaqScreen(
@@ -28,7 +31,7 @@ fun HelpFaqScreen(
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
-                title = "Help / FAQ",
+                title = stringResource(R.string.title_help_faq),
                 onBackClick = onBackClick
             )
         },
