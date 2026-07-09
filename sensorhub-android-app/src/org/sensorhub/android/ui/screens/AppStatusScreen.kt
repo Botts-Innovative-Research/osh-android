@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.R
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun AppStatusScreen(
@@ -20,7 +22,7 @@ fun AppStatusScreen(
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
-                title = "App Status",
+                title = stringResource(R.string.app_status_main_fragment),
                 onBackClick = onBackClick
             )
         },
