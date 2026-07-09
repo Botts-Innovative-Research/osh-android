@@ -1,0 +1,102 @@
+package org.sensorhub.android.ui.screens
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.components.OSHExpandableCard
+import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
+import org.sensorhub.android.ui.theme.Background
+import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.Primary
+import org.sensorhub.android.ui.theme.TextSecondary
+import org.sensorhub.android.R
+import androidx.compose.ui.res.stringResource
+
+
+@Composable
+fun HelpFaqScreen(
+    items: List<FaqItem>,
+    onBackClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            OSHTopAppBarWithBack(
+                title = stringResource(R.string.title_help_faq),
+                onBackClick = onBackClick
+            )
+        },
+        containerColor = Background
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(items) { item ->
+                when (item) {
+                    is FaqItem.Header -> {
+                        Text(
+                            text = item.title.uppercase(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Primary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        )
+                    }
+                    is FaqItem.Entry -> {
+                        OSHExpandableCard(
+                            title = item.question,
+                            expandedContent = {
+                                Text(
+                                    text = item.answer,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+sealed class FaqItem {
+    data class Header(val title: String) : FaqItem()
+    data class Entry(val question: String, val answer: String) : FaqItem()
+}
+
+private fun buildSampleFaqItems(): List<FaqItem> = listOf(
+    FaqItem.Header("Getting Started"),
+    FaqItem.Entry(
+        "What is OpenSensorHub?",
+        "OpenSensorHub is a sensor aggregation and streaming app. It collects data from your device\u2019s built-in sensors and connected Bluetooth peripherals, then streams that data to an OpenSensorHub server in real time."
+    ),
+    FaqItem.Entry(
+        "How do I connect to a server?",
+        "Go to the Settings tab, tap \"Manage Servers\", then tap the add button. Enter a name for the profile, the server host address, port, and endpoint path."
+    ),
+)
+
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun HelpFaqScreenPreview() {
+    OSHTheme {
+        HelpFaqScreen(
+            items = buildSampleFaqItems(),
+            onBackClick = {}
+        )
+    }
+}
