@@ -1,7 +1,11 @@
 package org.sensorhub.android.ui.screens
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.MoreVert
@@ -23,6 +27,7 @@ import org.sensorhub.android.ui.components.OSHSwitchCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHCard
@@ -54,14 +59,16 @@ fun ServersScreen(navController: NavController = rememberNavController()) {
             modifier = Modifier
                 .padding(innerPadding)
         ) {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             OSHClickableCardWithIcon (
                 title = stringResource(R.string.manage_servers),
 //                    subtitle = "0 of 0 server(s) enabled",
                 imageVector = Icons.Default.Cloud,
                 contentDescription = stringResource(R.string.manage_servers),
-                onClick = { navController.navigate(Screen.ServerProfiles.route)}
+                onClick = { navController.navigate(Screen.ServerProfiles.route)},
             )
-
 
             OSHCard {
                 OSHSwitchRow(

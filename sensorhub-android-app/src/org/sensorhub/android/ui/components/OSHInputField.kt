@@ -69,7 +69,6 @@ fun OSHInputField(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
         )
 
         AnimatedVisibility(

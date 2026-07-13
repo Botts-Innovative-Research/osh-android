@@ -2,8 +2,11 @@ package org.sensorhub.android.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,9 +33,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.ui.components.OSHButton
-import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSegmentedButton
+import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
@@ -49,11 +52,10 @@ fun ServerFormScreen(
     var endpointPath by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    var enableTls by rememberSaveable { mutableStateOf("") }
+    var enableTls by rememberSaveable { mutableStateOf(false) }
+    var enableOAuth by rememberSaveable { mutableStateOf(false) }
     var disableSslCheck by rememberSaveable { mutableStateOf("") }
     var useConSysClient by rememberSaveable { mutableStateOf("") }
-    var oAuthEnabled by rememberSaveable { mutableStateOf("") }
-    var enabled by rememberSaveable { mutableStateOf("") }
     var clientId by rememberSaveable { mutableStateOf("") }
     var clientSecret by rememberSaveable { mutableStateOf("") }
     var tokenEndpoint by rememberSaveable { mutableStateOf("") }
@@ -65,6 +67,37 @@ fun ServerFormScreen(
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isClientSecretVisible by remember { mutableStateOf(false) }
 
+
+    if (enableOAuth) {
+        OSHInputField(
+            value = clientId,
+            onValueChange = { clientId = it },
+            label = "Client ID",
+        )
+        OSHInputField(
+            value = tokenEndpoint,
+            onValueChange = { tokenEndpoint = it },
+            label = "Token Endpoint",
+        )
+        OSHInputField(
+            value = clientSecret,
+            onValueChange = {  clientSecret = it },
+            label = "ClientSecret",
+            visualTransformation = if (isClientSecretVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { isClientSecretVisible = !isClientSecretVisible }) {
+                    Icon(
+                        imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = "Toggle secret visibility"
+                    )
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            )
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -80,44 +113,52 @@ fun ServerFormScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            OSHSegmentedButton(
+                options = listOf("CS API Client", "SOS-T Client")
+            )
 
-            OSHCard(
-                modifier = Modifier
-                    .fillMaxSize()
+            OSHInputField(
+                value = serverName,
+                onValueChange = { serverName = it },
+                label = "Server name",
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OSHSegmentedButton(
-                    options = listOf("CS API CLient", "SOS-T Client")
-                )
-            }
-
-            OSHCard(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                OSHInputField(
-                    value = serverName,
-                    onValueChange = {  serverName = it },
-                    label = "Server Name",
-                )
                 OSHInputField(
                     value = host,
-                    onValueChange = {  host = it },
-                    label = "Host/ IP Address",
+                    onValueChange = { host = it },
+                    label = "Host / IP",
+                    modifier = Modifier.weight(1f),
                 )
                 OSHInputField(
-                    value = endpointPath,
-                    onValueChange = {  endpointPath = it },
-                    label = "Endpoint Path",
+                    value = port,
+                    onValueChange = { port = it },
+                    label = "Port",
+                    modifier = Modifier.weight(0.4f),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
-
+            OSHInputField(
+                value = endpointPath,
+                onValueChange = { endpointPath = it },
+                label = "Endpoint path",
+            )
+            OSHSwitchRow(
+                title = "Enable TLS",
+                checked = enableTls,
+                onCheckedChange = { enableTls = it },
+            )
 
             OSHInputField(
                 value = username,
-                onValueChange = {  username = it },
+                onValueChange = { username = it },
                 label = "Username",
             )
             OSHInputField(
@@ -140,6 +181,12 @@ fun ServerFormScreen(
             )
 
 
+            OSHSwitchRow(
+                title = "Enable OAuth",
+                checked = enableOAuth,
+                onCheckedChange = { enableOAuth = it },
+            )
+
             OSHButton(
                 onClick = {},
                 text = "Add Server",
@@ -150,6 +197,14 @@ fun ServerFormScreen(
     }
 }
 
+
+//fun toggleServerClient() {
+//    if(client == "api") {
+//        endpoint = "/sensorhub/api"
+//    } else {
+//        endpoint = "/sensorhub/sos"
+//    }
+//}
 
 data class ServerProfile(
     val id: String = "",
@@ -168,7 +223,7 @@ data class ServerProfile(
     val clientSecret: String = "",
     val tokenEndpoint: String = ""
 ) {
-    val isValid: Boolean get() = name.isNotBlank() && host.isNotBlank() && ( port >= 0 && port <= 65513) //name == null && host == null && port == null &&
+    val isValid: Boolean get() = name.isNotBlank() && host.isNotBlank() && ( port >= 0 && port <= 65513)
 }
 
 
