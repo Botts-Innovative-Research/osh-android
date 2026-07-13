@@ -53,6 +53,26 @@ fun OSHCard(
 
 
 @Composable
+fun OSHSensorCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SecondaryContainer,
+            contentColor = TextPrimary
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp,
+        ),
+        content = content
+    )
+}
+@Composable
 fun OSHClickableCardWithIcon(
     onClick: () -> Unit,
     title: String,

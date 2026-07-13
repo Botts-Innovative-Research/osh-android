@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -21,8 +22,6 @@ fun OSHFilterChip(
     text: String,
     modifier: Modifier = Modifier,
     selected: Boolean = true,
-    imageVector: ImageVector,
-    contentDescription: String
 ) {
     FilterChip(
         onClick = onClick,
@@ -33,8 +32,8 @@ fun OSHFilterChip(
         leadingIcon = if (selected) {
             {
                 Icon(
-                    imageVector = imageVector,
-                    contentDescription = contentDescription,
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Selcted filter",
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }
@@ -52,9 +51,7 @@ private fun ChipPreview() {
             OSHFilterChip(
                 onClick = {},
                 text = "Bluetooth",
-                selected = true,
-                imageVector = Icons.Default.Bluetooth,
-                contentDescription = "Blueooth"
+                selected = true
             )
         }
     }

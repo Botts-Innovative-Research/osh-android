@@ -327,9 +327,11 @@
     <string name="title_language_dialog">Language</string>
     <string name="about_description">A software platform for building smart sensor networks and the Internet of Things</string>
 
+    <string name="hint_tap_to_configure">Tap to configure</string>
+
     <!-- Sensor Preferences -->
-    <string name="category_on_device">ON-DEVICE</string>
-    <string name="category_bluetooth">Bluetooth Peripherals</string>
+    <string name="category_on_device">On Device</string>
+    <string name="category_bluetooth">Bluetooth</string>
     <string name="category_others">Others</string>
     <string name="title_codec">Codec</string>
     <string name="title_frame_rate">Frame Rate</string>

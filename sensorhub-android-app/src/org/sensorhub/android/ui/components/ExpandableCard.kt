@@ -3,6 +3,7 @@ package org.sensorhub.android.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -10,10 +11,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.components.OSHExpandableSwitchCard
 import org.sensorhub.android.ui.theme.*
 
 @Composable
@@ -85,10 +89,8 @@ fun OSHExpandableCard(
                 }
             }
 
-            // Always-visible collapsed content
             collapsedContent()
 
-            // Animated expandable content
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically(),
@@ -99,6 +101,130 @@ fun OSHExpandableCard(
                     expandedContent()
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun OSHExpandableSwitchCard(
+    title: String,
+    subtitle: String = "",
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    configHint: String = "",
+    expanded: Boolean? = null,
+    onExpandChange: ((Boolean) -> Unit)? = null,
+    expandedContent: @Composable ColumnScope.() -> Unit
+) {
+    var internalExpanded by remember { mutableStateOf(false) }
+    val isExpanded = expanded ?: internalExpanded
+    val toggleExpanded = {
+        val newValue = !isExpanded
+        if (onExpandChange != null) {
+            onExpandChange(newValue)
+        } else {
+            internalExpanded = newValue
+        }
+    }
+
+    Card(
+        onClick = { toggleExpanded() },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SecondaryContainer,
+            contentColor = TextPrimary
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    if (subtitle.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                }
+                OSHSwitch(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange
+                )
+            }
+
+            if (configHint.isNotBlank() && !isExpanded) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = configHint,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    expandedContent()
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun ExpandableSwitchCardPreview() {
+    OSHTheme {
+        Column {
+            OSHExpandableSwitchCard(
+                title = "Polar Heart Monitor",
+                subtitle = "Connect to a Polar heart rate sensor over Bluetooth LE",
+                checked = true,
+                onCheckedChange = {},
+                expanded = true,
+                expandedContent = {
+                }
+
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OSHExpandableSwitchCard(
+                title = "Accelerometer",
+                subtitle = "Stream real-time accelerometer motion data",
+                checked = false,
+                configHint = "Tap to configure",
+                onCheckedChange = {},
+                expandedContent = {}
+            )
         }
     }
 }
