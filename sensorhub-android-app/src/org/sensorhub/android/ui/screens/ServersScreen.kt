@@ -1,15 +1,12 @@
 package org.sensorhub.android.ui.screens
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -19,21 +16,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.sensorhub.android.ui.components.OSHClickableCard
-import org.sensorhub.android.ui.components.OSHSwitchCard
-import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
-import org.sensorhub.android.ui.theme.OSHTheme
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.Screen
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableCardWithIcon
-import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHSwitchRow
+import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
+import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun ServersScreen(navController: NavController = rememberNavController()) {

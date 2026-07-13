@@ -105,10 +105,9 @@ private fun buildFaqItems(
     return items
 }
 
-private fun buildServerProfileItems(
-
-): List<ServerProfileItem> {
+private fun buildServerProfileItems(): List<ServerProfileItem> {
     val items = mutableListOf<ServerProfileItem>()
 
     return items;
 }
+
