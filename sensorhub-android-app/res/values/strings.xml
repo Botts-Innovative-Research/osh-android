@@ -332,6 +332,7 @@
     <!-- Sensor Preferences -->
     <string name="category_on_device">On Device</string>
     <string name="category_bluetooth">Bluetooth</string>
+    <string name="category_usb">USB</string>
     <string name="category_others">Others</string>
     <string name="title_codec">Codec</string>
     <string name="title_frame_rate">Frame Rate</string>
