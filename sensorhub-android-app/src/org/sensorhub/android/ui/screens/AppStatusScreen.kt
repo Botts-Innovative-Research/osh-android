@@ -1,19 +1,19 @@
 package org.sensorhub.android.ui.screens
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import org.sensorhub.android.R
+import org.sensorhub.android.ui.components.OSHCard
+import org.sensorhub.android.ui.components.OSHStatusRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.R
-import androidx.compose.ui.res.stringResource
 
 @Composable
 fun AppStatusScreen(
@@ -28,12 +28,52 @@ fun AppStatusScreen(
         },
         containerColor = Background
     ) { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(16.dp)
         ) {
+
+            OSHCard {
+                OSHStatusRow(
+                    title = stringResource(R.string.httpServerStatusLabel),
+                    subtitle = "Connected"
+                )
+            }
+
+            OSHCard {
+                OSHStatusRow(
+                    title = stringResource(R.string.sosServiceStatusLabel),
+                    subtitle = "Connected"
+                )
+            }
+            OSHCard {
+                OSHStatusRow(
+                    title = stringResource(R.string.conSysServiceStatusLabel),
+                    subtitle = "Connected"
+                )
+            }
+
+            OSHCard {
+                OSHStatusRow(
+                    title = stringResource(R.string.discoveryServiceStatusLabel),
+                    subtitle = "Connected"
+                )
+            }
+
+            OSHCard {
+                OSHStatusRow(
+                    title = stringResource(R.string.sensorServiceStatusLabel),
+                    subtitle = "Connected"
+                )
+            }
+
+            OSHCard {
+                OSHStatusRow(
+                    title = stringResource(R.string.storageServiceStatusLabel),
+                    subtitle = "Connected"
+                )
+            }
 
         }
     }

@@ -196,6 +196,11 @@ private fun DeviceInfoCardPreview() {
                 imageVector = Icons.Default.Language,
                 contentDescription = "Select in app language"
             )
+
+            OSHStatusRow(
+                title = "SOS Service Status",
+                subtitle = "Connected"
+            )
         }
     }
 }
