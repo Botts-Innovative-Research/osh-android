@@ -3,6 +3,8 @@ package org.sensorhub.android.ui.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -39,42 +41,42 @@ fun AppStatusScreen(
                     title = stringResource(R.string.httpServerStatusLabel),
                     subtitle = "Connected"
                 )
-            }
+                HorizontalDivider(
 
-            OSHCard {
+                )
                 OSHStatusRow(
                     title = stringResource(R.string.sosServiceStatusLabel),
                     subtitle = "Connected"
                 )
-            }
-            OSHCard {
+                HorizontalDivider(
+
+                )
                 OSHStatusRow(
                     title = stringResource(R.string.conSysServiceStatusLabel),
                     subtitle = "Connected"
                 )
-            }
+                HorizontalDivider(
 
-            OSHCard {
+                )
                 OSHStatusRow(
                     title = stringResource(R.string.discoveryServiceStatusLabel),
                     subtitle = "Connected"
                 )
-            }
+                HorizontalDivider(
 
-            OSHCard {
+                )
                 OSHStatusRow(
                     title = stringResource(R.string.sensorServiceStatusLabel),
                     subtitle = "Connected"
                 )
-            }
+                HorizontalDivider(
 
-            OSHCard {
+                )
                 OSHStatusRow(
                     title = stringResource(R.string.storageServiceStatusLabel),
                     subtitle = "Connected"
                 )
             }
-
         }
     }
 }
