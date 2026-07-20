@@ -12,15 +12,23 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun StatusDot(
-    isOnline: Boolean,
+    status: String,
     modifier: Modifier = Modifier,
     dotSize: Dp = 10.dp
 ) {
+
+    val color = when (status) {
+        "started" -> Color.Green
+        "initialized", "starting" -> Color.Yellow
+        "stopped" -> Color.Red
+        "unknown" -> Color.Gray
+        else -> Color.Gray
+    }
     Box(
         modifier = modifier
             .size(dotSize)
             .background(
-                color = if (isOnline) Color.Green else Color.Gray,
+                color = color,
                 shape = CircleShape
             )
     )

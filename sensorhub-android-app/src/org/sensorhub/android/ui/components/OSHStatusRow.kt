@@ -23,7 +23,8 @@ fun OSHStatusRow(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    status: String
 ) {
     Row(
         modifier = modifier
@@ -32,7 +33,7 @@ fun OSHStatusRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StatusDot(isOnline = true,)
+        StatusDot(status = status)
         Spacer(modifier = Modifier.width(15.dp))
 
         Column(modifier = Modifier.weight(1f)) {
