@@ -101,9 +101,7 @@ fun AppPreferencesScreen(
             modifier = Modifier
                 .padding(innerPadding)
         ) {
-
             Spacer(modifier = Modifier.height(16.dp))
-
             OSHCard {
                 OSHInfoRow(
                     label = stringResource(R.string.device_name),
@@ -119,7 +117,6 @@ fun AppPreferencesScreen(
                     value = appVersion
                 )
             }
-
             OSHCard {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_notifications),
@@ -141,6 +138,14 @@ fun AppPreferencesScreen(
                     contentDescription = stringResource(R.string.title_about),
                     onClick = { showAboutAppDialog = true }
                 )
+
+                OSHClickableRowWithIcon(
+                    title = stringResource(R.string.app_status_main_fragment),
+                    imageVector = Icons.Default.Info,
+                    contentDescription = stringResource(R.string.app_status_main_fragment),
+                    onClick = { navController.navigate(Screen.AppStatus.route) }
+                )
+
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.Default.Help,
@@ -148,7 +153,6 @@ fun AppPreferencesScreen(
                     onClick = { navController.navigate(Screen.HelpFaq.route)}
                 )
             }
-
         }
     }
 }
