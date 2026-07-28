@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -141,7 +142,7 @@ fun AppPreferencesScreen(
 
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.app_status_main_fragment),
-                    imageVector = Icons.Default.Info,
+                    imageVector = Icons.Default.Cloud,
                     contentDescription = stringResource(R.string.app_status_main_fragment),
                     onClick = { navController.navigate(Screen.AppStatus.route) }
                 )

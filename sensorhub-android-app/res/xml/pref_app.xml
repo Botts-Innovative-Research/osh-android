@@ -49,6 +49,11 @@
             android:icon="@drawable/ic_info"
             android:layout="@layout/pref_icon_top" />
         <Preference
+            android:key="app_status"
+            android:title="App Status"
+            android:icon="@drawable/ic_help"
+            android:layout="@layout/pref_icon_bottom" />
+        <Preference
             android:key="app_help"
             android:title="@string/title_help_faq"
             android:icon="@drawable/ic_help"

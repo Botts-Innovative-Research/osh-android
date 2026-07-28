@@ -24,7 +24,7 @@ fun OSHStatusRow(
     subtitle: String,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    status: String
+    status: String = subtitle
 ) {
     Row(
         modifier = modifier

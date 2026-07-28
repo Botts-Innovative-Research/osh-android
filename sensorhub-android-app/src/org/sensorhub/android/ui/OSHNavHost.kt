@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import org.sensorhub.android.ui.screens.AppPreferencesScreen
 import org.sensorhub.android.ui.screens.AppStatusScreen
 import org.sensorhub.android.R
+import org.sensorhub.android.ui.screens.AppStatusViewModel
 import org.sensorhub.android.ui.screens.FaqItem
 import org.sensorhub.android.ui.screens.HelpFaqScreen
 import org.sensorhub.android.ui.screens.HomeScreen

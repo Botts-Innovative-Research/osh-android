@@ -16,13 +16,12 @@ fun StatusDot(
     modifier: Modifier = Modifier,
     dotSize: Dp = 10.dp
 ) {
-
-    val color = when (status) {
-        "started" -> Color.Green
-        "initialized", "starting" -> Color.Yellow
-        "stopped" -> Color.Red
-        "unknown" -> Color.Gray
-        else -> Color.Gray
+    val _status = status.lowercase()
+    val color = when {
+        _status.contains("started") -> Color(0xFF4CAF50)
+        _status.contains("stopped") -> Color(0xFFEF5350)
+        _status.contains("initializ" )|| _status.contains("starting") -> Color(0xFFFF9800)
+        else -> Color(0xFF757575)
     }
     Box(
         modifier = modifier

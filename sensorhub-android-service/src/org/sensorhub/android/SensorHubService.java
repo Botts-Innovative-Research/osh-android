@@ -55,7 +55,7 @@ public class SensorHubService extends Service
     private LocationListener locationListener;
 
     public class LocalBinder extends Binder {
-        SensorHubService getService() {
+        public SensorHubService getService() {
             return SensorHubService.this;
         }
     }

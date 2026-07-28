@@ -51,6 +51,14 @@ public class AppPreferencesFragment extends PreferenceFragmentCompat {
             });
         }
 
+        Preference statusPref = findPreference("app_status");
+        if (statusPref != null) {
+            statusPref.setOnPreferenceClickListener(preference -> {
+                startActivity(new Intent(requireContext(), AppStatusActivity.class));
+                return true;
+            });
+        }
+
         Preference helpPref = findPreference("app_help");
         if (helpPref != null) {
             helpPref.setOnPreferenceClickListener(preference -> {
