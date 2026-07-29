@@ -1,4 +1,4 @@
-package org.sensorhub.android.server;
+package org.sensorhub.android.ui.screens.profiles;
 
 import org.json.JSONException;
 import org.json.JSONObject;
