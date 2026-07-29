@@ -129,10 +129,10 @@ fun OSHTextButton(
 @Composable
 fun OSHSegmentedButton(
     modifier: Modifier = Modifier,
-    options: List<String>
+    options: List<String>,
+    selectedIndex: Int = 0,
+    onOptionSelected: (Int) -> Unit = {}
 ) {
-    var selectedIndex by remember { mutableIntStateOf(0) }
-
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, label ->
             SegmentedButton(
@@ -142,7 +142,7 @@ fun OSHSegmentedButton(
                     count = options.size,
                     baseShape = RoundedCornerShape(25)
                 ),
-                onClick = { selectedIndex = index },
+                onClick = { onOptionSelected(index) },
                 selected = index == selectedIndex,
                 label = { Text(label, maxLines = 1) },
                 colors = SegmentedButtonDefaults.colors(

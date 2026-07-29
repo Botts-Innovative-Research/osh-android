@@ -4,18 +4,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import org.sensorhub.android.ui.screens.AppPreferencesScreen
 import org.sensorhub.android.ui.screens.AppStatusScreen
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.screens.AppStatusViewModel
 import org.sensorhub.android.ui.screens.FaqItem
 import org.sensorhub.android.ui.screens.HelpFaqScreen
 import org.sensorhub.android.ui.screens.HomeScreen
 import org.sensorhub.android.ui.screens.SensorsScreen
 import org.sensorhub.android.ui.screens.ServerFormScreen
-import org.sensorhub.android.ui.screens.ServerProfileItem
 import org.sensorhub.android.ui.screens.ServersScreen
 import org.sensorhub.android.ui.screens.ServerProfilesScreen
 
@@ -58,30 +58,25 @@ fun OSHNavHost(
         }
 
         composable(Screen.AppPreferences.route) {
-            val context = LocalContext.current
-
             AppPreferencesScreen(
-                onBackClick = { navController.popBackStack() },
-                navController = navController
+                onBackClick = { navController.popBackStack() }
             )
         }
         composable(Screen.ServerProfiles.route) {
-            val context = LocalContext.current
-//            val servers = context.resources.getStringArray(R.id.server_profiles_toolbar)
-
-            val serverProfileItems = buildServerProfileItems()
             ServerProfilesScreen(
                 onBackClick = { navController.popBackStack() },
-                items = serverProfileItems,
                 navController = navController
             )
         }
 
-        composable(Screen.ServerForm.route) {
-            val context = LocalContext.current
-
+        composable(
+            route = Screen.ServerForm.route,
+            arguments = listOf(navArgument("profileId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getString("profileId")
             ServerFormScreen(
                 onBackClick = { navController.popBackStack() },
+                profileId = profileId
             )
         }
     }
@@ -105,10 +100,3 @@ private fun buildFaqItems(
     }
     return items
 }
-
-private fun buildServerProfileItems(): List<ServerProfileItem> {
-    val items = mutableListOf<ServerProfileItem>()
-
-    return items;
-}
-
