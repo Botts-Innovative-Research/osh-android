@@ -589,9 +589,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         setSupportActionBar(toolbar);
         toolbarTitle = findViewById(R.id.toolbar_title);
 
-        findViewById(R.id.btn_app_preferences).setOnClickListener(v ->
-                startActivity(new Intent(this, AppPreferencesActivity.class)));
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }

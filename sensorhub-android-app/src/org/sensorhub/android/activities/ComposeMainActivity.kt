@@ -1,4 +1,4 @@
-package org.sensorhub.android
+package org.sensorhub.android.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

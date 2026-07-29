@@ -9,6 +9,7 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import org.sensorhub.android.server.ServerProfileRepository;
 import org.sensorhub.android.server.ServerProfilesActivity;
+import org.sensorhub.android.activities.AppPreferencesActivity;
 
 
 /*
@@ -20,8 +21,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.pref_settings, rootKey);
 
+        setupAppPreferences();
         manageServerProfiles();
         setupDiscoveryToggle();
+    }
+
+    private void setupAppPreferences() {
+        Preference appPrefsPref = findPreference("app_preferences");
+        if (appPrefsPref != null) {
+            appPrefsPref.setOnPreferenceClickListener(p -> {
+                startActivity(new Intent(requireContext(), AppPreferencesActivity.class));
+                return true;
+            });
+        }
     }
 
     @Override

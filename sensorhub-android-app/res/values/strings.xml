@@ -323,11 +323,13 @@
     <string name="title_language">Language</string>
     <string name="title_version">Version</string>
     <string name="title_about">About application</string>
+    <string name="send_feedback">Send Feedback</string>
     <string name="title_help_faq">Help / FAQ</string>
     <string name="title_language_dialog">Language</string>
     <string name="about_description">A software platform for building smart sensor networks and the Internet of Things</string>
 
     <string name="hint_tap_to_configure">Tap to configure</string>
+    <string name="send_feedback_desc">Send Feedback</string>
 
     <!-- Sensor Preferences -->
     <string name="category_on_device">On Device</string>
