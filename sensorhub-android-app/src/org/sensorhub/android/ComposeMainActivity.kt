@@ -1,4 +1,4 @@
-package org.sensorhub.android.activities
+package org.sensorhub.android
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,8 +8,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import org.sensorhub.android.ui.Navbar
-import org.sensorhub.android.ui.OSHNavHost
+import org.sensorhub.android.ui.navigation.Navbar
+import org.sensorhub.android.ui.navigation.OSHNavHost
 import org.sensorhub.android.ui.theme.OSHTheme
 
 class ComposeMainActivity: ComponentActivity() {

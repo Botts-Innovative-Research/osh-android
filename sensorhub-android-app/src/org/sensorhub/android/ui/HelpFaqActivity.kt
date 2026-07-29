@@ -1,11 +1,11 @@
-package org.sensorhub.android.activities
+package org.sensorhub.android.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.screens.FaqItem
-import org.sensorhub.android.ui.screens.HelpFaqScreen
+import org.sensorhub.android.ui.screens.help.FaqItem
+import org.sensorhub.android.ui.screens.help.HelpFaqScreen
 import org.sensorhub.android.ui.theme.OSHTheme
 
 class HelpFaqActivity : ComponentActivity() {

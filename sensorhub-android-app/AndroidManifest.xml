@@ -57,7 +57,7 @@
         </activity>
 
         <activity
-            android:name=".activities.AppStatusActivity"
+            android:name=".ui.AppStatusActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
             android:exported="false" />
@@ -73,17 +73,17 @@
             android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity
-            android:name=".activities.HelpFaqActivity"
+            android:name=".ui.HelpFaqActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
             android:exported="false" />
         <activity
-            android:name=".activities.AppPreferencesActivity"
+            android:name=".ui.AppPreferencesActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
             android:exported="false" />
         <activity
-            android:name=".activities.ComposeMainActivity"
+            android:name=".ComposeMainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"

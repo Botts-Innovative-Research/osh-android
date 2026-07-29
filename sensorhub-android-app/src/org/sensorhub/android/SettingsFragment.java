@@ -9,7 +9,7 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import org.sensorhub.android.server.ServerProfileRepository;
 import org.sensorhub.android.server.ServerProfilesActivity;
-import org.sensorhub.android.activities.AppPreferencesActivity;
+import org.sensorhub.android.ui.AppPreferencesActivity;
 
 
 /*

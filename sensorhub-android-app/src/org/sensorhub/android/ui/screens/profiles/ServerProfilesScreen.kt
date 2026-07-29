@@ -1,6 +1,5 @@
-package org.sensorhub.android.ui.screens
+package org.sensorhub.android.ui.screens.profiles
 
-import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.MaterialTheme
@@ -28,79 +26,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.sensorhub.android.R
-import org.sensorhub.android.server.ServerProfileRepository
-import org.sensorhub.android.ui.Screen
+import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.components.OSHActionCard
 import org.sensorhub.android.ui.components.OSHAddFAB
 import org.sensorhub.android.ui.components.OSHAlertDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
-
-data class ServerProfileItem(
-    val id: String = "",
-    val name: String = "",
-    val host: String = "",
-    val port: Int = 8181,
-    val endpointPath: String = "/sensorhub/api",
-    val username: String = "",
-    val password: String = "",
-    val enableTls: Boolean = false,
-    val disableSslCheck: Boolean = false,
-    val useConSysClient: Boolean = false,
-    val oAuthEnabled: Boolean = false,
-    val enabled: Boolean = false,
-    val clientId: String = "",
-    val clientSecret: String = "",
-    val tokenEndpoint: String = ""
-)
-
-class ServerProfilesViewModel(application: Application) : AndroidViewModel(application) {
-    private val repo = ServerProfileRepository.getInstance(application)
-    private val _profiles = MutableStateFlow<List<ServerProfileItem>>(emptyList())
-    val profiles: StateFlow<List<ServerProfileItem>> = _profiles.asStateFlow()
-
-    init {
-        refresh()
-    }
-
-    fun refresh() {
-        _profiles.value = repo.all.map { p ->
-            ServerProfileItem(
-                id = p.id,
-                name = p.name,
-                host = p.host,
-                port = p.port,
-                endpointPath = p.endpointPath,
-                username = p.username,
-                enableTls = p.enableTls,
-                disableSslCheck = p.disableSslCheck,
-                useConSysClient = p.useConSysClient,
-                oAuthEnabled = p.oAuthEnabled,
-                enabled = p.enabled
-            )
-        }
-    }
-
-    fun setEnabled(id: String, enabled: Boolean) {
-        repo.setEnabled(id, enabled)
-        refresh()
-    }
-
-    fun delete(id: String) {
-        repo.delete(id)
-        refresh()
-    }
-}
 
 @Composable
 fun ServerProfilesScreen(

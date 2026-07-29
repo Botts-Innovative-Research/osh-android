@@ -1,12 +1,6 @@
-package org.sensorhub.android.ui.screens
+package org.sensorhub.android.ui.screens.preferences
 
-import android.app.Application
-import android.app.LocaleManager
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.wifi.WifiManager
-import android.os.LocaleList
-import androidx.preference.PreferenceManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -29,14 +23,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import org.sensorhub.android.activities.AppStatusActivity
-import org.sensorhub.android.activities.HelpFaqActivity
+import org.sensorhub.android.ui.AppStatusActivity
+import org.sensorhub.android.ui.HelpFaqActivity
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
@@ -47,80 +37,6 @@ import org.sensorhub.android.ui.components.OSHTextInputDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
-import java.math.BigInteger
-import java.net.InetAddress
-import java.nio.ByteOrder
-
-private val LANGUAGE_LABELS = listOf("English", "中文 (台灣)", "Español", "Français", "Deutsch", "Italiano", "Português")
-private val LANGUAGE_VALUES = listOf("en", "zh-TW", "es", "fr", "de", "it", "pt")
-
-data class AppPreferencesState(
-    val deviceName: String = "MyDevice",
-    val deviceIpAddress: String = "",
-    val appVersion: String = "",
-    val selectedLanguageIndex: Int = 0
-)
-
-class AppPreferencesViewModel(application: Application) : AndroidViewModel(application) {
-    private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
-    private val _state = MutableStateFlow(AppPreferencesState())
-    val state: StateFlow<AppPreferencesState> = _state.asStateFlow()
-
-    init {
-        val deviceName = prefs.getString("device_name", "MyDevice") ?: "MyDevice"
-        val ipAddress = getDeviceIpAddress()
-        val version = getAppVersion()
-        val currentLang = prefs.getString("app_language", "en") ?: "en"
-        val langIndex = LANGUAGE_VALUES.indexOf(currentLang).coerceAtLeast(0)
-
-        _state.value = AppPreferencesState(
-            deviceName = deviceName,
-            deviceIpAddress = ipAddress,
-            appVersion = version,
-            selectedLanguageIndex = langIndex
-        )
-    }
-
-    fun updateDeviceName(name: String) {
-        prefs.edit().putString("device_name", name).apply()
-        _state.value = _state.value.copy(deviceName = name)
-    }
-
-    fun selectLanguage(index: Int) {
-        val localeTag = LANGUAGE_VALUES[index]
-        prefs.edit().putString("app_language", localeTag).apply()
-        _state.value = _state.value.copy(selectedLanguageIndex = index)
-
-        val localeManager = getApplication<Application>().getSystemService(LocaleManager::class.java)
-        localeManager.applicationLocales = LocaleList.forLanguageTags(localeTag)
-    }
-
-    private fun getDeviceIpAddress(): String {
-        return try {
-            val wifiManager = getApplication<Application>().getSystemService(WifiManager::class.java)
-            var ipAddress = wifiManager.connectionInfo.ipAddress
-
-            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-                ipAddress = Integer.reverseBytes(ipAddress)
-            }
-
-            val ipByteArray = BigInteger.valueOf(ipAddress.toLong()).toByteArray()
-            InetAddress.getByAddress(ipByteArray).hostAddress ?: ""
-        } catch (e: Exception) {
-            ""
-        }
-    }
-
-    private fun getAppVersion(): String {
-        return try {
-            val context = getApplication<Application>()
-            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            pInfo.versionName ?: ""
-        } catch (e: PackageManager.NameNotFoundException) {
-            ""
-        }
-    }
-}
 
 @Composable
 fun AppPreferencesScreen(

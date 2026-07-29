@@ -1,6 +1,5 @@
-package org.sensorhub.android.ui.screens
+package org.sensorhub.android.ui.screens.profiles
 
-import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

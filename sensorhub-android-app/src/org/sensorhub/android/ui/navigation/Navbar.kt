@@ -1,10 +1,9 @@
-package org.sensorhub.android.ui
+package org.sensorhub.android.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,6 +20,7 @@ import org.sensorhub.android.ui.theme.BottomNavBg
 import org.sensorhub.android.ui.theme.BottomNavSelected
 import org.sensorhub.android.ui.theme.BottomNavUnselected
 import org.sensorhub.android.ui.theme.AccentOrangeDim
+import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun Navbar(
@@ -84,7 +84,7 @@ data class NavigationItem(
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
 private fun NavbarPreview() {
-    org.sensorhub.android.ui.theme.OSHTheme {
+    OSHTheme {
         Navbar(navController = rememberNavController())
     }
 }

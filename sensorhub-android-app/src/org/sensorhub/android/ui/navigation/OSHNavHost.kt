@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui
+package org.sensorhub.android.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,16 +8,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import org.sensorhub.android.ui.screens.AppPreferencesScreen
-import org.sensorhub.android.ui.screens.AppStatusScreen
+import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
+import org.sensorhub.android.ui.screens.appstatus.AppStatusScreen
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.screens.FaqItem
-import org.sensorhub.android.ui.screens.HelpFaqScreen
-import org.sensorhub.android.ui.screens.HomeScreen
-import org.sensorhub.android.ui.screens.SensorsScreen
-import org.sensorhub.android.ui.screens.ServerFormScreen
-import org.sensorhub.android.ui.screens.ServersScreen
-import org.sensorhub.android.ui.screens.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.help.FaqItem
+import org.sensorhub.android.ui.screens.help.HelpFaqScreen
+import org.sensorhub.android.ui.screens.dashboard.HomeScreen
+import org.sensorhub.android.ui.screens.sensors.SensorsScreen
+import org.sensorhub.android.ui.screens.profiles.ServerFormScreen
+import org.sensorhub.android.ui.screens.servers.ServersScreen
+import org.sensorhub.android.ui.screens.profiles.ServerProfilesScreen
 
 @Composable
 fun OSHNavHost(

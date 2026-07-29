@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui
+package org.sensorhub.android.ui.navigation
 
 sealed class Screen(val route: String) {
     object Dashboard : Screen("dashboard_screen")

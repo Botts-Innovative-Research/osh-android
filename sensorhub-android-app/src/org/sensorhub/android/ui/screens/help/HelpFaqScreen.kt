@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.screens
+package org.sensorhub.android.ui.screens.help
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -74,10 +74,7 @@ fun HelpFaqScreen(
     }
 }
 
-sealed class FaqItem {
-    data class Header(val title: String) : FaqItem()
-    data class Entry(val question: String, val answer: String) : FaqItem()
-}
+
 
 private fun buildSampleFaqItems(): List<FaqItem> = listOf(
     FaqItem.Header("Getting Started"),

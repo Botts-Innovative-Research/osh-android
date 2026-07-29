@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui
+package org.sensorhub.android.ui.screens.sensors
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
@@ -19,8 +19,8 @@ class BluetoothScanner(private val context: Context) {
     private val receiver = object : BroadcastReceiver() {
         @SuppressLint("MissingPermission")
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == BluetoothDevice.ACTION_FOUND) { //
-                val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE) //
+            if (intent?.action == BluetoothDevice.ACTION_FOUND) {
+                val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
                 if (device != null && !foundDevices.contains(device)) {
                     foundDevices.add(device)
                 }
@@ -32,12 +32,11 @@ class BluetoothScanner(private val context: Context) {
     fun startDiscovery() {
         foundDevices.clear()
 
-        // Include already paired devices first if desired
-        btAdapter?.bondedDevices?.let { foundDevices.addAll(it) } //
+        btAdapter?.bondedDevices?.let { foundDevices.addAll(it) }
 
-        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND) //
+        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
         context.registerReceiver(receiver, filter)
-        btAdapter?.startDiscovery() //
+        btAdapter?.startDiscovery()
     }
 
     @SuppressLint("MissingPermission")
