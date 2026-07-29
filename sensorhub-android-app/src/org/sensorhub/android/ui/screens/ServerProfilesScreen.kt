@@ -110,6 +110,31 @@ fun ServerProfilesScreen(
 ) {
     val profiles by viewModel.profiles.collectAsStateWithLifecycle()
     var profileToDelete by remember { mutableStateOf<ServerProfileItem?>(null) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    profileToDelete?.let { profile ->
+        OSHAlertDialog(
+            onDismissRequest = { profileToDelete = null },
+            onConfirmation = {
+                viewModel.delete(profile.id)
+                profileToDelete = null
+            },
+            dialogTitle = stringResource(R.string.title_delete_server),
+            dialogText = stringResource(R.string.msg_delete_server, profile.name),
+            icon = Icons.Filled.Info
+        )
+    }
+
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
