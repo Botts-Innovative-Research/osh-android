@@ -67,7 +67,7 @@ fun ServerProfilesScreen(
                 profileToDelete = null
             },
             dialogTitle = stringResource(R.string.title_delete_server),
-            dialogText = stringResource(R.string.msg_delete_server, profile.name),
+            dialogText = stringResource(R.string.msg_delete_server, profile.serverName),
             icon = Icons.Filled.Info
         )
     }
@@ -108,13 +108,13 @@ fun ServerProfilesScreen(
             ) {
                 items(profiles, key = { it.id }) { item ->
                     OSHActionCard(
-                        title = item.name,
+                        title = item.serverName,
                         subtitle = "${if (item.enableTls) "https" else "http"}://${item.host}:${item.port}${item.endpointPath}",
                         checked = item.enabled,
                         onCheckedChange = { enabled -> viewModel.setEnabled(item.id, enabled) },
                         onClick = { navController.navigate(Screen.ServerForm.createRoute(item.id)) },
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = "Edit ${item.name}"
+                        contentDescription = "Edit ${item.serverName}"
                     )
                 }
             }

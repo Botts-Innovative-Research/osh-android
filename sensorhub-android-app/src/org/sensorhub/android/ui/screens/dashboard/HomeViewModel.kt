@@ -10,4 +10,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     init {
 
     }
+
+    override fun onCleared() {
+        super.onCleared()
+    }
 }

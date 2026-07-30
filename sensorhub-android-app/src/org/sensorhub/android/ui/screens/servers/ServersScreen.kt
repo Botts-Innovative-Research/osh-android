@@ -30,7 +30,8 @@ import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun ServersScreen(
-    navController: NavController = rememberNavController(),
+    onNavigateToAppPreferences : () -> Unit,
+    onNavigateToServerProfiles : () -> Unit,
     viewModel: ServersViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -40,7 +41,7 @@ fun ServersScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_servers),
                 actions = {
-                    IconButton(onClick = { navController.navigate(Screen.AppPreferences.route) }) {
+                    IconButton(onClick = { onNavigateToAppPreferences }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = ""
@@ -61,7 +62,7 @@ fun ServersScreen(
                 title = stringResource(R.string.manage_servers),
                 imageVector = Icons.Default.Cloud,
                 contentDescription = stringResource(R.string.manage_servers),
-                onClick = { navController.navigate(Screen.ServerProfiles.route) },
+                onClick = { onNavigateToServerProfiles },
             )
 
             OSHCard {
@@ -92,6 +93,9 @@ fun ServersScreen(
 @Composable
 private fun ServersScreenPreview() {
     OSHTheme {
-        ServersScreen()
+        ServersScreen(
+            {},
+            {}
+        )
     }
 }

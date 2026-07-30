@@ -30,13 +30,20 @@ fun OSHNavHost(
         modifier = modifier
     ) {
         composable(Screen.Dashboard.route) {
-            HomeScreen(navController = navController)
+            HomeScreen(
+                onNavigateToAppPreferences = { navController.navigate(Screen.AppPreferences.route) }
+            )
         }
         composable(Screen.Sensors.route) {
-            SensorsScreen(navController = navController)
+            SensorsScreen(
+                onNavigateToAppPreferences = { navController.navigate(Screen.AppPreferences.route) }
+            )
         }
         composable(Screen.Servers.route) {
-            ServersScreen(navController = navController)
+            ServersScreen(
+                onNavigateToAppPreferences = { navController.navigate(Screen.AppPreferences.route) },
+                onNavigateToServerProfiles = { navController.navigate(Screen.ServerProfiles.route) }
+            )
         }
         composable(Screen.AppStatus.route) {
             AppStatusScreen(
@@ -59,7 +66,9 @@ fun OSHNavHost(
 
         composable(Screen.AppPreferences.route) {
             AppPreferencesScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onNavigateToAppStatus = { navController.navigate(Screen.AppStatus.route) },
+                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) }
             )
         }
         composable(Screen.ServerProfiles.route) {

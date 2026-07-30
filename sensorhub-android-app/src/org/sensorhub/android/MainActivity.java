@@ -445,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             for (ServerProfile sp : enabledServers) {
                 URL profileUrl = sp.buildClientUrl();
                 if (profileUrl == null) {
-                    log.error("Skipping server profile '{}': invalid URL", sp.name);
+                    log.error("Skipping server profile '{}': invalid URL", sp.serverName);
                     continue;
                 }
 
@@ -540,7 +540,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     {
         SOSTClientConfig sosConfig = new SOSTClientConfig();
         sosConfig.id = sensorConf.id + "_SOST_" + profile.id;
-        sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "") + " -> " + profile.name;
+        sosConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "") + " -> " + profile.serverName;
         sosConfig.autoStart = true;
         sosConfig.sos.remoteHost = serverUrl.getHost();
         sosConfig.sos.remotePort = serverUrl.getPort() < 0 ? serverUrl.getDefaultPort() : serverUrl.getPort();
@@ -560,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
     {
         ConSysApiClientConfig consysConfig = new ConSysApiClientConfig();
         consysConfig.id = sensorConf.id + "_CONSYS_" + profile.id;
-        consysConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "") + " -> " + profile.name;
+        consysConfig.name = sensorConf.name.replaceAll("\\[.*\\]", "") + " -> " + profile.serverName;
         consysConfig.autoStart = true;
         consysConfig.conSys.remoteHost = serverUrl.getHost();
         consysConfig.conSys.remotePort = serverUrl.getPort() < 0 ? serverUrl.getDefaultPort() : serverUrl.getPort();
@@ -708,8 +708,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
             return true;
         return super.dispatchGenericMotionEvent(event);
     }
-
-
 
     boolean isAnySensorEnabled(SharedPreferences prefs) {
         return prefs.getBoolean("accel_enabled", false)

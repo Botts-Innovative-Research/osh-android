@@ -1,6 +1,5 @@
 package org.sensorhub.android.ui.screens.preferences
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -19,14 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.sensorhub.android.ui.AppStatusActivity
-import org.sensorhub.android.ui.HelpFaqActivity
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
@@ -41,9 +37,10 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun AppPreferencesScreen(
     onBackClick: () -> Unit,
+    onNavigateToAppStatus: () -> Unit,
+    onNavigateToHelpFaq: () -> Unit,
     viewModel: AppPreferencesViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -149,7 +146,7 @@ fun AppPreferencesScreen(
                     title = stringResource(R.string.app_status_main_fragment),
                     imageVector = Icons.Default.Cloud,
                     contentDescription = stringResource(R.string.app_status_main_fragment),
-                    onClick = { context.startActivity(Intent(context, AppStatusActivity::class.java)) }
+                    onClick = { onNavigateToAppStatus}
                 )
 
                 OSHClickableRowWithIcon(
@@ -163,7 +160,7 @@ fun AppPreferencesScreen(
                     title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.Default.Help,
                     contentDescription = stringResource(R.string.title_help_faq),
-                    onClick = { context.startActivity(Intent(context, HelpFaqActivity::class.java)) }
+                    onClick = { onNavigateToHelpFaq }
                 )
             }
         }

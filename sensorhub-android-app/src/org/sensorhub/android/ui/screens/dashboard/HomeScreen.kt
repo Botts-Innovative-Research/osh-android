@@ -12,22 +12,27 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.sensorhub.android.MainScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
+import org.sensorhub.android.ui.theme.OSHTheme
 
 
 @Composable
-fun HomeScreen(navController: NavController = rememberNavController()) {
+fun HomeScreen(
+    onNavigateToAppPreferences : () -> Unit,
+) {
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.app_name),
                 actions = {
-                    IconButton(onClick = { navController.navigate(Screen.AppPreferences.route)}) {
+                    IconButton(onClick = { onNavigateToAppPreferences }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = ""
@@ -44,5 +49,15 @@ fun HomeScreen(navController: NavController = rememberNavController()) {
 
         }
 
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun HomeScreenPreview() {
+    OSHTheme {
+        HomeScreen(
+            {}
+        )
     }
 }

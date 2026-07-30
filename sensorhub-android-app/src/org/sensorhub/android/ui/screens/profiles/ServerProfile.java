@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class ServerProfile {
     public String id;
-    public String name;
+    public String serverName;
     public String host;
     public int port;
     public String endpointPath;
@@ -28,7 +28,7 @@ public class ServerProfile {
 
     public ServerProfile() {
         this.id = UUID.randomUUID().toString();
-        this.name = "Local Server";
+        this.serverName = "Local Server";
         this.host = "127.0.0.1";
         this.port = 8080;
         this.endpointPath = "/sensorhub/api";
@@ -43,7 +43,7 @@ public class ServerProfile {
     public JSONObject toJson() throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put("id", id);
-        obj.put("name", name);
+        obj.put("serverName", serverName);
         obj.put("host", host);
         obj.put("port", port);
         obj.put("endpointPath", endpointPath);
@@ -59,7 +59,7 @@ public class ServerProfile {
     public static ServerProfile fromJson(JSONObject obj) throws JSONException {
         ServerProfile p = new ServerProfile();
         p.id = obj.getString("id");
-        p.name = obj.optString("name", "");
+        p.serverName = obj.optString("serverName", "");
         p.host = obj.optString("host", "127.0.0.1");
         p.port = obj.optInt("port", 8080);
         p.endpointPath = obj.optString("endpointPath", "/sensorhub/api");

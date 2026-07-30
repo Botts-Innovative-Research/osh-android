@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import org.sensorhub.android.SensorHubService
 import org.sensorhub.api.module.ModuleConfig
 
-class AppStatusViewModel(application: Application): AndroidViewModel(application) {
+class AppStatusViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableStateFlow(AppStatusState())
     val state: StateFlow<AppStatusState> = _state.asStateFlow()
     private var boundService: SensorHubService? = null

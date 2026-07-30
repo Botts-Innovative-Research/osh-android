@@ -57,7 +57,7 @@ import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun SensorsScreen(
-    navController: NavController = rememberNavController(),
+    onNavigateToAppPreferences : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
 ) {
     var selectedCategories by remember { mutableStateOf(SensorCategory.entries.toSet()) }
@@ -122,7 +122,7 @@ fun SensorsScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_sensors),
                 actions = {
-                    IconButton(onClick = { navController.navigate(Screen.AppPreferences.route) }) {
+                    IconButton(onClick = { onNavigateToAppPreferences }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = null,
@@ -397,6 +397,8 @@ private fun TruPulseConfig(
 @Composable
 private fun SensorsScreenPreview() {
     OSHTheme {
-        SensorsScreen()
+        SensorsScreen(
+            {}
+        )
     }
 }
