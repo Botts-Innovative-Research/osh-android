@@ -14,11 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import org.sensorhub.android.MainScreen
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
 
@@ -50,6 +46,12 @@ fun HomeScreen(
         }
 
     }
+}
+
+
+@Composable
+private fun MeshtasticDialog() {
+
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF121212)

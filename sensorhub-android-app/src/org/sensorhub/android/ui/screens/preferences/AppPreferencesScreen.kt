@@ -171,6 +171,6 @@ fun AppPreferencesScreen(
 @Composable
 private fun AppPreferencesScreenPreview() {
     OSHTheme {
-        AppPreferencesScreen({})
+        AppPreferencesScreen({}, {}, {})
     }
 }

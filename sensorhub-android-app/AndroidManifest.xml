@@ -56,8 +56,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- <activity android:name=".spotreport.SpotReportActivity" -->
-        <!-- android:configChanges="orientation|screenSize"> -->
     <service
         android:name=".SensorHubService"
         android:enabled="true"

@@ -9,6 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.getValue
@@ -18,9 +19,29 @@ import androidx.compose.runtime.setValue
 import org.sensorhub.android.ui.theme.*
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.node.ModifierNodeElement
 
 
 private val PillShape = RoundedCornerShape(25)
+
+@Composable
+fun OSHIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier,
+        ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = "",
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
 
 @Composable
 fun OSHButton(
