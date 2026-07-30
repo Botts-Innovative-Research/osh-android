@@ -1,5 +1,8 @@
 package org.sensorhub.android.ui.components
 
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,11 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
@@ -21,6 +27,7 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,9 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.R
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.Primary
 
@@ -218,6 +227,101 @@ fun OSHSingleChoiceDialog(
         dismissButton = {
             TextButton(onClick = { onDismissRequest() }) {
                 Text("Cancel")
+            }
+        }
+    )
+}
+
+@SuppressLint("MissingPermission")
+@Composable
+fun OSHBluetoothPickerDialog(
+    devices: List<BluetoothDevice>,
+    currentAddress: String,
+    onDeviceSelected: (address: String, displayName: String) -> Unit,
+    onDismiss: () -> Unit,
+    onStartScan: () -> Unit
+) {
+    var manualEntry by remember { mutableStateOf("") }
+    var showManualInput by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        onStartScan()
+        onDispose { }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.Bluetooth, contentDescription = null) },
+        title = { Text(stringResource(R.string.title_select_device)) },
+        text = {
+            Column {
+                if (showManualInput) {
+                    OutlinedTextField(
+                        value = manualEntry,
+                        onValueChange = { manualEntry = it },
+                        placeholder = { Text(stringResource(R.string.hint_manual_device)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextButton(onClick = {
+                        if (manualEntry.isNotBlank()) {
+                            onDeviceSelected(manualEntry.trim(), manualEntry.trim())
+                        }
+                    }) {
+                        Text(stringResource(R.string.btn_ok))
+                    }
+                    HorizontalDivider()
+                }
+
+                TextButton(onClick = { showManualInput = !showManualInput }) {
+                    Text(stringResource(R.string.manual_entry_option))
+                }
+
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (devices.isEmpty()) {
+                    Text(
+                        text = "Scanning...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    devices.forEach { device ->
+                        val name = device.name ?: "Unknown Device"
+                        val mac = device.address
+                        val displayText = "$name ($mac)"
+                        val isSelected = mac == currentAddress
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onDeviceSelected(mac, displayText) }
+                                .padding(vertical = 10.dp, horizontal = 4.dp)
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = mac,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )

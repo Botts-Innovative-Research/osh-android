@@ -29,7 +29,7 @@ fun OSHButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Button(
+    ElevatedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
@@ -38,11 +38,7 @@ fun OSHButton(
             containerColor = Primary,
             contentColor = OnPrimary
         ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 8.dp,
-            pressedElevation = 12.dp,
-            disabledElevation = 0.dp
-        )
+
     ) {
         Text(text)
     }
@@ -55,15 +51,11 @@ fun OSHTonalButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Button(
+    FilledTonalButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
         shape = PillShape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = SecondaryContainer,
-            contentColor = OnPrimary
-        ),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 8.dp,
             pressedElevation = 12.dp,
@@ -86,15 +78,27 @@ fun OSHOutlinedButton(
         modifier = modifier,
         enabled = enabled,
         shape = PillShape,
-        border = BorderStroke(1.dp, Outline),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = TextPrimary
+    ) {
+        Text(text)
+    }
+}
+
+@Composable
+fun OSHElevatedButton(
+    onClick: () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    ElevatedButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = PillShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Primary,
+            contentColor = OnPrimary
         ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 8.dp,
-            pressedElevation = 12.dp,
-            disabledElevation = 0.dp
-        )
     ) {
         Text(text)
     }
@@ -125,19 +129,20 @@ fun OSHTextButton(
 @Composable
 fun OSHSegmentedButton(
     modifier: Modifier = Modifier,
-    options: List<String>
+    options: List<String>,
+    selectedIndex: Int = 0,
+    onOptionSelected: (Int) -> Unit = {}
 ) {
-    var selectedIndex by remember { mutableIntStateOf(0) }
-
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, label ->
             SegmentedButton(
                 modifier = Modifier.weight(1f),
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
-                    count = options.size
+                    count = options.size,
+                    baseShape = RoundedCornerShape(25)
                 ),
-                onClick = { selectedIndex = index },
+                onClick = { onOptionSelected(index) },
                 selected = index == selectedIndex,
                 label = { Text(label, maxLines = 1) },
                 colors = SegmentedButtonDefaults.colors(
@@ -162,9 +167,12 @@ private fun ButtonPreview() {
             OSHOutlinedButton(onClick = {}, text = "Outlined Button")
             Spacer(modifier = Modifier.height(8.dp))
             OSHTextButton(onClick = {}, text = "Text Button")
+            Spacer(modifier = Modifier.height(8.dp))
+            OSHElevatedButton(onClick = {}, text = "Elevated Button")
         }
     }
 }
+
 
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
