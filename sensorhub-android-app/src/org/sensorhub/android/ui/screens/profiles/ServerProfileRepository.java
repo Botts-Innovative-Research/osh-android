@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.sensorhub.android.SecurePrefs;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class ServerProfileRepository implements SharedPreferences.OnSharedPrefer
 
     private final Context context;
     private final SharedPreferences prefs;
-    private volatile List<ServerProfile> cachedProfiles;
+    private volatile List<ServerProfileItem> cachedProfiles;
 
     private ServerProfileRepository(@NonNull Context context) {
         this.context = context.getApplicationContext();
@@ -47,17 +48,17 @@ public class ServerProfileRepository implements SharedPreferences.OnSharedPrefer
         }
     }
 
-    public List<ServerProfile> getAll() {
-        List<ServerProfile> cached = cachedProfiles;
+    public List<ServerProfileItem> getAll() {
+        List<ServerProfileItem> cached = cachedProfiles;
         if (cached != null) return Collections.unmodifiableList(cached);
 
-        List<ServerProfile> profiles = new ArrayList<>();
+        List<ServerProfileItem> profiles = new ArrayList<>();
         String json = prefs.getString(KEY_PROFILES_JSON, null);
         if (json != null) {
             try {
                 JSONArray arr = new JSONArray(json);
                 for (int i = 0; i < arr.length(); i++) {
-                    profiles.add(ServerProfile.fromJson(arr.getJSONObject(i)));
+                    profiles.add(ServerProfileItem.Companion.fromJson(arr.getJSONObject(i)));
                 }
             } catch (JSONException e) {
                 // corrupted data, return empty
@@ -67,26 +68,26 @@ public class ServerProfileRepository implements SharedPreferences.OnSharedPrefer
         return Collections.unmodifiableList(profiles);
     }
 
-    public List<ServerProfile> getEnabled() {
-        List<ServerProfile> enabled = new ArrayList<>();
-        for (ServerProfile p : getAll()) {
-            if (p.enabled) enabled.add(p);
+    public List<ServerProfileItem> getEnabled() {
+        List<ServerProfileItem> enabled = new ArrayList<>();
+        for (ServerProfileItem p : getAll()) {
+            if (p.getEnabled()) enabled.add(p);
         }
         return enabled;
     }
 
-    public ServerProfile getById(String id) {
-        for (ServerProfile p : getAll()) {
-            if (p.id.equals(id)) return p;
+    public ServerProfileItem getById(String id) {
+        for (ServerProfileItem p : getAll()) {
+            if (p.getId().equals(id)) return p;
         }
         return null;
     }
 
-    public void save(ServerProfile profile) {
-        List<ServerProfile> all = new ArrayList<>(getAll());
+    public void save(ServerProfileItem profile) {
+        List<ServerProfileItem> all = new ArrayList<>(getAll());
         boolean found = false;
         for (int i = 0; i < all.size(); i++) {
-            if (all.get(i).id.equals(profile.id)) {
+            if (all.get(i).getId().equals(profile.getId())) {
                 all.set(i, profile);
                 found = true;
                 break;
@@ -97,17 +98,16 @@ public class ServerProfileRepository implements SharedPreferences.OnSharedPrefer
     }
 
     public void delete(String id) {
-        List<ServerProfile> all = new ArrayList<>(getAll());
-        all.removeIf(p -> p.id.equals(id));
+        List<ServerProfileItem> all = new ArrayList<>(getAll());
+        all.removeIf(p -> p.getId().equals(id));
         persist(all);
         SecurePrefs.removeByPrefix(context, "profile_" + id + "_");
     }
 
     public void setEnabled(String id, boolean enabled) {
-        ServerProfile p = getById(id);
+        ServerProfileItem p = getById(id);
         if (p != null) {
-            p.enabled = enabled;
-            save(p);
+            save(p.withEnabled(enabled));
         }
     }
 
@@ -143,13 +143,10 @@ public class ServerProfileRepository implements SharedPreferences.OnSharedPrefer
         SecurePrefs.put(context, "profile_" + profileId + "_oauth_client_secret", value);
     }
 
-    private void persist(List<ServerProfile> profiles) {
+    private void persist(List<ServerProfileItem> profiles) {
         JSONArray arr = new JSONArray();
-        for (ServerProfile p : profiles) {
-            try {
-                arr.put(p.toJson());
-            } catch (JSONException ignored) {
-            }
+        for (ServerProfileItem p : profiles) {
+            arr.put(p.toJson());
         }
         prefs.edit().putString(KEY_PROFILES_JSON, arr.toString()).apply();
         cachedProfiles = profiles;

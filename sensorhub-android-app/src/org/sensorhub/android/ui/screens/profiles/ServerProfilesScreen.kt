@@ -109,7 +109,7 @@ fun ServerProfilesScreen(
                 items(profiles, key = { it.id }) { item ->
                     OSHActionCard(
                         title = item.serverName,
-                        subtitle = "${if (item.enableTls) "https" else "http"}://${item.host}:${item.port}${item.endpointPath}",
+                        subtitle = item.getDisplaySummary(),
                         checked = item.enabled,
                         onCheckedChange = { enabled -> viewModel.setEnabled(item.id, enabled) },
                         onClick = { navController.navigate(Screen.ServerForm.createRoute(item.id)) },

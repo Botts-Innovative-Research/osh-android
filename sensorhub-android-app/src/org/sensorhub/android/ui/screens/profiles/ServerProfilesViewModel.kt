@@ -16,21 +16,7 @@ class ServerProfilesViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun refresh() {
-        _profiles.value = repo.all.map { p ->
-            ServerProfileItem(
-                id = p.id,
-                name = p.name,
-                host = p.host,
-                port = p.port,
-                endpointPath = p.endpointPath,
-                username = p.username,
-                enableTls = p.enableTls,
-                disableSslCheck = p.disableSslCheck,
-                useConSysClient = p.useConSysClient,
-                oAuthEnabled = p.oAuthEnabled,
-                enabled = p.enabled
-            )
-        }
+        _profiles.value = repo.all
     }
 
     fun setEnabled(id: String, enabled: Boolean) {
