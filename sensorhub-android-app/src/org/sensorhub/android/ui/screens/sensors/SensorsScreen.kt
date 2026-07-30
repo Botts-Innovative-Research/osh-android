@@ -57,7 +57,7 @@ import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun SensorsScreen(
-    onNavigateToAppPreferences : () -> Unit,
+    onNavigateToPreferences : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
 ) {
     var selectedCategories by remember { mutableStateOf(SensorCategory.entries.toSet()) }
@@ -122,7 +122,7 @@ fun SensorsScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_sensors),
                 actions = {
-                    IconButton(onClick = { onNavigateToAppPreferences }) {
+                    IconButton(onClick = { onNavigateToPreferences }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = null,

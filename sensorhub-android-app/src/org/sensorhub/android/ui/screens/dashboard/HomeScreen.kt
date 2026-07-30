@@ -25,14 +25,14 @@ import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun HomeScreen(
-    onNavigateToAppPreferences : () -> Unit,
+    onNavigateToPreferences : () -> Unit,
 ) {
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.app_name),
                 actions = {
-                    IconButton(onClick = { onNavigateToAppPreferences }) {
+                    IconButton(onClick = { onNavigateToPreferences }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = ""

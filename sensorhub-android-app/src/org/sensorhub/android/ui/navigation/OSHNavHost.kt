@@ -31,18 +31,18 @@ fun OSHNavHost(
     ) {
         composable(Screen.Dashboard.route) {
             HomeScreen(
-                onNavigateToAppPreferences = { navController.navigate(Screen.AppPreferences.route) }
+                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
             )
         }
         composable(Screen.Sensors.route) {
             SensorsScreen(
-                onNavigateToAppPreferences = { navController.navigate(Screen.AppPreferences.route) }
+                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
             )
         }
         composable(Screen.Servers.route) {
             ServersScreen(
-                onNavigateToAppPreferences = { navController.navigate(Screen.AppPreferences.route) },
-                onNavigateToServerProfiles = { navController.navigate(Screen.ServerProfiles.route) }
+                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
+                onNavigateToProfiles = { navController.navigate(Screen.ServerProfiles.route) }
             )
         }
         composable(Screen.AppStatus.route) {
