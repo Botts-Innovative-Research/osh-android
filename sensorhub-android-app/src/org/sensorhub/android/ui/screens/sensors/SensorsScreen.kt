@@ -122,7 +122,7 @@ fun SensorsScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_sensors),
                 actions = {
-                    IconButton(onClick = { onNavigateToPreferences }) {
+                    IconButton(onClick = onNavigateToPreferences) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = null,

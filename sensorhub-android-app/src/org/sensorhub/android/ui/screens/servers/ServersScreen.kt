@@ -41,7 +41,7 @@ fun ServersScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_servers),
                 actions = {
-                    IconButton(onClick = { onNavigateToPreferences }) {
+                    IconButton(onClick = onNavigateToPreferences) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = ""
@@ -62,7 +62,7 @@ fun ServersScreen(
                 title = stringResource(R.string.manage_servers),
                 imageVector = Icons.Default.Cloud,
                 contentDescription = stringResource(R.string.manage_servers),
-                onClick = { onNavigateToProfiles },
+                onClick = onNavigateToProfiles,
             )
 
             OSHCard {

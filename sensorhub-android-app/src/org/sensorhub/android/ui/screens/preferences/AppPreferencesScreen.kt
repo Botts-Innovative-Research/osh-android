@@ -160,7 +160,7 @@ fun AppPreferencesScreen(
                     title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.Default.Help,
                     contentDescription = stringResource(R.string.title_help_faq),
-                    onClick = { onNavigateToHelpFaq }
+                    onClick = onNavigateToHelpFaq
                 )
             }
         }
