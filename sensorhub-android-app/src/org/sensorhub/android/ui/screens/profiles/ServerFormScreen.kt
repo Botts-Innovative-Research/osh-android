@@ -18,13 +18,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,9 +31,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.R
-import org.sensorhub.android.server.ServerProfile
-import org.sensorhub.android.server.ServerProfileRepository
 import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSegmentedButton
@@ -46,42 +44,14 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun ServerFormScreen(
     onBackClick: () -> Unit,
-    profileId: String? = null
+    profileId: String? = null,
+    viewModel: ServerFormViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    val repo = remember { ServerProfileRepository.getInstance(context) }
-    val isEdit = profileId != null && profileId != "new"
-    val existingProfile = remember { if (isEdit) repo.getById(profileId) else null }
-
-    var serverName by rememberSaveable { mutableStateOf(existingProfile?.name ?: "") }
-    var host by rememberSaveable { mutableStateOf(existingProfile?.host ?: "") }
-    var port by rememberSaveable { mutableStateOf(existingProfile?.port?.toString() ?: "") }
-    var endpointPath by rememberSaveable { mutableStateOf(existingProfile?.endpointPath ?: "/sensorhub/api") }
-    var username by rememberSaveable { mutableStateOf(existingProfile?.username ?: "") }
-    var password by rememberSaveable {
-        mutableStateOf(if (isEdit && existingProfile != null) repo.getPassword(existingProfile.id) else "")
-    }
-    var enableTls by rememberSaveable { mutableStateOf(existingProfile?.enableTls ?: false) }
-    var disableSslCheck by rememberSaveable { mutableStateOf(existingProfile?.disableSslCheck ?: false) }
-    var enableOAuth by rememberSaveable { mutableStateOf(existingProfile?.oAuthEnabled ?: false) }
-    var clientId by rememberSaveable {
-        mutableStateOf(if (isEdit && existingProfile != null) repo.getOAuthClientId(existingProfile.id) else "")
-    }
-    var clientSecret by rememberSaveable {
-        mutableStateOf(if (isEdit && existingProfile != null) repo.getOAuthClientSecret(existingProfile.id) else "")
-    }
-    var tokenEndpoint by rememberSaveable {
-        mutableStateOf(if (isEdit && existingProfile != null) repo.getOAuthTokenEndpoint(existingProfile.id) else "")
+    LaunchedEffect(profileId) {
+        viewModel.loadProfile(profileId)
     }
 
-    var clientTypeIndex by rememberSaveable {
-        mutableStateOf(if (existingProfile?.useConSysClient == false) 1 else 0)
-    }
-
-    var nameError by rememberSaveable { mutableStateOf<String?>(null) }
-    var hostError by rememberSaveable { mutableStateOf<String?>(null) }
-    var portError by rememberSaveable { mutableStateOf<String?>(null) }
-
+    val state = viewModel.state
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isClientSecretVisible by remember { mutableStateOf(false) }
 
@@ -90,59 +60,10 @@ fun ServerFormScreen(
     val msgPortNumber = stringResource(R.string.msg_port_number)
     val msgPortRange = stringResource(R.string.msg_port_range)
 
-    fun validate(): Boolean {
-        var valid = true
-        nameError = if (serverName.isBlank()) { valid = false; msgRequired } else null
-        hostError = if (host.isBlank()) {
-            valid = false; msgRequired
-        } else if (host.contains(" ") || host.contains("://")) {
-            valid = false; msgNoProtocol
-        } else null
-        portError = if (port.isBlank()) {
-            valid = false; msgRequired
-        } else {
-            val portNum = port.toIntOrNull()
-            if (portNum == null) { valid = false; msgPortNumber }
-            else if (portNum < 1 || portNum > 65535) { valid = false; msgPortRange }
-            else null
-        }
-        return valid
-    }
-
-    fun saveProfile() {
-        if (!validate()) return
-
-        val profile = existingProfile ?: ServerProfile()
-        profile.name = serverName.trim()
-        profile.host = host.trim()
-        profile.port = port.toInt()
-        var ep = endpointPath.trim()
-        if (ep.isNotEmpty() && !ep.startsWith("/")) ep = "/$ep"
-        profile.endpointPath = ep
-        profile.useConSysClient = clientTypeIndex == 0
-        profile.enableTls = enableTls
-        profile.disableSslCheck = disableSslCheck
-        profile.oAuthEnabled = enableOAuth
-        profile.username = if (!enableOAuth) username.trim() else ""
-
-        repo.save(profile)
-
-        val pwd = if (!enableOAuth) password.trim() else ""
-        repo.setPassword(profile.id, pwd)
-
-        if (enableOAuth) {
-            repo.setOAuthClientId(profile.id, clientId.trim())
-            repo.setOAuthClientSecret(profile.id, clientSecret.trim())
-            repo.setOAuthTokenEndpoint(profile.id, tokenEndpoint.trim())
-        }
-
-        onBackClick()
-    }
-
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
-                title = stringResource(if (isEdit) R.string.title_edit_server else R.string.add_server),
+                title = stringResource(if (viewModel.isEdit) R.string.title_edit_server else R.string.add_server),
                 onBackClick = onBackClick
             )
         },
@@ -160,81 +81,75 @@ fun ServerFormScreen(
             
             OSHSegmentedButton(
                 options = listOf("CS API Client", "SOS-T Client"),
-                selectedIndex = clientTypeIndex,
-                onOptionSelected = { index ->
-                    clientTypeIndex = index
-                    endpointPath = if (index == 0) "/sensorhub/api" else "/sensorhub/sos"
-                }
+                selectedIndex = if (state.useConSysClient) 0 else 1,
+                onOptionSelected = { viewModel.updateUseConSysClient(it == 0) }
             )
 
             OSHInputField(
-                value = serverName,
-                onValueChange = { serverName = it; nameError = null },
+                value = state.serverName,
+                onValueChange = { viewModel.updateServerName(it) },
                 label = "Server name",
-                error = nameError
+                error = viewModel.nameError
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OSHInputField(
-                    value = host,
-                    onValueChange = { host = it; hostError = null },
+                    value = state.host,
+                    onValueChange = { viewModel.updateHost(it) },
                     label = "Host / IP",
                     modifier = Modifier.weight(1f),
-                    error = hostError
+                    error = viewModel.hostError
                 )
                 OSHInputField(
-                    value = port,
-                    onValueChange = { port = it; portError = null },
+                    value = viewModel.portText,
+                    onValueChange = { viewModel.updatePort(it) },
                     label = "Port",
                     modifier = Modifier.weight(0.4f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    error = portError
+                    error = viewModel.portError
                 )
             }
             OSHInputField(
-                value = endpointPath,
-                onValueChange = { endpointPath = it },
+                value = state.endpointPath,
+                onValueChange = { viewModel.updateEndpointPath(it) },
                 label = "Endpoint path",
             )
             OSHSwitchRow(
                 title = "Enable TLS",
-                checked = enableTls,
-                onCheckedChange = {
-                    enableTls = it
-                    if (!it) disableSslCheck = false
-                },
+                checked = state.enableTls,
+                onCheckedChange = { viewModel.updateEnableTls(it) },
             )
 
-            if (enableTls) {
+            if (state.enableTls) {
                 OSHSwitchRow(
                     title = "Disable SSL Check",
-                    checked = disableSslCheck,
-                    onCheckedChange = { disableSslCheck = it },
+                    checked = state.disableSslCheck,
+                    onCheckedChange = { viewModel.updateDisableSslCheck(it) },
                 )
             }
 
             OSHSwitchRow(
                 title = "Enable OAuth",
-                checked = enableOAuth,
-                onCheckedChange = { enableOAuth = it },
+                checked = state.enableOAuth,
+                onCheckedChange = { viewModel.updateEnableOAuth(it) },
             )
 
-            if (enableOAuth) {
+            if (state.enableOAuth) {
                 OSHInputField(
-                    value = tokenEndpoint,
-                    onValueChange = { tokenEndpoint = it },
+                    value = state.tokenEndpoint,
+                    onValueChange = { viewModel.updateTokenEndpoint(it) },
                     label = "Token Endpoint",
                 )
                 OSHInputField(
-                    value = clientId,
-                    onValueChange = { clientId = it },
+                    value = state.clientId,
+                    onValueChange = { viewModel.updateClientId(it) },
                     label = "Client ID",
                 )
                 OSHInputField(
-                    value = clientSecret,
-                    onValueChange = { clientSecret = it },
+                    value = state.clientSecret,
+                    onValueChange = { viewModel.updateClientSecret(it) },
                     label = "Client Secret",
                     visualTransformation = if (isClientSecretVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -252,13 +167,13 @@ fun ServerFormScreen(
                 )
             } else {
                 OSHInputField(
-                    value = username,
-                    onValueChange = { username = it },
+                    value = state.username,
+                    onValueChange = { viewModel.updateUsername(it) },
                     label = "Username",
                 )
                 OSHInputField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = state.password,
+                    onValueChange = { viewModel.updatePassword(it) },
                     label = "Password",
                     visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -279,8 +194,12 @@ fun ServerFormScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             OSHButton(
-                onClick = { saveProfile() },
-                text = stringResource(if (isEdit) R.string.title_edit_server else R.string.btn_add_server),
+                onClick = {
+                    if (viewModel.saveProfile()) {
+                        onBackClick()
+                    }
+                },
+                text = stringResource(if (viewModel.isEdit) R.string.title_edit_server else R.string.btn_add_server),
                 modifier = Modifier.fillMaxWidth()
             )
         }
