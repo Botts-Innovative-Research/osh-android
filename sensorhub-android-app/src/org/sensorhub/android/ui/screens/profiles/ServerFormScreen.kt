@@ -117,20 +117,6 @@ fun ServerFormScreen(
                 label = "Endpoint path",
             )
             OSHSwitchRow(
-                title = "Enable TLS",
-                checked = state.enableTls,
-                onCheckedChange = { viewModel.updateEnableTls(it) },
-            )
-
-            if (state.enableTls) {
-                OSHSwitchRow(
-                    title = "Disable SSL Check",
-                    checked = state.disableSslCheck,
-                    onCheckedChange = { viewModel.updateDisableSslCheck(it) },
-                )
-            }
-
-            OSHSwitchRow(
                 title = "Enable OAuth",
                 checked = state.enableOAuth,
                 onCheckedChange = { viewModel.updateEnableOAuth(it) },
@@ -188,6 +174,20 @@ fun ServerFormScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     )
+                )
+            }
+
+            OSHSwitchRow(
+                title = "Enable TLS",
+                checked = state.enableTls,
+                onCheckedChange = { viewModel.updateEnableTls(it) },
+            )
+
+            if (state.enableTls) {
+                OSHSwitchRow(
+                    title = "Disable SSL Check",
+                    checked = state.disableSslCheck,
+                    onCheckedChange = { viewModel.updateDisableSslCheck(it) },
                 )
             }
 

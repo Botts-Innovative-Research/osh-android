@@ -155,7 +155,9 @@ fun OSHActionCard(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    OSHCard(modifier = modifier.fillMaxWidth()) {
+    OSHCard(modifier = modifier
+            .fillMaxWidth()
+    ) {
         OSHSwitchRow(
             title = title,
             subtitle = subtitle,
