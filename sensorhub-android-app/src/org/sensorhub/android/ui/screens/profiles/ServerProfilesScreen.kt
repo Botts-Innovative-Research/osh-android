@@ -104,7 +104,6 @@ fun ServerProfilesScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(16.dp)
             ) {
                 items(profiles, key = { it.id }) { item ->
                     OSHActionCard(

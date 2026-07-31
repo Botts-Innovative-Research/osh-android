@@ -155,7 +155,7 @@ fun OSHActionCard(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    OSHCard(modifier = modifier) {
+    OSHCard(modifier = modifier.fillMaxWidth()) {
         OSHSwitchRow(
             title = title,
             subtitle = subtitle,
@@ -285,7 +285,7 @@ private fun ServerItemsCard() {
                 onCheckedChange = {},
                  onClick = {},
                 imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit Server"
+                contentDescription = "Update Server"
             )
         }
     }
