@@ -313,11 +313,6 @@
     <string name="add_server">Add Server</string>
     <string name="summary_app_preferences">summ</string>
 
-    <string name="meshtastic_msg">Enter a message!</string>
-    <string name="message_hint">Enter a message!</string>
-    <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>
-    <string name="destination_node_hint">Enter the destination Node ID (integer)</string>
-
     <!-- App Preferences -->
     <string name="title_notifications">Notifications</string>
     <string name="title_language">Language</string>
@@ -327,9 +322,9 @@
     <string name="title_help_faq">Help / FAQ</string>
     <string name="title_language_dialog">Language</string>
     <string name="about_description">A software platform for building smart sensor networks and the Internet of Things</string>
+    <string name="send_feedback_desc"></string>
 
     <string name="hint_tap_to_configure">Tap to configure</string>
-    <string name="send_feedback_desc">Send Feedback</string>
 
     <!-- Sensor Preferences -->
     <string name="category_on_device">On Device</string>
@@ -353,18 +348,22 @@
     <string name="title_discovery_rules">URL to Discovery Rules.txt</string>
 
     <!-- Dashboard -->
-    <string name="video_stream">Video Stream</string>
-    <string name="switch_camera">Switch Camera</string>
-    <string name="btn_show">Show</string>
-    <string name="btn_hide">Hide</string>
-    <string name="meshtastic_label">Meshtastic</string>
-    <string name="meshtastic_connected">Connected</string>
-    <string name="btn_message">Message</string>
     <string name="title_sensors">Sensors</string>
     <string name="no_sensors_push">No Sensors Set to Push Remotely</string>
     <string name="title_run_name">Run Name</string>
     <string name="msg_enter_run_name">Please enter the name for this run</string>
+
+    <!-- Video -->
+    <string name="video_stream">Video Stream</string>
+    <string name="switch_camera">Switch Camera</string>
+    <string name="btn_show">Show</string>
+    <string name="btn_hide">Hide</string>
+    <!-- Meshtastic -->
+    <string name="meshtastic_label">Meshtastic</string>
+    <string name="meshtastic_connected">Connected</string>
     <string name="title_send_meshtastic">Send Meshtastic Message</string>
+    <string name="meshtastic_msg">Enter a message</string>
+    <string name="meshtastic_nodeId">Enter the destination Node ID (integer)</string>
 
     <!-- Server Profiles -->
     <string name="empty_server_profiles">No server profiles configured.\nTap + to create one.</string>
