@@ -11,6 +11,7 @@
             android:singleLine="true"
             android:title="@string/pref_uid_extension"
             android:summary="@string/summary_uid_extension"
+            app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_item" />
 
         <PreferenceCategory android:title="@string/category_on_device">

@@ -51,6 +51,7 @@
         <item name="textInputStyle">@style/AppTextInput</item>
         <item name="materialAlertDialogTheme">@style/AppDialog</item>
         <item name="alertDialogTheme">@style/AppDialog</item>
+        <item name="android:editTextColor">@android:color/white</item>
 
     </style>
 
@@ -64,6 +65,7 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textColorPrimary">@android:color/white</item>
         <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="android:editTextColor">@android:color/white</item>
     </style>
 
 
