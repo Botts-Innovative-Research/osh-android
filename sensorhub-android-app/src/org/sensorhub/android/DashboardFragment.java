@@ -49,7 +49,9 @@ import org.sensorhub.api.command.IStreamingControlInterface;
 import org.sensorhub.api.common.BigId;
 import org.sensorhub.api.event.Event;
 import org.sensorhub.api.module.IModule;
+import org.sensorhub.api.module.ModuleConfig;
 import org.sensorhub.api.module.ModuleEvent;
+import org.sensorhub.api.module.ModuleEvent.ModuleState;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.sensorhub.impl.client.sost.SOSTClient.StreamInfo;
 import org.sensorhub.impl.event.EventBus;
@@ -91,6 +93,13 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private LinearLayout videoControlsOverlay;
     private int currentZoomLevel = 0;
     private MaterialCardView meshtasticCard;
+    private MaterialCardView nodeStatusCard;
+    private View nodeStatusDot;
+    private TextView nodeStatusInfo;
+    private LinearLayout nodeStatusDetails;
+    private View nodeDivider;
+    private ImageButton btnToggleNodeDetails;
+    private boolean nodeDetailsExpanded = false;
     private View videoStatusDot;
     private FloatingActionButton fab;
     private LinearLayout serverStatusContainer;
@@ -173,6 +182,28 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         meshtasticCard = view.findViewById(R.id.meshtastic_card);
         view.findViewById(R.id.btn_meshtastic_msg).setOnClickListener(v -> showMeshtasticDialog());
 
+        nodeStatusCard = view.findViewById(R.id.node_status_card);
+        nodeStatusDot = view.findViewById(R.id.node_status_dot);
+        nodeStatusInfo = view.findViewById(R.id.node_status_info);
+        nodeStatusDetails = view.findViewById(R.id.node_status_details);
+        nodeDivider = view.findViewById(R.id.node_divider);
+        btnToggleNodeDetails = view.findViewById(R.id.btn_toggle_node_details);
+
+        btnToggleNodeDetails.setOnClickListener(v -> {
+            nodeDetailsExpanded = !nodeDetailsExpanded;
+
+            TransitionManager.beginDelayedTransition(
+                    (ViewGroup) nodeStatusCard,
+                    new AutoTransition().setDuration(200));
+
+            nodeStatusDetails.setVisibility(nodeDetailsExpanded ? View.VISIBLE : View.GONE);
+            nodeDivider.setVisibility(nodeDetailsExpanded ? View.VISIBLE : View.GONE);
+            btnToggleNodeDetails.animate()
+                    .rotation(nodeDetailsExpanded ? 90f : 0f)
+                    .setDuration(200)
+                    .start();
+        });
+
         serverStatusContainer = view.findViewById(R.id.server_status_container);
 
         fab = view.findViewById(R.id.fab_toggle);
@@ -195,6 +226,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             startRefreshingStatus();
             updateVideoStatusCard();
             updateMeshtasticCard();
+            updateNodeStatusCard();
         }
     }
 
@@ -245,8 +277,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         currentZoomLevel = 0;
         if (btnFlipCamera != null) btnFlipCamera.setVisibility(View.GONE);
         if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
+        if (nodeStatusCard != null) nodeStatusCard.setVisibility(View.GONE);
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
         provider.stopSensorHub();
         displayHandler.postDelayed(() -> {
             if (!isAdded()) return;
@@ -361,6 +393,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                 startRefreshingStatus();
                 updateVideoStatusCard();
                 updateMeshtasticCard();
+                updateNodeStatusCard();
                 if (videoPreviewVisible)
                     showVideo();
             }
@@ -515,6 +548,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             if (videoPreviewVisible)
                 showVideo();
         }
+
+        updateNodeStatusCard();
     }
 
     protected synchronized void newStatusMessage(String msg) {
@@ -927,6 +962,83 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                 bg.setColor(ContextCompat.getColor(requireContext(), R.color.status_started));
             }
         }
+    }
+
+    private void updateNodeStatusCard() {
+        if (nodeStatusCard == null) return;
+
+        SensorHubService service = provider.getBoundService();
+        boolean show = provider.isOshStarted() && service != null && service.getSensorHub() != null;
+        nodeStatusCard.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (!show) return;
+
+        ModuleRegistry registry = (ModuleRegistry) service.getSensorHub().getModuleRegistry();
+        java.util.Collection<IModule<?>> modules = registry.getLoadedModules();
+
+        boolean allStarted = true;
+        boolean anyInitializing = false;
+        int startedCount = 0;
+        int totalCount = 0;
+
+        nodeStatusDetails.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+
+        for (IModule<?> module : modules) {
+            if (module instanceof SOSTClient || module instanceof ConSysApiClientModule)
+                continue;
+
+            totalCount++;
+            ModuleState state = module.getCurrentState();
+
+            if (state == ModuleState.STARTED) {
+                startedCount++;
+            } else {
+                allStarted = false;
+            }
+            if (state == ModuleState.INITIALIZING) {
+                anyInitializing = true;
+            }
+
+            View row = inflater.inflate(R.layout.item_module_status, nodeStatusDetails, false);
+            TextView nameView = row.findViewById(R.id.module_name);
+            TextView stateView = row.findViewById(R.id.module_state);
+            View dot = row.findViewById(R.id.module_status_dot);
+
+            nameView.setText(module.getName());
+            stateView.setText(state.name());
+
+            int stateColor;
+            if (state == ModuleState.STARTED) {
+                stateColor = R.color.status_started;
+            } else if (state == ModuleState.INITIALIZING) {
+                stateColor = R.color.status_initializing;
+            } else {
+                stateColor = R.color.status_stopped;
+            }
+            stateView.setTextColor(ContextCompat.getColor(requireContext(), stateColor));
+
+            if (dot.getBackground() instanceof GradientDrawable) {
+                ((GradientDrawable) dot.getBackground())
+                        .setColor(ContextCompat.getColor(requireContext(), stateColor));
+            }
+
+            nodeStatusDetails.addView(row);
+        }
+
+        int overallColor;
+        if (allStarted && totalCount > 0) {
+            overallColor = R.color.status_started;
+        } else if (anyInitializing) {
+            overallColor = R.color.status_initializing;
+        } else {
+            overallColor = R.color.status_stopped;
+        }
+        if (nodeStatusDot.getBackground() instanceof GradientDrawable) {
+            ((GradientDrawable) nodeStatusDot.getBackground())
+                    .setColor(ContextCompat.getColor(requireContext(), overallColor));
+        }
+
+        nodeStatusInfo.setText(startedCount + "/" + totalCount + " modules running");
     }
 
     private void showMeshtasticDialog() {

@@ -404,6 +404,8 @@
     <string name="content_desc_zoom_in">Zoom In</string>
     <string name="content_desc_zoom_out">Zoom Out</string>
 
+    <string name="node_status_label">Node</string>
+
     <!-- Status Messages -->
     <string name="stopping_sensorhub">Stopping SensorHub</string>
     <string name="sensorhub_stopped">SensorHub Stopped</string>
