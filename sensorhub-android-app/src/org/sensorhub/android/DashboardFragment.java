@@ -14,16 +14,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,6 +39,10 @@ import android.graphics.drawable.GradientDrawable;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.transition.AutoTransition;
+import androidx.transition.TransitionManager;
+
+import net.opengis.swe.v20.DataBlock;
 
 import org.sensorhub.api.command.CommandData;
 import org.sensorhub.api.command.IStreamingControlInterface;
@@ -55,6 +62,8 @@ import org.sensorhub.impl.sensor.meshtastic.MeshtasticSensor;
 import org.sensorhub.impl.sensor.meshtastic.control.TextMessageControl;
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule;
 
+import java.io.IOException;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,10 +73,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Flow;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.widget.LinearLayout;
-
-import net.opengis.swe.v20.DataBlock;
 
 
 public class DashboardFragment extends Fragment implements TextureView.SurfaceTextureListener, Flow.Subscriber<Event>
@@ -82,7 +91,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private LinearLayout videoControlsOverlay;
     private int currentZoomLevel = 0;
     private MaterialCardView meshtasticCard;
-
     private View videoStatusDot;
     private FloatingActionButton fab;
     private LinearLayout serverStatusContainer;
@@ -95,6 +103,34 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
     private final Map<String, View> serverCardViews = new HashMap<>();
     private final Set<String> expandedServers = new HashSet<>();
+    private final Set<String> expandedSensors = new HashSet<>();
+
+    private static class DataStreamStatus {
+        final String outputName;
+        final String statusText;
+        final int statusColor;
+        final boolean isOk;
+
+        DataStreamStatus(String outputName, String statusText, int statusColor, boolean isOk) {
+            this.outputName = outputName;
+            this.statusText = statusText;
+            this.statusColor = statusColor;
+            this.isOk = isOk;
+        }
+    }
+
+    private static class SensorGroupInfo {
+        final String sensorId;
+        final String sensorName;
+        final java.util.List<DataStreamStatus> streams = new java.util.ArrayList<>();
+        boolean allOk = true;
+        boolean hasError = false;
+
+        SensorGroupInfo(String sensorId, String sensorName) {
+            this.sensorId = sensorId;
+            this.sensorName = sensorName;
+        }
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -197,18 +233,21 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     private void stopHub() {
+        Toast.makeText(requireContext(), "Stopping SensorHub", Toast.LENGTH_SHORT).show();
         showFabProgress();
         newStatusMessage(getString(R.string.stopping_sensorhub));
+
         stopRefreshingStatus();
         hideVideoPreview();
         clearTextureView();
         videoStatusCard.setVisibility(View.GONE);
         if (videoControlsOverlay != null) videoControlsOverlay.setVisibility(View.GONE);
         currentZoomLevel = 0;
+        if (btnFlipCamera != null) btnFlipCamera.setVisibility(View.GONE);
+        if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
+        requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (meshtasticCard != null) meshtasticCard.setVisibility(View.GONE);
         provider.stopSensorHub();
-
-        // Brief delay to let the service finish stopping on its background thread
         displayHandler.postDelayed(() -> {
             if (!isAdded()) return;
             hideFabProgress();
@@ -317,7 +356,6 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             if (!provider.isOshStarted()) {
                 provider.setOshStarted(true);
                 hideFabProgress();
-                updateFabIcon();
                 serverStatusContainer.removeAllViews();
                 serverCardViews.clear();
                 startRefreshingStatus();
@@ -329,8 +367,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         } else if (hubPollAttempts < HUB_POLL_MAX_ATTEMPTS) {
             displayHandler.postDelayed(this::pollHubReady, HUB_POLL_INTERVAL_MS);
         } else {
-            hideFabProgress();
-            newStatusMessage(getString(R.string.sensorhub_start_failed));
+            newStatusMessage("SensorHub failed to start");
             updateFabIcon();
         }
     }
@@ -373,7 +410,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             String clientMode = "SOS-T";
 
             Map<String, StreamInfo> dataStreams = client.getDataStreams();
-            StringBuffer detailHtml = new StringBuffer();
+            String errorText = null;
+            String statusMsg = null;
             boolean hasError = false;
 
             if (client.getCurrentError() != null) {
@@ -383,35 +421,18 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                 if (!errorMsg.endsWith(".")) errorMsg += ". ";
                 if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
                     errorMsg += errorObj.getCause().getMessage();
-                detailHtml.append("<font color='red'>" + errorMsg + "</font><br/>");
+                errorText = errorMsg;
             }
             if (dataStreams.isEmpty() && client.getStatusMessage() != null) {
-                detailHtml.append(client.getStatusMessage() + "<br/>");
+                statusMsg = client.getStatusMessage();
             }
 
             long now = System.currentTimeMillis();
             boolean allOk = !hasError && !dataStreams.isEmpty();
-            for (Entry<String, StreamInfo> stream : dataStreams.entrySet()) {
-                detailHtml.append("<b>" + stream.getKey() + " : </b>");
-                long lastEventTime = stream.getValue().lastEventTime;
-                long dt = now - lastEventTime;
-                if (lastEventTime == Long.MIN_VALUE) {
-                    detailHtml.append("<font color='red'>NO OBS</font>");
-                    allOk = false;
-                } else if (dt > stream.getValue().measPeriodMs) {
-                    detailHtml.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
-                    allOk = false;
-                } else {
-                    detailHtml.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-                }
-                if (stream.getValue().errorCount > 0) {
-                    detailHtml.append("<font color='red'> (" + stream.getValue().errorCount + ")</font>");
-                    allOk = false;
-                }
-                detailHtml.append("<br/>");
-            }
+            java.util.List<SensorGroupInfo> sensorGroups = buildSensorGroups(dataStreams, now);
+            for (SensorGroupInfo g : sensorGroups) { if (!g.allOk) allOk = false; if (g.hasError) hasError = true; }
 
-            updateServerCard(clientId, serverName, clientMode, allOk, hasError, detailHtml.toString());
+            updateServerCard(clientId, serverName, clientMode, allOk, hasError, errorText, statusMsg, sensorGroups);
         }
 
         for (ConSysApiClientModule client : provider.getConSysClients()) {
@@ -421,7 +442,8 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
             String clientMode = "Connected Systems";
 
             Map<String, ConSysApiClientModule.StreamInfo> dataStreams = client.getDataStreams();
-            StringBuffer detailHtml = new StringBuffer();
+            String errorText = null;
+            String statusMsg = null;
             boolean hasError = false;
 
             if (client.getCurrentError() != null) {
@@ -431,35 +453,18 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                 if (!errorMsg.endsWith(".")) errorMsg += ". ";
                 if (errorObj.getCause() != null && errorObj.getCause().getMessage() != null)
                     errorMsg += errorObj.getCause().getMessage();
-                detailHtml.append("<font color='red'>" + errorMsg + "</font><br/>");
+                errorText = errorMsg;
             }
             if (dataStreams.isEmpty() && client.getStatusMessage() != null) {
-                detailHtml.append(client.getStatusMessage() + "<br/>");
+                statusMsg = client.getStatusMessage();
             }
 
             long now = System.currentTimeMillis();
             boolean allOk = !hasError && !dataStreams.isEmpty();
-            for (Entry<String, ConSysApiClientModule.StreamInfo> stream : dataStreams.entrySet()) {
-                detailHtml.append("<b>" + stream.getKey() + " : </b>");
-                long lastEventTime = stream.getValue().lastEventTime;
-                long dt = now - lastEventTime;
-                if (lastEventTime == Long.MIN_VALUE) {
-                    detailHtml.append("<font color='red'>NO OBS</font>");
-                    allOk = false;
-                } else if (dt > stream.getValue().measPeriodMs) {
-                    detailHtml.append("<font color='red'>NOK (" + dt + "ms ago)</font>");
-                    allOk = false;
-                } else {
-                    detailHtml.append("<font color='green'>OK (" + dt + "ms ago)</font>");
-                }
-                if (stream.getValue().errorCount > 0) {
-                    detailHtml.append("<font color='red'> (" + stream.getValue().errorCount + ")</font>");
-                    allOk = false;
-                }
-                detailHtml.append("<br/>");
-            }
+            java.util.List<SensorGroupInfo> sensorGroups = buildSensorGroups(dataStreams, now);
+            for (SensorGroupInfo g : sensorGroups) { if (!g.allOk) allOk = false; if (g.hasError) hasError = true; }
 
-            updateServerCard(clientId, serverName, clientMode, allOk, hasError, detailHtml.toString());
+            updateServerCard(clientId, serverName, clientMode, allOk, hasError, errorText, statusMsg, sensorGroups);
         }
 
         Set<String> staleIds = new HashSet<>(serverCardViews.keySet());
@@ -526,6 +531,107 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         });
     }
 
+    private String extractSensorId(String streamKey) {
+        Matcher m = Pattern.compile("systems/([^/]+)/").matcher(streamKey);
+        if (m.find()) return m.group(1);
+        return streamKey;
+    }
+
+    private String formatSensorName(String sensorId) {
+        String[] parts = sensorId.replace("urn:", "").split(":");
+        String name;
+        if (parts.length >= 3) {
+            name = parts[parts.length - 2];
+        } else if (parts.length == 2) {
+            name = parts[0];
+        } else {
+            name = sensorId;
+        }
+        name = name.replace("_", " ").replace("-", " ");
+        return name.substring(0, 1).toUpperCase() + name.substring(1); //capitalizes first letter
+    }
+
+    private String formatOutputName(String streamKey) {
+        Matcher m = Pattern.compile("outputs/([^/]+)").matcher(streamKey);
+        String raw;
+        if (m.find()) {
+            raw = m.group(1);
+        } else {
+            raw = streamKey;
+        }
+        raw = raw.replaceAll("(?i)_data$", "");
+        raw = raw.replace("_", " ").replace("-", " ");
+        return raw.substring(0, 1).toUpperCase() + raw.substring(1); //capitalizes first letter
+    }
+
+
+    private interface StreamAccessor<T> {
+        long getLastEventTime(T info);
+        long getMeasPeriodMs(T info);
+        int getErrorCount(T info);
+    }
+
+    private <T> java.util.List<SensorGroupInfo> buildSensorGroups(Map<String, T> dataStreams, long now) {
+        StreamAccessor<Object> accessor;
+        if (!dataStreams.isEmpty()) {
+            Object first = dataStreams.values().iterator().next();
+            if (first instanceof StreamInfo) {
+                accessor = new StreamAccessor<Object>() {
+                    public long getLastEventTime(Object o) { return ((StreamInfo)o).lastEventTime; }
+                    public long getMeasPeriodMs(Object o) { return ((StreamInfo)o).measPeriodMs; }
+                    public int getErrorCount(Object o) { return ((StreamInfo)o).errorCount; }
+                };
+            } else {
+                accessor = new StreamAccessor<Object>() {
+                    public long getLastEventTime(Object o) { return ((ConSysApiClientModule.StreamInfo)o).lastEventTime; }
+                    public long getMeasPeriodMs(Object o) { return ((ConSysApiClientModule.StreamInfo)o).measPeriodMs; }
+                    public int getErrorCount(Object o) { return ((ConSysApiClientModule.StreamInfo)o).errorCount; }
+                };
+            }
+        } else {
+            return new java.util.ArrayList<>();
+        }
+
+        Map<String, SensorGroupInfo> grouped = new java.util.LinkedHashMap<>();
+        for (Entry<String, T> stream : dataStreams.entrySet()) {
+            String sensorId = extractSensorId(stream.getKey());
+            SensorGroupInfo group = grouped.computeIfAbsent(sensorId,
+                    k -> new SensorGroupInfo(k, formatSensorName(k)));
+
+            String outputName = formatOutputName(stream.getKey());
+            long lastEventTime = accessor.getLastEventTime(stream.getValue());
+            long dt = now - lastEventTime;
+            long measPeriod = accessor.getMeasPeriodMs(stream.getValue());
+            int errorCount = accessor.getErrorCount(stream.getValue());
+
+            String statusText;
+            int statusColor;
+            boolean isOk;
+            if (lastEventTime == Long.MIN_VALUE) {
+                statusText = "NO OBS";
+                statusColor = R.color.status_stopped;
+                isOk = false;
+            } else if (dt > measPeriod) {
+                statusText = "NOK (" + dt + "ms)";
+                statusColor = R.color.status_stopped;
+                isOk = false;
+            } else {
+                statusText = "OK (" + dt + "ms)";
+                statusColor = R.color.status_started;
+                isOk = true;
+            }
+            if (errorCount > 0) {
+                statusText += " (" + errorCount + ")";
+                statusColor = R.color.status_stopped;
+                isOk = false;
+            }
+            if (!isOk) group.allOk = false;
+
+            group.streams.add(new DataStreamStatus(outputName, statusText, statusColor, isOk));
+        }
+        return new java.util.ArrayList<>(grouped.values());
+    }
+
     private String extractServerName(String clientName, String fallback) {
         if (clientName != null && clientName.contains(" -> ")) {
             return clientName.substring(clientName.lastIndexOf(" -> ") + 4);
@@ -534,7 +640,9 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     }
 
     private void updateServerCard(String clientId, String serverName, String clientMode,
-                                  boolean allOk, boolean hasError, String detailHtml) {
+                                  boolean allOk, boolean hasError,
+                                  String errorText, String statusMsg,
+                                  java.util.List<SensorGroupInfo> sensorGroups) {
         View card = serverCardViews.get(clientId);
 
         if (card == null) {
@@ -545,54 +653,135 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
 
             final View cardRef = card;
             final String idRef = clientId;
-            View header = card.findViewById(R.id.server_status_header);
-            header.setOnClickListener(v -> {
-                boolean expanded = expandedServers.contains(idRef);
-                TextView details = cardRef.findViewById(R.id.server_status_details);
-                ImageButton toggle = cardRef.findViewById(R.id.btn_toggle_server_details);
+            ImageButton toggleBtn = card.findViewById(R.id.btn_toggle_server_details);
+            toggleBtn.setOnClickListener(v -> {
+                LinearLayout details = cardRef.findViewById(R.id.server_status_details);
+                View divider = cardRef.findViewById(R.id.server_divider);
+                ImageButton arrow = cardRef.findViewById(R.id.btn_toggle_server_details);
+                boolean expanded = details.getVisibility() == View.VISIBLE;
+
+                TransitionManager.beginDelayedTransition(
+                        (ViewGroup) cardRef,
+                        new AutoTransition().setDuration(200)
+                );
+
+                details.setVisibility(expanded ? View.GONE : View.VISIBLE);
+                divider.setVisibility(expanded ? View.GONE : View.VISIBLE);
+
+                arrow.animate()
+                        .rotation(expanded ? 0f : 90f)
+                        .setDuration(200)
+                        .start();
+
                 if (expanded) {
                     expandedServers.remove(idRef);
-                    details.setVisibility(View.GONE);
-                    toggle.setImageResource(R.drawable.ic_expand_more);
                 } else {
                     expandedServers.add(idRef);
-                    details.setVisibility(View.VISIBLE);
-                    toggle.setImageResource(R.drawable.ic_expand_less);
                 }
             });
         }
 
         TextView nameView = card.findViewById(R.id.server_status_name);
-        TextView modeView = card.findViewById(R.id.server_status_mode);
         nameView.setText(serverName);
-        modeView.setText(clientMode);
 
-        View dot = card.findViewById(R.id.server_status_dot);
-        if (dot.getBackground() instanceof GradientDrawable) {
-            GradientDrawable bg = (GradientDrawable) dot.getBackground();
-            int colorRes;
-            if (hasError) colorRes = R.color.status_stopped;
-            else if (allOk) colorRes = R.color.status_started;
-            else colorRes = R.color.status_initializing;
-            bg.setColor(ContextCompat.getColor(requireContext(), colorRes));
+        TextView subtitleView = card.findViewById(R.id.server_status_subtitle);
+        subtitleView.setText(clientMode);
+
+        View serverDot = card.findViewById(R.id.server_overall_status_dot);
+        if (serverDot.getBackground() instanceof GradientDrawable) {
+            GradientDrawable dotBg = (GradientDrawable) serverDot.getBackground();
+            boolean serverOk = errorText == null;
+            if (serverOk) {
+                for (SensorGroupInfo g : sensorGroups) {
+                    if (!g.allOk) { serverOk = false; break; }
+                }
+            }
+            int dotColor = serverOk ? R.color.status_started : R.color.status_stopped;
+            dotBg.setColor(ContextCompat.getColor(requireContext(), dotColor));
         }
 
-        if (card instanceof MaterialCardView) {
-            int strokeColorRes;
-            if (hasError) strokeColorRes = R.color.status_stopped;
-            else if (allOk) strokeColorRes = R.color.status_started;
-            else strokeColorRes = R.color.md_theme_outline;
-            ((MaterialCardView) card).setStrokeColor(
-                    ContextCompat.getColor(requireContext(), strokeColorRes));
+        LinearLayout detailsContainer = card.findViewById(R.id.server_status_details);
+        detailsContainer.removeAllViews();
+
+        if (errorText != null) {
+            TextView errorView = new TextView(requireContext());
+            errorView.setText(errorText);
+            errorView.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_stopped));
+            errorView.setTextSize(12);
+            errorView.setPadding(dpToPx(16), dpToPx(4), dpToPx(16), dpToPx(4));
+            detailsContainer.addView(errorView);
         }
 
-        TextView details = card.findViewById(R.id.server_status_details);
-        details.setText(Html.fromHtml(detailHtml));
+        if (statusMsg != null) {
+            TextView statusView = new TextView(requireContext());
+            statusView.setText(statusMsg);
+            statusView.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant));
+            statusView.setTextSize(12);
+            statusView.setPadding(dpToPx(16), dpToPx(4), dpToPx(16), dpToPx(4));
+            detailsContainer.addView(statusView);
+        }
+
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        for (SensorGroupInfo group : sensorGroups) {
+            View groupView = inflater.inflate(R.layout.item_sensor_group, detailsContainer, false);
+            String sensorKey = clientId + ":" + group.sensorId;
+
+            TextView sensorName = groupView.findViewById(R.id.sensor_group_name);
+            ImageView sensorArrow = groupView.findViewById(R.id.sensor_group_arrow);
+            View serverStatusDot = groupView.findViewById(R.id.server_status_dot);
+            LinearLayout streamsContainer = groupView.findViewById(R.id.sensor_group_streams);
+            View sensorHeader = groupView.findViewById(R.id.sensor_group_header);
+
+            sensorName.setText(group.sensorName);
+
+            if (serverStatusDot.getBackground() instanceof GradientDrawable) {
+                GradientDrawable dotBg = (GradientDrawable) serverStatusDot.getBackground();
+                int dotColor = group.allOk ? R.color.status_started : R.color.status_stopped;
+                dotBg.setColor(ContextCompat.getColor(requireContext(), dotColor));
+            }
+
+            for (DataStreamStatus stream : group.streams) {
+                View streamView = inflater.inflate(R.layout.item_datastream, streamsContainer, false);
+                TextView streamName = streamView.findViewById(R.id.datastream_name);
+                TextView streamStatus = streamView.findViewById(R.id.datastream_status);
+                streamName.setText(stream.outputName);
+                streamStatus.setText(stream.statusText);
+                streamStatus.setTextColor(ContextCompat.getColor(requireContext(), stream.statusColor));
+                streamsContainer.addView(streamView);
+            }
+
+            boolean sensorExpanded = expandedSensors.contains(sensorKey);
+            streamsContainer.setVisibility(sensorExpanded ? View.VISIBLE : View.GONE);
+            sensorArrow.setRotation(sensorExpanded ? 90f : 0f);
+
+            sensorHeader.setOnClickListener(v -> {
+                boolean exp = expandedSensors.contains(sensorKey);
+                if (exp) {
+                    expandedSensors.remove(sensorKey);
+                    streamsContainer.setVisibility(View.GONE);
+                    sensorArrow.animate().rotation(0f).setDuration(200).start();
+                } else {
+                    expandedSensors.add(sensorKey);
+                    streamsContainer.setVisibility(View.VISIBLE);
+                    sensorArrow.animate().rotation(90f).setDuration(200).start();
+                }
+            });
+
+            detailsContainer.addView(groupView);
+        }
+
         boolean expanded = expandedServers.contains(clientId);
-        details.setVisibility(expanded ? View.VISIBLE : View.GONE);
+        detailsContainer.setVisibility(expanded ? View.VISIBLE : View.GONE);
+
+        View divider = card.findViewById(R.id.server_divider);
+        divider.setVisibility(expanded ? View.VISIBLE : View.GONE);
 
         ImageButton toggle = card.findViewById(R.id.btn_toggle_server_details);
-        toggle.setImageResource(expanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
+        toggle.setRotation(expanded ? 90f : 0f);
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     private void updateVideoStatusCard() {
@@ -638,6 +827,24 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         if (btnFlipCamera != null) {
             boolean showFlip = hasVideo && android.hardware.Camera.getNumberOfCameras() > 1;
             btnFlipCamera.setVisibility(showFlip ? View.VISIBLE : View.GONE);
+        }
+
+        boolean isBackCamera = isBackCameraActive();
+        if (btnZoomIn != null) btnZoomIn.setVisibility(isBackCamera ? View.VISIBLE : View.GONE);
+        if (btnZoomOut != null) btnZoomOut.setVisibility(isBackCamera ? View.VISIBLE : View.GONE);
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isBackCameraActive() {
+        AndroidSensorsDriver sensors = provider.getAndroidSensors();
+        if (sensors == null) return true;
+        try {
+            int cameraId = sensors.getConfiguration().selectedCameraId;
+            android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+            android.hardware.Camera.getCameraInfo(cameraId, info);
+            return info.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK;
+        } catch (Exception e) {
+            return true;
         }
     }
 
@@ -744,7 +951,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
     private void sendMeshtasticMessage(String message, String nodeId) {
         SensorHubService service = provider.getBoundService();
         if (service == null || service.getSensorHub() == null) {
-            Toast.makeText(requireContext(), R.string.msg_sensorhub_not_running, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "SensorHub not running", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -770,9 +977,9 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
                     .build();
 
             textMessageControl.submitCommand(cmd);
-            Toast.makeText(requireContext(), R.string.msg_message_sent, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Message sent", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(requireContext(), R.string.msg_message_failed, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
         }
     }
     @Override
@@ -803,7 +1010,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         if (e instanceof ModuleEvent) {
             if (!provider.isOshStarted() && ((ModuleEvent) e).getType() == ModuleEvent.Type.LOADED) {
                 provider.setOshStarted(true);
-                requireActivity().runOnUiThread(this::updateFabIcon);
+                requireActivity().runOnUiThread(this::hideFabProgress);
                 startRefreshingStatus();
                 subscription.request(10);
                 return;

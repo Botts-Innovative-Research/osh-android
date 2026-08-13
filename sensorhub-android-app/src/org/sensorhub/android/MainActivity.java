@@ -303,57 +303,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         serverConfig.autoStart = true;
         sensorhubConfig.add(serverConfig);
 
-        // SOS Service
-        SOSServiceConfig sosConfig = new SOSServiceConfig();
-        sosConfig.moduleClass = SOSService.class.getCanonicalName();
-        sosConfig.id = "SOS_SERVICE";
-        sosConfig.name = "SOS Service";
-        sosConfig.autoStart = true;
-        sosConfig.enableTransactional = true;
-        sosConfig.exposedResources = new ObsSystemDatabaseViewConfig();
-
-        // Connected Systems Service
-        ConSysApiServiceConfig conSysApiService = new ConSysApiServiceConfig();
-        conSysApiService.moduleClass = ConSysApiService.class.getCanonicalName();
-        conSysApiService.id = "CON_SYS_SERVICE";
-        conSysApiService.name = "Connected Systems API Service";
-        conSysApiService.autoStart = true;
-        conSysApiService.enableTransactional = true;
-        conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
-
-        // Discovery Service
-        DiscoveryServiceConfig discoveryServiceConfig = new DiscoveryServiceConfig();
-        discoveryServiceConfig.moduleClass = DiscoveryService.class.getCanonicalName();
-        discoveryServiceConfig.id = "DISCOVERY_SERVICE";
-        discoveryServiceConfig.name= "Discovery Service";
-        discoveryServiceConfig.autoStart = true;
-
-        File outFile = new File(getApplicationContext().getFilesDir(), "rules.txt");
-        String rulesLink = prefs.getString("rules_link", "");
-        FutureTask<Void> downloadTask = new java.util.concurrent.FutureTask<>(() -> {
-            URL rulesUrl = new URL(rulesLink);
-            HttpURLConnection conn = (HttpURLConnection) rulesUrl.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            try (InputStream in = conn.getInputStream();
-                 OutputStream out = new FileOutputStream(outFile)) {
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, len);
-                }
-            } finally {
-                conn.disconnect();
-            }
-            return null;
-        });
-        new Thread(downloadTask).start();
-        try {
-            downloadTask.get();
-        } catch (Exception e) {
-            Log.e("OSH - Discovery", "Failed to download rules file", e);
-        }
-        discoveryServiceConfig.rulesFilePath = outFile.getAbsolutePath();
-
         sensorhubConfig.add(sensorsConfig);
 
         // TruPulse sensor
@@ -526,12 +475,63 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
 
         //---------- SERVICES ---------------------
         if (isApiServiceEnabled) {
+            // Connected Systems Service
+            ConSysApiServiceConfig conSysApiService = new ConSysApiServiceConfig();
+            conSysApiService.moduleClass = ConSysApiService.class.getCanonicalName();
+            conSysApiService.id = "CON_SYS_SERVICE";
+            conSysApiService.name = "Connected Systems API Service";
+            conSysApiService.autoStart = true;
+            conSysApiService.enableTransactional = true;
+            conSysApiService.exposedResources = new ObsSystemDatabaseViewConfig();
+
             sensorhubConfig.add(conSysApiService);
         }
         if (isSosServiceEnabled) {
+            // SOS Service
+            SOSServiceConfig sosConfig = new SOSServiceConfig();
+            sosConfig.moduleClass = SOSService.class.getCanonicalName();
+            sosConfig.id = "SOS_SERVICE";
+            sosConfig.name = "SOS Service";
+            sosConfig.autoStart = true;
+            sosConfig.enableTransactional = true;
+            sosConfig.exposedResources = new ObsSystemDatabaseViewConfig();
+
             sensorhubConfig.add(sosConfig);
         }
         if (isDiscoveryServiceEnabled) {
+            // Discovery Service
+            DiscoveryServiceConfig discoveryServiceConfig = new DiscoveryServiceConfig();
+            discoveryServiceConfig.moduleClass = DiscoveryService.class.getCanonicalName();
+            discoveryServiceConfig.id = "DISCOVERY_SERVICE";
+            discoveryServiceConfig.name= "Discovery Service";
+            discoveryServiceConfig.autoStart = true;
+
+            File outFile = new File(getApplicationContext().getFilesDir(), "rules.txt");
+            String rulesLink = prefs.getString("rules_link", "");
+            FutureTask<Void> downloadTask = new java.util.concurrent.FutureTask<>(() -> {
+                URL rulesUrl = new URL(rulesLink);
+                HttpURLConnection conn = (HttpURLConnection) rulesUrl.openConnection();
+                conn.setInstanceFollowRedirects(true);
+                try (InputStream in = conn.getInputStream();
+                     OutputStream out = new FileOutputStream(outFile)) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = in.read(buffer)) > 0) {
+                        out.write(buffer, 0, len);
+                    }
+                } finally {
+                    conn.disconnect();
+                }
+                return null;
+            });
+            new Thread(downloadTask).start();
+            try {
+                downloadTask.get();
+            } catch (Exception e) {
+                Log.e("OSH - Discovery", "Failed to download rules file", e);
+            }
+            discoveryServiceConfig.rulesFilePath = outFile.getAbsolutePath();
+
             sensorhubConfig.add(discoveryServiceConfig);
         }
     }
