@@ -32,7 +32,9 @@ def repos = [
                 'sensors/health/sensorhub-driver-angelsensor',
                 'processing/sensorhub-process-vecmath',
                 'processing/sensorhub-process-geoloc',
-                'services/sensorhub-service-discovery'
+                'services/sensorhub-service-discovery',
+                'util/sensorhub-lib-rules-engine',
+
         ]
 ]
 
