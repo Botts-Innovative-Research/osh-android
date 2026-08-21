@@ -862,6 +862,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         };
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_BROADCAST_RECEIVER);
-        registerReceiver(broadcastReceiver, filter);
+        registerReceiver(broadcastReceiver, filter, RECEIVER_NOT_EXPORTED);
     }
 }

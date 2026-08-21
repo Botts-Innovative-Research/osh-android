@@ -72,7 +72,7 @@ public class ProxySensor extends SWEVirtualSensor {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_PROXY);
 
-        androidContext.registerReceiver(receiver, filter);
+        androidContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
 
         Log.d(TAG, "Starting Proxy Sensor");
 

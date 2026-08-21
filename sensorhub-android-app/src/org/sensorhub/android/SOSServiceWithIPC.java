@@ -54,7 +54,7 @@ public class SOSServiceWithIPC extends SOSService
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_SOS);
 
-        androidContext.registerReceiver(receiver, filter);
+        androidContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
     }
 
     @Override
