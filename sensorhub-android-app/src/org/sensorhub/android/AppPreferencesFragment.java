@@ -10,7 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.LocaleList;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
