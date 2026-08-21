@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.sensorhub.impl.sensor.wardriving">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- WiFi scanning -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

@@ -386,7 +386,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         displayCallback = new Runnable() {
             public void run() {
                 displayStatus();
-                videoInfoArea.setText(Html.fromHtml(videoInfoText.toString()));
+                videoInfoArea.setText(Html.fromHtml(videoInfoText.toString(), Html.FROM_HTML_MODE_LEGACY));
                 displayHandler.postDelayed(this, 1000);
             }
         };
