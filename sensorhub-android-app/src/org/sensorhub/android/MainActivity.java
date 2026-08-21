@@ -630,16 +630,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.dashboard:
-                    switchFragment(homeFragment, getString(R.string.app_name));
-                    break;
-                case R.id.sensors:
-                    switchFragment(sensorsFragment, getString(R.string.tab_sensors));
-                    break;
-                case R.id.settings:
-                    switchFragment(settingsFragment, getString(R.string.tab_settings));
-                    break;
+            int itemId = item.getItemId();
+            if (itemId == R.id.dashboard) {
+                switchFragment(homeFragment, getString(R.string.app_name));
+            } else if (itemId == R.id.sensors) {
+                switchFragment(sensorsFragment, getString(R.string.tab_sensors));
+            } else if (itemId == R.id.settings) {
+                switchFragment(settingsFragment, getString(R.string.tab_settings));
             }
             return true;
         });
