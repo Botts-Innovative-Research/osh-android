@@ -3,7 +3,7 @@ ext.compileSdkVersion = 34
 ext.minSdkVersion = 33
 ext.targetSdkVersion = 34
 ext.buildToolsVersion = "34.0.0"
-version = '4.0.2'
+version = '5.0.0'
 
 buildscript {
     ext.kotlin_version = '1.9.22'
@@ -70,13 +70,11 @@ subprojects {
             substitute(module('org.sensorhub:sensorhub-comm-ble')).using(project(':sensorhub-comm-ble'))
             substitute(module('org.sensorhub:sensorhub-service-swe')).using(project(':sensorhub-service-swe'))
             substitute(module('org.sensorhub:sensorhub-service-video')).using(project(':sensorhub-service-video'))
-//            substitute(module('org.vast.opengis:ogc-services-sps')).using(project(':ogc-services-sps'))
             substitute(module('org.sensorhub:sensorhub-service-consys')).using(project(':sensorhub-service-consys'))
 
             // override objenesis version to get new android instantiators
             substitute(module('uk.com.robust-it:cloning:1.9.1')).using(module('uk.com.robust-it:cloning:1.9.10'))
             substitute(module('org.slf4j:slf4j-android:1.6.1-RC1')).using(module('org.slf4j:slf4j-api:1.7.25'))
-//      substitute(module('org.slf4j:slf4j-android')).using(module('org.slf4j:slf4j-android:1.7.36'))
         }
 
     }
