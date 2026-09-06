@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="org.sensorhub.android"
     android:hardwareAccelerated="true">
 
     <uses-feature android:name="android.hardware.location" />
     <uses-feature android:name="android.hardware.sensor.compass" />
     <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.usb.accessory" android:required="true" />
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+    <uses-feature android:name="android.hardware.usb.accessory" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
     <uses-feature android:name="android.hardware.camera2.full" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -28,6 +27,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -87,8 +89,7 @@
         android:name=".SensorHubService"
         android:enabled="true"
         android:foregroundServiceType="location|camera|microphone"
-        android:exported="false"
-        tools:ignore="ForegroundServicePermission" />
+        android:exported="false" />
 
 <!--        <receiver android:name=".RestartSensorHubReceiver"-->
 <!--            android:exported="false" />-->

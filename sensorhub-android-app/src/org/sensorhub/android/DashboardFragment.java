@@ -6,7 +6,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -386,7 +386,7 @@ public class DashboardFragment extends Fragment implements TextureView.SurfaceTe
         displayCallback = new Runnable() {
             public void run() {
                 displayStatus();
-                videoInfoArea.setText(Html.fromHtml(videoInfoText.toString()));
+                videoInfoArea.setText(Html.fromHtml(videoInfoText.toString(), Html.FROM_HTML_MODE_LEGACY));
                 displayHandler.postDelayed(this, 1000);
             }
         };

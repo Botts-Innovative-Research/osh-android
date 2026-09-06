@@ -44,9 +44,9 @@ allprojects {
         exclude group: 'ch.qos.logback', module: 'logback-core'
 
         resolutionStrategy {
-            force "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
-            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
-            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+            force "org.jetbrains.kotlin:kotlin-stdlib:1.9.20"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.20"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20"
         }
     }
 }

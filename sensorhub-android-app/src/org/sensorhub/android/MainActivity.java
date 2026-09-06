@@ -28,7 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -630,16 +630,13 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.dashboard:
-                    switchFragment(homeFragment, getString(R.string.app_name));
-                    break;
-                case R.id.sensors:
-                    switchFragment(sensorsFragment, getString(R.string.tab_sensors));
-                    break;
-                case R.id.settings:
-                    switchFragment(settingsFragment, getString(R.string.tab_settings));
-                    break;
+            int itemId = item.getItemId();
+            if (itemId == R.id.dashboard) {
+                switchFragment(homeFragment, getString(R.string.app_name));
+            } else if (itemId == R.id.sensors) {
+                switchFragment(sensorsFragment, getString(R.string.tab_sensors));
+            } else if (itemId == R.id.settings) {
+                switchFragment(settingsFragment, getString(R.string.tab_settings));
             }
             return true;
         });
@@ -865,6 +862,6 @@ public class MainActivity extends AppCompatActivity implements SensorHubServiceP
         };
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_BROADCAST_RECEIVER);
-        registerReceiver(broadcastReceiver, filter);
+        registerReceiver(broadcastReceiver, filter, RECEIVER_NOT_EXPORTED);
     }
 }

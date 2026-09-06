@@ -181,7 +181,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="text"
                             android:singleLine="true"
-                            android:text="/sensorhub/api"/>
+                            android:text="@string/default_endpoint_path"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
