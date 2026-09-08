@@ -1,5 +1,7 @@
 package org.sensorhub.android.ui.screens.preferences
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -103,6 +105,7 @@ fun AppPreferencesScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             OSHCard {
@@ -146,7 +149,7 @@ fun AppPreferencesScreen(
                     title = stringResource(R.string.app_status_main_fragment),
                     imageVector = Icons.Default.Cloud,
                     contentDescription = stringResource(R.string.app_status_main_fragment),
-                    onClick = { onNavigateToAppStatus}
+                    onClick = onNavigateToAppStatus
                 )
 
                 OSHClickableRowWithIcon(
@@ -160,7 +163,7 @@ fun AppPreferencesScreen(
                     title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.Default.Help,
                     contentDescription = stringResource(R.string.title_help_faq),
-                    onClick = { onNavigateToHelpFaq }
+                    onClick = onNavigateToHelpFaq
                 )
             }
         }
@@ -171,6 +174,6 @@ fun AppPreferencesScreen(
 @Composable
 private fun AppPreferencesScreenPreview() {
     OSHTheme {
-        AppPreferencesScreen({})
+        AppPreferencesScreen({}, {}, {})
     }
 }

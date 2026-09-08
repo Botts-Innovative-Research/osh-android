@@ -11,7 +11,11 @@ class AppPreferencesActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             OSHTheme {
-                AppPreferencesScreen(onBackClick = { finish() })
+                AppPreferencesScreen(
+                    onBackClick = { finish() },
+                    onNavigateToAppStatus = {},
+                    onNavigateToHelpFaq = {}
+                )
             }
         }
     }
