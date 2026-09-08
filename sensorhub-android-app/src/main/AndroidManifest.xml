@@ -57,41 +57,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".ui.AppStatusActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-        <activity
-            android:name=".ui.HelpFaqActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-        <activity
-            android:name=".ui.AppPreferencesActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-<!--        <activity-->
-<!--            android:name=".ComposeMainActivity"-->
-<!--            android:configChanges="orientation|screenSize"-->
-<!--            android:label="@string/app_name"-->
-<!--            android:screenOrientation="portrait"-->
-<!--            android:exported="false"-->
-<!--            android:theme="@style/AppTheme" />-->
-        <!-- <activity android:name=".spotreport.SpotReportActivity" -->
-        <!-- android:configChanges="orientation|screenSize"> -->
-
     <service
         android:name=".SensorHubService"
         android:enabled="true"
         android:foregroundServiceType="location|camera|microphone"
         android:exported="false"
         tools:ignore="ForegroundServicePermission" />
-
-<!--        <receiver android:name=".RestartSensorHubReceiver"-->
-<!--            android:exported="false" />-->
     </application>
 
 </manifest>
