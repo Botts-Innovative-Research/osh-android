@@ -1,12 +1,13 @@
 package org.sensorhub.android.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -145,6 +146,7 @@ fun OSHSwitchCard(
 }
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun OSHActionCard(
     title: String,
     subtitle: String,
@@ -154,9 +156,19 @@ fun OSHActionCard(
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
     contentDescription: String,
-    additionalActions: @Composable ColumnScope.() -> Unit = {}
+    additionalActions: @Composable ColumnScope.() -> Unit = {},
+    onLongClick: (() -> Unit)? = null
 ) {
-    OSHCard(modifier = modifier) {
+    OSHCard(
+        modifier = modifier.then(
+            if (onLongClick != null) {
+                Modifier.combinedClickable(
+                    onClick = {},
+                    onLongClick = onLongClick
+                )
+            } else Modifier
+        )
+    ) {
         OSHSwitchRow(
             title = title,
             subtitle = subtitle,

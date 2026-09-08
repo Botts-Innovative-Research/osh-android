@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import org.sensorhub.android.R
 
 class ServerFormViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -92,34 +93,44 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun updateTokenEndpoint(value: String) {
         state = state.copy(tokenEndpoint = value)
     }
-
-    fun updateUseConSysClient(useConSys: Boolean) {
-        val path = if (useConSys) "/sensorhub/api" else "/sensorhub/sos"
-        state = state.copy(useConSysClient = useConSys, endpointPath = path)
-    }
-
+    
     fun validate(): Boolean {
         var valid = true
+        nameError = null
+        hostError = null
+        portError = null
+        val required = getApplication<Application>().getString(R.string.msg_name_host_port_required)
 
-        if (state.serverName.isBlank()) { valid = false; } else null
+        if (state.serverName.isBlank()) {
+            nameError = required
+            valid = false
+        }
 
         if (state.host.isBlank()) {
+            hostError = required
             valid = false;
         } else if (state.host.contains(" ") || state.host.contains("://")) {
+            hostError = if (state.host.contains("://")) {
+                getApplication<Application>().getString(R.string.msg_no_protocol)
+            } else {
+                getApplication<Application>().getString(R.string.msg_no_protocol)
+            }
             valid = false;
-        } else null
+        }
 
         if (portText.isBlank()) {
+            portError = required
             valid = false;
         } else {
             val portNum = portText.toIntOrNull()
             if (portNum == null) {
+                portError = getApplication<Application>().getString(R.string.msg_port_number)
                 valid = false;
             }
             else if (portNum < 1 || portNum > 65535) {
+                portError = getApplication<Application>().getString(R.string.msg_port_range)
                 valid = false;
             }
-            else null
         }
 
         return valid

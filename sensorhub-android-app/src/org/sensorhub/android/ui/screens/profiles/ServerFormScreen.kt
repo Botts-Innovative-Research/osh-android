@@ -55,11 +55,6 @@ fun ServerFormScreen(
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isClientSecretVisible by remember { mutableStateOf(false) }
 
-    val msgRequired = stringResource(R.string.msg_name_host_port_required)
-    val msgNoProtocol = stringResource(R.string.msg_no_protocol)
-    val msgPortNumber = stringResource(R.string.msg_port_number)
-    val msgPortRange = stringResource(R.string.msg_port_range)
-
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
@@ -78,12 +73,6 @@ fun ServerFormScreen(
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
-            OSHSegmentedButton(
-                options = listOf("CS API Client", "SOS-T Client"),
-                selectedIndex = if (state.useConSysClient) 0 else 1,
-                onOptionSelected = { viewModel.updateUseConSysClient(it == 0) }
-            )
 
             OSHInputField(
                 value = state.serverName,
