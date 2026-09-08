@@ -2,7 +2,8 @@ package org.sensorhub.android.ui.navigation
 
 sealed class Screen(val route: String) {
     object Dashboard : Screen("dashboard_screen")
-    object Servers : Screen("servers_screen")
+    object Settings : Screen("settings_screen")
+    object Map : Screen("map_screen")
     object Sensors : Screen("sensors_screen")
     object ServerProfiles : Screen("server_profiles_screen")
     object HelpFaq : Screen("help_faq_screen")

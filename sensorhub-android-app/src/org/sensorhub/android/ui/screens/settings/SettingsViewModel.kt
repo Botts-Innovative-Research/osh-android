@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.screens.servers
+package org.sensorhub.android.ui.screens.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class ServersViewModel(application: Application) : AndroidViewModel(application) {
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
     private val _state = MutableStateFlow(ServersState())
     val state: StateFlow<ServersState> = _state.asStateFlow()
@@ -16,7 +16,8 @@ class ServersViewModel(application: Application) : AndroidViewModel(application)
         _state.value = ServersState(
             sosEnabled = prefs.getBoolean("sos_service", true),
             csApiEnabled = prefs.getBoolean("csapi_service", true),
-            discoveryEnabled = prefs.getBoolean("discovery_service", false)
+            discoveryEnabled = prefs.getBoolean("discovery_service", false),
+            rulesLink = prefs.getString("rules_link", "") ?: ""
         )
     }
 
@@ -33,5 +34,10 @@ class ServersViewModel(application: Application) : AndroidViewModel(application)
     fun setDiscoveryEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("discovery_service", enabled).apply()
         _state.value = _state.value.copy(discoveryEnabled = enabled)
+    }
+
+    fun setDiscoveryRulesLink(value: String) {
+        prefs.edit().putString("rules_link", value).apply()
+        _state.value = _state.value.copy(rulesLink = value)
     }
 }

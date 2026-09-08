@@ -93,7 +93,7 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun updateTokenEndpoint(value: String) {
         state = state.copy(tokenEndpoint = value)
     }
-    
+
     fun validate(): Boolean {
         var valid = true
         nameError = null
@@ -127,7 +127,7 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
                 portError = getApplication<Application>().getString(R.string.msg_port_number)
                 valid = false;
             }
-            else if (portNum < 1 || portNum > 65535) {
+            else if (portNum !in 1..65535) {
                 portError = getApplication<Application>().getString(R.string.msg_port_range)
                 valid = false;
             }

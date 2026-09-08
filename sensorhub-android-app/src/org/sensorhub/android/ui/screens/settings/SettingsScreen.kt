@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.screens.servers
+package org.sensorhub.android.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,21 +18,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableCardWithIcon
+import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
-fun ServersScreen(
+fun SettingsScreen(
     onNavigateToPreferences : () -> Unit,
     onNavigateToProfiles : () -> Unit,
-    viewModel: ServersViewModel = viewModel()
+    viewModel: SettingsViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -84,6 +82,14 @@ fun ServersScreen(
                     checked = state.discoveryEnabled,
                     onCheckedChange = { viewModel.setDiscoveryEnabled(it) }
                 )
+
+                if (state.discoveryEnabled) {
+                    OSHInputField(
+                        value = state.rulesLink,
+                        onValueChange = { viewModel.setDiscoveryRulesLink(it) },
+                        label = stringResource(R.string.title_discovery_rules),
+                    )
+                }
             }
         }
     }
@@ -91,9 +97,9 @@ fun ServersScreen(
 
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
-private fun ServersScreenPreview() {
+private fun SettingsScreenPreview() {
     OSHTheme {
-        ServersScreen(
+        SettingsScreen(
             {},
             {}
         )
