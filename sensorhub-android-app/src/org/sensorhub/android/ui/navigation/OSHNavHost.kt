@@ -9,14 +9,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
-import org.sensorhub.android.ui.screens.appstatus.AppStatusScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
-import org.sensorhub.android.ui.screens.dashboard.HomeScreen
+import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
+import org.sensorhub.android.ui.screens.maps.MapScreen
 import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.profiles.ServerFormScreen
-import org.sensorhub.android.ui.screens.servers.ServersScreen
+import org.sensorhub.android.ui.screens.settings.SettingsScreen
 import org.sensorhub.android.ui.screens.profiles.ServerProfilesScreen
 
 @Composable
@@ -30,7 +30,12 @@ fun OSHNavHost(
         modifier = modifier
     ) {
         composable(Screen.Dashboard.route) {
-            HomeScreen(
+            DashboardRoute(
+                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
+            )
+        }
+        composable(Screen.Map.route) {
+            MapScreen(
                 onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
             )
         }
@@ -39,17 +44,13 @@ fun OSHNavHost(
                 onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
             )
         }
-        composable(Screen.Servers.route) {
-            ServersScreen(
+        composable(Screen.Settings.route) {
+            SettingsScreen(
                 onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
                 onNavigateToProfiles = { navController.navigate(Screen.ServerProfiles.route) }
             )
         }
-        composable(Screen.AppStatus.route) {
-            AppStatusScreen(
-                onBackClick = { navController.popBackStack() }
-            )
-        }
+
         composable(Screen.HelpFaq.route) {
             val context = LocalContext.current
             val questions = context.resources.getStringArray(R.array.faq_questions)
@@ -67,7 +68,6 @@ fun OSHNavHost(
         composable(Screen.AppPreferences.route) {
             AppPreferencesScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavigateToAppStatus = { navController.navigate(Screen.AppStatus.route) },
                 onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) }
             )
         }

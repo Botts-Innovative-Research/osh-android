@@ -2,58 +2,59 @@ package org.sensorhub.android.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OnPrimary
-import org.sensorhub.android.ui.theme.Secondary
 import org.sensorhub.android.ui.theme.SecondaryContainer
 
 
 @Composable
 fun OSHFAB(
-    onClick: ((Boolean) -> Unit)? = null,
-    started: Boolean? = null,
-    ) {
-    var internalStarted by remember { mutableStateOf(false) }
-    val isStarted = started ?: internalStarted
-    val toggleStart = {
-        val newValue = !isStarted
-        if (onClick != null) {
-            onClick(newValue)
-        } else {
-            internalStarted = newValue
-        }
-    }
-
+    started: Boolean,
+    onClick: () -> Unit,
+    actionDescription: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    loading: Boolean = false,
+) {
     FloatingActionButton(
-        onClick = { toggleStart() },
+        onClick = { if (enabled && !loading) onClick() },
+        modifier = modifier.semantics {
+            if (!enabled || loading) disabled()
+            contentDescription = actionDescription
+        },
         containerColor = SecondaryContainer,
         contentColor = OnPrimary
 
     ) {
 
-        Icon(
-            imageVector = if (isStarted)
-                Icons.Filled.Stop
-            else
-                Icons.Filled.PlayArrow,
-            contentDescription = if (isStarted) "Stop SmartHub" else "Start SmartHub"
-        )
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = OnPrimary,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Icon(
+                imageVector = if (started) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                contentDescription = null
+            )
+        }
 
     }
 }
@@ -80,7 +81,7 @@ fun OSHAddFAB(
 private fun ServerItemsCard() {
     OSHTheme {
         Column {
-            OSHFAB()
+            OSHFAB(started = false, onClick = {}, actionDescription = "Start Smart Hub")
             Spacer(modifier = Modifier.width(10.dp))
             OSHAddFAB()
         }

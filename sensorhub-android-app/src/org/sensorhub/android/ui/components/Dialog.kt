@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
@@ -254,7 +258,11 @@ fun OSHBluetoothPickerDialog(
         icon = { Icon(Icons.Default.Bluetooth, contentDescription = null) },
         title = { Text(stringResource(R.string.title_select_device)) },
         text = {
-            Column {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 400.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
                 if (showManualInput) {
                     OutlinedTextField(
                         value = manualEntry,
@@ -297,7 +305,12 @@ fun OSHBluetoothPickerDialog(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onDeviceSelected(mac, displayText) }
+                                .heightIn(min = 48.dp)
+                                .selectable(
+                                    selected = isSelected,
+                                    role = Role.RadioButton,
+                                    onClick = { onDeviceSelected(mac, displayText) }
+                                )
                                 .padding(vertical = 10.dp, horizontal = 4.dp)
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
