@@ -39,7 +39,6 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun AppPreferencesScreen(
     onBackClick: () -> Unit,
-    onNavigateToAppStatus: () -> Unit,
     onNavigateToHelpFaq: () -> Unit,
     viewModel: AppPreferencesViewModel = viewModel()
 ) {
@@ -146,13 +145,6 @@ fun AppPreferencesScreen(
                 )
 
                 OSHClickableRowWithIcon(
-                    title = stringResource(R.string.app_status_main_fragment),
-                    imageVector = Icons.Default.Cloud,
-                    contentDescription = stringResource(R.string.app_status_main_fragment),
-                    onClick = onNavigateToAppStatus
-                )
-
-                OSHClickableRowWithIcon(
                     title = stringResource(R.string.send_feedback),
                     imageVector = Icons.Default.Send,
                     contentDescription = stringResource(R.string.send_feedback_desc),
@@ -174,6 +166,6 @@ fun AppPreferencesScreen(
 @Composable
 private fun AppPreferencesScreenPreview() {
     OSHTheme {
-        AppPreferencesScreen({}, {}, {})
+        AppPreferencesScreen({},{})
     }
 }

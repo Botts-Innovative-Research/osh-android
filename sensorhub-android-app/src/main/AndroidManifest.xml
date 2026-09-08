@@ -64,5 +64,4 @@
         android:exported="false"
         tools:ignore="ForegroundServicePermission" />
     </application>
-
 </manifest>

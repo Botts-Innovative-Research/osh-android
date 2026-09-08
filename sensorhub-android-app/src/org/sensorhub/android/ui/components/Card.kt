@@ -153,7 +153,8 @@ fun OSHActionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
-    contentDescription: String
+    contentDescription: String,
+    additionalActions: @Composable ColumnScope.() -> Unit = {}
 ) {
     OSHCard(modifier = modifier) {
         OSHSwitchRow(
@@ -170,6 +171,7 @@ fun OSHActionCard(
                 }
             }
         )
+        additionalActions()
     }
 }
 
@@ -285,7 +287,7 @@ private fun ServerItemsCard() {
                 onCheckedChange = {},
                  onClick = {},
                 imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit Server"
+                contentDescription = "Update Server"
             )
         }
     }
