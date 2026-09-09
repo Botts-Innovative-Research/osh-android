@@ -5,7 +5,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.sensorhub.android.R
+import java.net.HttpURLConnection
+import java.net.URI
 
 class ServerFormViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -14,14 +20,14 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     var state by mutableStateOf(ServerProfileItem())
         private set
 
-    var portText by mutableStateOf("")
-        private set
-
     var nameError by mutableStateOf<String?>(null)
         private set
-    var hostError by mutableStateOf<String?>(null)
+    var endpointUrlError by mutableStateOf<String?>(null)
         private set
-    var portError by mutableStateOf<String?>(null)
+
+    var connectionTestResult by mutableStateOf<String?>(null)
+        private set
+    var isTestingConnection by mutableStateOf(false)
         private set
 
     private var existingProfileId: String? = null
@@ -40,7 +46,6 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
             clientSecret = repo.getOAuthClientSecret(profile.id),
             tokenEndpoint = repo.getOAuthTokenEndpoint(profile.id),
         )
-        portText = profile.port.toString()
     }
 
     fun updateServerName(value: String) {
@@ -48,18 +53,9 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
         nameError = null
     }
 
-    fun updateHost(value: String) {
-        state = state.copy(host = value)
-        hostError = null
-    }
-
-    fun updatePort(value: String) {
-        portText = value
-        portError = null
-    }
-
-    fun updateEndpointPath(value: String) {
-        state = state.copy(endpointPath = value)
+    fun updateEndpointUrl(value: String) {
+        state = state.copy(endpointUrl = value)
+        endpointUrlError = null
     }
 
     fun updateUsername(value: String) {
@@ -68,14 +64,6 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
 
     fun updatePassword(value: String) {
         state = state.copy(password = value)
-    }
-
-    fun updateEnableTls(value: Boolean) {
-        state = state.copy(enableTls = value, disableSslCheck = if (!value) false else state.disableSslCheck)
-    }
-
-    fun updateDisableSslCheck(value: Boolean) {
-        state = state.copy(disableSslCheck = value)
     }
 
     fun updateEnableOAuth(value: Boolean) {
@@ -97,8 +85,7 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun validate(): Boolean {
         var valid = true
         nameError = null
-        hostError = null
-        portError = null
+        endpointUrlError = null
         val required = getApplication<Application>().getString(R.string.msg_name_host_port_required)
 
         if (state.serverName.isBlank()) {
@@ -106,31 +93,9 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
             valid = false
         }
 
-        if (state.host.isBlank()) {
-            hostError = required
-            valid = false;
-        } else if (state.host.contains(" ") || state.host.contains("://")) {
-            hostError = if (state.host.contains("://")) {
-                getApplication<Application>().getString(R.string.msg_no_protocol)
-            } else {
-                getApplication<Application>().getString(R.string.msg_no_protocol)
-            }
-            valid = false;
-        }
-
-        if (portText.isBlank()) {
-            portError = required
-            valid = false;
-        } else {
-            val portNum = portText.toIntOrNull()
-            if (portNum == null) {
-                portError = getApplication<Application>().getString(R.string.msg_port_number)
-                valid = false;
-            }
-            else if (portNum !in 1..65535) {
-                portError = getApplication<Application>().getString(R.string.msg_port_range)
-                valid = false;
-            }
+        if (state.endpointUrl.isBlank()) {
+            endpointUrlError = required
+            valid = false
         }
 
         return valid
@@ -139,15 +104,10 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun saveProfile(): Boolean {
         if (!validate()) return false
 
-        var ep = state.endpointPath.trim()
-        if (ep.isNotEmpty() && !ep.startsWith("/")) ep = "/$ep"
-
         val profile = state.copy(
             id = existingProfileId ?: state.id,
             serverName = state.serverName.trim(),
-            host = state.host.trim(),
-            port = portText.toInt(),
-            endpointPath = ep,
+            endpointUrl = state.endpointUrl.trim(),
             username = if (!state.enableOAuth) state.username.trim() else "",
         )
 
@@ -163,5 +123,52 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
         }
 
         return true
+    }
+
+    fun testConnection() {
+        val testEp = state.endpointUrl.trim()
+        if (testEp.isBlank()) {
+            connectionTestResult = "Please enter a connection URL"
+            return
+        }
+
+        isTestingConnection = true
+        connectionTestResult = null
+
+        viewModelScope.launch {
+            connectionTestResult = withContext(Dispatchers.IO) {
+                try {
+                    val url = URI(testEp).toURL()
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.requestMethod = "GET"
+                    conn.connectTimeout = 5000
+                    conn.readTimeout = 5000
+
+                    val user = state.username.trim()
+                    val pwd = state.password.trim()
+                    if (user.isNotEmpty() && pwd.isNotEmpty()) {
+                        val credentials = android.util.Base64.encodeToString(
+                            "$user:$pwd".toByteArray(),
+                            android.util.Base64.NO_WRAP
+                        )
+                        conn.setRequestProperty("Authorization", "Basic $credentials")
+                    }
+
+                    try {
+                        val code = conn.responseCode
+                        when {
+                            code in 200..299 -> "Connected"
+                            code == 401 || code == 403 -> "Authentication failed"
+                            else -> "Could not reach server: Server returned HTTP $code"
+                        }
+                    } finally {
+                        conn.disconnect()
+                    }
+                } catch (e: Exception) {
+                    "Could not reach server: ${e.message ?: "Unable to reach the server"}"
+                }
+            }
+            isTestingConnection = false
+        }
     }
 }

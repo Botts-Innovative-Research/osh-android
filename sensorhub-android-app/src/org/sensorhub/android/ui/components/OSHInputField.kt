@@ -41,7 +41,8 @@ fun OSHInputField(
     leadingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -56,6 +57,7 @@ fun OSHInputField(
 //                    Icon(Icons.Default.Warning, contentDescription = "Error", tint = Error)
 //                } }
             ,
+            placeholder = placeholder,
             trailingIcon = trailingIcon,
             isError = error != null,
             keyboardOptions = keyboardOptions,

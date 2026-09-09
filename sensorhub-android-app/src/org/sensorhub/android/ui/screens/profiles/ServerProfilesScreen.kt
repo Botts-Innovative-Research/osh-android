@@ -112,7 +112,7 @@ fun ServerProfilesScreen(
                 items(profiles, key = { it.id }) { item ->
                     OSHActionCard(
                         title = item.serverName,
-                        subtitle = item.getDisplaySummary(),
+                        subtitle = item.endpointUrl,
                         checked = item.enabled,
                         onCheckedChange = { enabled -> viewModel.setEnabled(item.id, enabled) },
                         onClick = { navController.navigate(Screen.ServerForm.createRoute(item.id)) },

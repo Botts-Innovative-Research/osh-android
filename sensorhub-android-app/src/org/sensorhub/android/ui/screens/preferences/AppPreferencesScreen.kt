@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Scaffold
@@ -40,6 +41,7 @@ import org.sensorhub.android.ui.theme.OSHTheme
 fun AppPreferencesScreen(
     onBackClick: () -> Unit,
     onNavigateToHelpFaq: () -> Unit,
+    onNavigateToRepo: () -> Unit,
     viewModel: AppPreferencesViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -145,10 +147,10 @@ fun AppPreferencesScreen(
                 )
 
                 OSHClickableRowWithIcon(
-                    title = stringResource(R.string.send_feedback),
-                    imageVector = Icons.Default.Send,
-                    contentDescription = stringResource(R.string.send_feedback_desc),
-                    onClick = { }
+                    title = stringResource(R.string.github_repo),
+                    imageVector = Icons.Default.Link,
+                    contentDescription = "",
+                    onClick = onNavigateToRepo
                 )
 
                 OSHClickableRowWithIcon(
@@ -166,6 +168,6 @@ fun AppPreferencesScreen(
 @Composable
 private fun AppPreferencesScreenPreview() {
     OSHTheme {
-        AppPreferencesScreen({},{})
+        AppPreferencesScreen({},{}, {})
     }
 }

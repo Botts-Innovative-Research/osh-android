@@ -6,6 +6,7 @@
     <string name="action_start">Start SmartHub</string>
     <string name="action_stop">Stop SmartHub</string>
     <string name="action_status">App Status</string>
+    <string name="action_test_connection">Test Connection</string>
     <string name="action_about">About</string>
     <string name="action_proxy">Start Proxy</string>
     <string name="action_stop_proxy">Stop Proxy</string>
@@ -311,7 +312,7 @@
     <string name="tab_servers">Servers</string>
     <string name="tab_map">Map</string>
     <string name="app_preferences">App Preferences</string>
-    <string name="add_server">Add Server</string>
+    <string name="add_server">New Server</string>
     <string name="summary_app_preferences">summ</string>
 
     <string name="meshtastic_msg">Enter a message!</string>
@@ -324,7 +325,7 @@
     <string name="title_language">Language</string>
     <string name="title_version">Version</string>
     <string name="title_about">About application</string>
-    <string name="send_feedback">Send Feedback</string>
+    <string name="github_repo">GitHub repository</string>
     <string name="title_help_faq">Help / FAQ</string>
     <string name="title_language_dialog">Language</string>
     <string name="about_description">A software platform for building smart sensor networks and the Internet of Things</string>

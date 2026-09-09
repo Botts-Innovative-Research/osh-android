@@ -3,6 +3,7 @@ package org.sensorhub.android.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -68,7 +69,8 @@ fun OSHNavHost(
         composable(Screen.AppPreferences.route) {
             AppPreferencesScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) }
+                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
+                onNavigateToRepo = { navController.navigate("https://github.com/botts-innovative-research/osh-android".toUri()) }
             )
         }
         composable(Screen.ServerProfiles.route) {

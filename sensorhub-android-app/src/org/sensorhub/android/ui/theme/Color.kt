@@ -61,10 +61,10 @@ val BottomNavSelected = Color(0xFFE64A19)
 val BottomNavUnselected = Color(0xFF757575)
 
 // Status
-val StatusStarted = Color(0xFF4CAF50)
-val StatusStopped = Color(0xFFEF5350)
-val StatusInitializing = Color(0xFFFF9800)
-val StatusUnknown = Color(0xFF757575)
+val Success = Color(0xFF4CAF50)
+//val Error = Color(0xFFEF5350)
+val Warning = Color(0xFFFF9800)
+val Unknown = Color(0xFF757575)
 
 // Overlays
 val OverlayLight = Color(0x1AFFFFFF)
