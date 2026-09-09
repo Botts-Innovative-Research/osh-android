@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +43,7 @@ fun OSHExpandableCard(
     modifier: Modifier = Modifier,
     expanded: Boolean? = null,
     onExpandChange: ((Boolean) -> Unit)? = null,
+    status: String? = null,
     collapsedContent: @Composable ColumnScope.() -> Unit = {},
     expandedContent: @Composable ColumnScope.() -> Unit
 ) {
@@ -74,6 +76,10 @@ fun OSHExpandableCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                status?.let {
+                    StatusDot(status = it)
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,

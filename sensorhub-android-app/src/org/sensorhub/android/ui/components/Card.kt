@@ -3,11 +3,14 @@ package org.sensorhub.android.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -142,6 +145,37 @@ fun OSHSwitchCard(
             checked = checked,
             onCheckedChange = onCheckedChange
         )
+    }
+}
+
+@Composable
+fun OSHButtonCard(
+    title: String,
+    buttonText: String,
+    onClick: () -> Unit,
+    status: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SecondaryContainer,
+            contentColor = TextPrimary
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        )
+    ) {
+       OSHStatusButtonRow(
+           title = title,
+           buttonText = buttonText,
+           onClick = onClick,
+           status = status,
+           enabled = enabled
+       )
     }
 }
 
@@ -282,6 +316,12 @@ private fun SettingsItemPreview() {
                 title = "Language",
                 imageVector = Icons.Default.Language,
                 contentDescription = "Select in app language"
+            )
+            OSHButtonCard(
+                onClick = {},
+                title = "SmartHub",
+                buttonText = "Start Streaming",
+                status = "Connected",
             )
         }
     }
