@@ -40,8 +40,11 @@ public class SensorHubService extends Service
     final IBinder binder = new LocalBinder();
     private HandlerThread msgThread;
     private Handler msgHandler;
-    SensorHubAndroid sensorhub;
-    boolean hasVideo;
+    volatile SensorHubAndroid sensorhub;
+    volatile boolean hasVideo;
+    public enum HubState { STOPPED, STARTING, RUNNING, STOPPING, ERROR }
+    private volatile HubState hubState = HubState.STOPPED;
+    public HubState getHubState() { return hubState; }
     private static Context appContext;
     private static SurfaceTexture videoTex;
 
@@ -122,7 +125,7 @@ public class SensorHubService extends Service
         Intent notificationIntent = new Intent();
         notificationIntent.setClassName(
                 getApplicationContext(),
-                "org.sensorhub.android.MainActivity"
+                "org.sensorhub.android.ComposeMainActivity"
         );
 
         PendingIntent pendingIntent;
@@ -168,8 +171,9 @@ public class SensorHubService extends Service
 
     public synchronized void startSensorHub(final IModuleConfigRepository config, final boolean hasVideo)
     {
-        if (sensorhub != null)
+        if (hubState == HubState.STARTING || hubState == HubState.RUNNING || hubState == HubState.STOPPING)
             return;
+        hubState = HubState.STARTING;
 
         this.hasVideo = hasVideo;
 
@@ -181,24 +185,35 @@ public class SensorHubService extends Service
             videoTex.detachFromGLContext();
         }
 
-        acquireWakeLocks();
-        startForegroundService();
+        try {
+            acquireWakeLocks();
+            startForegroundService();
+            if (msgHandler == null)
+                throw new IllegalStateException("SensorHub service did not initialize");
+        } catch (RuntimeException e) {
+            hubState = HubState.ERROR;
+            this.hasVideo = false;
+            releaseWakeLocks();
+            throw e;
+        }
 
         msgHandler.post(new Runnable() {
             public void run() {
-                sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
                 try {
+                    sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
                     sensorhub.start();
-                } catch (SensorHubException e) {
+                    hubState = HubState.RUNNING;
+                } catch (Exception e) {
                     log.error("Error starting SensorHub: " + e.getMessage());
                     try {
-                        sensorhub.stop();
+                        if (sensorhub != null) sensorhub.stop();
                     } catch (Exception ex) {
                         log.error("Error stopping failed SensorHub", ex);
                     }
                     sensorhub = null;
                     SensorHubService.this.hasVideo = false;
                     releaseWakeLocks();
+                    hubState = HubState.ERROR;
                 }
             }
         });
@@ -243,6 +258,7 @@ public class SensorHubService extends Service
 
     public synchronized void stopSensorHub()
     {
+        hubState = HubState.STOPPING;
         msgHandler.post(() -> {
             if (sensorhub != null) {
                 try {
@@ -252,6 +268,7 @@ public class SensorHubService extends Service
                 }
                 sensorhub = null;
             }
+            hubState = HubState.STOPPED;
         });
 
         this.hasVideo = false;

@@ -155,7 +155,8 @@ fun OSHButtonCard(
     onClick: () -> Unit,
     status: String,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    subtitle: String? = null
 ) {
     Card(
         modifier = modifier
@@ -174,7 +175,8 @@ fun OSHButtonCard(
            buttonText = buttonText,
            onClick = onClick,
            status = status,
-           enabled = enabled
+           enabled = enabled,
+           subtitle = subtitle
        )
     }
 }

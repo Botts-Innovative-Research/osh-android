@@ -83,21 +83,21 @@ fun ServerFormScreen(
             item {
                 OSHCard {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Connection", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.ui_connection), style = MaterialTheme.typography.titleMedium)
                         OSHInputField(
                             value = state.serverName,
                             onValueChange = { viewModel.updateServerName(it) },
-                            label = "Server name",
+                            label = stringResource(R.string.hint_server_name),
                             error = viewModel.nameError
                         )
                         OSHInputField(
                             value = state.endpointUrl,
                             onValueChange = { viewModel.updateEndpointUrl(it) },
-                            label = "Connection URL",
+                            label = stringResource(R.string.ui_connection_url),
                             error = viewModel.endpointUrlError,
                             placeholder = {
                                 Text(
-                                    "https://ip:port/sensorhub/api",
+                                    stringResource(R.string.ui_https_ip_port_sensorhub_api),
                                     color = TextSecondary
                                 )
                             },
@@ -109,22 +109,23 @@ fun ServerFormScreen(
             item {
                 OSHCard {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Authentication", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.ui_authentication), style = MaterialTheme.typography.titleMedium)
                         OSHInputField(
                             value = state.username,
                             onValueChange = { viewModel.updateUsername(it) },
-                            label = "Username (Optional)",
+                            label = stringResource(R.string.ui_username_optional),
+                            error = viewModel.usernameError,
                         )
                         OSHInputField(
                             value = state.password,
                             onValueChange = { viewModel.updatePassword(it) },
-                            label = "Password (Optional)",
+                            label = stringResource(R.string.ui_password_optional),
                             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
                                 IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                                     Icon(
                                         imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                        contentDescription = "Toggle password visibility"
+                                        contentDescription = stringResource(R.string.ui_toggle_password_visibility)
                                     )
                                 }
                             },
@@ -139,7 +140,7 @@ fun ServerFormScreen(
             item {
                 OSHCard {
                     OSHSwitchRow(
-                        title = "Enable OAuth",
+                        title = stringResource(R.string.ui_enable_oauth),
                         checked = state.enableOAuth,
                         onCheckedChange = { viewModel.updateEnableOAuth(it) },
                     )
@@ -148,18 +149,21 @@ fun ServerFormScreen(
                             OSHInputField(
                                 value = state.tokenEndpoint,
                                 onValueChange = { viewModel.updateTokenEndpoint(it) },
-                                label = "Token endpoint",
+                                label = stringResource(R.string.ui_token_endpoint),
+                            error = viewModel.tokenEndpointError,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                             )
                             OSHInputField(
                                 value = state.clientId,
                                 onValueChange = { viewModel.updateClientId(it) },
-                                label = "Client ID",
+                                label = stringResource(R.string.hint_client_id),
+                            error = viewModel.clientIdError,
                             )
                             OSHInputField(
                                 value = state.clientSecret,
                                 onValueChange = { viewModel.updateClientSecret(it) },
-                                label = "Client Secret",
+                                label = stringResource(R.string.hint_client_secret),
+                            error = viewModel.clientSecretError,
                                 visualTransformation = if (isClientSecretVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 trailingIcon = {
                                     IconButton(onClick = {
@@ -167,7 +171,7 @@ fun ServerFormScreen(
                                     }) {
                                         Icon(
                                             imageVector = if (isClientSecretVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = "Toggle secret visibility"
+                                            contentDescription = stringResource(R.string.ui_toggle_secret_visibility)
                                         )
                                     }
                                 },
@@ -186,14 +190,14 @@ fun ServerFormScreen(
                         onClick = {
                             if (viewModel.saveProfile()) onBackClick()
                         },
-                        text = if (viewModel.isEdit) "Save changes" else stringResource(R.string.btn_add_server),
+                        text = if (viewModel.isEdit) stringResource(R.string.ui_save_changes) else stringResource(R.string.btn_add_server),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !viewModel.isTestingConnection
                     )
 
                     OSHTonalButton(
                         onClick = { viewModel.testConnection() },
-                        text = if (viewModel.isTestingConnection) "Testing…"
+                        text = if (viewModel.isTestingConnection) stringResource(R.string.ui_testing)
                         else stringResource(R.string.action_test_connection),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !viewModel.isTestingConnection
@@ -201,8 +205,8 @@ fun ServerFormScreen(
                     viewModel.connectionTestResult?.let { result ->
                         ResultMessage(
                             label = result,
-                            icon = if (result.startsWith("Connected")) Icons.Default.CheckCircle else Icons.Default.Error,
-                            color = if (result.startsWith("Connected")) Success else Error
+                            icon = if (viewModel.connectionTestSuccessful) Icons.Default.CheckCircle else Icons.Default.Error,
+                            color = if (viewModel.connectionTestSuccessful) Success else Error
                         )
                     }
                 }

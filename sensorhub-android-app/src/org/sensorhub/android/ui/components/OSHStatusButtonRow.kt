@@ -1,5 +1,6 @@
 package org.sensorhub.android.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ fun OSHStatusButtonRow(
     buttonText: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    subtitle: String? = null,
     onClick: () -> Unit,
 ) {
     Row(
@@ -30,11 +32,10 @@ fun OSHStatusButtonRow(
         StatusDot(status = status)
         Spacer(modifier = Modifier.width(15.dp))
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
+        Column(Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
 
         OSHButton(
             onClick = onClick,

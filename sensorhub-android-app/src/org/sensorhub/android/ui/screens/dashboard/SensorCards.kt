@@ -1,5 +1,6 @@
 package org.sensorhub.android.ui.screens.dashboard
 
+import org.sensorhub.android.R
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.foundation.background
@@ -53,15 +54,15 @@ internal class SensorCardReader(private val context: Context, private val prefs:
         "template" to "TEMPLATE_DRIVER_",
     )
     private val placeholders = mapOf(
-        "accelerometer" to listOf("X acceleration", "Y acceleration", "Z acceleration"),
-        "gyroscope" to listOf("X angular velocity", "Y angular velocity", "Z angular velocity"),
-        "magnetometer" to listOf("X magnetic field", "Y magnetic field", "Z magnetic field"),
-        "orient_e" to listOf("Heading angle", "Pitch angle", "Roll angle"),
-        "orient_q" to listOf("Quaternion X", "Quaternion Y", "Quaternion Z", "Quaternion W"),
-        "gps" to listOf("Latitude", "Longitude", "Altitude"),
-        "network" to listOf("Latitude", "Longitude", "Altitude"),
-        "video_roll" to listOf("Roll angle"),
-        "audio" to listOf("Sample Rate", "Num Samples", "Samples")
+        "accelerometer" to listOf(context.getString(R.string.ui_x_acceleration), context.getString(R.string.ui_y_acceleration), context.getString(R.string.ui_z_acceleration)),
+        "gyroscope" to listOf(context.getString(R.string.ui_x_angular_velocity), context.getString(R.string.ui_y_angular_velocity), context.getString(R.string.ui_z_angular_velocity)),
+        "magnetometer" to listOf(context.getString(R.string.ui_x_magnetic_field), context.getString(R.string.ui_y_magnetic_field), context.getString(R.string.ui_z_magnetic_field)),
+        "orient_e" to listOf(context.getString(R.string.ui_heading_angle), context.getString(R.string.ui_pitch_angle), context.getString(R.string.ui_roll_angle)),
+        "orient_q" to listOf(context.getString(R.string.ui_quaternion_x), context.getString(R.string.ui_quaternion_y), context.getString(R.string.ui_quaternion_z), context.getString(R.string.ui_quaternion_w)),
+        "gps" to listOf(context.getString(R.string.ui_latitude), context.getString(R.string.ui_longitude), context.getString(R.string.ui_altitude)),
+        "network" to listOf(context.getString(R.string.ui_latitude), context.getString(R.string.ui_longitude), context.getString(R.string.ui_altitude)),
+        "video_roll" to listOf(context.getString(R.string.ui_roll_angle)),
+        "audio" to listOf(context.getString(R.string.title_sample_rate), context.getString(R.string.ui_num_samples), context.getString(R.string.ui_samples))
     )
 
     fun read(service: SensorHubService?): List<SensorCardUi> {
@@ -99,17 +100,17 @@ internal class SensorCardReader(private val context: Context, private val prefs:
                     else -> ReadingStatus.LIVE
                 }
                 val message = when (status) {
-                    ReadingStatus.UNAVAILABLE -> if (sensor.id == "video_roll") "Camera with roll output is required" else "Sensor or driver not available"
-                    ReadingStatus.WAITING -> "Waiting for data"
-                    ReadingStatus.STALE -> "No recent data · showing last reading"
-                    ReadingStatus.LIVE -> "Receiving data"
+                    ReadingStatus.UNAVAILABLE -> if (sensor.id == "video_roll") context.getString(R.string.ui_camera_with_roll_output_is_required) else context.getString(R.string.ui_sensor_or_driver_not_available)
+                    ReadingStatus.WAITING -> context.getString(R.string.ui_waiting_for_data)
+                    ReadingStatus.STALE -> context.getString(R.string.ui_no_recent_data_showing_last_reading)
+                    ReadingStatus.LIVE -> context.getString(R.string.ui_receiving_data)
                 }
                 val rows = if (!running) empty else outputs.flatMap { output ->
                     measurements(output, sensor.id, outputs.size > 1)
                 }.ifEmpty { empty }
                 SensorCardUi(sensor.id, title, status, message, rows)
             } catch (_: Exception) {
-                SensorCardUi(sensor.id, title, ReadingStatus.UNAVAILABLE, "Unable to read sensor output", empty)
+                SensorCardUi(sensor.id, title, ReadingStatus.UNAVAILABLE, context.getString(R.string.ui_unable_to_read_sensor_output), empty)
             }
         }
     }
@@ -123,7 +124,7 @@ internal class SensorCardReader(private val context: Context, private val prefs:
             if (component is Time) return
             val label = component.label?.takeIf { it.isNotBlank() } ?: component.name.orEmpty().replace('_', ' ')
             if (component is DataArray) {
-                if (sensorId != "video_roll") rows += MeasurementUi(label, if (output.latestRecord != null) "Available" else "—")
+                if (sensorId != "video_roll") rows += MeasurementUi(label, if (output.latestRecord != null) context.getString(R.string.ui_available) else "—")
                 return
             }
             if (component.componentCount > 0) {

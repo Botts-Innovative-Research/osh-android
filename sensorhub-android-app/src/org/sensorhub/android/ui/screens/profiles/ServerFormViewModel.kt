@@ -1,5 +1,6 @@
 package org.sensorhub.android.ui.screens.profiles
 
+import org.sensorhub.android.R
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,9 +10,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.sensorhub.android.R
-import java.net.HttpURLConnection
-import java.net.URI
+import kotlinx.coroutines.CancellationException
 
 class ServerFormViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -25,8 +24,20 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     var endpointUrlError by mutableStateOf<String?>(null)
         private set
 
+    var tokenEndpointError by mutableStateOf<String?>(null)
+        private set
+    var clientIdError by mutableStateOf<String?>(null)
+        private set
+    var clientSecretError by mutableStateOf<String?>(null)
+        private set
+    var usernameError by mutableStateOf<String?>(null)
+        private set
+
     var connectionTestResult by mutableStateOf<String?>(null)
         private set
+    var connectionTestSuccessful by mutableStateOf(false)
+        private set
+
     var isTestingConnection by mutableStateOf(false)
         private set
 
@@ -51,54 +62,70 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun updateServerName(value: String) {
         state = state.copy(serverName = value)
         nameError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updateEndpointUrl(value: String) {
         state = state.copy(endpointUrl = value)
         endpointUrlError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updateUsername(value: String) {
         state = state.copy(username = value)
+        usernameError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updatePassword(value: String) {
         state = state.copy(password = value)
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updateEnableOAuth(value: Boolean) {
         state = state.copy(enableOAuth = value)
+        tokenEndpointError = null
+        clientIdError = null
+        clientSecretError = null
+        usernameError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updateClientId(value: String) {
         state = state.copy(clientId = value)
+        clientIdError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updateClientSecret(value: String) {
         state = state.copy(clientSecret = value)
+        clientSecretError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
     fun updateTokenEndpoint(value: String) {
         state = state.copy(tokenEndpoint = value)
+        tokenEndpointError = null
+        connectionTestResult = null
+        connectionTestSuccessful = false
     }
 
-    fun validate(): Boolean {
-        var valid = true
-        nameError = null
-        endpointUrlError = null
-        val required = getApplication<Application>().getString(R.string.msg_name_host_port_required)
-
-        if (state.serverName.isBlank()) {
-            nameError = required
-            valid = false
-        }
-
-        if (state.endpointUrl.isBlank()) {
-            endpointUrlError = required
-            valid = false
-        }
-
-        return valid
+    fun validate(requireName: Boolean = true): Boolean {
+        nameError = if (requireName && state.serverName.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_server_name) else null
+        endpointUrlError = serverUrlError(state.endpointUrl)?.let { getApplication<Application>().getString(it) }
+        tokenEndpointError = if (state.enableOAuth) serverUrlError(state.tokenEndpoint)?.let { getApplication<Application>().getString(it) } else null
+        clientIdError = if (state.enableOAuth && state.clientId.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_client_id) else null
+        clientSecretError = if (state.enableOAuth && state.clientSecret.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_client_secret) else null
+        usernameError = if (!state.enableOAuth && (state.username.contains(':') ||
+            (state.username.isBlank() && state.password.isNotEmpty()))) getApplication<Application>().getString(R.string.ui_enter_a_username_without_a_colon) else null
+        return listOf(nameError, endpointUrlError, tokenEndpointError, clientIdError, clientSecretError, usernameError).all { it == null }
     }
 
     fun saveProfile(): Boolean {
@@ -113,12 +140,12 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
 
         repo.save(profile)
 
-        val pwd = if (!state.enableOAuth) state.password.trim() else ""
+        val pwd = if (!state.enableOAuth) state.password else ""
         repo.setPassword(profile.id, pwd)
 
         if (state.enableOAuth) {
             repo.setOAuthClientId(profile.id, state.clientId.trim())
-            repo.setOAuthClientSecret(profile.id, state.clientSecret.trim())
+            repo.setOAuthClientSecret(profile.id, state.clientSecret)
             repo.setOAuthTokenEndpoint(profile.id, state.tokenEndpoint.trim())
         }
 
