@@ -13,8 +13,8 @@ import org.sensorhub.android.comm.BluetoothCommProvider
 import org.sensorhub.android.comm.BluetoothCommProviderConfig
 import org.sensorhub.android.comm.ble.BleConfig
 import org.sensorhub.android.comm.ble.BleNetwork
-import org.sensorhub.android.ui.screens.profiles.ServerProfileItem
-import org.sensorhub.android.ui.screens.profiles.ServerProfileRepository
+import org.sensorhub.android.data.servers.ServerProfileItem
+import org.sensorhub.android.data.servers.ServerProfileRepository
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.impl.client.sost.SOSTClientConfig

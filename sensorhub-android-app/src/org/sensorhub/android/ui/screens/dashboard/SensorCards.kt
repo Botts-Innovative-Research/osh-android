@@ -134,7 +134,7 @@ internal class SensorCardReader(private val context: Context, private val prefs:
             if (sensorId == "video_roll" && !component.name.orEmpty().contains("roll", true)) return
             val unit = (component as? Quantity)?.uom?.code.orEmpty()
             val value = if (!component.hasData()) "—" else when (component) {
-                is Quantity -> format(component.data.doubleValue, if (component.name in listOf("lat", "lon")) 6 else 3) + if (unit.isBlank()) "" else " $unit"
+                is Quantity -> format(component.data.doubleValue, if (component.name in listOf("lat", "lon")) 6 else 3) + if (unit.isBlank() or unit.equals("1")) "" else " $unit"
                 is Count -> component.data.intValue.toString()
                 is net.opengis.swe.v20.Boolean -> component.data.booleanValue.toString()
                 is Text -> component.data.stringValue.orEmpty().take(120)
