@@ -44,6 +44,7 @@ import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHInputField
+import org.sensorhub.android.ui.components.OSHSegmentedButton
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTonalButton
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
@@ -84,6 +85,11 @@ fun ServerFormScreen(
                 OSHCard {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.ui_connection), style = MaterialTheme.typography.titleMedium)
+                        OSHSegmentedButton(
+                            options = listOf("CS API Client", "SOS-T Client"),
+                            selectedIndex = if (state.useConSysClient) 0 else 1,
+                            onOptionSelected = { viewModel.updateUseConSysClient(it == 0) }
+                        )
                         OSHInputField(
                             value = state.serverName,
                             onValueChange = { viewModel.updateServerName(it) },

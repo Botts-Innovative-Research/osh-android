@@ -70,6 +70,12 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
         connectionTestSuccessful = false
     }
 
+    fun updateUseConSysClient(value: Boolean) {
+        state = state.copy(useConSysClient = value)
+        connectionTestResult = null
+        connectionTestSuccessful = false
+    }
+
     fun updateEndpointUrl(value: String) {
         state = state.copy(endpointUrl = value)
         endpointUrlError = null
