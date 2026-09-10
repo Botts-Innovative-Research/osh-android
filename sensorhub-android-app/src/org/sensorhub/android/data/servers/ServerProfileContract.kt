@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.screens.profiles
+package org.sensorhub.android.data.servers
 
 import org.json.JSONObject
 import java.util.UUID

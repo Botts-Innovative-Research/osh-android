@@ -1,5 +1,7 @@
-package org.sensorhub.android.ui.screens.profiles
+package org.sensorhub.android.ui.screens.servers
 
+import org.sensorhub.android.data.servers.ServerProfileItem
+import org.sensorhub.android.data.servers.ServerProfileRepository
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

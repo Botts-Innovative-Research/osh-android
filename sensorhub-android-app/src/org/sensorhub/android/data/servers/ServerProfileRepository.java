@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.screens.profiles;
+package org.sensorhub.android.data.servers;
 
 import android.content.Context;
 import android.content.SharedPreferences;

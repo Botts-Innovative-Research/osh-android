@@ -1,5 +1,9 @@
-package org.sensorhub.android.ui.screens.profiles
+package org.sensorhub.android.ui.screens.servers
 
+import org.sensorhub.android.data.servers.ServerProfileItem
+import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.servers.ServerConnectionTester
+import org.sensorhub.android.data.servers.serverUrlError
 import org.sensorhub.android.R
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -153,49 +157,28 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun testConnection() {
-        val testEp = state.endpointUrl.trim()
-        if (testEp.isBlank()) {
-            connectionTestResult = "Please enter a connection URL"
+        if (isTestingConnection) return
+        if (!validate(requireName = false)) {
+            connectionTestSuccessful = false
+            connectionTestResult = getApplication<Application>().getString(R.string.ui_check_the_highlighted_fields_before_testing)
             return
         }
-
+        val snapshot = state
         isTestingConnection = true
         connectionTestResult = null
-
+        connectionTestSuccessful = false
         viewModelScope.launch {
-            connectionTestResult = withContext(Dispatchers.IO) {
-                try {
-                    val url = URI(testEp).toURL()
-                    val conn = url.openConnection() as HttpURLConnection
-                    conn.requestMethod = "GET"
-                    conn.connectTimeout = 5000
-                    conn.readTimeout = 5000
-
-                    val user = state.username.trim()
-                    val pwd = state.password.trim()
-                    if (user.isNotEmpty() && pwd.isNotEmpty()) {
-                        val credentials = android.util.Base64.encodeToString(
-                            "$user:$pwd".toByteArray(),
-                            android.util.Base64.NO_WRAP
-                        )
-                        conn.setRequestProperty("Authorization", "Basic $credentials")
-                    }
-
-                    try {
-                        val code = conn.responseCode
-                        when {
-                            code in 200..299 -> "Connected"
-                            code == 401 || code == 403 -> "Authentication failed"
-                            else -> "Could not reach server: Server returned HTTP $code"
-                        }
-                    } finally {
-                        conn.disconnect()
-                    }
-                } catch (e: Exception) {
-                    "Could not reach server: ${e.message ?: "Unable to reach the server"}"
+            try {
+                val result = withContext(Dispatchers.IO) { ServerConnectionTester { id, args -> getApplication<Application>().getString(id, *args) }.testResult(snapshot) }
+                if (state == snapshot) {
+                    connectionTestResult = result.message
+                    connectionTestSuccessful = result.successful
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } finally {
+                isTestingConnection = false
             }
-            isTestingConnection = false
         }
     }
 }

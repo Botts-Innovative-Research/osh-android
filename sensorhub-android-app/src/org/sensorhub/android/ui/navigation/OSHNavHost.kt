@@ -16,9 +16,9 @@ import org.sensorhub.android.ui.screens.help.HelpFaqScreen
 import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
 import org.sensorhub.android.ui.screens.maps.MapScreen
 import org.sensorhub.android.ui.screens.sensors.SensorsScreen
-import org.sensorhub.android.ui.screens.profiles.ServerFormScreen
+import org.sensorhub.android.ui.screens.servers.ServerFormScreen
 import org.sensorhub.android.ui.screens.settings.SettingsScreen
-import org.sensorhub.android.ui.screens.profiles.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
 
 @Composable
 fun OSHNavHost(

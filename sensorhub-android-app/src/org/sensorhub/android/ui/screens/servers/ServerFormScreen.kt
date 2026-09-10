@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.screens.profiles
+package org.sensorhub.android.ui.screens.servers
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
