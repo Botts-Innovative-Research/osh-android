@@ -405,7 +405,7 @@
     <string name="title_enter_device">Enter Device Name or Address</string>
     <string name="msg_enter_device">Enter a device name (e.g. \"Ballistic\") or MAC address. Names are matched from the start, case-insensitive.</string>
     <string name="title_edit_server">Update Server</string>
-    <string name="sensor_garmin">Garmin Wearable</string>
+    <string name="sensor_garmin">Garmin</string>
     <string name="title_select_garmin">Select Garmin Device</string>
     <string name="hint_manual_device">e.g. Ballistic or AA:BB:CC:DD:EE:FF</string>
     <string name="manual_entry_option">Enter name or address manually…</string>

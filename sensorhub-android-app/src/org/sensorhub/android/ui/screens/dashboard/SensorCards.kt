@@ -170,8 +170,8 @@ internal fun SensorOutputCard(sensor: SensorCardUi) {
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(row.label, Modifier.weight(1f), color = OnSurfaceVariant)
-                        Text(row.value, modifier = Modifier.widthIn(max = 160.dp))
+                        Text(row.label, Modifier.weight(1f), color = OnSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        Text(row.value, modifier = Modifier.widthIn(max = 160.dp), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

@@ -392,7 +392,7 @@
     <string name="title_enter_device">Gerätename oder -adresse eingeben</string>
     <string name="msg_enter_device">Geben Sie einen Gerätenamen (z.B. \"Ballistic\") oder eine MAC-Adresse ein. Namen werden vom Anfang an verglichen, ohne Berücksichtigung der Groß-/Kleinschreibung.</string>
     <string name="title_edit_server">Server bearbeiten</string>
-    <string name="sensor_garmin">Garmin Wearable</string>
+    <string name="sensor_garmin">Garmin</string>
     <string name="title_select_garmin">Garmin-Gerät auswählen</string>
     <string name="hint_manual_device">z.B. Ballistic oder AA:BB:CC:DD:EE:FF</string>
     <string name="manual_entry_option">Name oder Adresse manuell eingeben…</string>

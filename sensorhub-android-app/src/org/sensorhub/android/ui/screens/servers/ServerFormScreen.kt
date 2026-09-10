@@ -144,48 +144,50 @@ fun ServerFormScreen(
                 }
             }
             item {
-                OSHCard {
-                    OSHSwitchRow(
-                        title = stringResource(R.string.ui_enable_oauth),
-                        checked = state.enableOAuth,
-                        onCheckedChange = { viewModel.updateEnableOAuth(it) },
-                    )
-                    if (state.enableOAuth) {
-                        Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            OSHInputField(
-                                value = state.tokenEndpoint,
-                                onValueChange = { viewModel.updateTokenEndpoint(it) },
-                                label = stringResource(R.string.ui_token_endpoint),
-                            error = viewModel.tokenEndpointError,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                            )
-                            OSHInputField(
-                                value = state.clientId,
-                                onValueChange = { viewModel.updateClientId(it) },
-                                label = stringResource(R.string.hint_client_id),
-                            error = viewModel.clientIdError,
-                            )
-                            OSHInputField(
-                                value = state.clientSecret,
-                                onValueChange = { viewModel.updateClientSecret(it) },
-                                label = stringResource(R.string.hint_client_secret),
-                            error = viewModel.clientSecretError,
-                                visualTransformation = if (isClientSecretVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    IconButton(onClick = {
-                                        isClientSecretVisible = !isClientSecretVisible
-                                    }) {
-                                        Icon(
-                                            imageVector = if (isClientSecretVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = stringResource(R.string.ui_toggle_secret_visibility)
-                                        )
-                                    }
-                                },
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Password,
-                                    imeAction = ImeAction.Done
+                if (state.useConSysClient) {
+                    OSHCard {
+                        OSHSwitchRow(
+                            title = stringResource(R.string.ui_enable_oauth),
+                            checked = state.enableOAuth,
+                            onCheckedChange = { viewModel.updateEnableOAuth(it) },
+                        )
+                        if (state.enableOAuth) {
+                            Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                OSHInputField(
+                                    value = state.tokenEndpoint,
+                                    onValueChange = { viewModel.updateTokenEndpoint(it) },
+                                    label = stringResource(R.string.ui_token_endpoint),
+                                    error = viewModel.tokenEndpointError,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                                 )
-                            )
+                                OSHInputField(
+                                    value = state.clientId,
+                                    onValueChange = { viewModel.updateClientId(it) },
+                                    label = stringResource(R.string.hint_client_id),
+                                    error = viewModel.clientIdError,
+                                )
+                                OSHInputField(
+                                    value = state.clientSecret,
+                                    onValueChange = { viewModel.updateClientSecret(it) },
+                                    label = stringResource(R.string.hint_client_secret),
+                                    error = viewModel.clientSecretError,
+                                    visualTransformation = if (isClientSecretVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                    trailingIcon = {
+                                        IconButton(onClick = {
+                                            isClientSecretVisible = !isClientSecretVisible
+                                        }) {
+                                            Icon(
+                                                imageVector = if (isClientSecretVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                                contentDescription = stringResource(R.string.ui_toggle_secret_visibility)
+                                            )
+                                        }
+                                    },
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Password,
+                                        imeAction = ImeAction.Done
+                                    )
+                                )
+                            }
                         }
                     }
                 }
