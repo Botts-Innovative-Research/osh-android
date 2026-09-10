@@ -154,7 +154,11 @@ internal class SensorCardReader(private val context: Context, private val prefs:
 }
 
 @Composable
-internal fun SensorOutputCard(sensor: SensorCardUi) {
+internal fun SensorOutputCard(
+    sensor: SensorCardUi,
+    expanded: Boolean? = null,
+    onExpandChange: ((Boolean) -> Unit)? = null
+) {
     val status = when (sensor.status) {
         ReadingStatus.LIVE -> "ok"
         ReadingStatus.WAITING, ReadingStatus.STALE -> "nok"
@@ -163,6 +167,8 @@ internal fun SensorOutputCard(sensor: SensorCardUi) {
     OSHExpandableCard(
         title = sensor.title,
         status = status,
+        expanded = expanded,
+        onExpandChange = onExpandChange,
         expandedContent = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 sensor.measurements.forEach { row ->

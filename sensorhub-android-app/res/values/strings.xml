@@ -338,6 +338,8 @@
     <string name="category_bluetooth">Bluetooth</string>
     <string name="category_usb">USB</string>
     <string name="category_others">Others</string>
+    <string name="category_attn">Needs attention</string>
+    <string name="category_all">All</string>
     <string name="title_codec">Codec</string>
     <string name="title_frame_rate">Frame Rate</string>
     <string name="title_resolution">Resolution</string>
@@ -532,4 +534,10 @@
     <string name="ui_oauth_token_request_failed">OAuth token request failed (HTTP %1$d). Check the token endpoint and client credentials.</string>
     <string name="ui_collapse">Collapse</string>
     <string name="ui_expand">Expand</string>
+    <string name="dashboard_no_matching_sensors">No sensors match this filter. Select All to see every enabled sensor.</string>
+    <string name="dashboard_sensor_count">Sensors: %1$d</string>
+    <string name="dashboard_receiving_count">%1$d receiving</string>
+    <string name="dashboard_waiting_count">%1$d waiting</string>
+    <string name="dashboard_stale_count">%1$d stale</string>
+    <string name="dashboard_unavailable_count">%1$d unavailable</string>
 </resources>

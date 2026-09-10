@@ -295,7 +295,7 @@ private fun SwitchCardPreview() {
             )
             OSHSwitchCard(
                 title = "Discovery Service",
-                subtitle = "Service providfcing discovery based on definable rulesets",
+                subtitle = "Service providing discovery based on definable rulesets",
                 checked = false,
                 onCheckedChange = {}
             )

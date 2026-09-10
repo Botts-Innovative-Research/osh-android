@@ -11,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation "junit:junit:4.13.2"
     api project(':sensorhub-android-lib')
 
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
@@ -93,6 +94,7 @@ android {
 
 
     sourceSets {
+        test.java.srcDirs = ["tests"]
         main {
             java.srcDirs = ['src']
             res.srcDirs = ['res']
