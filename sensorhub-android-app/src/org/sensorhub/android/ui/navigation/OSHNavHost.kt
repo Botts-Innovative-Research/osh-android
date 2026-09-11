@@ -1,5 +1,6 @@
 package org.sensorhub.android.ui.navigation
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -67,10 +68,11 @@ fun OSHNavHost(
         }
 
         composable(Screen.AppPreferences.route) {
+            val context = LocalContext.current
             AppPreferencesScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
-                onNavigateToRepo = { navController.navigate("https://github.com/botts-innovative-research/osh-android".toUri()) }
+                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) }
             )
         }
         composable(Screen.ServerProfiles.route) {

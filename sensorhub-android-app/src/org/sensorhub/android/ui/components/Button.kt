@@ -35,7 +35,7 @@ fun OSHButton(
         enabled = enabled,
         shape = PillShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Primary,
+            containerColor = PrimaryDark,
             contentColor = OnPrimary
         ),
 
@@ -96,7 +96,7 @@ fun OSHElevatedButton(
         enabled = enabled,
         shape = PillShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Primary,
+            containerColor = PrimaryDark,
             contentColor = OnPrimary
         ),
     ) {

@@ -48,7 +48,7 @@ data class ChoiceDialogSpec(
 val CHOICE_DIALOGS = listOf(
     ChoiceDialogSpec(
         "audio_codec", R.string.title_codec, Icons.Default.Audiotrack,
-        listOf("AAC", "AMR-NB", "AMR-WB", "FLAC", "VORBIS")
+        listOf("AAC", "OPUS")
     ),
     ChoiceDialogSpec(
         "audio_samplerate", R.string.title_sample_rate, Icons.Default.Audiotrack,

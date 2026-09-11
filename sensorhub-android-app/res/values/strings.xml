@@ -462,7 +462,8 @@
     <string name="ui_run_name">Run name</string>
     <string name="ui_smarthub">SmartHub</string>
     <string name="ui_enable_sensors_on_the_sensors_screen_to_see_their_readings">Enable sensors on the Sensors screen to see their readings.</string>
-    <string name="ui_grant_location_camera_microphone_and_bluetooth_permissions_to_connect_to_smart_hub">Grant location, camera, microphone and Bluetooth permissions to connect to Smart Hub.</string>
+    <string name="ui_grant_required_sensor_permissions">Grant the requested permissions for your enabled sensors to start collection.</string>
+    <string name="ui_https_required_for_authenticated_connections">Use an HTTPS URL when authentication is enabled.</string>
     <string name="ui_connection">Connection</string>
     <string name="ui_connection_url">Connection URL</string>
     <string name="ui_https_ip_port_sensorhub_api">https://ip:port/sensorhub/api</string>
@@ -522,7 +523,7 @@
     <string name="ui_enter_a_valid_port">Enter a valid port</string>
     <string name="ui_server">server</string>
     <string name="ui_oauth_token_endpoint">OAuth token endpoint</string>
-    <string name="ui_connected">Connected</string>
+    <string name="ui_connected">Endpoint reachable</string>
     <string name="ui_authentication_401">401 Unauthorized: Request lacks valid credentials</string>
     <string name="ui_access_denied_403">403 Forbidden: Access denied to this resource</string>
     <string name="ui_unable_to_obtain_oauth_token">Unable to obtain OAuth token</string>

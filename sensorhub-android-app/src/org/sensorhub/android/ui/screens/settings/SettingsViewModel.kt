@@ -14,8 +14,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     init {
         _state.value = ServersState(
-            sosEnabled = prefs.getBoolean("sos_service", true),
-            csApiEnabled = prefs.getBoolean("csapi_service", true),
+            sosEnabled = prefs.getBoolean("sos_service", false),
+            csApiEnabled = prefs.getBoolean("csapi_service", false),
             discoveryEnabled = prefs.getBoolean("discovery_service", false),
             rulesLink = prefs.getString("rules_link", "") ?: ""
         )

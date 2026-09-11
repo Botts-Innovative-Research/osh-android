@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,6 +62,12 @@ fun SettingsScreen(
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                stringResource(R.string.settings_next_run),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             OSHClickableCardWithIcon(
                 title = stringResource(R.string.manage_servers),

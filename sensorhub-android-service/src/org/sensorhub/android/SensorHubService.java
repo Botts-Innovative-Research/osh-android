@@ -149,6 +149,7 @@ public class SensorHubService extends Service
         Notification notification;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notification = new Notification.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.stat_notify_sync)
                     .setContentTitle("SensorHub Running")
                     .setContentText("Collecting and transmitting sensor data")
                     .setContentIntent(pendingIntent)
@@ -157,6 +158,7 @@ public class SensorHubService extends Service
                     .build();
         } else {
             notification = new Notification.Builder(this)
+                    .setSmallIcon(android.R.drawable.stat_notify_sync)
                     .setContentTitle("SensorHub Running")
                     .setContentText("Collecting and transmitting sensor data")
                     .setContentIntent(pendingIntent)
@@ -227,7 +229,7 @@ public class SensorHubService extends Service
                     PowerManager.PARTIAL_WAKE_LOCK,
                     "SensorHub::DataCollection"
             );
-            wakeLock.acquire(10000);
+            wakeLock.acquire();
         }
 
         // Acquire WiFi lock to keep WiFi active

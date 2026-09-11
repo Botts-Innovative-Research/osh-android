@@ -93,6 +93,7 @@ fun SensorsScreen(
             currentAddress = viewModel.stringStates[addressKey] ?: "",
             onDeviceSelected = { address, _ ->
                 viewModel.setStringPref(addressKey, address)
+                scanner.stopDiscovery()
                 activeDialog = null
             },
             onDismiss = {
@@ -170,6 +171,12 @@ fun SensorsScreen(
                 }
             }
 
+            Text(
+                stringResource(R.string.settings_next_run),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),

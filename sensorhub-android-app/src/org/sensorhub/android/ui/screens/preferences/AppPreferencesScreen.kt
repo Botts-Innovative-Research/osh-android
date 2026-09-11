@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -47,7 +46,6 @@ fun AppPreferencesScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var showLanguageDialog by remember { mutableStateOf(false) }
-    var showNotificationDialog by remember { mutableStateOf(false) }
     var showDeviceNameEdit by remember { mutableStateOf(false) }
     var showAboutAppDialog by remember { mutableStateOf(false) }
 
@@ -59,15 +57,6 @@ fun AppPreferencesScreen(
             options = LANGUAGE_LABELS,
             selectedIndex = state.selectedLanguageIndex,
             onOptionSelected = { index -> viewModel.selectLanguage(index) }
-        )
-    }
-
-    if (showNotificationDialog) {
-        OSHAlertDialogWithoutDismiss(
-            onConfirmation = { showNotificationDialog = false },
-            dialogText = "Not yet implemented",
-            dialogTitle = stringResource(R.string.title_notifications),
-            icon = Icons.Filled.Info
         )
     }
 
@@ -125,12 +114,6 @@ fun AppPreferencesScreen(
                 )
             }
             OSHCard {
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.title_notifications),
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = stringResource(R.string.title_notifications),
-                    onClick = { showNotificationDialog = true }
-                )
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_language),
                     imageVector = Icons.Default.Language,
