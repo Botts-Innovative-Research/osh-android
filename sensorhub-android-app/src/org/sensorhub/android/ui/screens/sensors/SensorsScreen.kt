@@ -60,7 +60,6 @@ fun SensorsScreen(
     onNavigateToPreferences : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
 ) {
-    var selectedCategories by remember { mutableStateOf(SensorCategory.entries.toSet()) }
     val scrollState = rememberScrollState()
     var activeDialog by remember { mutableStateOf<String?>(null) }
 
@@ -151,6 +150,11 @@ fun SensorsScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                OSHFilterChip(
+                    onClick = { selectedCategories = emptySet() },
+                    text = stringResource(R.string.category_all),
+                    selected = selectedCategories.isEmpty(),
+                )
                 SensorCategory.entries.forEach { category ->
                     OSHFilterChip(
                         onClick = {

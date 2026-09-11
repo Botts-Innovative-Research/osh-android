@@ -3,7 +3,10 @@ package org.sensorhub.android.ui.screens.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.MoreVert
@@ -52,6 +55,8 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
