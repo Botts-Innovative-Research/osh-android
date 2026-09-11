@@ -60,6 +60,7 @@ fun SensorsScreen(
     onNavigateToPreferences : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
 ) {
+    var selectedCategories by remember { mutableStateOf(emptySet<SensorCategory>()) }
     val scrollState = rememberScrollState()
     var activeDialog by remember { mutableStateOf<String?>(null) }
 
