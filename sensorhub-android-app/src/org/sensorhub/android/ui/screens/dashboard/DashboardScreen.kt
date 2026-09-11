@@ -53,7 +53,6 @@ import org.sensorhub.android.ui.components.OSHFilterChip
 import org.sensorhub.android.ui.components.OSHStatusRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.screens.sensors.ALL_SENSORS
-import org.sensorhub.android.ui.screens.sensors.SensorCategory
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.api.module.ModuleEvent.ModuleState
 
@@ -123,18 +122,7 @@ fun DashboardScreen(
             else -> categoriesById[sensor.id] == selectedFilter
         }
     }
-    val sensorSummary = buildList {
-        add(stringResource(R.string.dashboard_sensor_count, state.sensorCards.size))
-        ReadingStatus.entries.forEach { status ->
-            val count = state.sensorCards.count { it.status == status }
-            if (count > 0) add(stringResource(when (status) {
-                ReadingStatus.LIVE -> R.string.dashboard_receiving_count
-                ReadingStatus.WAITING -> R.string.dashboard_waiting_count
-                ReadingStatus.STALE -> R.string.dashboard_stale_count
-                ReadingStatus.UNAVAILABLE -> R.string.dashboard_unavailable_count
-            }, count))
-        }
-    }.joinToString(" · ")
+
     val scrollState = rememberScrollState()
 
     if (showRunNameDialog) {
@@ -168,22 +156,16 @@ fun DashboardScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 2.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                OSHCard {
+                OSHCard(modifier = Modifier.fillMaxWidth()) {
                     OSHStatusRow(
                         title = stringResource(R.string.ui_smarthub),
                         subtitle = state.runName.takeIf { running }.orEmpty(),
                         status = if (state.error != null) "error" else state.hubStatus.name,
                         modifier = Modifier.fillMaxWidth()
-                    )
-                    if (running) Text(
-                        sensorSummary,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -196,7 +178,7 @@ fun DashboardScreen(
                     },
                     text = buttonText,
                     enabled = !busy,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                 )
             }
             if (running) {
@@ -205,7 +187,7 @@ fun DashboardScreen(
                         modifier = Modifier
                             .horizontalScroll(scrollState)
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         EnabledSensorCategory.entries.forEach { category ->
@@ -229,7 +211,7 @@ fun DashboardScreen(
                     )
                 }
                 if (filteredCards.isEmpty()) {
-                    item { Text(stringResource(if (state.sensorCards.isEmpty()) R.string.ui_enable_sensors_on_the_sensors_screen_to_see_their_readings else R.string.dashboard_no_matching_sensors), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    item { Text(stringResource(if (state.sensorCards.isEmpty()) R.string.ui_enable_sensors_on_the_sensors_screen_to_see_their_readings else R.string.dashboard_no_matching_sensors), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp)) }
                 }
             }
             state.error?.let { error ->
