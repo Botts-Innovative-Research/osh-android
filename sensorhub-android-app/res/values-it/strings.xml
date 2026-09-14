@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpenSensorHub</string>
+    <string name="app_name">OSH-Android</string>
     <string name="hello_world">Configura le impostazioni e tocca il pulsante di riproduzione per avviare SmartHub</string>
     <string name="action_settings">Impostazioni</string>
     <string name="action_start">Avvia SmartHub</string>

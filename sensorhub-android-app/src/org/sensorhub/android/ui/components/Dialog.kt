@@ -361,7 +361,7 @@ private fun DialogNoDismissPreview() {
         OSHAlertDialogWithoutDismiss(
             onConfirmation = {},
             dialogText = "A software platform for building smart sensor networks and the internet of things",
-            dialogTitle = "OpenSensorHub",
+            dialogTitle = "OSH-Android",
             icon = Icons.Filled.Info
         )
     }
@@ -397,4 +397,3 @@ private fun SingleChoiceDialogPreview() {
         )
     }
 }
-

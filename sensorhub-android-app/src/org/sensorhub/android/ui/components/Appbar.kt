@@ -104,7 +104,7 @@ fun OSHTopAppBarWithBack(
 @Composable
 private fun TopAppBarPreview() {
     OSHTheme {
-        OSHTopAppBarWithLogo(title = "OpenSensorHub")
+        OSHTopAppBarWithLogo(title = "OSH-Android")
     }
 }
 
@@ -116,5 +116,4 @@ private fun TopAppBarWithBackPreview() {
         OSHTopAppBarWithBack(title = "Server Profiles", onBackClick = {})
     }
 }
-
 
