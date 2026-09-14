@@ -9,10 +9,8 @@ import android.util.Log
 import com.botts.impl.service.discovery.DiscoveryService
 import com.botts.impl.service.discovery.DiscoveryServiceConfig
 import org.sensorhub.android.OkHttpClientWrapper
-import org.sensorhub.android.comm.BluetoothCommProvider
-import org.sensorhub.android.comm.BluetoothCommProviderConfig
-import org.sensorhub.android.comm.ble.BleConfig
-import org.sensorhub.android.comm.ble.BleNetwork
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.data.sensors.SensorRuntimeConfiguration
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
 import org.sensorhub.api.module.IModuleConfigRepository
@@ -22,20 +20,6 @@ import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig
 import org.sensorhub.impl.module.InMemoryConfigDb
 import org.sensorhub.impl.module.ModuleClassFinder
-import org.sensorhub.impl.sensor.android.AndroidSensorsConfig
-import org.sensorhub.impl.sensor.android.audio.AudioEncoderConfig
-import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig
-import org.sensorhub.impl.sensor.android.video.VideoEncoderConfig.VideoPreset
-import org.sensorhub.impl.sensor.controller.ControllerConfig
-import org.sensorhub.impl.sensor.kestrel.KestrelConfig
-import org.sensorhub.impl.sensor.meshtastic.MeshtasticConfig
-import org.sensorhub.impl.sensor.polar.PolarConfig
-import org.sensorhub.impl.sensor.ste.STERadPagerConfig
-import org.sensorhub.impl.sensor.template.TemplateConfig
-import org.sensorhub.impl.sensor.trupulse.SimulatedDataStream
-import org.sensorhub.impl.sensor.trupulse.TruPulseConfig
-import org.sensorhub.impl.sensor.trupulse.TruPulseWithGeolocConfig
-import org.sensorhub.impl.sensor.wardriving.WardrivingConfig
 import org.sensorhub.impl.service.HttpServerConfig
 import org.sensorhub.impl.service.consys.ConSysApiService
 import org.sensorhub.impl.service.consys.ConSysApiServiceConfig
@@ -83,52 +67,6 @@ class SensorHubConfigFactory(
         if (deviceName == null || deviceName.length < 2) deviceName = deviceID
 
 
-        // Android sensors
-        val sensorsConfig = AndroidSensorsConfig()
-        sensorsConfig.name = "Android Sensors [" + deviceName + "]"
-        sensorsConfig.id = "ANDROID_SENSORS"
-        sensorsConfig.autoStart = true
-        sensorsConfig.lastUpdated = sensorsLastUpdated
-
-        sensorsConfig.activateAccelerometer = prefs.getBoolean("accel_enabled", false)
-        sensorsConfig.activateGyrometer = prefs.getBoolean("gyro_enabled", false)
-        sensorsConfig.activateMagnetometer = prefs.getBoolean("mag_enabled", false)
-        sensorsConfig.activateOrientationQuat = prefs.getBoolean("orient_quat_enabled", false)
-        sensorsConfig.activateOrientationEuler = prefs.getBoolean("orient_euler_enabled", false)
-        sensorsConfig.activateGpsLocation = prefs.getBoolean("gps_enabled", false)
-        sensorsConfig.activateNetworkLocation = prefs.getBoolean("netloc_enabled", false)
-        sensorsConfig.enableCamera = prefs.getBoolean("cam_enabled", false)
-        sensorsConfig.selectedCameraId = prefs.getString("camera_select", "0")!!.toInt()
-
-
-        // video settings
-        sensorsConfig.videoConfig.codec =
-            prefs.getString("video_codec", VideoEncoderConfig.JPEG_CODEC)
-        sensorsConfig.videoConfig.frameRate = prefs.getString("video_framerate", "30")!!.toInt()
-
-        val resolutionStr: String = prefs.getString("video_resolution", "640x480")!!
-        val resParts: Array<String?> =
-            resolutionStr.split("x".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val videoPreset = VideoPreset()
-        videoPreset.width = resParts[0]!!.toInt()
-        videoPreset.height = resParts[1]!!.toInt()
-        sensorsConfig.videoConfig.presets = arrayOf<VideoPreset>(videoPreset)
-        sensorsConfig.videoConfig.selectedPreset = 0
-
-        sensorsConfig.outputVideoRoll = prefs.getBoolean("video_roll_enabled", false)
-
-
-        // audio
-        sensorsConfig.activateMicAudio = prefs.getBoolean("audio_enabled", false)
-        sensorsConfig.audioConfig.codec =
-            prefs.getString("audio_codec", AudioEncoderConfig.AAC_CODEC)
-        sensorsConfig.audioConfig.sampleRate = prefs.getString("audio_samplerate", "8000")!!.toInt()
-        sensorsConfig.audioConfig.bitRate = prefs.getString("audio_bitrate", "64")!!.toInt()
-
-        sensorsConfig.runName = runName
-        sensorsConfig.uidExtension = prefs.getString("uid_extension", "0")
-
-
         // HTTP Server
         val serverConfig = HttpServerConfig()
         serverConfig.proxyBaseUrl = ""
@@ -136,148 +74,12 @@ class SensorHubConfigFactory(
         serverConfig.autoStart = true
         config.add(serverConfig)
 
-        config.add(sensorsConfig)
 
+        val sensorsConfig = SensorRuntimeConfiguration.create(
+            context, prefs, config, deviceID, deviceName, runName, sensorsLastUpdated
+        )
 
-        // TruPulse LRF
-        if (prefs.getBoolean("trupulse_enabled", false)) {
-            var trupulseConfig = TruPulseConfig()
-
-            if (sensorsConfig.activateGpsLocation) {
-                var gpsOutputName: String? = null
-                if (context.packageManager
-                        .hasSystemFeature(PackageManager.FEATURE_LOCATION)
-                ) {
-                    val locationManager =
-                        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                    val locProviders = locationManager.allProviders
-                    for (provName in locProviders) {
-                        val locProvider = locationManager.getProvider(provName)
-                        if (locProvider!!.requiresSatellite()) gpsOutputName =
-                            locProvider.name.replace(" ".toRegex(), "_") + "_data"
-                    }
-                }
-
-                trupulseConfig = TruPulseWithGeolocConfig()
-                trupulseConfig.locationSourceUID =
-                    "urn:osh:android" + sensorsConfig.getAndroidSensorsUidWithExt()
-                trupulseConfig.locationOutputName = gpsOutputName
-            }
-
-            trupulseConfig.id = "TRUPULSE_SENSOR"
-            trupulseConfig.name = "TruPulse Range Finder [" + deviceName + "]"
-            trupulseConfig.autoStart = true
-            trupulseConfig.lastUpdated = sensorsLastUpdated
-            trupulseConfig.serialNumber = deviceID
-
-            val btConf = BluetoothCommProviderConfig()
-            btConf.protocol.deviceName = prefs.getString("trupulse_device_address", "")
-            if (prefs.getBoolean("trupulse_simu", false)) {
-                btConf.moduleClass = SimulatedDataStream::class.java.canonicalName
-            } else {
-                btConf.moduleClass = BluetoothCommProvider::class.java.canonicalName
-                trupulseConfig.connection.connectTimeout = 100000
-                trupulseConfig.connection.reconnectAttempts = 10
-            }
-            trupulseConfig.commSettings = btConf
-
-            config.add(trupulseConfig)
-        }
-
-        // STE Rad Pager
-        if (prefs.getBoolean("ste_radpager_enabled", false)) {
-            val steRadPagerConfig = STERadPagerConfig()
-            steRadPagerConfig.id = "STE_RADPAGER_SENSOR"
-            steRadPagerConfig.name = "STE Rad Pager [" + deviceName + "]"
-            steRadPagerConfig.autoStart = true
-            steRadPagerConfig.lastUpdated = sensorsLastUpdated
-
-            config.add(steRadPagerConfig)
-        }
-
-        // Meshtastic
-        if (prefs.getBoolean("meshtastic_enabled", false)) {
-            val meshtasticConfig = MeshtasticConfig()
-            meshtasticConfig.id = "MESHTASTIC_SENSOR"
-            meshtasticConfig.name = "Meshtastic [" + deviceName + "]"
-            meshtasticConfig.autoStart = true
-            meshtasticConfig.lastUpdated = sensorsLastUpdated
-            meshtasticConfig.device_name = prefs.getString("meshtastic_device_address", "")
-            meshtasticConfig.uid_extension = prefs.getString("uid_extension", "")
-
-            config.add(meshtasticConfig)
-        }
-
-        // Polar heart rate
-        if (prefs.getBoolean("polar_enabled", false)) {
-            val polarConfig = PolarConfig()
-            polarConfig.id = "POLAR_HEART_SENSOR"
-            polarConfig.name = "Polar Heart [" + deviceName + "]"
-            polarConfig.autoStart = true
-            polarConfig.lastUpdated = sensorsLastUpdated
-            polarConfig.deviceId = prefs.getString("polar_device_address", "")
-            polarConfig.uid_extension = prefs.getString("uid_extension", "")
-
-            config.add(polarConfig)
-        }
-
-        // Kestrel weather
-        if (prefs.getBoolean("kestrel_enabled", false)) {
-            val bleConf = BleConfig()
-            bleConf.id = "BLE_NETWORK"
-            bleConf.moduleClass = BleNetwork::class.java.canonicalName
-            bleConf.androidContext = context
-            bleConf.autoStart = true
-            config.add(bleConf)
-
-            val kestrelConfig = KestrelConfig()
-            kestrelConfig.id = "KESTREL_WEATHER"
-            kestrelConfig.name = "Kestrel Weather [" + deviceName + "]"
-            kestrelConfig.autoStart = true
-            kestrelConfig.lastUpdated = sensorsLastUpdated
-            kestrelConfig.networkID = bleConf.id
-            kestrelConfig.deviceAddress = prefs.getString("kestrel_device_address", "")
-
-            config.add(kestrelConfig)
-        }
-
-        // Controller
-        if (prefs.getBoolean("controller_enabled", false)) {
-            val controllerConfig = ControllerConfig()
-            controllerConfig.id = "CONTROLLER"
-            controllerConfig.name = "Controller [" + deviceName + "]"
-            controllerConfig.autoStart = true
-            controllerConfig.lastUpdated = sensorsLastUpdated
-            controllerConfig.uid_extension = prefs.getString("uid_extension", "")
-
-            config.add(controllerConfig)
-        }
-
-        // Wardriving
-        if (prefs.getBoolean("wardriving_enabled", false)) {
-            val wardrivingConfig = WardrivingConfig()
-            wardrivingConfig.id = "WARDRIVING_"
-            wardrivingConfig.name = "Wardriving [" + deviceName + "]"
-            wardrivingConfig.autoStart = true
-            wardrivingConfig.lastUpdated = sensorsLastUpdated
-            wardrivingConfig.uid_extension = prefs.getString("uid_extension", "")
-
-            config.add(wardrivingConfig)
-        }
-
-        // Template driver
-        if (prefs.getBoolean("template_enabled", false)) {
-            val templateConfig = TemplateConfig()
-            templateConfig.id = "TEMPLATE_DRIVER_"
-            templateConfig.name = "Template [" + deviceName + "]"
-            templateConfig.autoStart = true
-            templateConfig.lastUpdated = sensorsLastUpdated
-            templateConfig.uid_extension = prefs.getString("uid_extension", "")
-
-            config.add(templateConfig)
-        }
-
-        if (isAnySensorEnabled(prefs)) {
+        if (SensorRegistry.hasEnabledSensor(prefs)) {
             for (sp in enabledServers) {
                 val profileUrl = try {
                     java.net.URI(sp.endpointUrl.trim()).toURL()
@@ -450,31 +252,10 @@ class SensorHubConfigFactory(
         config.add(consysConfig)
     }
 
-    private fun isAnySensorEnabled(prefs: SharedPreferences): Boolean {
-        return prefs.getBoolean("accel_enabled", false)
-                || prefs.getBoolean("gyro_enabled", false)
-                || prefs.getBoolean("mag_enabled", false)
-                || prefs.getBoolean("orient_quat_enabled", false)
-                || prefs.getBoolean("orient_euler_enabled", false)
-                || prefs.getBoolean("gps_enabled", false)
-                || prefs.getBoolean("netloc_enabled", false)
-                || prefs.getBoolean("cam_enabled", false)
-                || prefs.getBoolean("audio_enabled", false)
-                || prefs.getBoolean("trupulse_enabled", false)
-                || prefs.getBoolean("ble_enabled", false)
-                || prefs.getBoolean("meshtastic_enabled", false)
-                || prefs.getBoolean("polar_enabled", false)
-                || prefs.getBoolean("kestrel_enabled", false)
-                || prefs.getBoolean("wardriving_enabled", false)
-                || prefs.getBoolean("controller_enabled", false)
-                || prefs.getBoolean("template_enabled", false)
-                || prefs.getBoolean("ste_radpager_enabled", false)
-    }
-
     private fun shouldStore(prefs: SharedPreferences): Boolean {
         val prefMap = prefs.all
         for ((_, value) in prefMap) {
-            if (value is HashSet<*>) {
+            if (value is Set<*>) {
                 if (value.contains("STORE_LOCAL")) {
                     return true
                 }

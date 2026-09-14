@@ -1,5 +1,9 @@
 package org.sensorhub.android.ui.screens.sensors
 
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.data.sensors.SensorCategory
+import org.sensorhub.android.data.sensors.SensorUiEntry
+
 import android.app.Application
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.AndroidViewModel
@@ -15,23 +19,27 @@ class SensorsViewModel(application: Application) : AndroidViewModel(application)
     val stringStates: Map<String, String> = _stringStates
 
     init {
-        ALL_SENSORS.forEach { sensor ->
-            _toggleStates[sensor.prefKey] = prefs.getBoolean(sensor.prefKey, false)
+        SensorRegistry.items.forEach { sensor ->
+            _toggleStates[sensor.prefKey] = sensor.isEnabled(prefs)
         }
 
         CHOICE_DIALOGS.forEach { spec ->
-            _stringStates[spec.prefKey] = prefs.getString(spec.prefKey, spec.defaultValue) ?: spec.defaultValue
+            _stringStates[spec.prefKey] = spec.setting.read(prefs)
         }
 
-        BT_ADDRESS_PREF_KEYS.forEach { key ->
+        SensorRegistry.bluetoothAddressPreferenceKeys.forEach { key ->
             _stringStates[key] = prefs.getString(key, "") ?: ""
         }
     }
 
-    fun toggleSensor(prefKey: String, enabled: Boolean) {
+    fun toggleSensor(sensor: SensorUiEntry, enabled: Boolean) {
+        val prefKey = sensor.prefKey
         prefs.edit().putBoolean(prefKey, enabled).apply()
         _toggleStates[prefKey] = enabled
     }
+
+    fun choiceValue(setting: org.sensorhub.android.data.sensors.SensorChoice): String =
+        _stringStates[setting.key] ?: setting.defaultValue
 
     fun setStringPref(prefKey: String, value: String) {
         prefs.edit().putString(prefKey, value).apply()

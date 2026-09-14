@@ -2,6 +2,8 @@ package org.sensorhub.android.ui.components
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -109,5 +111,16 @@ private fun SegmentedButtonPreview() {
         OSHSegmentedButton(
             options = listOf("CS API Client", "SOS-T Client")
         )
+    }
+}
+
+@Composable
+fun OSHAddFAB(onClick: () -> Unit = {}) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = SecondaryContainer,
+        contentColor = OnPrimary,
+    ) {
+        Icon(imageVector = Icons.Default.Add, contentDescription = "Add new item")
     }
 }

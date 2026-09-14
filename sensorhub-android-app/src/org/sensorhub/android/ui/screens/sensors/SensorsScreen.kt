@@ -1,5 +1,7 @@
 package org.sensorhub.android.ui.screens.sensors
 
+import org.sensorhub.android.ui.HubViewModel
+
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,32 +38,44 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.navigation.Screen
+import org.sensorhub.android.data.sensors.SensorCategory
+import org.sensorhub.android.data.sensors.SensorChoice
+import org.sensorhub.android.data.sensors.SensorUIOption
+import org.sensorhub.android.data.sensors.SensorUiEntry
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.data.sensors.SensorSettings
 import org.sensorhub.android.ui.components.OSHBluetoothPickerDialog
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHExpandableSwitchCard
 import org.sensorhub.android.ui.components.OSHFilterChip
+import org.sensorhub.android.ui.components.OSHSegmentedButton
 import org.sensorhub.android.ui.components.OSHSensorCard
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
+import org.sensorhub.android.ui.navigation.Screen
+import org.sensorhub.android.ui.screens.dashboard.SensorOutputCard
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.api.module.ModuleEvent
-
 
 @Composable
 fun SensorsScreen(
     onNavigateToPreferences : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
+    hubViewModel: HubViewModel = viewModel(),
 ) {
+    var selectedMode by rememberSaveable { mutableStateOf(0) }
+    val liveState by hubViewModel.state.collectAsStateWithLifecycle()
     var selectedCategories by remember { mutableStateOf(emptySet<SensorCategory>()) }
     val scrollState = rememberScrollState()
     var activeDialog by remember { mutableStateOf<String?>(null) }
@@ -88,7 +102,7 @@ fun SensorsScreen(
         onDispose { scanner.stopDiscovery() }
     }
 
-    if (activeDialog != null && activeDialog in BT_ADDRESS_PREF_KEYS) {
+    if (activeDialog != null && activeDialog in SensorRegistry.bluetoothAddressPreferenceKeys) {
         val addressKey = activeDialog!!
         OSHBluetoothPickerDialog(
             devices = bluetoothDevices,
@@ -135,8 +149,8 @@ fun SensorsScreen(
             )
         },
     ) { padding ->
-        val resolvedItems = ALL_SENSORS.map {
-            it.copy(enabled = viewModel.toggleStates[it.prefKey] ?: false)
+        val resolvedItems = SensorRegistry.items.map {
+            SensorItem(it, enabled = viewModel.toggleStates[it.prefKey] ?: false)
         }
         val filteredItems = if (selectedCategories.isEmpty()) resolvedItems
         else resolvedItems.filter { it.category in selectedCategories }
@@ -147,6 +161,46 @@ fun SensorsScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            OSHSegmentedButton(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                options = listOf(
+                    stringResource(R.string.sensors_configure),
+                    stringResource(R.string.sensors_live),
+                ),
+                selectedIndex = selectedMode,
+                onOptionSelected = { selectedMode = it },
+            )
+
+            if (selectedMode == 1) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val isRunning = liveState.hubStatus == ModuleEvent.ModuleState.STARTED
+                    if (!isRunning) {
+                        item {
+                            Text(
+                                stringResource(R.string.sensors_live_start_run),
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else if (liveState.sensorCards.isEmpty()) {
+                        item {
+                            Text(
+                                stringResource(R.string.sensors_live_no_enabled),
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else {
+                        items(liveState.sensorCards, key = { it.id }) { sensor ->
+                            SensorOutputCard(sensor)
+                        }
+                    }
+                }
+            } else {
             Row(
                 modifier = Modifier
                     .horizontalScroll(scrollState)
@@ -193,7 +247,7 @@ fun SensorsScreen(
                         )
                     }
                     items(sensors, key = { it.id }) { sensor ->
-                        SensorListItem(
+                        SensorUiEntry(
                             sensor = sensor,
                             viewModel = viewModel,
                             onActiveDialogChange = { activeDialog = it },
@@ -201,46 +255,47 @@ fun SensorsScreen(
                     }
                 }
             }
+            }
         }
     }
 }
 
 @Composable
-private fun SensorListItem(
+private fun SensorUiEntry(
     sensor: SensorItem,
     viewModel: SensorsViewModel,
     onActiveDialogChange: (String) -> Unit,
 ) {
     val onToggle = { checked: Boolean ->
-        viewModel.toggleSensor(sensor.prefKey, checked)
+        viewModel.toggleSensor(sensor.definition, checked)
     }
 
     when (val config = sensor.config) {
-        is SensorConfig.Audio -> ConfigurableSensorCard(sensor, onToggle) {
+        is SensorUIOption.Audio -> ConfigurableSensorCard(sensor, onToggle) {
             AudioConfig(
-                codec = viewModel.stringStates["audio_codec"] ?: "AAC",
-                sampleRate = viewModel.stringStates["audio_samplerate"] ?: "8000",
-                bitRate = viewModel.stringStates["audio_bitrate"] ?: "64",
-                onCodecClick = { onActiveDialogChange("audio_codec") },
-                onSampleRateClick = { onActiveDialogChange("audio_samplerate") },
-                onBitRateClick = { onActiveDialogChange("audio_bitrate") },
+                codec = viewModel.choiceValue(SensorSettings.audioCodec),
+                sampleRate = viewModel.choiceValue(SensorSettings.audioSampleRate),
+                bitRate = viewModel.choiceValue(SensorSettings.audioBitRate),
+                onCodecClick = { onActiveDialogChange(SensorSettings.audioCodec.key) },
+                onSampleRateClick = { onActiveDialogChange(SensorSettings.audioSampleRate.key) },
+                onBitRateClick = { onActiveDialogChange(SensorSettings.audioBitRate.key) },
             )
         }
 
-        is SensorConfig.Video -> ConfigurableSensorCard(sensor, onToggle) {
+        is SensorUIOption.Video -> ConfigurableSensorCard(sensor, onToggle) {
             VideoConfig(
-                codec = viewModel.stringStates["video_codec"] ?: "JPEG",
-                frameRate = viewModel.stringStates["video_framerate"] ?: "30",
-                resolution = viewModel.stringStates["video_resolution"] ?: "640x480",
-                camera = viewModel.stringStates["camera_select"] ?: "0",
-                onCodecClick = { onActiveDialogChange("video_codec") },
-                onFrameRateClick = { onActiveDialogChange("video_framerate") },
-                onResolutionClick = { onActiveDialogChange("video_resolution") },
-                onCameraClick = { onActiveDialogChange("camera_select") },
+                codec = viewModel.choiceValue(SensorSettings.videoCodec),
+                frameRate = viewModel.choiceValue(SensorSettings.videoFrameRate),
+                resolution = viewModel.choiceValue(SensorSettings.videoResolution),
+                camera = viewModel.choiceValue(SensorSettings.camera),
+                onCodecClick = { onActiveDialogChange(SensorSettings.videoCodec.key) },
+                onFrameRateClick = { onActiveDialogChange(SensorSettings.videoFrameRate.key) },
+                onResolutionClick = { onActiveDialogChange(SensorSettings.videoResolution.key) },
+                onCameraClick = { onActiveDialogChange(SensorSettings.camera.key) },
             )
         }
 
-        is SensorConfig.BluetoothDevice -> ConfigurableSensorCard(sensor, onToggle) {
+        is SensorUIOption.BluetoothDevice -> ConfigurableSensorCard(sensor, onToggle) {
             BluetoothDeviceConfig(
                 selectLabelRes = config.selectLabelRes,
                 currentAddress = viewModel.stringStates[config.addressPrefKey] ?: "",
@@ -248,18 +303,18 @@ private fun SensorListItem(
             )
         }
 
-        is SensorConfig.TruPulse -> {
-            val dsSpec = CHOICE_DIALOGS.first { it.prefKey == "trupulse_datasource" }
+        is SensorUIOption.TruPulse -> {
+            val dsSpec = CHOICE_DIALOGS.first { it.prefKey == SensorSettings.truPulseSource.key }
             val dsIndex = dsSpec.values.indexOf(
-                viewModel.stringStates["trupulse_datasource"] ?: "STREAM",
+                viewModel.choiceValue(SensorSettings.truPulseSource),
             ).coerceAtLeast(0)
 
             ConfigurableSensorCard(sensor, onToggle) {
                 TruPulseConfig(
                     datasource = dsSpec.labels[dsIndex],
-                    deviceAddress = viewModel.stringStates["trupulse_device_address"] ?: "",
-                    onDatasourceClick = { onActiveDialogChange("trupulse_datasource") },
-                    onDeviceClick = { onActiveDialogChange("trupulse_device_address") },
+                    deviceAddress = viewModel.stringStates[SensorUIOption.TruPulse.addressPrefKey] ?: "",
+                    onDatasourceClick = { onActiveDialogChange(SensorSettings.truPulseSource.key) },
+                    onDeviceClick = { onActiveDialogChange(SensorUIOption.TruPulse.addressPrefKey) },
                 )
             }
         }
@@ -414,3 +469,38 @@ private fun SensorsScreenPreview() {
         )
     }
 }
+
+data class SensorItem(val definition: SensorUiEntry, val enabled: Boolean) {
+    val id get() = definition.id
+    val prefKey get() = definition.prefKey
+    val nameRes get() = definition.nameRes
+    val category get() = definition.category
+    val config get() = definition.config
+}
+
+data class ChoiceDialogSpec(
+    val setting: SensorChoice,
+    @StringRes val titleRes: Int,
+    val icon: ImageVector,
+    val labels: List<String> = setting.values,
+) {
+    val prefKey get() = setting.key
+    val values get() = setting.values
+    val defaultValue get() = setting.defaultValue
+}
+
+val CHOICE_DIALOGS = listOf(
+    ChoiceDialogSpec(SensorSettings.audioCodec, R.string.title_codec, Icons.Default.Audiotrack),
+    ChoiceDialogSpec(SensorSettings.audioSampleRate, R.string.title_sample_rate, Icons.Default.Audiotrack,
+        SensorSettings.audioSampleRate.values.map { "$it Hz" }),
+    ChoiceDialogSpec(SensorSettings.audioBitRate, R.string.title_bitrate, Icons.Default.Audiotrack,
+        SensorSettings.audioBitRate.values.map { "$it kbps" }),
+    ChoiceDialogSpec(SensorSettings.videoCodec, R.string.title_codec, Icons.Default.Videocam),
+    ChoiceDialogSpec(SensorSettings.videoFrameRate, R.string.title_frame_rate, Icons.Default.Videocam,
+        SensorSettings.videoFrameRate.values.map { "$it fps" }),
+    ChoiceDialogSpec(SensorSettings.videoResolution, R.string.title_resolution, Icons.Default.Videocam),
+    ChoiceDialogSpec(SensorSettings.camera, R.string.title_camera, Icons.Default.Videocam,
+        SensorSettings.camera.values.map { "Camera $it" }),
+    ChoiceDialogSpec(SensorSettings.truPulseSource, R.string.title_trupulse_datasource, Icons.Default.DevicesOther,
+        listOf("Streaming Physical Device", "Simulate Virtual Device")),
+)
