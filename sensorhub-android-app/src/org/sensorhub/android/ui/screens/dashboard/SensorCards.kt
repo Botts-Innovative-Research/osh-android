@@ -45,7 +45,7 @@ data class SensorCardUi(
     val lastReadingTime: Long? = null
 )
 
-internal class SensorCardReader(private val context: Context) {
+class SensorCardReader(private val context: Context) {
     fun read(service: SensorHubService?, sensors: List<SensorUiEntry>, includeMeasurements: Boolean = true): List<SensorCardUi> {
         val modules = service?.sensorHub?.moduleRegistry?.loadedModules?.toList().orEmpty()
         val running = service?.hubState == SensorHubService.HubState.RUNNING

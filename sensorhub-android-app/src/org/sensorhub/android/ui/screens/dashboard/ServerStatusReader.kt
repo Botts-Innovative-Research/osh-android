@@ -9,7 +9,7 @@ import org.sensorhub.api.module.ModuleEvent
 import org.sensorhub.impl.client.sost.SOSTClient
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule
 
-internal class ServerStatusReader(private val context: Context) {
+class ServerStatusReader(private val context: Context) {
 
     fun read(service: SensorHubService?): List<ServerStatusUi> {
         val hub = service?.sensorHub ?: return emptyList()
