@@ -41,27 +41,6 @@
     <string name="enable_csapi_service">啟用連線系統服務</string>
     <string name="enable_discovery_service">啟用探索服務</string>
 
-    <string name="summary_accel">啟用加速度計資料串流</string>
-    <string name="summary_gyro">啟用陀螺儀資料串流</string>
-    <string name="summary_mag">啟用磁力計資料串流</string>
-    <string name="summary_orientation">啟用方向資料串流</string>
-    <string name="summary_gps">啟用 GPS 定位資料串流</string>
-    <string name="summary_netloc">啟用網路定位資料串流</string>
-    <string name="summary_video">啟用影片資料串流</string>
-    <string name="summary_video_roll">在影片幀標頭中包含影片滾動資料</string>
-    <string name="summary_audio">啟用音訊資料串流</string>
-    <string name="summary_meshtastic">啟用 Meshtastic 資料串流（感測器須在啟動時透過藍牙連接）</string>
-    <string name="summary_wardriving">啟用雷達偵測感測器串流</string>
-    <string name="summary_polar">啟用 Polar 心率感測器串流（感測器須透過藍牙 LE 連接）</string>
-    <string name="summary_kestrel">啟用紅隼氣象儀串流</string>
-    <string name="summary_controller">啟用 USB 控制器串流（控制器須在啟動時透過 USB 連接）</string>
-    <string name="summary_trupulse">啟用 TruPulse 測距儀資料串流（感測器須在啟動時透過藍牙連接）</string>
-    <string name="summary_trupulse_simu">使用模擬 TruPulse 資料取代實際感測器資料</string>
-    <string name="summary_angel">啟用 Angel 感測器健康資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
-    <string name="summary_flirone">啟用 FLIR One 熱像儀資料串流（透過 USB 連接時）</string>
-    <string name="summary_ste">啟用 STE RadPager 資料串流（感測器須在啟動時透過藍牙 LE 連接）</string>
-    <string name="summary_template">啟用範本驅動程式串流</string>
-
     <string name="summary_csapi"></string>
     <string name="summary_sos"></string>
     <string name="summary_discovery"></string>

@@ -41,26 +41,6 @@
     <string name="enable_csapi_service">Servicio Connected Systems</string>
     <string name="enable_discovery_service">Servicio de descubrimiento</string>
 
-    <string name="summary_accel">Transmitir datos de movimiento del acelerómetro en tiempo real</string>
-    <string name="summary_gyro">Transmitir datos de rotación del giroscopio en tiempo real</string>
-    <string name="summary_mag">Transmitir datos de dirección y campo magnético del magnetómetro</string>
-    <string name="summary_orientation">Transmitir datos de orientación y actitud del dispositivo</string>
-    <string name="summary_gps">Transmitir datos de ubicación y movimiento por GPS</string>
-    <string name="summary_netloc">Transmitir datos de ubicación basados en red</string>
-    <string name="summary_video">Transmitir vídeo en vivo desde la cámara del dispositivo</string>
-    <string name="summary_video_roll">Adjuntar metadatos de rotación del dispositivo a los encabezados de fotogramas</string>
-    <string name="summary_audio">Transmitir audio en vivo desde el micrófono del dispositivo</string>
-    <string name="summary_meshtastic">Conectar a un dispositivo Meshtastic por Bluetooth al iniciar</string>
-    <string name="summary_wardriving">Transmitir datos de escaneo de redes inalámbricas cercanas</string>
-    <string name="summary_polar">Conectar a un sensor cardíaco Polar por Bluetooth LE</string>
-    <string name="summary_kestrel">Transmitir datos ambientales desde una estación Kestrel</string>
-    <string name="summary_controller">Conectar a un controlador USB compatible al iniciar</string>
-    <string name="summary_trupulse">Transmitir datos de distancia y ángulo desde un telémetro TruPulse</string>
-    <string name="summary_trupulse_simu">Usar mediciones simuladas de TruPulse para pruebas</string>
-    <string name="summary_angel">Transmitir datos biométricos desde el Angel Sensor</string>
-    <string name="summary_flirone">Transmitir imágenes térmicas desde una cámara FLIR One conectada</string>
-    <string name="summary_ste">Conectar a un STE RadPager por Bluetooth LE al iniciar</string>
-    <string name="summary_template">Habilitar el controlador de sensor de plantilla para desarrollo y pruebas</string>
     <string name="summary_push_options">Opciones para enviar datos</string>
     <string name="summary_csapi">API REST estándar OGC que sirve los datos de sensores de este dispositivo.</string>
     <string name="summary_sos">API heredada que sirve datos de sensores en XML por HTTP</string>
