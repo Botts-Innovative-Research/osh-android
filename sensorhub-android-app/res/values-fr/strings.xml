@@ -41,26 +41,6 @@
     <string name="enable_csapi_service">Service Systèmes connectés</string>
     <string name="enable_discovery_service">Service de découverte</string>
 
-    <string name="summary_accel">Diffuser en temps réel les données de mouvement de l\'accéléromètre</string>
-    <string name="summary_gyro">Diffuser en temps réel les données de rotation du gyroscope</string>
-    <string name="summary_mag">Diffuser les données de cap et de champ magnétique du magnétomètre</string>
-    <string name="summary_orientation">Diffuser les données d\'orientation et d\'attitude de l\'appareil</string>
-    <string name="summary_gps">Diffuser les données de localisation et de déplacement par GPS</string>
-    <string name="summary_netloc">Diffuser les données de localisation par réseau</string>
-    <string name="summary_video">Diffuser la vidéo en direct depuis la caméra de l\'appareil</string>
-    <string name="summary_video_roll">Joindre les métadonnées de roulis de l\'appareil aux en-têtes d\'images vidéo</string>
-    <string name="summary_audio">Diffuser l\'audio en direct depuis le microphone de l\'appareil</string>
-    <string name="summary_meshtastic">Se connecter à un appareil Meshtastic via Bluetooth au démarrage</string>
-    <string name="summary_wardriving">Diffuser les données de scan des réseaux sans fil à proximité</string>
-    <string name="summary_polar">Se connecter à un capteur de fréquence cardiaque Polar via Bluetooth LE</string>
-    <string name="summary_kestrel">Diffuser les données environnementales d\'une station météo Kestrel</string>
-    <string name="summary_controller">Se connecter à un contrôleur USB compatible au démarrage</string>
-    <string name="summary_trupulse">Diffuser les données de distance et d\'angle depuis un télémètre TruPulse</string>
-    <string name="summary_trupulse_simu">Utiliser des mesures TruPulse simulées pour les tests</string>
-    <string name="summary_angel">Diffuser les données biométriques du capteur Angel</string>
-    <string name="summary_flirone">Diffuser les images thermiques depuis une caméra FLIR One connectée</string>
-    <string name="summary_ste">Se connecter à un STE RadPager via Bluetooth LE au démarrage</string>
-    <string name="summary_template">Activer le pilote de capteur modèle pour le développement et les tests</string>
     <string name="summary_push_options">Options pour l\'envoi de données</string>
     <string name="summary_csapi">API REST standard OGC servant les données de capteur de cet appareil.</string>
     <string name="summary_sos">API héritée servant les données de capteur en XML via HTTP</string>

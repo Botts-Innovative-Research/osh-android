@@ -41,26 +41,6 @@
     <string name="enable_csapi_service">Connected Systems-Dienst</string>
     <string name="enable_discovery_service">Erkennungsdienst</string>
 
-    <string name="summary_accel">Beschleunigungsmesser-Bewegungsdaten in Echtzeit streamen</string>
-    <string name="summary_gyro">Gyroskop-Rotationsdaten in Echtzeit streamen</string>
-    <string name="summary_mag">Magnetometer-Richtungs- und Magnetfelddaten streamen</string>
-    <string name="summary_orientation">Geräteorientierungs- und Lagedaten streamen</string>
-    <string name="summary_gps">GPS-basierte Standort- und Bewegungsdaten streamen</string>
-    <string name="summary_netloc">Netzwerkbasierte Standortdaten streamen</string>
-    <string name="summary_video">Live-Video von der Gerätekamera streamen</string>
-    <string name="summary_video_roll">Geräte-Rollmetadaten an Video-Frame-Header anhängen</string>
-    <string name="summary_audio">Live-Audio vom Gerätemikrofon streamen</string>
-    <string name="summary_meshtastic">Beim Start über Bluetooth mit einem Meshtastic-Gerät verbinden</string>
-    <string name="summary_wardriving">Scan-Daten nahegelegener drahtloser Netzwerke streamen</string>
-    <string name="summary_polar">Über Bluetooth LE mit einem Polar-Herzfrequenzsensor verbinden</string>
-    <string name="summary_kestrel">Umweltdaten von einer Kestrel-Wetterstation streamen</string>
-    <string name="summary_controller">Beim Start mit einem unterstützten USB-Controller verbinden</string>
-    <string name="summary_trupulse">Entfernungs- und Winkeldaten von einem TruPulse-Entfernungsmesser streamen</string>
-    <string name="summary_trupulse_simu">Simulierte TruPulse-Messungen für Tests verwenden</string>
-    <string name="summary_angel">Biometrische Daten vom Angel-Sensor streamen</string>
-    <string name="summary_flirone">Wärmebilder von einer angeschlossenen FLIR One-Kamera streamen</string>
-    <string name="summary_ste">Beim Start über Bluetooth LE mit einem STE RadPager verbinden</string>
-    <string name="summary_template">Vorlagen-Sensortreiber für Entwicklung und Tests aktivieren</string>
     <string name="summary_push_options">Optionen für den Datenversand</string>
     <string name="summary_csapi">OGC-Standard-REST-API, die Sensordaten dieses Geräts bereitstellt.</string>
     <string name="summary_sos">Legacy-API, die Sensordaten als XML über HTTP bereitstellt</string>
