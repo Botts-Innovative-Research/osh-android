@@ -167,7 +167,7 @@ object SensorRuntimeConfiguration {
         sensorsConfig.id = SensorRegistry.ANDROID_MODULE_ID
         sensorsConfig.autoStart = true
         sensorsConfig.lastUpdated = sensorsLastUpdated
-        SensorRegistry.items.forEach { sensor ->
+        SensorRegistry.entries.forEach { sensor ->
             (sensor.runtime as? SensorRuntime.Android)?.configure?.invoke(sensorsConfig, sensor.isEnabled(prefs))
         }
 
@@ -200,7 +200,7 @@ object SensorRuntimeConfiguration {
 
         modules.add(sensorsConfig)
         val build = SensorBuildContext(context, prefs, modules, sensorsConfig, deviceID)
-        SensorRegistry.enabledSensorItems(prefs).forEach { sensor ->
+        SensorRegistry.enabledSensorEntries(prefs).forEach { sensor ->
             val runtime = sensor.runtime as? SensorRuntime.Dedicated ?: return@forEach
             val driver = runtime.create(build, sensor)
             driver.id = runtime.moduleId

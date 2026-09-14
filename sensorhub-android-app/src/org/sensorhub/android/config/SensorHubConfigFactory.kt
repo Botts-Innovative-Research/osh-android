@@ -2,17 +2,21 @@ package org.sensorhub.android.config
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.location.LocationManager
 import android.provider.Settings.Secure
-import android.util.Log
 import com.botts.impl.service.discovery.DiscoveryService
 import com.botts.impl.service.discovery.DiscoveryServiceConfig
+import java.io.File
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.Collections
+import java.util.Date
 import org.sensorhub.android.OkHttpClientWrapper
 import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.data.sensors.SensorRuntimeConfiguration
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.settings.LocalServiceSettings
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.impl.client.sost.SOSTClientConfig
@@ -28,19 +32,7 @@ import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig
 import org.sensorhub.impl.service.sos.SOSService
 import org.sensorhub.impl.service.sos.SOSServiceConfig
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.Date
-import java.util.concurrent.Callable
-import java.util.concurrent.FutureTask
 
-/** Builds the legacy module configuration independently of the activity.
- *
- * Discovery downloads and legacy TLS setup still perform side effects here;
- * callers should build configurations off the main thread.
- */
 class SensorHubConfigFactory(
     context: Context,
     private val serverRepository: ServerProfileRepository,
@@ -49,13 +41,11 @@ class SensorHubConfigFactory(
     private val context = context.applicationContext
     private val log = LoggerFactory.getLogger(SensorHubConfigFactory::class.java)
 
-    fun create(prefs: SharedPreferences, runName: String?): SensorHubConfiguration {
+    fun create(prefs: SharedPreferences, runName: String?, discoveryRulesPath: String? = null): SensorHubConfiguration {
         val config = InMemoryConfigDb(ModuleClassFinder())
 
 
-        val isApiServiceEnabled = prefs.getBoolean("csapi_service", true)
-        val isSosServiceEnabled = prefs.getBoolean("sos_service", true)
-        val isDiscoveryServiceEnabled = prefs.getBoolean("discovery_service", false)
+        val services = LocalServiceSettings.read(prefs)
 
         val serverRepo = serverRepository
         val enabledServers: MutableList<ServerProfileItem> = serverRepo.getEnabled()
@@ -121,13 +111,13 @@ class SensorHubConfigFactory(
             val dbFile = File(context.filesDir.toString() + "/db/")
             dbFile.mkdirs()
             val basicStorageConfig = MVObsSystemDatabaseConfig()
-            basicStorageConfig.moduleClass = "org.sensorhub.impl.persistence.h2.MVObsStorageImpl"
             basicStorageConfig.storagePath = dbFile.absolutePath + "/\${STORAGE_ID}.dat"
             basicStorageConfig.autoStart = true
+            config.add(basicStorageConfig)
         }
 
         //---------- SERVICES ---------------------
-        if (isApiServiceEnabled) {
+        if (services.csApiEnabled) {
             val conSysApiService = ConSysApiServiceConfig()
             conSysApiService.moduleClass = ConSysApiService::class.java.canonicalName
             conSysApiService.id = "CON_SYS_SERVICE"
@@ -139,7 +129,7 @@ class SensorHubConfigFactory(
             config.add(conSysApiService)
         }
 
-        if (isSosServiceEnabled) {
+        if (services.sosEnabled) {
             val sosConfig = SOSServiceConfig()
             sosConfig.moduleClass = SOSService::class.java.canonicalName
             sosConfig.id = "SOS_SERVICE"
@@ -151,49 +141,21 @@ class SensorHubConfigFactory(
             config.add(sosConfig)
         }
 
-        if (isDiscoveryServiceEnabled) {
+        if (services.discoveryEnabled) {
             val discoveryServiceConfig = DiscoveryServiceConfig()
             discoveryServiceConfig.moduleClass = DiscoveryService::class.java.canonicalName
             discoveryServiceConfig.id = "DISCOVERY_SERVICE"
             discoveryServiceConfig.name = "Discovery Service"
             discoveryServiceConfig.autoStart = true
 
-            val outFile = File(context.filesDir, "rules.txt")
-            val rulesLink: String = prefs.getString("rules_link", "")!!
-            val downloadTask = FutureTask<Void?>(Callable {
-                val rulesUrl = URL(rulesLink)
-                val conn = rulesUrl.openConnection() as HttpURLConnection
-                conn.connectTimeout = 15000
-                conn.readTimeout = 15000
-                conn.setInstanceFollowRedirects(true)
-                try {
-                    conn.getInputStream().use { `in` ->
-                        FileOutputStream(outFile).use { out ->
-                            val buffer = ByteArray(1024)
-                            var len: Int
-                            while ((`in`.read(buffer).also { len = it }) > 0) {
-                                out.write(buffer, 0, len)
-                            }
-                        }
-                    }
-                } finally {
-                    conn.disconnect()
-                }
-                null
-            })
-            Thread(downloadTask).start()
-            try {
-                downloadTask.get()
-            } catch (e: java.lang.Exception) {
-                Log.e("OSH - Discovery", "Failed to download rules file", e)
+            discoveryServiceConfig.rulesFilePath = requireNotNull(discoveryRulesPath) {
+                "Discovery rules must be downloaded before starting the hub"
             }
-            discoveryServiceConfig.rulesFilePath = outFile.absolutePath
 
             config.add(discoveryServiceConfig)
         }
 
         return SensorHubConfiguration(config, deviceID, sensorsConfig.enableCamera)
-
     }
 
     private fun addSosTConfig(
@@ -264,10 +226,70 @@ class SensorHubConfigFactory(
         return false
     }
 
+
 }
 
 data class SensorHubConfiguration(
     val modules: IModuleConfigRepository,
     val deviceId: String,
-    val cameraEnabled: Boolean
+    val cameraEnabled: Boolean,
 )
+
+internal class DiscoveryRulesDownloader {
+    fun download(link: String, directory: File): File {
+        val url = URL(link)
+        require(url.protocol.equals("https", ignoreCase = true)) { "Discovery rules URL must use HTTPS" }
+        val connection = url.openConnection() as HttpURLConnection
+        connection.connectTimeout = 15_000
+        connection.readTimeout = 15_000
+        connection.instanceFollowRedirects = false
+        val destination = File(directory, "rules.txt")
+        val temporary = File.createTempFile("rules-", ".download", directory)
+        try {
+            if (connection.responseCode !in 200..299) {
+                throw IOException("Discovery rules download failed: HTTP ${connection.responseCode}")
+            }
+            if (connection.contentLengthLong > MAX_BYTES) throw IOException("Discovery rules file is too large")
+            connection.inputStream.use { input ->
+                temporary.outputStream().use { output ->
+                    val buffer = ByteArray(8192)
+                    var total = 0L
+                    while (true) {
+                        val count = input.read(buffer)
+                        if (count < 0) break
+                        total += count
+                        if (total > MAX_BYTES) throw IOException("Discovery rules file is too large")
+                        output.write(buffer, 0, count)
+                    }
+                }
+            }
+            if (!temporary.renameTo(destination)) throw IOException("Unable to install discovery rules file")
+            return destination
+        } finally {
+            temporary.delete()
+            connection.disconnect()
+        }
+    }
+
+    private companion object { const val MAX_BYTES = 5L * 1024 * 1024 }
+}
+
+internal class PreferenceSnapshot(prefs: SharedPreferences) : SharedPreferences {
+    private val values = prefs.all.mapValues { (_, value) ->
+        if (value is Set<*>) Collections.unmodifiableSet(HashSet(value)) else value
+    }
+
+    override fun getAll(): Map<String, *> = values.toMap()
+    override fun contains(key: String?) = values.containsKey(key)
+    override fun getString(key: String?, defValue: String?): String? = values[key] as String? ?: defValue
+    @Suppress("UNCHECKED_CAST")
+    override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? =
+        (values[key] as Set<String>?)?.toMutableSet() ?: defValues?.toMutableSet()
+    override fun getInt(key: String?, defValue: Int) = values[key] as Int? ?: defValue
+    override fun getLong(key: String?, defValue: Long) = values[key] as Long? ?: defValue
+    override fun getFloat(key: String?, defValue: Float) = values[key] as Float? ?: defValue
+    override fun getBoolean(key: String?, defValue: Boolean) = values[key] as Boolean? ?: defValue
+    override fun edit(): SharedPreferences.Editor = error("Run preferences are read-only")
+    override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) = Unit
+    override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) = Unit
+}

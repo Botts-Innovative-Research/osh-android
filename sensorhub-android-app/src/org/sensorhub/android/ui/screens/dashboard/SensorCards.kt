@@ -2,7 +2,7 @@ package org.sensorhub.android.ui.screens.dashboard
 
 import org.sensorhub.android.R
 import android.content.Context
-import android.content.SharedPreferences
+import org.sensorhub.android.data.sensors.SensorUiEntry
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import net.opengis.swe.v20.*
 import org.sensorhub.android.SensorHubService
 import org.sensorhub.android.ui.components.OSHExpandableCard
-import org.sensorhub.android.ui.screens.sensors.ALL_SENSORS
+import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.ui.theme.Error
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OnSurfaceVariant
@@ -27,10 +27,13 @@ import org.sensorhub.android.ui.theme.SurfaceVariant
 import org.sensorhub.android.ui.theme.Warning
 import org.sensorhub.api.data.IDataProducer
 import org.sensorhub.api.data.IStreamingDataInterface
-import org.sensorhub.impl.sensor.android.*
-import org.sensorhub.impl.sensor.android.audio.AndroidAudioOutput
-import org.sensorhub.impl.sensor.android.video.AndroidCameraOutput
 import java.util.Locale
+import java.util.Date
+import java.text.DateFormat
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 
 enum class ReadingStatus { LIVE, WAITING, STALE, UNAVAILABLE }
 data class MeasurementUi(val label: String, val value: String = "—")
@@ -38,55 +41,22 @@ data class SensorCardUi(
     val id: String,
     val title: String,
     val status: ReadingStatus,
-    val message: String,
-    val measurements: List<MeasurementUi> = emptyList()
+    val measurements: List<MeasurementUi> = emptyList(),
+    val lastReadingTime: Long? = null
 )
 
-internal class SensorCardReader(private val context: Context, private val prefs: SharedPreferences) {
-    private val moduleIds = mapOf(
-        "meshtastic" to "MESHTASTIC_SENSOR",
-        "polar" to "POLAR_HEART_SENSOR",
-        "kestrel" to "KESTREL_WEATHER",
-        "ste" to "STE_RADPAGER_SENSOR",
-        "trupulse" to "TRUPULSE_SENSOR",
-        "controller" to "CONTROLLER",
-        "wardriving" to "WARDRIVING_",
-        "template" to "TEMPLATE_DRIVER_",
-    )
-    private val placeholders = mapOf(
-        "accelerometer" to listOf(context.getString(R.string.ui_x_acceleration), context.getString(R.string.ui_y_acceleration), context.getString(R.string.ui_z_acceleration)),
-        "gyroscope" to listOf(context.getString(R.string.ui_x_angular_velocity), context.getString(R.string.ui_y_angular_velocity), context.getString(R.string.ui_z_angular_velocity)),
-        "magnetometer" to listOf(context.getString(R.string.ui_x_magnetic_field), context.getString(R.string.ui_y_magnetic_field), context.getString(R.string.ui_z_magnetic_field)),
-        "orient_e" to listOf(context.getString(R.string.ui_heading_angle), context.getString(R.string.ui_pitch_angle), context.getString(R.string.ui_roll_angle)),
-        "orient_q" to listOf(context.getString(R.string.ui_quaternion_x), context.getString(R.string.ui_quaternion_y), context.getString(R.string.ui_quaternion_z), context.getString(R.string.ui_quaternion_w)),
-        "gps" to listOf(context.getString(R.string.ui_latitude), context.getString(R.string.ui_longitude), context.getString(R.string.ui_altitude)),
-        "network" to listOf(context.getString(R.string.ui_latitude), context.getString(R.string.ui_longitude), context.getString(R.string.ui_altitude)),
-        "video_roll" to listOf(context.getString(R.string.ui_roll_angle)),
-        "audio" to listOf(context.getString(R.string.title_sample_rate), context.getString(R.string.ui_num_samples), context.getString(R.string.ui_samples))
-    )
-
-    fun read(service: SensorHubService?): List<SensorCardUi> {
+internal class SensorCardReader(private val context: Context) {
+    fun read(service: SensorHubService?, sensors: List<SensorUiEntry>, includeMeasurements: Boolean = true): List<SensorCardUi> {
         val modules = service?.sensorHub?.moduleRegistry?.loadedModules?.toList().orEmpty()
         val running = service?.hubState == SensorHubService.HubState.RUNNING
-        return ALL_SENSORS.filter { prefs.getBoolean(it.prefKey, false) }.map { sensor ->
+        return sensors.map { sensor ->
             val title = context.getString(sensor.nameRes)
-            val empty = placeholders[sensor.id].orEmpty().map { MeasurementUi(it) }
             try {
-                val module = modules.firstOrNull { it.localID == (moduleIds[sensor.id] ?: "ANDROID_SENSORS") }
+                val module = modules.firstOrNull {
+                    it.localID == sensor.runtimeModuleId
+                }
                 val outputs = (module as? IDataProducer)?.outputs?.values?.toList().orEmpty().filter { output ->
-                    when (sensor.id) {
-                        "accelerometer" -> output is AndroidAcceleroOutput
-                        "gyroscope" -> output is AndroidGyroOutput
-                        "magnetometer" -> output is AndroidMagnetoOutput
-                        "orient_e" -> output is AndroidOrientationEulerOutput
-                        "orient_q" -> output is AndroidOrientationQuatOutput
-                        "gps" -> output is AndroidLocationOutput && output.name == "gps_data"
-                        "network" -> output is AndroidLocationOutput && output.name == "network_data"
-                        "camera" -> output is AndroidCameraOutput || output is AndroidCamera2Output
-                        "video_roll" -> (output is AndroidCameraOutput || output is AndroidCamera2Output) && output.recordDescription.getComponent("videoRoll") != null
-                        "audio" -> output is AndroidAudioOutput
-                        else -> moduleIds.containsKey(sensor.id)
-                    }
+                    sensor.runtime.matchesOutput(output)
                 }
                 val status = when {
                     !running -> ReadingStatus.UNAVAILABLE
@@ -99,23 +69,19 @@ internal class SensorCardReader(private val context: Context, private val prefs:
                     } -> ReadingStatus.STALE
                     else -> ReadingStatus.LIVE
                 }
-                val message = when (status) {
-                    ReadingStatus.UNAVAILABLE -> if (sensor.id == "video_roll") context.getString(R.string.ui_camera_with_roll_output_is_required) else context.getString(R.string.ui_sensor_or_driver_not_available)
-                    ReadingStatus.WAITING -> context.getString(R.string.ui_waiting_for_data)
-                    ReadingStatus.STALE -> context.getString(R.string.ui_no_recent_data_showing_last_reading)
-                    ReadingStatus.LIVE -> context.getString(R.string.ui_receiving_data)
+                val rows = if (!running || !includeMeasurements) emptyList() else outputs.flatMap { output ->
+                    measurements(output, outputs.size > 1)
                 }
-                val rows = if (!running) empty else outputs.flatMap { output ->
-                    measurements(output, sensor.id, outputs.size > 1)
-                }.ifEmpty { empty }
-                SensorCardUi(sensor.id, title, status, message, rows)
+                SensorCardUi(sensor.id, title, status, rows,
+                    outputs.filter { it.latestRecord != null }.map { it.latestRecordTime }
+                        .filter { it > 0 }.maxOrNull())
             } catch (_: Exception) {
-                SensorCardUi(sensor.id, title, ReadingStatus.UNAVAILABLE, context.getString(R.string.ui_unable_to_read_sensor_output), empty)
+                SensorCardUi(sensor.id, title, ReadingStatus.UNAVAILABLE)
             }
         }
     }
 
-    private fun measurements(output: IStreamingDataInterface, sensorId: String, includeOutput: Boolean): List<MeasurementUi> {
+    private fun measurements(output: IStreamingDataInterface, includeOutput: Boolean): List<MeasurementUi> {
         // Never attach data to the driver's shared schema. Arrays stay collapsed.
         val schema = output.recordDescription.copy()
         output.latestRecord?.let { schema.data = it }
@@ -124,14 +90,13 @@ internal class SensorCardReader(private val context: Context, private val prefs:
             if (component is Time) return
             val label = component.label?.takeIf { it.isNotBlank() } ?: component.name.orEmpty().replace('_', ' ')
             if (component is DataArray) {
-                if (sensorId != "video_roll") rows += MeasurementUi(label, if (output.latestRecord != null) context.getString(R.string.ui_available) else "—")
+                rows += MeasurementUi(label, if (output.latestRecord != null) context.getString(R.string.ui_available) else "—")
                 return
             }
             if (component.componentCount > 0) {
                 for (i in 0 until component.componentCount) visit(component.getComponent(i), prefix)
                 return
             }
-            if (sensorId == "video_roll" && !component.name.orEmpty().contains("roll", true)) return
             val unit = (component as? Quantity)?.uom?.code.orEmpty()
             val value = if (!component.hasData()) "—" else when (component) {
                 is Quantity -> format(component.data.doubleValue, if (component.name in listOf("lat", "lon")) 6 else 3) + if (unit.isBlank() or unit.equals("1")) "" else " $unit"
@@ -169,6 +134,16 @@ internal fun SensorOutputCard(
         status = status,
         expanded = expanded,
         onExpandChange = onExpandChange,
+        collapsedContent = {
+            Text(
+                sensor.lastReadingTime?.let {
+                    stringResource(R.string.dashboard_last_reading,
+                        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(Date(it)))
+                } ?: stringResource(R.string.dashboard_no_reading_yet),
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceVariant
+            )
+        },
         expandedContent = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 sensor.measurements.forEach { row ->
@@ -198,7 +173,6 @@ private fun SensorCardsPreview() {
                     "orient_e",
                     "Euler Orientation",
                     ReadingStatus.LIVE,
-                    "Receiving data",
                     listOf(
                     MeasurementUi(
                         "Heading angle",

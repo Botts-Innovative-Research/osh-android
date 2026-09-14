@@ -19,7 +19,7 @@ class SensorsViewModel(application: Application) : AndroidViewModel(application)
     val stringStates: Map<String, String> = _stringStates
 
     init {
-        SensorRegistry.items.forEach { sensor ->
+        SensorRegistry.entries.forEach { sensor ->
             _toggleStates[sensor.prefKey] = sensor.isEnabled(prefs)
         }
 

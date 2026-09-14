@@ -1,5 +1,7 @@
 package org.sensorhub.android.ui.screens.settings
 
+import org.sensorhub.android.data.settings.LocalServiceSettings
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height

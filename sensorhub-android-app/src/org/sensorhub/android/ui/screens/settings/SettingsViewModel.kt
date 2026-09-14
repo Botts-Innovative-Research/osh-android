@@ -1,5 +1,6 @@
 package org.sensorhub.android.ui.screens.settings
 
+import org.sensorhub.android.data.settings.LocalServiceSettings
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.preference.PreferenceManager
@@ -9,35 +10,26 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
-    private val _state = MutableStateFlow(ServersState())
-    val state: StateFlow<ServersState> = _state.asStateFlow()
-
-    init {
-        _state.value = ServersState(
-            sosEnabled = prefs.getBoolean("sos_service", false),
-            csApiEnabled = prefs.getBoolean("csapi_service", false),
-            discoveryEnabled = prefs.getBoolean("discovery_service", false),
-            rulesLink = prefs.getString("rules_link", "") ?: ""
-        )
-    }
+    private val _state = MutableStateFlow(LocalServiceSettings.read(prefs))
+    val state: StateFlow<LocalServiceSettings> = _state.asStateFlow()
 
     fun setSosEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("sos_service", enabled).apply()
+        prefs.edit().putBoolean(LocalServiceSettings.SOS_ENABLED, enabled).apply()
         _state.value = _state.value.copy(sosEnabled = enabled)
     }
 
     fun setCsApiEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("csapi_service", enabled).apply()
+        prefs.edit().putBoolean(LocalServiceSettings.CS_API_ENABLED, enabled).apply()
         _state.value = _state.value.copy(csApiEnabled = enabled)
     }
 
     fun setDiscoveryEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("discovery_service", enabled).apply()
+        prefs.edit().putBoolean(LocalServiceSettings.DISCOVERY_ENABLED, enabled).apply()
         _state.value = _state.value.copy(discoveryEnabled = enabled)
     }
 
     fun setDiscoveryRulesLink(value: String) {
-        prefs.edit().putString("rules_link", value).apply()
+        prefs.edit().putString(LocalServiceSettings.RULES_LINK, value).apply()
         _state.value = _state.value.copy(rulesLink = value)
     }
 }

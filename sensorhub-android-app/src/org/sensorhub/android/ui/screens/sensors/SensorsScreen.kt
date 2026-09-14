@@ -149,7 +149,7 @@ fun SensorsScreen(
             )
         },
     ) { padding ->
-        val resolvedItems = SensorRegistry.items.map {
+        val resolvedItems = SensorRegistry.entries.map {
             SensorItem(it, enabled = viewModel.toggleStates[it.prefKey] ?: false)
         }
         val filteredItems = if (selectedCategories.isEmpty()) resolvedItems
