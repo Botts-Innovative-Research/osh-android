@@ -64,8 +64,8 @@ fun OSHExpandableCard(
         onClick = { toggleExpanded() },
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
+            .padding(horizontal = 4.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SecondaryContainer,
             contentColor = TextPrimary

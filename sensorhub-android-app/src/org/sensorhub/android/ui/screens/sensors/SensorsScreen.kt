@@ -33,6 +33,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +54,7 @@ import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.api.module.ModuleEvent
 
 
 @Composable
@@ -266,7 +268,6 @@ private fun SensorListItem(
             OSHSensorCard {
                 OSHSwitchRow(
                     title = stringResource(sensor.nameRes),
-                    subtitle = stringResource(sensor.summaryRes),
                     checked = sensor.enabled,
                     onCheckedChange = onToggle,
                 )
@@ -283,7 +284,6 @@ private fun ConfigurableSensorCard(
 ) {
     OSHExpandableSwitchCard(
         title = stringResource(sensor.nameRes),
-        subtitle = stringResource(sensor.summaryRes),
         checked = sensor.enabled,
         onCheckedChange = onToggle,
         configHint = stringResource(R.string.hint_tap_to_configure),

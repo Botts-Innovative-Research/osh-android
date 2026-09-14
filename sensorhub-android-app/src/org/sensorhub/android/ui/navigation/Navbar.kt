@@ -35,11 +35,11 @@ fun Navbar(
             icon = Icons.Default.Home,
             route = Screen.Dashboard.route
         ),
-        NavigationItem(
-            title = "Map",
-            icon = Icons.Default.Map,
-            route = Screen.Map.route
-        ),
+//        NavigationItem(
+//            title = "Map",
+//            icon = Icons.Default.Map,
+//            route = Screen.Map.route
+//        ),
         NavigationItem(
             title = "Sensors",
             icon = Icons.Default.Sensors,
