@@ -130,6 +130,10 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun validate(requireName: Boolean = true): Boolean {
         nameError = if (requireName && state.serverName.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_server_name) else null
         endpointUrlError = serverUrlError(state.endpointUrl)?.let { getApplication<Application>().getString(it) }
+        if (endpointUrlError == null && state.enableOAuth &&
+            state.endpointUrl.trim().startsWith("http://", ignoreCase = true)) {
+            endpointUrlError = getApplication<Application>().getString(R.string.ui_https_required_for_authenticated_connections)
+        }
         tokenEndpointError = if (state.enableOAuth) serverUrlError(state.tokenEndpoint)?.let { getApplication<Application>().getString(it) } else null
         clientIdError = if (state.enableOAuth && state.clientId.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_client_id) else null
         clientSecretError = if (state.enableOAuth && state.clientSecret.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_client_secret) else null

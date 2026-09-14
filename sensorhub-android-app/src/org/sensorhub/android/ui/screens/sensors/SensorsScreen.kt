@@ -1,6 +1,6 @@
 package org.sensorhub.android.ui.screens.sensors
 
-import org.sensorhub.android.ui.HubViewModel
+import org.sensorhub.android.ui.SensorHubViewModel
 
 import android.Manifest
 import android.os.Build
@@ -72,7 +72,7 @@ import org.sensorhub.api.module.ModuleEvent
 fun SensorsScreen(
     onNavigateToPreferences : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
-    hubViewModel: HubViewModel = viewModel(),
+    hubViewModel: SensorHubViewModel = viewModel(),
 ) {
     var selectedMode by rememberSaveable { mutableStateOf(0) }
     val liveState by hubViewModel.state.collectAsStateWithLifecycle()
