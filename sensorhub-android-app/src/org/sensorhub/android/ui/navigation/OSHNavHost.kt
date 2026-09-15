@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
+import org.sensorhub.android.ui.screens.client.ClientScreen
 import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
 import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
@@ -49,6 +50,12 @@ fun OSHNavHost(
             SensorsScreen(
                 hubViewModel = hubViewModel,
                 onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
+            )
+        }
+
+        composable(Screen.Client.route) {
+            ClientScreen(
+                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
             )
         }
         composable(Screen.Settings.route) {

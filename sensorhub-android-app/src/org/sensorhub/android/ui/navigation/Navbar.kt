@@ -2,6 +2,7 @@ package org.sensorhub.android.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Sensors
@@ -35,15 +36,20 @@ fun Navbar(
             icon = Icons.Default.Home,
             route = Screen.Dashboard.route
         ),
-//        NavigationItem(
-//            title = "Map",
-//            icon = Icons.Default.Map,
-//            route = Screen.Map.route
-//        ),
+        NavigationItem(
+            title = "Map",
+            icon = Icons.Default.Map,
+            route = Screen.Map.route
+        ),
         NavigationItem(
             title = "Sensors",
             icon = Icons.Default.Sensors,
             route = Screen.Sensors.route
+        ),
+        NavigationItem(
+            title = "Client",
+            icon = Icons.Default.GridView,
+            route = Screen.Client.route
         ),
         NavigationItem(
             title = "Settings",
