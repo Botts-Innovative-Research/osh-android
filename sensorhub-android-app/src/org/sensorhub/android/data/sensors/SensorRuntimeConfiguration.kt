@@ -25,19 +25,21 @@ import java.util.Date
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.api.data.IStreamingDataInterface
+import org.sensorhub.impl.driver.flir.FlirOneCameraConfig
+import org.sensorhub.impl.sensor.angel.AngelSensorConfig
 
-sealed class SensorRuntime(val moduleId: String) {
+sealed class SensorBinding(val moduleId: String) {
     class Android(
         val configure: (AndroidSensorsConfig, Boolean) -> Unit,
         val isEnabled: (AndroidSensorsConfig) -> Boolean,
         override val matchesOutput: (IStreamingDataInterface) -> Boolean,
-    ) : SensorRuntime(SensorRegistry.ANDROID_MODULE_ID)
+    ) : SensorBinding(SensorRegistry.ANDROID_MODULE_ID)
 
     class Dedicated(
         moduleId: String,
         val moduleName: String,
         val create: (SensorBuildContext, SensorUiEntry) -> SensorConfig,
-    ) : SensorRuntime(moduleId) {
+    ) : SensorBinding(moduleId) {
         override val matchesOutput: (IStreamingDataInterface) -> Boolean = { true }
     }
 
@@ -95,10 +97,25 @@ internal object SensorDriverConfigs {
 
     fun ste(build: SensorBuildContext, sensor: SensorUiEntry): SensorConfig {
         val steRadPagerConfig = STERadPagerConfig()
+        steRadPagerConfig.autoStart = true
 
         return steRadPagerConfig
     }
 
+    fun angel(build: SensorBuildContext, sensor: SensorUiEntry): SensorConfig {
+        val bleConf = BleConfig()
+        bleConf.id = "BLE"
+        bleConf.moduleClass = BleNetwork::class.java.canonicalName
+        bleConf.androidContext = build.context
+        bleConf.autoStart = true
+        build.modules.add(bleConf)
+
+        val angelConfig = AngelSensorConfig()
+        angelConfig.networkID = bleConf.id
+        angelConfig.btAddress = sensor.bluetoothAddress(build.prefs)
+
+        return angelConfig
+    }
     fun meshtastic(build: SensorBuildContext, sensor: SensorUiEntry): SensorConfig {
         val meshtasticConfig = MeshtasticConfig()
         meshtasticConfig.device_name = sensor.bluetoothAddress(build.prefs)
@@ -137,6 +154,13 @@ internal object SensorDriverConfigs {
         return controllerConfig
     }
 
+    fun flir(build: SensorBuildContext, sensor: SensorUiEntry): SensorConfig {
+        val flirOneCameraConfig = FlirOneCameraConfig()
+        flirOneCameraConfig.autoStart = true
+        flirOneCameraConfig.androidContext = build.context
+
+        return flirOneCameraConfig
+    }
     fun wardriving(build: SensorBuildContext, sensor: SensorUiEntry): SensorConfig {
         val wardrivingConfig = WardrivingConfig()
         wardrivingConfig.uid_extension = build.prefs.getString("uid_extension", "")
@@ -168,7 +192,7 @@ object SensorRuntimeConfiguration {
         sensorsConfig.autoStart = true
         sensorsConfig.lastUpdated = sensorsLastUpdated
         SensorRegistry.entries.forEach { sensor ->
-            (sensor.runtime as? SensorRuntime.Android)?.configure?.invoke(sensorsConfig, sensor.isEnabled(prefs))
+            (sensor.runtime as? SensorBinding.Android)?.configure?.invoke(sensorsConfig, sensor.isEnabled(prefs))
         }
 
         sensorsConfig.selectedCameraId = SensorSettings.camera.read(prefs).toInt()
@@ -201,10 +225,10 @@ object SensorRuntimeConfiguration {
         modules.add(sensorsConfig)
         val build = SensorBuildContext(context, prefs, modules, sensorsConfig, deviceID)
         SensorRegistry.enabledSensorEntries(prefs).forEach { sensor ->
-            val runtime = sensor.runtime as? SensorRuntime.Dedicated ?: return@forEach
-            val driver = runtime.create(build, sensor)
-            driver.id = runtime.moduleId
-            driver.name = "${runtime.moduleName} [$deviceName]"
+            val binding = sensor.runtime as? SensorBinding.Dedicated ?: return@forEach
+            val driver = binding.create(build, sensor)
+            driver.id = binding.moduleId
+            driver.name = "${binding.moduleName} [$deviceName]"
             driver.autoStart = true
             driver.lastUpdated = sensorsLastUpdated
             modules.add(driver)

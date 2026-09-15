@@ -34,7 +34,7 @@ data class SensorUiEntry(
     val prefKey: String,
     @StringRes val nameRes: Int,
     val category: SensorCategory,
-    val runtime: SensorRuntime,
+    val runtime: SensorBinding,
     val permissions: Set<SensorPermission> = emptySet(),
     val config: SensorUIOption? = null,
 ) {
@@ -75,7 +75,7 @@ object SensorRegistry {
             "accel_enabled",
             R.string.sensor_accelerometer,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateAccelerometer = enabled },
                 isEnabled = { it.activateAccelerometer },
                 matchesOutput = { it is AndroidAcceleroOutput },
@@ -86,7 +86,7 @@ object SensorRegistry {
             "gyro_enabled",
             R.string.sensor_gyroscope,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateGyrometer = enabled },
                 isEnabled = { it.activateGyrometer },
                 matchesOutput = { it is AndroidGyroOutput },
@@ -97,7 +97,7 @@ object SensorRegistry {
             "mag_enabled",
             R.string.sensor_magnetometer,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateMagnetometer = enabled },
                 isEnabled = { it.activateMagnetometer },
                 matchesOutput = { it is AndroidMagnetoOutput },
@@ -108,7 +108,7 @@ object SensorRegistry {
             "orient_quat_enabled",
             R.string.sensor_orientation_quat,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateOrientationQuat = enabled },
                 isEnabled = { it.activateOrientationQuat },
                 matchesOutput = { it is AndroidOrientationQuatOutput },
@@ -119,7 +119,7 @@ object SensorRegistry {
             "orient_euler_enabled",
             R.string.sensor_orientation_euler,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateOrientationEuler = enabled },
                 isEnabled = { it.activateOrientationEuler },
                 matchesOutput = { it is AndroidOrientationEulerOutput },
@@ -130,7 +130,7 @@ object SensorRegistry {
             "gps_enabled",
             R.string.sensor_gps,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateGpsLocation = enabled },
                 isEnabled = { it.activateGpsLocation },
                 matchesOutput = { it is AndroidLocationOutput && it.name == "gps_data" },
@@ -142,7 +142,7 @@ object SensorRegistry {
             "netloc_enabled",
             R.string.sensor_network_location,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateNetworkLocation = enabled },
                 isEnabled = { it.activateNetworkLocation },
                 matchesOutput = { it is AndroidLocationOutput && it.name == "network_data" },
@@ -154,7 +154,7 @@ object SensorRegistry {
             "cam_enabled",
             R.string.sensor_video,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.enableCamera = enabled },
                 isEnabled = { it.enableCamera },
                 matchesOutput = { it is AndroidCameraOutput || it is AndroidCamera2Output },
@@ -167,7 +167,7 @@ object SensorRegistry {
             "audio_enabled",
             R.string.sensor_audio,
             SensorCategory.ON_DEVICE,
-            runtime = SensorRuntime.Android(
+            runtime = SensorBinding.Android(
                 configure = { config, enabled -> config.activateMicAudio = enabled },
                 isEnabled = { it.activateMicAudio },
                 matchesOutput = { it is AndroidAudioOutput },
@@ -182,19 +182,16 @@ object SensorRegistry {
             "meshtastic_enabled",
             R.string.sensor_meshtastic,
             SensorCategory.BLUETOOTH,
-            runtime = SensorRuntime.Dedicated("MESHTASTIC_SENSOR", "Meshtastic", SensorDriverConfigs::meshtastic),
+            runtime = SensorBinding.Dedicated("MESHTASTIC_SENSOR", "Meshtastic", SensorDriverConfigs::meshtastic),
             permissions = setOf(SensorPermission.BLUETOOTH),
-            config = SensorUIOption.BluetoothDevice(
-                R.string.title_select_meshtastic,
-                "meshtastic_device_address"
-            )
+            config = SensorUIOption.BluetoothDevice(R.string.title_select_meshtastic, "meshtastic_device_address")
         ),
         SensorUiEntry(
             "polar",
             "polar_enabled",
             R.string.sensor_polar,
             SensorCategory.BLUETOOTH,
-            runtime = SensorRuntime.Dedicated("POLAR_HEART_SENSOR", "Polar Heart", SensorDriverConfigs::polar),
+            runtime = SensorBinding.Dedicated("POLAR_HEART_SENSOR", "Polar Heart", SensorDriverConfigs::polar),
             permissions = setOf(SensorPermission.BLUETOOTH),
             config = SensorUIOption.BluetoothDevice(R.string.title_select_polar, "polar_device_address")
         ),
@@ -203,19 +200,16 @@ object SensorRegistry {
             "kestrel_enabled",
             R.string.sensor_kestrel,
             SensorCategory.BLUETOOTH,
-            runtime = SensorRuntime.Dedicated("KESTREL_WEATHER", "Kestrel Weather", SensorDriverConfigs::kestrel),
+            runtime = SensorBinding.Dedicated("KESTREL_WEATHER", "Kestrel Weather", SensorDriverConfigs::kestrel),
             permissions = setOf(SensorPermission.BLUETOOTH),
-            config = SensorUIOption.BluetoothDevice(
-                R.string.title_select_kestrel,
-                "kestrel_device_address"
-            )
+            config = SensorUIOption.BluetoothDevice(R.string.title_select_kestrel, "kestrel_device_address")
         ),
         SensorUiEntry(
             "ste",
             "ste_radpager_enabled",
             R.string.sensor_ste,
             SensorCategory.BLUETOOTH,
-            runtime = SensorRuntime.Dedicated("STE_RADPAGER_SENSOR", "STE Rad Pager", SensorDriverConfigs::ste),
+            runtime = SensorBinding.Dedicated("STE_RADPAGER_SENSOR", "STE Rad Pager", SensorDriverConfigs::ste),
             permissions = setOf(SensorPermission.BLUETOOTH),
             config = SensorUIOption.BluetoothDevice(R.string.title_select_device, "ste_device_address")
         ),
@@ -224,9 +218,19 @@ object SensorRegistry {
             "trupulse_enabled",
             R.string.sensor_trupulse,
             SensorCategory.BLUETOOTH,
-            runtime = SensorRuntime.Dedicated("TRUPULSE_SENSOR", "TruPulse Range Finder", SensorDriverConfigs::trupulse),
+            runtime = SensorBinding.Dedicated("TRUPULSE_SENSOR", "TruPulse Range Finder", SensorDriverConfigs::trupulse),
             permissions = setOf(SensorPermission.BLUETOOTH),
             config = SensorUIOption.TruPulse
+        ),
+
+        SensorUiEntry(
+            "angel",
+            "angel_enabled",
+            R.string.sensor_angel,
+            SensorCategory.BLUETOOTH,
+            runtime = SensorBinding.Dedicated("ANGEL_SENSOR", "Angel Wearable", SensorDriverConfigs::angel),
+            permissions = setOf(SensorPermission.BLUETOOTH),
+            config = SensorUIOption.BluetoothDevice(R.string.title_select_kestrel, "angel_device_address")
         ),
 
         // USB sensors
@@ -235,7 +239,14 @@ object SensorRegistry {
             "controller_enabled",
             R.string.sensor_controller,
             SensorCategory.USB,
-            runtime = SensorRuntime.Dedicated("CONTROLLER", "Controller", SensorDriverConfigs::controller)
+            runtime = SensorBinding.Dedicated("CONTROLLER", "Controller", SensorDriverConfigs::controller)
+        ),
+        SensorUiEntry(
+            "flirone",
+            "flirone_enabled",
+            R.string.sensor_flirone,
+            SensorCategory.USB,
+            runtime = SensorBinding.Dedicated("FLIRONE_SENSOR", "FLIR One Camera", SensorDriverConfigs::flir)
         ),
 
         // Others
@@ -244,7 +255,7 @@ object SensorRegistry {
             "wardriving_enabled",
             R.string.sensor_wardriving,
             SensorCategory.OTHERS,
-            runtime = SensorRuntime.Dedicated("WARDRIVING_", "Wardriving", SensorDriverConfigs::wardriving),
+            runtime = SensorBinding.Dedicated("WARDRIVING_", "Wardriving", SensorDriverConfigs::wardriving),
             permissions = setOf(SensorPermission.FINE_LOCATION, SensorPermission.NEARBY_WIFI)
         ),
         SensorUiEntry(
@@ -252,13 +263,10 @@ object SensorRegistry {
             "template_enabled",
             R.string.sensor_template,
             SensorCategory.OTHERS,
-            runtime = SensorRuntime.Dedicated("TEMPLATE_DRIVER_", "Template", SensorDriverConfigs::template),
+            runtime = SensorBinding.Dedicated("TEMPLATE_DRIVER_", "Template", SensorDriverConfigs::template),
             permissions = setOf(SensorPermission.BLUETOOTH),
-            config = SensorUIOption.BluetoothDevice(
-                R.string.title_select_device,
-                "template_device_address"
-            )
-        ),
+            config = SensorUIOption.BluetoothDevice(R.string.title_select_device, "template_device_address")
+        )
     )
 
 

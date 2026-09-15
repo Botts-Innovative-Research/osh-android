@@ -14,7 +14,7 @@ import androidx.lifecycle.viewModelScope
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import org.sensorhub.android.data.sensors.SensorRuntime
+import org.sensorhub.android.data.sensors.SensorBinding
 import org.sensorhub.impl.sensor.android.AndroidSensorsConfig
 import org.sensorhub.impl.sensor.controller.ControllerDriver
 
@@ -64,9 +64,9 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
                 activeSensors = SensorRegistry.entries.filter { sensor ->
                     val module = modules.firstOrNull { it.localID == sensor.runtimeModuleId }
                     when (val runtime = sensor.runtime) {
-                        is SensorRuntime.Android -> (module?.configuration as? AndroidSensorsConfig)
+                        is SensorBinding.Android -> (module?.configuration as? AndroidSensorsConfig)
                             ?.let(runtime.isEnabled) ?: false
-                        is SensorRuntime.Dedicated -> module != null
+                        is SensorBinding.Dedicated -> module != null
                     }
                 }
             }
