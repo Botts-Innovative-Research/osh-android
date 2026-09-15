@@ -1,6 +1,5 @@
 package org.sensorhub.impl.sensor.ste;
 
-import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -18,7 +17,6 @@ import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import androidx.core.app.ActivityCompat;
 import android.widget.Toast;
 
 import net.opengis.sensorml.v20.PhysicalComponent;
@@ -111,24 +109,22 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
 
     @Override
     public void doStart() throws SensorException {
-        Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
-        BluetoothDevice device = null;
-        for (BluetoothDevice d : devices) {
-            if (d.getName().equals(DEVICE_NAME)) {
-                device = d;
+        try {
+            Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
+            BluetoothDevice device = null;
+            for (BluetoothDevice d : devices) {
+                if (DEVICE_NAME.equals(d.getName())) {
+                    device = d;
+                }
             }
+            if (null == device) {
+                throw new SensorException("Could not find Bluetooth device, unable to start.");
+            }
+    
+            btGatt = device.connectGatt(context, true, gattCallback);
+        } catch (SecurityException e) {
+            throw new SensorException("Bluetooth permission is required to start the radiation pager.", e);
         }
-        if (null == device) {
-            throw new SensorException("Could not find Bluetooth device, unable to start.");
-        }
-
-        if (context.checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
-            // request permission
-            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH}, 1);
-        }
-
-        btGatt = device.connectGatt(context, true, gattCallback);
-
 
         eventThread = new HandlerThread("STERadPagerEventThread");
         eventThread.start();
@@ -140,9 +136,22 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
 
     @Override
     public void doStop() {
-        txNotificationTimer.cancel();
-        btGatt.disconnect();
-        btGatt.close();
+        if (txNotificationTimer != null) txNotificationTimer.cancel();
+        btConnected = false;
+        if (btGatt != null) {
+            try {
+                btGatt.disconnect();
+            } catch (SecurityException e) {
+                logger.warn("Bluetooth permission revoked while disconnecting radiation pager", e);
+            }
+            try {
+                btGatt.close();
+            } catch (SecurityException e) {
+                logger.warn("Bluetooth permission revoked while closing radiation pager", e);
+            }
+            btGatt = null;
+        }
+        if (eventThread != null) eventThread.quitSafely();
     }
 
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -150,9 +159,14 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 btConnected = true;
-                boolean discoveryStarted = gatt.discoverServices();
+                try {
+                    gatt.discoverServices();
+                } catch (SecurityException e) {
+                    handleBluetoothPermissionLoss(e);
+                }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                txNotificationTimer.cancel();
+                btConnected = false;
+                if (txNotificationTimer != null) txNotificationTimer.cancel();
             }
         }
 
@@ -174,21 +188,31 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
             txCharacteristic = uartService.getCharacteristic(TX_CHARACTERISTIC);
 
 
-            gatt.setCharacteristicNotification(modelNumberCharacteristic, true);
-
-            gatt.setCharacteristicNotification(rxCharacteristic, true);
-            BluetoothGattDescriptor rxDescriptor = rxCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-            rxDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            gatt.writeDescriptor(rxDescriptor);
-
-            gatt.setCharacteristicNotification(txCharacteristic, true);
+            try {
+                gatt.setCharacteristicNotification(modelNumberCharacteristic, true);
+    
+                gatt.setCharacteristicNotification(rxCharacteristic, true);
+                BluetoothGattDescriptor rxDescriptor = rxCharacteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+                rxDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                gatt.writeDescriptor(rxDescriptor);
+    
+                gatt.setCharacteristicNotification(txCharacteristic, true);
+            } catch (SecurityException e) {
+                handleBluetoothPermissionLoss(e);
+                return;
+            }
 
             txNotificationTimer = new Timer();
             TimerTask txNotificationTask = new TimerTask() {
                 @Override
                 public void run() {
                     txCharacteristic.setValue("?");
-                    btGatt.writeCharacteristic(txCharacteristic);
+                    try {
+                        gatt.writeCharacteristic(txCharacteristic);
+                    } catch (SecurityException e) {
+                        cancel();
+                        handleBluetoothPermissionLoss(e);
+                    }
                 }
             };
             txNotificationTimer.schedule(txNotificationTask, 0, 1000);
@@ -214,6 +238,12 @@ public class STERadPager extends AbstractSensorModule<STERadPagerConfig> {
             }
         }
     };
+
+    private void handleBluetoothPermissionLoss(SecurityException error) {
+        btConnected = false;
+        if (txNotificationTimer != null) txNotificationTimer.cancel();
+        reportError("Bluetooth permission was revoked. Grant permission and restart the radiation pager.", error);
+    }
 
     protected void useLocationProvider(IStreamingDataInterface output, LocationProvider locProvider) {
         addOutput(output, false);
