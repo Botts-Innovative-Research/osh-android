@@ -3,7 +3,7 @@ package org.sensorhub.android.ui.screens.maps
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -30,7 +30,7 @@ import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
 fun MapScreen(
-    onNavigateToPreferences : () -> Unit,
+    onNavigateToSettings : () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -79,10 +79,10 @@ fun MapScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_map),
                 actions = {
-                    IconButton(onClick = onNavigateToPreferences) {
+                    IconButton(onClick = onNavigateToSettings) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.app_preferences)
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.action_settings)
                         )
                     }
                 },

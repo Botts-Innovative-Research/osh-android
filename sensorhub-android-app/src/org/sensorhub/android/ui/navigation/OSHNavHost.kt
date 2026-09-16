@@ -38,28 +38,32 @@ fun OSHNavHost(
         composable(Screen.Dashboard.route) {
             DashboardRoute(
                 viewModel = hubViewModel,
-                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
             )
         }
         composable(Screen.Map.route) {
             MapScreen(
-                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
             )
         }
         composable(Screen.Sensors.route) {
             SensorsScreen(
                 hubViewModel = hubViewModel,
-                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
             )
         }
 
         composable(Screen.Client.route) {
             ClientScreen(
-                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
             )
         }
         composable(Screen.Settings.route) {
+            val context = LocalContext.current
             SettingsScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
+                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) },
                 onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
                 onNavigateToProfiles = { navController.navigate(Screen.ServerProfiles.route) }
             )
@@ -80,12 +84,7 @@ fun OSHNavHost(
         }
 
         composable(Screen.AppPreferences.route) {
-            val context = LocalContext.current
-            AppPreferencesScreen(
-                onBackClick = { navController.popBackStack() },
-                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
-                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) }
-            )
+            AppPreferencesScreen(onBackClick = { navController.popBackStack() })
         }
         composable(Screen.ServerProfiles.route) {
             ServerProfilesScreen(
