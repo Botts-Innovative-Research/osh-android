@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,7 +68,7 @@ import org.sensorhub.android.ui.theme.Success
 import org.sensorhub.api.module.ModuleEvent.ModuleState
 
 @Composable
-fun DashboardRoute(onNavigateToPreferences: () -> Unit, viewModel: SensorHubViewModel) {
+fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewModel) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val state by produceState(viewModel.state.value, viewModel, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -91,7 +91,7 @@ fun DashboardRoute(onNavigateToPreferences: () -> Unit, viewModel: SensorHubView
     }
     DashboardScreen(
         state = state,
-        onNavigateToPreferences = onNavigateToPreferences,
+        onNavigateToSettings = onNavigateToSettings,
         onRunNameChange = viewModel::setRunName,
         onStart = { if (permissionsGranted()) viewModel.startHub() else launcher.launch(permissions) },
         onStop = viewModel::stopHub,
@@ -107,7 +107,7 @@ private fun permissionsForEnabledSensors(context: android.content.Context): Arra
 @Composable
 fun DashboardScreen(
     state: HubUiState,
-    onNavigateToPreferences: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onRunNameChange: (String) -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
@@ -146,8 +146,8 @@ fun DashboardScreen(
     }
     Scaffold(topBar = {
         OSHTopAppBarWithLogo(title = stringResource(R.string.app_name), actions = {
-            IconButton(onClick = onNavigateToPreferences) {
-                Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.app_preferences))
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.action_settings))
             }
         })
     },
@@ -322,7 +322,7 @@ private fun DashboardPreview() {
                 hubStatus = ModuleState.STOPPED,
                 runName = "Field survey",
             ),
-            onNavigateToPreferences = {},
+            onNavigateToSettings = {},
             onRunNameChange = {},
             onStart = {},
             onStop = {},

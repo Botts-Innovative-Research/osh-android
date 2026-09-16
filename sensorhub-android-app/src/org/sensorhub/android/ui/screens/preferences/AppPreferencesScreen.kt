@@ -7,12 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHInfoRow
@@ -39,15 +34,12 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun AppPreferencesScreen(
     onBackClick: () -> Unit,
-    onNavigateToHelpFaq: () -> Unit,
-    onNavigateToRepo: () -> Unit,
     viewModel: AppPreferencesViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showDeviceNameEdit by remember { mutableStateOf(false) }
-    var showAboutAppDialog by remember { mutableStateOf(false) }
 
     if (showLanguageDialog) {
         OSHSingleChoiceDialog(
@@ -71,15 +63,6 @@ fun AppPreferencesScreen(
             dialogText = stringResource(R.string.device_name),
             icon = Icons.Filled.Info,
             initialValue = state.deviceName
-        )
-    }
-
-    if (showAboutAppDialog) {
-        OSHAlertDialogWithoutDismiss(
-            onConfirmation = { showAboutAppDialog = false },
-            dialogText = stringResource(R.string.about_description),
-            dialogTitle = stringResource(R.string.app_name),
-            icon = Icons.Filled.Info
         )
     }
 
@@ -121,28 +104,7 @@ fun AppPreferencesScreen(
                     onClick = { showLanguageDialog = true }
                 )
             }
-            OSHCard {
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.title_about),
-                    imageVector = Icons.Default.Info,
-                    contentDescription = stringResource(R.string.title_about),
-                    onClick = { showAboutAppDialog = true }
-                )
 
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.github_repo),
-                    imageVector = Icons.Default.Link,
-                    contentDescription = "",
-                    onClick = onNavigateToRepo
-                )
-
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.title_help_faq),
-                    imageVector = Icons.Default.Help,
-                    contentDescription = stringResource(R.string.title_help_faq),
-                    onClick = onNavigateToHelpFaq
-                )
-            }
         }
     }
 }
@@ -151,6 +113,6 @@ fun AppPreferencesScreen(
 @Composable
 private fun AppPreferencesScreenPreview() {
     OSHTheme {
-        AppPreferencesScreen({},{}, {})
+        AppPreferencesScreen({})
     }
 }

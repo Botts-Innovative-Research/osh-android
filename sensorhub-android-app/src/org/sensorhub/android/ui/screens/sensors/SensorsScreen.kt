@@ -22,7 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.DevicesOther
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -70,7 +70,7 @@ import org.sensorhub.api.module.ModuleEvent
 
 @Composable
 fun SensorsScreen(
-    onNavigateToPreferences : () -> Unit,
+    onNavigateToSettings : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
     hubViewModel: SensorHubViewModel = viewModel(),
 ) {
@@ -139,10 +139,10 @@ fun SensorsScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_sensors),
                 actions = {
-                    IconButton(onClick = onNavigateToPreferences) {
+                    IconButton(onClick = onNavigateToSettings) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.app_preferences),
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.action_settings),
                         )
                     }
                 },

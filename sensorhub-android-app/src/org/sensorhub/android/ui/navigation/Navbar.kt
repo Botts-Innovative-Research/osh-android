@@ -1,20 +1,19 @@
 package org.sensorhub.android.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -29,7 +28,8 @@ import org.sensorhub.android.ui.theme.OSHTheme
 fun Navbar(
     navController: NavController
 ){
-    val selectedNavigationIndex = rememberSaveable { mutableIntStateOf(0) }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
     val navigationItems = listOf(
         NavigationItem(
             title = "Dashboard",
@@ -50,23 +50,21 @@ fun Navbar(
             title = "Client",
             icon = Icons.Default.GridView,
             route = Screen.Client.route
-        ),
-        NavigationItem(
-            title = "Settings",
-            icon = Icons.Default.Settings,
-            route = Screen.Settings.route
         )
     )
 
     NavigationBar(
         containerColor = BottomNavBg
     ) {
-        navigationItems.forEachIndexed { index, item  ->
+        navigationItems.forEach { item ->
         NavigationBarItem(
-            selected = selectedNavigationIndex.intValue == index,
+            selected = currentRoute == item.route,
             onClick = {
-                selectedNavigationIndex.intValue = index
-                navController.navigate(item.route)
+                navController.navigate(item.route) {
+                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             },
             icon = {
                 Icon(imageVector = item.icon, contentDescription = item.title)
@@ -74,7 +72,7 @@ fun Navbar(
             label = {
                 Text(
                     item.title,
-                    color = if (index == selectedNavigationIndex.intValue)
+                    color = if (currentRoute == item.route)
                         BottomNavSelected
                     else BottomNavUnselected
                 )
