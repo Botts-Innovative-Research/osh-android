@@ -7,13 +7,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.R
+import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHInfoRow
@@ -34,13 +40,13 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun AppPreferencesScreen(
     onBackClick: () -> Unit,
+    onNavigateToHelpFaq: () -> Unit,
+    onNavigateToRepo: () -> Unit,
     viewModel: AppPreferencesViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var showLanguageDialog by remember { mutableStateOf(false) }
-    var showDeviceNameEdit by remember { mutableStateOf(false) }
-
     if (showLanguageDialog) {
         OSHSingleChoiceDialog(
             onDismissRequest = { showLanguageDialog = false },
@@ -52,6 +58,7 @@ fun AppPreferencesScreen(
         )
     }
 
+    var showDeviceNameEdit by remember { mutableStateOf(false) }
     if (showDeviceNameEdit) {
         OSHTextInputDialog(
             onDismissRequest = { showDeviceNameEdit = false },
@@ -63,6 +70,16 @@ fun AppPreferencesScreen(
             dialogText = stringResource(R.string.device_name),
             icon = Icons.Filled.Info,
             initialValue = state.deviceName
+        )
+    }
+
+    var showAbout by remember { mutableStateOf(false) }
+    if (showAbout) {
+        OSHAlertDialogWithoutDismiss(
+            onConfirmation = { showAbout = false },
+            dialogText = stringResource(R.string.about_description),
+            dialogTitle = stringResource(R.string.app_name),
+            icon = Icons.Filled.Info
         )
     }
 
@@ -104,7 +121,26 @@ fun AppPreferencesScreen(
                     onClick = { showLanguageDialog = true }
                 )
             }
-
+            OSHCard {
+                OSHClickableRowWithIcon(
+                    title = stringResource(R.string.title_help_faq),
+                    imageVector = Icons.AutoMirrored.Filled.Help,
+                    contentDescription = stringResource(R.string.title_help_faq),
+                    onClick = onNavigateToHelpFaq
+                )
+                OSHClickableRowWithIcon(
+                    title = stringResource(R.string.title_about),
+                    imageVector = Icons.Default.Info,
+                    contentDescription = stringResource(R.string.title_about),
+                    onClick = { showAbout = true }
+                )
+                OSHClickableRowWithIcon(
+                    title = stringResource(R.string.github_repo),
+                    imageVector = Icons.Default.Link,
+                    contentDescription = stringResource(R.string.github_repo),
+                    onClick = onNavigateToRepo
+                )
+            }
         }
     }
 }
@@ -113,6 +149,6 @@ fun AppPreferencesScreen(
 @Composable
 private fun AppPreferencesScreenPreview() {
     OSHTheme {
-        AppPreferencesScreen({})
+        AppPreferencesScreen({}, {}, {})
     }
 }
