@@ -43,21 +43,9 @@ fun SettingsScreen(
     onNavigateToPreferences : () -> Unit,
     onNavigateToProfiles : () -> Unit,
     onBackClick: () -> Unit,
-    onNavigateToHelpFaq: () -> Unit,
-    onNavigateToRepo: () -> Unit,
     viewModel: SettingsViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    var showAbout by rememberSaveable { mutableStateOf(false) }
-    if (showAbout) {
-        OSHAlertDialogWithoutDismiss(
-            onConfirmation = { showAbout = false },
-            dialogText = stringResource(R.string.about_description),
-            dialogTitle = stringResource(R.string.app_name),
-            icon = Icons.Filled.Info
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -119,28 +107,6 @@ fun SettingsScreen(
                 contentDescription = stringResource(R.string.app_preferences),
                 onClick = onNavigateToPreferences
             )
-            Text(stringResource(R.string.settings_help_about), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.titleMedium)
-            OSHCard {
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.title_help_faq),
-                    imageVector = Icons.AutoMirrored.Filled.Help,
-                    contentDescription = stringResource(R.string.title_help_faq),
-                    onClick = onNavigateToHelpFaq
-                )
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.title_about),
-                    imageVector = Icons.Default.Info,
-                    contentDescription = stringResource(R.string.title_about),
-                    onClick = { showAbout = true }
-                )
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.github_repo),
-                    imageVector = Icons.Default.Link,
-                    contentDescription = stringResource(R.string.github_repo),
-                    onClick = onNavigateToRepo
-                )
-            }
 
         }
     }
@@ -150,6 +116,6 @@ fun SettingsScreen(
 @Composable
 private fun SettingsScreenPreview() {
     OSHTheme {
-        SettingsScreen({}, {}, {}, {}, {})
+        SettingsScreen({}, {}, {})
     }
 }

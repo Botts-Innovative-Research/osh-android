@@ -152,8 +152,6 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
             username = if (!state.enableOAuth) state.username.trim() else "",
         )
 
-        repo.save(profile)
-
         val pwd = if (!state.enableOAuth) state.password else ""
         repo.setPassword(profile.id, pwd)
 
@@ -163,6 +161,7 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
             repo.setOAuthTokenEndpoint(profile.id, state.tokenEndpoint.trim())
         }
 
+        repo.save(profile)
         return true
     }
 

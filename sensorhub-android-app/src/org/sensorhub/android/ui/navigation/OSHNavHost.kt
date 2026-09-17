@@ -59,13 +59,19 @@ fun OSHNavHost(
             )
         }
         composable(Screen.Settings.route) {
-            val context = LocalContext.current
             SettingsScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
-                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) },
                 onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
                 onNavigateToProfiles = { navController.navigate(Screen.ServerProfiles.route) }
+            )
+        }
+
+        composable(Screen.AppPreferences.route) {
+            val context = LocalContext.current
+            AppPreferencesScreen(
+                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
+                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) },
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -81,10 +87,6 @@ fun OSHNavHost(
                 items = faqItems,
                 onBackClick = { navController.popBackStack() }
             )
-        }
-
-        composable(Screen.AppPreferences.route) {
-            AppPreferencesScreen(onBackClick = { navController.popBackStack() })
         }
         composable(Screen.ServerProfiles.route) {
             ServerProfilesScreen(
