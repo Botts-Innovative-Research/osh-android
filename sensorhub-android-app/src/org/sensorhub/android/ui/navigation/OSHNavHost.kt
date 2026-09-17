@@ -14,7 +14,6 @@ import androidx.navigation.navArgument
 import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
-import org.sensorhub.android.ui.screens.client.ClientScreen
 import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
 import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
@@ -23,6 +22,7 @@ import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.servers.ServerFormScreen
 import org.sensorhub.android.ui.screens.settings.SettingsScreen
 import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.systems.SystemsScreen
 
 @Composable
 fun OSHNavHost(
@@ -53,8 +53,11 @@ fun OSHNavHost(
             )
         }
 
-        composable(Screen.Client.route) {
-            ClientScreen(
+        composable(Screen.Systems.route) {
+            SystemsScreen(
+                onOpenSystem = { serverId, systemId ->
+                    navController.navigate(Screen.SystemsStreams.createRoute(serverId, systemId)) { launchSingleTop = true }
+                },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
             )
         }

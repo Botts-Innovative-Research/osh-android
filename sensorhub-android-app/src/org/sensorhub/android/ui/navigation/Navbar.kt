@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.SettingsSystemDaydream
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,7 +30,9 @@ fun Navbar(
     navController: NavController
 ){
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route
+    val currentRoute = backStackEntry?.destination?.route.let {
+        if (it == Screen.SystemsStreams.route || it == Screen.DatastreamInfo.route) Screen.Systems.route else it
+    }
     val navigationItems = listOf(
         NavigationItem(
             title = "Dashboard",
@@ -47,9 +50,9 @@ fun Navbar(
             route = Screen.Sensors.route
         ),
         NavigationItem(
-            title = "Client",
-            icon = Icons.Default.GridView,
-            route = Screen.Client.route
+            title = "Systems",
+            icon = Icons.Default.SettingsSystemDaydream,
+            route = Screen.Systems.route
         )
     )
 
