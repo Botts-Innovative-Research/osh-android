@@ -546,7 +546,6 @@
     <string name="destination_stream_waiting">NO OBS</string>
     <string name="destination_stream_active">OK</string>
     <string name="destination_stream_stale">NOK</string>
-    <string name="settings_next_run">Changes apply to the next run.</string>
     <string name="sensors_configure">Configure</string>
     <string name="sensors_live">Live</string>
     <string name="sensors_live_start_run">Start a run to view live sensor readings.</string>

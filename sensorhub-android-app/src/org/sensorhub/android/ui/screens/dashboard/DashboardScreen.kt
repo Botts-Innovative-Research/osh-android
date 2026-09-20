@@ -235,14 +235,14 @@ private fun ServerStatusCard(server: ServerStatusUi) {
         title = server.serverName,
         status = overallStatus,
         modifier = Modifier.padding(horizontal = 12.dp),
-        collapsedContent = {
-            Text(
-                text = "${server.clientMode}: $summary",
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                style = MaterialTheme.typography.bodySmall,
-                color = OnSurfaceVariant
-            )
-        },
+//        collapsedContent = {
+//            Text(
+//                text = "${server.clientMode}: $summary",
+//                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+//                style = MaterialTheme.typography.bodySmall,
+//                color = OnSurfaceVariant
+//            )
+//        },
         expandedContent = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 server.errorText?.let { error ->

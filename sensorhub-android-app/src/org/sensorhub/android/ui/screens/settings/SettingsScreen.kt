@@ -64,12 +64,6 @@ fun SettingsScreen(
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                stringResource(R.string.settings_next_run),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
 
             OSHClickableCardWithIcon(
                 title = stringResource(R.string.manage_servers),

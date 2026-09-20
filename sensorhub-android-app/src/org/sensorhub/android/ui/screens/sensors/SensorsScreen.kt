@@ -226,13 +226,6 @@ fun SensorsScreen(
                     )
                 }
             }
-
-            Text(
-                stringResource(R.string.settings_next_run),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -298,7 +291,7 @@ private fun SensorUiEntry(
         is SensorUIOption.BluetoothDevice -> ConfigurableSensorCard(sensor, onToggle) {
             BluetoothDeviceConfig(
                 selectLabelRes = config.selectLabelRes,
-                currentAddress = viewModel.stringStates[config.addressPrefKey] ?: "",
+                currentAddress = if (name.isNotBlank() && address.isNotBlank()) "$name ($address)" else address,
                 onSelect = { onActiveDialogChange(config.addressPrefKey) },
             )
         }
