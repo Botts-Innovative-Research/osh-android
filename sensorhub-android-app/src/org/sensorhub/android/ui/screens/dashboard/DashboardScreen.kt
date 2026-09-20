@@ -1,17 +1,8 @@
 package org.sensorhub.android.ui.screens.dashboard
 
-import org.sensorhub.android.ui.HubUiState
-
-import org.sensorhub.android.ui.SensorHubViewModel
-
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
-import org.sensorhub.android.data.sensors.SensorRegistry
-import android.Manifest
-import android.os.Build
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.view.TextureView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,23 +30,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import org.sensorhub.android.R
 import org.sensorhub.android.SensorHubService
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.ui.HubUiState
+import org.sensorhub.android.ui.SensorHubViewModel
 import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHExpandableCard

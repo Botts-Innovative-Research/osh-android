@@ -33,6 +33,7 @@ fun <T> OSHDropDown(
     selectedIds: Set<String>,
     itemId: (T) -> String,
     itemLabel: (T) -> String,
+    itemSummary: (T) -> String,
     onSelectionChange: (String, Boolean) -> Unit,
     emptyText: String,
     modifier: Modifier = Modifier
@@ -65,7 +66,20 @@ fun <T> OSHDropDown(
                     val id = itemId(item)
                     val checked = id in selectedIds
                     DropdownMenuItem(
-                        text = { Text(itemLabel(item)) },
+                        text = {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = itemLabel(item),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = itemSummary(item),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
                         leadingIcon = { Checkbox(checked = checked, onCheckedChange = null) },
                         modifier = Modifier.semantics { selected = checked },
                         onClick = { onSelectionChange(id, !checked) }

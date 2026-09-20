@@ -10,18 +10,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,8 +28,6 @@ import org.sensorhub.android.ui.components.OSHClickableCardWithIcon
 import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
-import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
-import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
@@ -103,7 +95,7 @@ fun SettingsScreen(
             }
             OSHClickableCardWithIcon(
                 title = stringResource(R.string.app_preferences),
-                imageVector = Icons.Default.Settings,
+                imageVector = Icons.Default.MoreVert,
                 contentDescription = stringResource(R.string.app_preferences),
                 onClick = onNavigateToPreferences
             )
