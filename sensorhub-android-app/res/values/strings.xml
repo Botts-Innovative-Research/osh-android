@@ -35,8 +35,8 @@
 
     <string name="device_name">Device Name</string>
     <string name="device_ip_address">Device IP Address</string>
-    <string name="server_profiles">Server Profiles</string>
-    <string name="manage_servers">Manage Servers</string>
+    <string name="server_profiles">Configured Nodes</string>
+    <string name="manage_servers">Manage Nodes</string>
     <string name="services">Services</string>
     <string name="enable_sos_service">SOS Service</string>
     <string name="enable_csapi_service">Connected Systems Service</string>
@@ -48,8 +48,6 @@
     <string name="summary_discovery">Service providing discovery based on definable rulesets</string>
     <string name="summary_select_device">Tap to select or enter device address</string>
     <string name="pref_uid_extension">Sensors UID Extension</string>
-    <string name="server_profile_summary">Optional — add servers to push data remotely. Without servers, data is served locally.</string>
-
 
     <string-array name="video_codec_list">
         <item>JPEG</item>
@@ -288,11 +286,10 @@
     <string name="tab_sensors">Sensors</string>
     <string name="tab_dashboard">Home</string>
     <string name="tab_settings">Settings</string>
-    <string name="tab_servers">Servers</string>
     <string name="tab_map">Map</string>
-    <string name="tab_client">Client</string>
+    <string name="tab_system">Systems</string>
     <string name="app_preferences">App Preferences</string>
-    <string name="add_server">New Server</string>
+    <string name="add_server">New Node</string>
     <string name="summary_app_preferences">summ</string>
 
     <string name="meshtastic_msg">Enter a message!</string>
