@@ -7,9 +7,8 @@ import android.view.TextureView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,13 +50,9 @@ import org.sensorhub.android.ui.HubUiState
 import org.sensorhub.android.ui.SensorHubViewModel
 import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHCard
-import org.sensorhub.android.ui.components.OSHExpandableCard
 import org.sensorhub.android.ui.components.OSHStatusRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
-import org.sensorhub.android.ui.theme.Error
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OnSurfaceVariant
-import org.sensorhub.android.ui.theme.Success
 import org.sensorhub.api.module.ModuleEvent.ModuleState
 
 @Composable
@@ -68,8 +64,6 @@ fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewMod
         }
     }
     val context = LocalContext.current
-    // Re-evaluate on each state update so changes made on the Sensors screen are
-    // reflected when the user returns to Dashboard.
     val permissions = permissionsForEnabledSensors(context)
     fun permissionsGranted() = permissions.all {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
@@ -90,7 +84,6 @@ fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewMod
     )
 }
 
-/** Returns only runtime permissions needed by the sensors enabled for the next run. */
 private fun permissionsForEnabledSensors(context: android.content.Context): Array<String> {
     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
     return SensorRegistry.requiredPermissions(prefs, Build.VERSION.SDK_INT)
@@ -157,8 +150,39 @@ fun DashboardScreen(
                         status = if (state.error != null) "error" else state.hubStatus.name,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    if (running && state.serverStatuses.isNotEmpty()) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                        state.serverStatuses.forEach { server ->
+                            val hasError = !server.errorText.isNullOrBlank()
+                            val started = server.moduleState == ModuleState.STARTED.name
+                            val summary = stringResource(when {
+                                hasError -> R.string.destination_error
+                                !started -> R.string.destination_not_started
+                                server.sensorGroups.isEmpty() -> R.string.destination_waiting
+                                server.allOk -> R.string.destination_active
+                                else -> R.string.destination_attention
+                            })
+                            OSHStatusRow(
+                                title = server.serverName,
+                                subtitle = if (hasError) {
+                                    "$summary\n${server.errorText}"
+                                } else {
+                                    summary
+                                },
+                                status = when {
+                                    hasError -> "error"
+                                    started && server.allOk -> "ok"
+                                    else -> "nok"
+                                },
+                            )
+                        }
+                    }
                 }
-
+            }
+            item {
                 OSHButton(
                     onClick = {
                         if (running) onStop() else {
@@ -171,29 +195,30 @@ fun DashboardScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                 )
             }
-            if (running) {
-                if (state.serverStatuses.isNotEmpty()) {
-                    item {
-                        Text(
-                            stringResource(R.string.dashboard_server_status),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                        )
-                    }
-                    items(state.serverStatuses, key = { it.clientId }) { server ->
-                        ServerStatusCard(server)
-                    }
-                } else if (state.sensorCards.isNotEmpty()) {
-                    item {
-                        Text(
-                            stringResource(R.string.dashboard_no_remote_clients),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                        )
+            if (!running) {
+                item {
+                    Text(
+                        stringResource(R.string.sensors_live_start_run),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else if (state.sensorCards.isEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.sensors_live_no_enabled),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                items(state.sensorCards, key = { "sensor:${it.id}" }) { sensor ->
+                    Box(Modifier.padding(horizontal = 16.dp)) {
+                        SensorOutputCard(sensor)
                     }
                 }
             }
+
             state.error?.let { error ->
                 item {
                     Text(
@@ -208,78 +233,6 @@ fun DashboardScreen(
     }
 }
 
-@Composable
-private fun ServerStatusCard(server: ServerStatusUi) {
-    val hasError = server.errorText != null
-    val overallStatus = when {
-        hasError -> "error"
-        server.allOk -> "ok"
-        else -> "nok"
-    }
-    val summary = stringResource(when {
-        hasError -> R.string.destination_error
-        server.moduleState != "STARTED" -> R.string.destination_not_started
-        server.sensorGroups.isEmpty() -> R.string.destination_waiting
-        server.allOk -> R.string.destination_active
-        else -> R.string.destination_attention
-    })
-    OSHExpandableCard(
-        title = server.serverName,
-        status = overallStatus,
-        modifier = Modifier.padding(horizontal = 12.dp),
-//        collapsedContent = {
-//            Text(
-//                text = "${server.clientMode}: $summary",
-//                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-//                style = MaterialTheme.typography.bodySmall,
-//                color = OnSurfaceVariant
-//            )
-//        },
-        expandedContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                server.errorText?.let { error ->
-                    Text(
-                        text = error,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Error
-                    )
-                }
-                server.statusMsg?.let { msg ->
-                    Text(
-                        text = msg,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = OnSurfaceVariant
-                    )
-                }
-                server.sensorGroups.forEach { group ->
-                    Text(
-                        text = group.sensorName,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = if (group.allOk) Success else Error
-                    )
-                    group.streams.forEach { stream ->
-                        Row(
-                            Modifier.fillMaxWidth().padding(start = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                stream.outputName,
-                                Modifier.weight(1f),
-                                color = OnSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                stream.statusText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (stream.isOk) Success else Error
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    )
-}
 
 @Composable
 private fun CameraPreview() {

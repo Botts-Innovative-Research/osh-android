@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OSH-Android</string>
+    <string name="app_name">OSH Android</string>
     <string name="hello_world">Configure settings and tap the play button to start SmartHub</string>
     <string name="action_settings">Settings</string>
     <string name="action_start">Start SmartHub</string>
@@ -538,8 +538,8 @@
     <string name="destination_error">Client error.</string>
     <string name="destination_not_started">Client is not running.</string>
     <string name="destination_waiting">Waiting for observation streams.</string>
-    <string name="destination_active">Recent client activity.</string>
-    <string name="destination_attention">No recent activity or stream errors.</string>
+    <string name="destination_active">Streaming data.</string>
+    <string name="destination_attention">Some data streams are idle or may need attention.</string>
     <string name="destination_stream_error">Client reported stream errors</string>
     <string name="destination_stream_waiting">NO OBS</string>
     <string name="destination_stream_active">OK</string>

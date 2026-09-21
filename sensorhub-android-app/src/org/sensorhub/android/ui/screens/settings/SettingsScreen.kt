@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -95,7 +96,7 @@ fun SettingsScreen(
             }
             OSHClickableCardWithIcon(
                 title = stringResource(R.string.app_preferences),
-                imageVector = Icons.Default.MoreVert,
+                imageVector = Icons.Default.Settings,
                 contentDescription = stringResource(R.string.app_preferences),
                 onClick = onNavigateToPreferences
             )

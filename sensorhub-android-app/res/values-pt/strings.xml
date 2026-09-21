@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OSH-Android</string>
+    <string name="app_name">OSH Android</string>
     <string name="hello_world">Configure as definições e toque no botão de reprodução para iniciar o SmartHub</string>
     <string name="action_settings">Configurações</string>
     <string name="action_start">Iniciar SmartHub</string>

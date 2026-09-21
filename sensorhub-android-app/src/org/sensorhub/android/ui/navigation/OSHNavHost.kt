@@ -22,7 +22,6 @@ import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.servers.ServerFormScreen
 import org.sensorhub.android.ui.screens.settings.SettingsScreen
 import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
-import org.sensorhub.android.ui.screens.systems.SystemsScreen
 
 @Composable
 fun OSHNavHost(
@@ -48,19 +47,10 @@ fun OSHNavHost(
         }
         composable(Screen.Sensors.route) {
             SensorsScreen(
-                hubViewModel = hubViewModel,
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
             )
         }
 
-        composable(Screen.Systems.route) {
-            SystemsScreen(
-                onOpenSystem = { serverId, systemId ->
-                    navController.navigate(Screen.SystemsStreams.createRoute(serverId, systemId)) { launchSingleTop = true }
-                },
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
-            )
-        }
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onBackClick = { navController.popBackStack() },

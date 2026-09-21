@@ -33,7 +33,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,7 +40,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.R
 import org.sensorhub.android.data.sensors.SensorCategory
@@ -50,28 +48,21 @@ import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.data.sensors.SensorSettings
 import org.sensorhub.android.data.sensors.SensorUIOption
 import org.sensorhub.android.data.sensors.SensorUiEntry
-import org.sensorhub.android.ui.SensorHubViewModel
 import org.sensorhub.android.ui.components.OSHBluetoothPickerDialog
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHExpandableSwitchCard
 import org.sensorhub.android.ui.components.OSHFilterChip
-import org.sensorhub.android.ui.components.OSHSegmentedButton
 import org.sensorhub.android.ui.components.OSHSensorCard
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
-import org.sensorhub.android.ui.screens.dashboard.SensorOutputCard
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.api.module.ModuleEvent
 
 @Composable
 fun SensorsScreen(
     onNavigateToSettings : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
-    hubViewModel: SensorHubViewModel = viewModel(),
 ) {
-    var selectedMode by rememberSaveable { mutableStateOf(0) }
-    val liveState by hubViewModel.state.collectAsStateWithLifecycle()
     var selectedCategories by remember { mutableStateOf(emptySet<SensorCategory>()) }
     val scrollState = rememberScrollState()
     var activeDialog by remember { mutableStateOf<String?>(null) }
@@ -157,46 +148,6 @@ fun SensorsScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            OSHSegmentedButton(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                options = listOf(
-                    stringResource(R.string.sensors_configure),
-                    stringResource(R.string.sensors_live),
-                ),
-                selectedIndex = selectedMode,
-                onOptionSelected = { selectedMode = it },
-            )
-
-            if (selectedMode == 1) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    val isRunning = liveState.hubStatus == ModuleEvent.ModuleState.STARTED
-                    if (!isRunning) {
-                        item {
-                            Text(
-                                stringResource(R.string.sensors_live_start_run),
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    } else if (liveState.sensorCards.isEmpty()) {
-                        item {
-                            Text(
-                                stringResource(R.string.sensors_live_no_enabled),
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    } else {
-                        items(liveState.sensorCards, key = { it.id }) { sensor ->
-                            SensorOutputCard(sensor)
-                        }
-                    }
-                }
-            } else {
             Row(
                 modifier = Modifier
                     .horizontalScroll(scrollState)
@@ -243,7 +194,6 @@ fun SensorsScreen(
                         )
                     }
                 }
-            }
             }
         }
     }

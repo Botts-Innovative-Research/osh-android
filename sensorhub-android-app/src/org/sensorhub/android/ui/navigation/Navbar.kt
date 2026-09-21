@@ -31,7 +31,7 @@ fun Navbar(
 ){
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route.let {
-        if (it == Screen.SystemsStreams.route || it == Screen.DatastreamInfo.route) Screen.Systems.route else it
+        it
     }
     val navigationItems = listOf(
         NavigationItem(
@@ -49,11 +49,6 @@ fun Navbar(
             icon = Icons.Default.Sensors,
             route = Screen.Sensors.route
         ),
-        NavigationItem(
-            title = "Systems",
-            icon = Icons.Default.SettingsSystemDaydream,
-            route = Screen.Systems.route
-        )
     )
 
     NavigationBar(
