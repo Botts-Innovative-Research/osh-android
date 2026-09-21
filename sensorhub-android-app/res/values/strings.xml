@@ -548,4 +548,6 @@
     <string name="sensors_live">Live</string>
     <string name="sensors_live_start_run">Start a run to view live sensor readings.</string>
     <string name="sensors_live_no_enabled">No sensors are enabled. Enable sensors in Configure.</string>
+    <string name="map_this_device">This Device</string>
+    <string name="map_recenter">Center on this device</string>
 </resources>

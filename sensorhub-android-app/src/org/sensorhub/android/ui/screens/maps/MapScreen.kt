@@ -1,9 +1,12 @@
 package org.sensorhub.android.ui.screens.maps
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -11,6 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.key
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -23,10 +33,16 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
+
+data class Location(
+    val latitude: Double,
+    val longitude: Double
+)
 
 @Composable
 fun MapScreen(
@@ -48,6 +64,37 @@ fun MapScreen(
             controller.setZoom(15.0)
             controller.setCenter(GeoPoint(33.4484, -86.7987))
         }
+    }
+
+    val marker = remember(mapView) {
+        Marker(mapView).apply {
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_location)
+            title = context.getString(R.string.map_this_device)
+        }
+    }
+    var centeredOnDevice by remember(mapView) { mutableStateOf(false) }
+    val fix = Location(
+        latitude = 34.58388,
+        longitude = -86.464493
+    )
+
+    LaunchedEffect(mapView) {
+        if (fix == null) {
+            marker.closeInfoWindow()
+            mapView.overlays.remove(marker)
+            centeredOnDevice = false
+        } else {
+            marker.position = GeoPoint(fix.latitude, fix.longitude)
+            marker.alpha = 1f
+            marker.snippet = "${fix.latitude}, ${fix.longitude}"
+            if (!mapView.overlays.contains(marker)) mapView.overlays.add(marker)
+            if (!centeredOnDevice) {
+                mapView.controller.setCenter(marker.position)
+                centeredOnDevice = true
+            }
+        }
+        mapView.invalidate()
     }
 
     DisposableEffect(mapView, lifecycle) {
@@ -90,13 +137,27 @@ fun MapScreen(
         },
         containerColor = Background
     ) { padding ->
-        key(mapView) {
-            AndroidView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                factory = { mapView },
-            )
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            key(mapView) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { mapView },
+                )
+            }
+            Surface(
+                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                shape = androidx.compose.foundation.shape.CircleShape,
+                tonalElevation = 3.dp,
+            ) {
+                IconButton(
+                    enabled = fix != null,
+                    onClick = {
+                        fix?.let { mapView.controller.animateTo(GeoPoint(it.latitude, it.longitude)) }
+                    },
+                ) {
+                    Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.map_recenter))
+                }
+            }
         }
     }
 }
