@@ -1,7 +1,5 @@
 package org.sensorhub.android.ui.screens.sensors
 
-import org.sensorhub.android.ui.SensorHubViewModel
-
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,7 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.DevicesOther
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,7 +33,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -43,39 +40,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
 import org.sensorhub.android.data.sensors.SensorCategory
 import org.sensorhub.android.data.sensors.SensorChoice
-import org.sensorhub.android.data.sensors.SensorUIOption
-import org.sensorhub.android.data.sensors.SensorUiEntry
 import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.data.sensors.SensorSettings
+import org.sensorhub.android.data.sensors.SensorUIOption
+import org.sensorhub.android.data.sensors.SensorUiEntry
 import org.sensorhub.android.ui.components.OSHBluetoothPickerDialog
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHExpandableSwitchCard
 import org.sensorhub.android.ui.components.OSHFilterChip
-import org.sensorhub.android.ui.components.OSHSegmentedButton
 import org.sensorhub.android.ui.components.OSHSensorCard
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
-import org.sensorhub.android.ui.navigation.Screen
-import org.sensorhub.android.ui.screens.dashboard.SensorOutputCard
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.api.module.ModuleEvent
 
 @Composable
 fun SensorsScreen(
-    onNavigateToPreferences : () -> Unit,
+    onNavigateToSettings : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
-    hubViewModel: SensorHubViewModel = viewModel(),
 ) {
-    var selectedMode by rememberSaveable { mutableStateOf(0) }
-    val liveState by hubViewModel.state.collectAsStateWithLifecycle()
     var selectedCategories by remember { mutableStateOf(emptySet<SensorCategory>()) }
     val scrollState = rememberScrollState()
     var activeDialog by remember { mutableStateOf<String?>(null) }
@@ -139,10 +126,10 @@ fun SensorsScreen(
             OSHTopAppBarWithLogo(
                 title = stringResource(R.string.tab_sensors),
                 actions = {
-                    IconButton(onClick = onNavigateToPreferences) {
+                    IconButton(onClick = onNavigateToSettings) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.app_preferences),
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.action_settings),
                         )
                     }
                 },
@@ -161,46 +148,6 @@ fun SensorsScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            OSHSegmentedButton(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                options = listOf(
-                    stringResource(R.string.sensors_configure),
-                    stringResource(R.string.sensors_live),
-                ),
-                selectedIndex = selectedMode,
-                onOptionSelected = { selectedMode = it },
-            )
-
-            if (selectedMode == 1) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    val isRunning = liveState.hubStatus == ModuleEvent.ModuleState.STARTED
-                    if (!isRunning) {
-                        item {
-                            Text(
-                                stringResource(R.string.sensors_live_start_run),
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    } else if (liveState.sensorCards.isEmpty()) {
-                        item {
-                            Text(
-                                stringResource(R.string.sensors_live_no_enabled),
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    } else {
-                        items(liveState.sensorCards, key = { it.id }) { sensor ->
-                            SensorOutputCard(sensor)
-                        }
-                    }
-                }
-            } else {
             Row(
                 modifier = Modifier
                     .horizontalScroll(scrollState)
@@ -248,7 +195,6 @@ fun SensorsScreen(
                     }
                 }
             }
-            }
         }
     }
 }
@@ -289,9 +235,10 @@ private fun SensorUiEntry(
         }
 
         is SensorUIOption.BluetoothDevice -> ConfigurableSensorCard(sensor, onToggle) {
+            val address = viewModel.stringStates[config.addressPrefKey].orEmpty()
             BluetoothDeviceConfig(
                 selectLabelRes = config.selectLabelRes,
-                currentAddress = if (name.isNotBlank() && address.isNotBlank()) "$name ($address)" else address,
+                currentAddress =  address,
                 onSelect = { onActiveDialogChange(config.addressPrefKey) },
             )
         }

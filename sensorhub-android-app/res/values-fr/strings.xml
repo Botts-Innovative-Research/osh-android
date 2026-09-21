@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OSH-Android</string>
+    <string name="app_name">OSH Android</string>
     <string name="hello_world">Configurez les paramètres et appuyez sur le bouton lecture pour démarrer SmartHub</string>
     <string name="action_settings">Paramètres</string>
     <string name="action_start">Démarrer SmartHub</string>
