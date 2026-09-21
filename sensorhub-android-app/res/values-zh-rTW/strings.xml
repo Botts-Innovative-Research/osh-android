@@ -36,7 +36,7 @@
     <string name="device_ip_address">裝置 IP 位址</string>
     <string name="server_profiles">伺服器配置</string>
     <string name="manage_servers">管理伺服器</string>
-    <string name="services">服務</string>
+    <string name="services">此裝置上的服務</string>
     <string name="enable_sos_service">啟用 SOS 服務</string>
     <string name="enable_csapi_service">啟用連線系統服務</string>
     <string name="enable_discovery_service">啟用探索服務</string>

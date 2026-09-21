@@ -36,7 +36,7 @@
     <string name="device_ip_address">Indirizzo IP del dispositivo</string>
     <string name="server_profiles">Profili server</string>
     <string name="manage_servers">Gestisci server</string>
-    <string name="services">Servizi</string>
+    <string name="services">Servizi su questo dispositivo</string>
     <string name="enable_sos_service">Servizio SOS</string>
     <string name="enable_csapi_service">Servizio Connected Systems</string>
     <string name="enable_discovery_service">Servizio di scoperta</string>

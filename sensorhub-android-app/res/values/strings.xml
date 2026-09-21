@@ -37,7 +37,7 @@
     <string name="device_ip_address">Device IP Address</string>
     <string name="server_profiles">Configured Nodes</string>
     <string name="manage_servers">Manage Nodes</string>
-    <string name="services">Services</string>
+    <string name="services">Services on this device</string>
     <string name="enable_sos_service">SOS Service</string>
     <string name="enable_csapi_service">Connected Systems Service</string>
     <string name="enable_discovery_service">Discovery Service</string>
