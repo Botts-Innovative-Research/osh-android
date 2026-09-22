@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.SettingsSystemDaydream
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,6 +44,11 @@ fun Navbar(
             title = "Map",
             icon = Icons.Default.Map,
             route = Screen.Map.route
+        ),
+        NavigationItem(
+            title = "Client",
+            icon = Icons.Default.Visibility,
+            route = Screen.Client.route
         ),
         NavigationItem(
             title = "Sensors",

@@ -18,6 +18,8 @@ import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
 import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
 import org.sensorhub.android.ui.screens.maps.MapScreen
+import org.sensorhub.android.ui.screens.client.OshClientScreen
+import org.sensorhub.android.ui.screens.client.OshClientViewModel
 import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.servers.ServerFormScreen
 import org.sensorhub.android.ui.screens.settings.SettingsScreen
@@ -27,6 +29,7 @@ import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
 fun OSHNavHost(
     navController: NavHostController,
     hubViewModel: SensorHubViewModel,
+    clientViewModel: OshClientViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -43,6 +46,12 @@ fun OSHNavHost(
         composable(Screen.Map.route) {
             MapScreen(
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
+            )
+        }
+        composable(Screen.Client.route) {
+            OshClientScreen(
+                onNavigateToSettings = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
+                viewModel = clientViewModel,
             )
         }
         composable(Screen.Sensors.route) {

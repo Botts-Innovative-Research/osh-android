@@ -1,6 +1,7 @@
 package org.sensorhub.android
 
 import org.sensorhub.android.ui.SensorHubViewModel
+import org.sensorhub.android.ui.screens.client.OshClientViewModel
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -15,6 +16,7 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun OSHApp(hubViewModel: SensorHubViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val navController = rememberNavController()
+    val clientViewModel: OshClientViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     Scaffold(
         bottomBar = { Navbar(navController = navController) }
@@ -22,6 +24,7 @@ fun OSHApp(hubViewModel: SensorHubViewModel = androidx.lifecycle.viewmodel.compo
         OSHNavHost(
             navController = navController,
             hubViewModel = hubViewModel,
+            clientViewModel = clientViewModel,
             modifier = Modifier.padding(padding)
         )
     }
