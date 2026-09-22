@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import okhttp3.Call;
@@ -54,6 +55,13 @@ public class OkHttpClientWrapper implements IHttpClient, Closeable
 
     public OkHttpClientWrapper() {}
 
+    public OkHttpClientWrapper(String username, char[] password, ITokenHandler tokenHandler) {
+        this.username = tokenHandler == null ? username : null;
+        this.password = tokenHandler == null ? password : null;
+        this.tokenHandler = tokenHandler;
+        rebuildHttpClient();
+    }
+
     @Override
     public void setUsername(String username) {
         this.username = username;
@@ -71,11 +79,17 @@ public class OkHttpClientWrapper implements IHttpClient, Closeable
         this.tokenHandler = tokenHandler;
     }
 
-    protected void rebuildHttpClient() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+    public void rebuildHttpClient() {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .callTimeout(20, TimeUnit.SECONDS)
+                .followRedirects(false)
+                .followSslRedirects(false);
         if (username != null && !username.isEmpty()) {
             var finalPwd = password != null ? new String(password) : "";
             builder.authenticator((route, response) -> {
+                if (response.request().header(HttpHeaders.AUTHORIZATION) != null) {
+                    return null;
+                }
                 String credential = okhttp3.Credentials.basic(username, finalPwd);
                 return response.request().newBuilder()
                         .header("Authorization", credential)

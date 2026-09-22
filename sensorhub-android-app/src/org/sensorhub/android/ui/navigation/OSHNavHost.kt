@@ -14,6 +14,8 @@ import androidx.navigation.navArgument
 import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
+import org.sensorhub.android.ui.screens.systems.DatastreamInfoScreen
+import org.sensorhub.android.ui.screens.systems.ResourceKind
 import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
 import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
@@ -22,6 +24,7 @@ import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.servers.ServerFormScreen
 import org.sensorhub.android.ui.screens.settings.SettingsScreen
 import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.systems.DataStreamsScreen
 import org.sensorhub.android.ui.screens.systems.SystemsScreen
 
 @Composable
@@ -61,6 +64,60 @@ fun OSHNavHost(
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
             )
         }
+        composable(
+            route = Screen.SystemsStreams.route,
+            arguments = listOf(
+                navArgument("serverId") { type = NavType.StringType },
+                navArgument("systemId") { type = NavType.StringType }
+            )
+        ) { entry ->
+            DataStreamsScreen(
+                serverId = requireNotNull(entry.arguments?.getString("serverId")),
+                systemId = requireNotNull(entry.arguments?.getString("systemId")),
+                onBackClick = { navController.popBackStack() },
+                handleSchemaInfo = { stream, kind ->
+                    val serverId = requireNotNull(entry.arguments?.getString("serverId"))
+                    when (kind) {
+                        ResourceKind.DATASTREAMS -> navController.navigate(
+                            Screen.DatastreamInfo.createRoute(serverId, stream.id)
+                        ) { launchSingleTop = true }
+                        ResourceKind.CONTROLSTREAMS -> navController.navigate(
+                            Screen.ControlstreamInfo.createRoute(serverId, stream.id)
+                        ) { launchSingleTop = true }
+                        else -> {}
+                    }
+                }
+            )
+        }
+        composable(
+            route = Screen.DatastreamInfo.route,
+            arguments = listOf(
+                navArgument("serverId") { type = NavType.StringType },
+                navArgument("datastreamId") { type = NavType.StringType }
+            )
+        ) { entry ->
+            DatastreamInfoScreen(
+                serverId = requireNotNull(entry.arguments?.getString("serverId")),
+                datastreamId = requireNotNull(entry.arguments?.getString("datastreamId")),
+                kind = ResourceKind.DATASTREAMS,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.ControlstreamInfo.route,
+            arguments = listOf(
+                navArgument("serverId") { type = NavType.StringType },
+                navArgument("controlstreamId") { type = NavType.StringType }
+            )
+        ) { entry ->
+            DatastreamInfoScreen(
+                serverId = requireNotNull(entry.arguments?.getString("serverId")),
+                datastreamId = requireNotNull(entry.arguments?.getString("controlstreamId")),
+                kind = ResourceKind.CONTROLSTREAMS,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onBackClick = { navController.popBackStack() },
