@@ -1,34 +1,49 @@
 package org.sensorhub.android.ui.screens.client
 
 import android.graphics.BitmapFactory
+import android.graphics.Paint
+import android.graphics.Rect
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.view.Surface
 import android.view.TextureView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import java.nio.ByteBuffer
+import java.util.ArrayDeque
 
 enum class PtzCommand(val item: String, val delta: Double) {
     PAN_LEFT("rpan", -5.0), PAN_RIGHT("rpan", 5.0),
@@ -36,85 +51,338 @@ enum class PtzCommand(val item: String, val delta: Double) {
     ZOOM_IN("rzoom", 1000.0), ZOOM_OUT("rzoom", -1000.0),
 }
 
-/** App-owned Android video renderer; it deliberately has no Platform UI dependency. */
+/** Platform UI's video protocol and decoder behavior, adapted to this Compose host. */
 class VideoStream(
     private val streamIds: Collection<String>,
     private val name: String?,
     private val width: Int,
     private val height: Int,
 ) {
-    private var view: TextureView? = null
     private var surface: Surface? = null
     private var codec: MediaCodec? = null
-    private var queuedFrames = 0L
+    private var sawKeyframe = false
+    private var ptsIndex = 0L
+    private val pending = ArrayDeque<ByteArray>()
+    private val freeInputs = ArrayDeque<Int>()
+    private val lock = Any()
+    private val jpegPaint = Paint(Paint.FILTER_BITMAP_FLAG)
 
-    fun attach(textureView: TextureView) {
-        view = textureView
-        textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-            override fun onSurfaceTextureAvailable(st: android.graphics.SurfaceTexture, w: Int, h: Int) {
+    fun attach(view: TextureView) {
+        view.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+            override fun onSurfaceTextureAvailable(
+                st: android.graphics.SurfaceTexture,
+                w: Int,
+                h: Int
+            ) {
                 surface?.release(); surface = Surface(st)
             }
-            override fun onSurfaceTextureSizeChanged(st: android.graphics.SurfaceTexture, w: Int, h: Int) = Unit
+
+            override fun onSurfaceTextureSizeChanged(
+                st: android.graphics.SurfaceTexture,
+                w: Int,
+                h: Int
+            ) = Unit
+
             override fun onSurfaceTextureDestroyed(st: android.graphics.SurfaceTexture): Boolean {
-                releaseCodec(); surface?.release(); surface = null; return true
+                disconnect(); return true
             }
+
             override fun onSurfaceTextureUpdated(st: android.graphics.SurfaceTexture) = Unit
         }
-        if (textureView.isAvailable) surface = Surface(textureView.surfaceTexture)
+        if (view.isAvailable) surface = Surface(view.surfaceTexture)
     }
 
     fun update(timestamp: Long, record: ByteArray) {
-        val jpeg = record.indexOfJpeg()
-        if (jpeg >= 0) {
-            val bitmap = BitmapFactory.decodeByteArray(record, jpeg, record.size - jpeg) ?: return
-            val target = surface ?: return
-            runCatching { target.lockCanvas(null).also { canvas ->
-                canvas.drawBitmap(bitmap, null, android.graphics.Rect(0, 0, canvas.width, canvas.height), null)
-                target.unlockCanvasAndPost(canvas)
-            } }
-            return
+        if (record.size <= HEADER_SIZE || surface == null) return
+        jpegOffset(record)?.let { renderJpeg(record, it); return }
+        val unit = toAnnexB(record) ?: return
+        if (!sawKeyframe) {
+            if (!isKeyframe(unit)) return
+            sawKeyframe = true
         }
-        val target = surface ?: return
-        val decoder = codec ?: MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC).also {
-            it.configure(MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height), target, null, 0)
-            it.start(); codec = it
-        }
-        runCatching {
-            val input = decoder.dequeueInputBuffer(10_000)
-            if (input >= 0) {
-                decoder.getInputBuffer(input)?.apply { clear(); put(record, 12, record.size - 12) }
-                decoder.queueInputBuffer(input, 0, record.size - 12, queuedFrames++ * 33_333L, 0)
+        val decoder = codec ?: startDecoder(isAnnexB(record, HEADER_SIZE)) ?: return
+        synchronized(lock) {
+            freeInputs.poll()?.let { submit(decoder, it, unit) } ?: run {
+                if (pending.size == MAX_PENDING) pending.poll()
+                pending.add(unit)
             }
-            val info = MediaCodec.BufferInfo()
-            var output = decoder.dequeueOutputBuffer(info, 0)
-            while (output >= 0) { decoder.releaseOutputBuffer(output, true); output = decoder.dequeueOutputBuffer(info, 0) }
-        }.onFailure { releaseCodec() }
+        }
     }
 
-    fun disconnect() { releaseCodec(); surface?.release(); surface = null; view = null }
-    private fun releaseCodec() { runCatching { codec?.stop(); codec?.release() }; codec = null }
-    private fun ByteArray.indexOfJpeg(): Int = indices.firstOrNull { it + 2 < size && this[it] == 0xFF.toByte() && this[it + 1] == 0xD8.toByte() && this[it + 2] == 0xFF.toByte() } ?: -1
+    fun disconnect() {
+        synchronized(lock) { pending.clear(); freeInputs.clear() }
+        releaseDecoder()
+        surface?.release(); surface = null
+        sawKeyframe = false; ptsIndex = 0L
+    }
+
+    private fun startDecoder(inBandParameterSets: Boolean): MediaCodec? {
+        val target = surface ?: return null
+        return runCatching {
+            MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC).also { decoder ->
+                decoder.setCallback(object : MediaCodec.Callback() {
+                    override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+                        synchronized(lock) {
+                            pending.poll()?.let { submit(codec, index, it) }
+                                ?: freeInputs.add(index)
+                        }
+                    }
+
+                    override fun onOutputBufferAvailable(
+                        codec: MediaCodec,
+                        index: Int,
+                        info: MediaCodec.BufferInfo
+                    ) {
+                        runCatching { codec.releaseOutputBuffer(index, true) }
+                    }
+
+                    override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) =
+                        Unit
+
+                    override fun onError(codec: MediaCodec, error: MediaCodec.CodecException) {
+                        releaseDecoder()
+                    }
+                })
+                val format =
+                    MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
+                        .apply {
+                            setInteger(
+                                MediaFormat.KEY_MAX_WIDTH,
+                                1920
+                            ); setInteger(MediaFormat.KEY_MAX_HEIGHT, 1080)
+                            if (!inBandParameterSets) {
+                                setByteBuffer(
+                                    "csd-0",
+                                    ByteBuffer.wrap(BBB_SPS)
+                                ); setByteBuffer("csd-1", ByteBuffer.wrap(BBB_PPS))
+                            }
+                        }
+                decoder.configure(format, target, null, 0); decoder.start(); codec = decoder
+            }
+        }.getOrNull()
+    }
+
+    private fun releaseDecoder() {
+        val old = codec ?: return
+        codec = null
+        runCatching { old.stop() }; runCatching { old.release() }
+    }
+
+    private fun submit(decoder: MediaCodec, index: Int, unit: ByteArray) = runCatching {
+        decoder.getInputBuffer(index)?.apply {
+            clear()
+            if (remaining() >= unit.size) {
+                put(unit); decoder.queueInputBuffer(index, 0, unit.size, ptsIndex++ * 33_333L, 0)
+            } else decoder.queueInputBuffer(index, 0, 0, 0, 0)
+        }
+    }
+
+    private fun renderJpeg(data: ByteArray, offset: Int) {
+        val bitmap = BitmapFactory.decodeByteArray(data, offset, data.size - offset) ?: return
+        val target = surface ?: return
+        runCatching {
+            target.lockCanvas(null).also { canvas ->
+                try {
+                    canvas.drawBitmap(
+                        bitmap,
+                        null,
+                        Rect(0, 0, canvas.width, canvas.height),
+                        jpegPaint
+                    )
+                } finally {
+                    target.unlockCanvasAndPost(canvas)
+                }
+            }
+        }
+        bitmap.recycle()
+    }
+
+    private fun toAnnexB(data: ByteArray): ByteArray? {
+        if (isAnnexB(data, HEADER_SIZE)) return data.copyOfRange(HEADER_SIZE, data.size)
+        val input = ByteBuffer.wrap(data, HEADER_SIZE, data.size - HEADER_SIZE)
+        val output = ByteArray(input.remaining())
+        var count = 0
+        while (input.remaining() >= 4) {
+            val length = input.int
+            if (length <= 0 || length > input.remaining()) break
+            START_CODE.copyInto(output, count); count += START_CODE.size
+            input.get(output, count, length); count += length
+        }
+        return output.copyOf(count).takeIf { it.isNotEmpty() }
+    }
+
+    private fun isKeyframe(data: ByteArray): Boolean {
+        for (i in 0 until data.size - 4) if (data[i] == 0.toByte() && data[i + 1] == 0.toByte() && (data[i + 2] == 1.toByte() || (data[i + 2] == 0.toByte() && data[i + 3] == 1.toByte()))) {
+            val header = if (data[i + 2] == 1.toByte()) i + 3 else i + 4
+            if (header < data.size && (data[header].toInt() and 0x1F) in 5..7) return true
+        }
+        return false
+    }
+
+    private fun isAnnexB(data: ByteArray, offset: Int) =
+        data.size - offset >= 4 && data[offset] == 0.toByte() && data[offset + 1] == 0.toByte() && (data[offset + 2] == 1.toByte() || (data[offset + 2] == 0.toByte() && data[offset + 3] == 1.toByte()))
+
+    private fun jpegOffset(data: ByteArray): Int? = (0..minOf(
+        data.size - 3,
+        32
+    )).firstOrNull { data[it] == 0xFF.toByte() && data[it + 1] == 0xD8.toByte() && data[it + 2] == 0xFF.toByte() }
+
+    companion object {
+        private const val HEADER_SIZE = 12 // Platform UI: 8-byte timestamp + 4-byte array length.
+        private const val MAX_PENDING = 64
+        private val START_CODE = byteArrayOf(0, 0, 0, 1)
+        private val BBB_SPS = byteArrayOf(
+            0,
+            0,
+            0,
+            1,
+            0x67,
+            0x64,
+            0,
+            0x32,
+            0xAC.toByte(),
+            0x72,
+            0x84.toByte(),
+            0x40,
+            0x50,
+            5,
+            0xBB.toByte(),
+            1,
+            0x10,
+            0,
+            0,
+            3,
+            0,
+            0x10,
+            0,
+            0,
+            3,
+            3,
+            0xC0.toByte(),
+            0xF1.toByte(),
+            0x83.toByte(),
+            0x18,
+            0x46
+        )
+        private val BBB_PPS = byteArrayOf(
+            0,
+            0,
+            0,
+            1,
+            0x68,
+            0xE8.toByte(),
+            0x43,
+            0x87.toByte(),
+            0x4B,
+            0x22,
+            0xC0.toByte()
+        )
+    }
 }
 
 @Composable
-fun VideoScreen(videoSurface: @Composable (Modifier) -> Unit, onExit: () -> Unit, onPtz: (PtzCommand) -> Unit) {
-    Box(Modifier.fillMaxSize().background(Color.Black)) {
+fun VideoScreen(
+    videoSurface: @Composable (Modifier) -> Unit,
+    onExit: () -> Unit,
+    onPtz: (PtzCommand) -> Unit
+) {
+    Box(Modifier
+        .fillMaxSize()
+        .background(Color.Black)) {
         videoSurface(Modifier.fillMaxSize())
-        IconButton(onClick = onExit, modifier = Modifier.align(Alignment.TopStart).padding(12.dp)) {
-            Icon(Icons.Default.ArrowBack, "Close video", tint = Color.White)
-        }
-        Column(Modifier.align(Alignment.BottomCenter).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            PtzButton(Icons.Default.KeyboardArrowUp, PtzCommand.TILT_UP, onPtz)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PtzButton(Icons.Default.KeyboardArrowLeft, PtzCommand.PAN_LEFT, onPtz)
-                PtzButton(Icons.Default.KeyboardArrowRight, PtzCommand.PAN_RIGHT, onPtz)
+        PtzButton(
+            Icons.Default.ArrowBack,
+            "Close video",
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp),
+            onClick = onExit
+        )
+        Column(
+            Modifier
+                .align(Alignment.CenterEnd)
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row {
+                Spacer(Modifier.size(64.dp)); PtzButton(
+                Icons.Default.KeyboardArrowUp,
+                "Tilt up"
+            ) { onPtz(PtzCommand.TILT_UP) }; Spacer(Modifier.size(64.dp))
             }
-            PtzButton(Icons.Default.KeyboardArrowDown, PtzCommand.TILT_DOWN, onPtz)
-            Row { PtzButton(Icons.Default.ZoomOut, PtzCommand.ZOOM_OUT, onPtz); PtzButton(Icons.Default.ZoomIn, PtzCommand.ZOOM_IN, onPtz) }
+            Row {
+                PtzButton(
+                    Icons.Default.KeyboardArrowLeft,
+                    "Pan left"
+                ) { onPtz(PtzCommand.PAN_LEFT) }; PtzButton(
+                Icons.Default.MyLocation,
+                "Home position",
+                enabled = false
+            ) {}; PtzButton(
+                Icons.Default.KeyboardArrowRight,
+                "Pan right"
+            ) { onPtz(PtzCommand.PAN_RIGHT) }
+            }
+            Row {
+                Spacer(Modifier.size(64.dp)); PtzButton(
+                Icons.Default.KeyboardArrowDown,
+                "Tilt down"
+            ) { onPtz(PtzCommand.TILT_DOWN) }; Spacer(Modifier.size(64.dp))
+            }
+            Row(
+                Modifier.padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                PtzButton(
+                    Icons.Default.ZoomOut,
+                    "Zoom out"
+                ) { onPtz(PtzCommand.ZOOM_OUT) }; PtzButton(Icons.Default.ZoomIn, "Zoom in") {
+                onPtz(
+                    PtzCommand.ZOOM_IN
+                )
+            }
+            }
         }
     }
 }
 
-@Composable private fun PtzButton(icon: ImageVector, command: PtzCommand, onPtz: (PtzCommand) -> Unit) {
-    IconButton(onClick = { onPtz(command) }) { Icon(icon, command.name, tint = MaterialTheme.colorScheme.primary) }
+@Composable
+private fun PtzButton(
+    icon: ImageVector,
+    description: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val alpha = if (enabled) 1f else .5f
+    val fill = if (pressed) Brush.linearGradient(
+        listOf(
+            Color(0xCC1B6EC2),
+            Color(0xCC1B6EC2)
+        )
+    ) else Brush.verticalGradient(listOf(Color(0xD92E343D), Color(0xD914171C)))
+    Box(
+        modifier
+            .padding(4.dp)
+            .size(56.dp)
+            .shadow(4.dp, CircleShape)
+            .clip(CircleShape)
+            .background(fill, CircleShape)
+            .border(1.dp, Color.White.copy(alpha = .33f * alpha), CircleShape)
+            .clickable(
+                onClick = onClick,
+                enabled = enabled,
+                interactionSource = interaction,
+                indication = null
+            ), contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            icon,
+            description,
+            tint = Color.White.copy(alpha = alpha),
+            modifier = Modifier.size(24.dp)
+        )
+    }
 }

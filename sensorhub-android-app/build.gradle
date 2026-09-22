@@ -99,6 +99,7 @@ android {
         test.java.srcDirs = ["tests"]
         main {
             java.srcDirs = ['src']
+            manifest.srcFile 'src/AndroidManifest.xml'
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
         }
@@ -118,4 +119,3 @@ android {
     }
 
 }
-
