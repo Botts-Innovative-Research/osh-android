@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
@@ -36,6 +37,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class SensorHubService extends Service
 {
+    private static final String ANDROID_LOG_TAG = "SensorHubStartup";
     private static final Logger log = LoggerFactory.getLogger(SensorHubService.class);
     final IBinder binder = new LocalBinder();
     private HandlerThread msgThread;
@@ -69,6 +71,7 @@ public class SensorHubService extends Service
 
         try
         {
+            log.info("Initializing SensorHub Android service");
             SensorHubService.appContext = getApplicationContext();
 
             SensorHubService.videoTex = new SurfaceTexture(1);
@@ -92,10 +95,11 @@ public class SensorHubService extends Service
             msgHandler = new Handler(msgThread.getLooper());
 
             startForegroundService();
+            log.info("SensorHub Android service initialized");
         }
         catch (Exception e)
         {
-            log.error("Error: " + e.getMessage());
+            Log.e(ANDROID_LOG_TAG, "SensorHub Android service initialization failed", e);
         }
     }
 
@@ -173,8 +177,12 @@ public class SensorHubService extends Service
 
     public synchronized void startSensorHub(final IModuleConfigRepository config, final boolean hasVideo)
     {
-        if (hubState == HubState.STARTING || hubState == HubState.RUNNING || hubState == HubState.STOPPING)
+        Log.i(ANDROID_LOG_TAG, "SensorHub start requested; video=" + hasVideo);
+        if (hubState == HubState.STARTING || hubState == HubState.RUNNING || hubState == HubState.STOPPING) {
+            log.warn("Ignoring SensorHub start request while hub is {}", hubState);
             return;
+        }
+        log.info("Starting SensorHub (video enabled: {})", hasVideo);
         hubState = HubState.STARTING;
 
         this.hasVideo = hasVideo;
@@ -196,21 +204,26 @@ public class SensorHubService extends Service
             hubState = HubState.ERROR;
             this.hasVideo = false;
             releaseWakeLocks();
+            Log.e(ANDROID_LOG_TAG, "SensorHub startup failed before background initialization", e);
             throw e;
         }
 
         msgHandler.post(new Runnable() {
             public void run() {
                 try {
+                    Log.i(ANDROID_LOG_TAG, "Creating and starting SensorHub modules");
+                    log.info("Creating SensorHub instance");
                     sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
+                    log.info("Starting SensorHub modules");
                     sensorhub.start();
                     hubState = HubState.RUNNING;
-                } catch (Exception e) {
-                    log.error("Error starting SensorHub: " + e.getMessage());
+                    log.info("SensorHub started successfully");
+                } catch (Throwable e) {
+                    Log.e(ANDROID_LOG_TAG, "SensorHub startup failed", e);
                     try {
                         if (sensorhub != null) sensorhub.stop();
-                    } catch (Exception ex) {
-                        log.error("Error stopping failed SensorHub", ex);
+                    } catch (Throwable ex) {
+                        Log.e(ANDROID_LOG_TAG, "Error stopping failed SensorHub", ex);
                     }
                     sensorhub = null;
                     SensorHubService.this.hasVideo = false;

@@ -25,6 +25,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -40,6 +41,9 @@ import org.sensorhub.android.config.SensorHubConfigFactory
 import org.sensorhub.android.data.servers.ServerProfileRepository
 
 class SensorHubViewModel(private val application: Application) : AndroidViewModel(application) {
+    private companion object {
+        const val TAG = "SensorHubViewModel"
+    }
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
     private val profiles = ServerProfileRepository.getInstance(application)
     private val sensorCardReader = SensorCardReader(application)
@@ -159,6 +163,7 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
         val snapshot = PreferenceSnapshot(prefs)
         viewModelScope.launch {
             try {
+                Log.i(TAG, "Preparing SensorHub configuration for run '${runName.trim()}'")
                 val config = withContext(Dispatchers.IO) {
                     val settings = LocalServiceSettings.read(snapshot)
                     val rules = if (settings.discoveryEnabled)
@@ -168,8 +173,10 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
                 val app = application
                 app.startService(Intent(app, SensorHubService::class.java))
                 activeSensors = SensorRegistry.enabledSensorEntries(snapshot).toList()
+                Log.i(TAG, "Requesting SensorHub start with ${activeSensors.size} enabled sensor(s)")
                 current.startSensorHub(config.modules, config.cameraEnabled)
             } catch (e: Exception) {
+                Log.e(TAG, "Unable to prepare or request SensorHub startup", e)
                 reportError(e.message ?: application.getString(R.string.ui_unable_to_start_smart_hub))
             } finally {
                 preparing = false
