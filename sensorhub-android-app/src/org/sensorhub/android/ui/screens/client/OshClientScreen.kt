@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Refresh
@@ -64,7 +64,10 @@ fun OshClientScreen(
     ) { padding ->
         if (nodes.isEmpty()) {
             Column(
-                Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -72,7 +75,9 @@ fun OshClientScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentPadding = PaddingValues(vertical = 8.dp),
             ) {
                 item(key = "server-selector") {
@@ -94,7 +99,12 @@ fun OshClientScreen(
                 }
                 val visibleNodes = nodes.filter { it.profileId in visibleProfileIds }
                 if (visibleNodes.isEmpty()) {
-                    item { Text("Select a server profile to view its systems.", Modifier.padding(24.dp)) }
+                    item {
+                        Text(
+                            "Select a server profile to view its systems.",
+                            Modifier.padding(24.dp)
+                        )
+                    }
                 }
                 visibleNodes.forEach { node ->
                     item(key = "server:${node.profileId}") {
@@ -158,7 +168,12 @@ private fun ServerSectionHeader(
                 },
                 onClick = if (node.loading) null else onDiscover,
             )
-            if (node.loading) CircularProgressIndicator(Modifier.padding(start = 52.dp, bottom = 16.dp))
+            if (node.loading) CircularProgressIndicator(
+                Modifier.padding(
+                    start = 52.dp,
+                    bottom = 16.dp
+                )
+            )
         }
     }
 }

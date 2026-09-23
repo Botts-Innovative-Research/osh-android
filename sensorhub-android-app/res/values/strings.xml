@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="system_detail_default_title">System</string>
+    <string name="system_detail_missing_system">This system is no longer available.</string>
+    <string name="system_detail_no_datastreams">No datastreams are available for this system.</string>
+    <string name="system_detail_datastream">Datastream</string>
+    <string name="system_detail_location">Location</string>
+    <string name="system_detail_video">Video</string>
+    <string name="system_detail_ptz_controls">PTZ controls</string>
+    <string name="system_detail_absolute_position">Absolute position</string>
+    <string name="system_detail_pan">Pan</string>
+    <string name="system_detail_tilt">Tilt</string>
+    <string name="system_detail_zoom">Zoom</string>
+    <string name="system_detail_live">Live</string>
+    <string name="system_detail_paused">Paused</string>
+    <string name="system_detail_disconnected_with_error">Disconnected: %1$s</string>
+    <string name="system_detail_waiting_for_observations">Waiting for observations…</string>
+    <string name="system_detail_receiving_observations">Receiving observations</string>
+    <string name="system_detail_disconnected">Disconnected</string>
+    <string name="system_detail_ptz_control">PTZ control</string>
+    <string name="system_detail_tilt_up">Tilt up</string>
+    <string name="system_detail_tilt_down">Tilt down</string>
+    <string name="system_detail_pan_left">Pan left</string>
+    <string name="system_detail_pan_right">Pan right</string>
+    <string name="system_detail_zoom_out">Zoom out</string>
+    <string name="system_detail_zoom_in">Zoom in</string>
+    <string name="system_detail_video_stream">Video stream</string>
+    <string name="system_detail_pause_video">Pause video</string>
+    <string name="system_detail_play_video">Play video</string>
+    <plurals name="system_detail_value_count">
+        <item quantity="one">%d value</item>
+        <item quantity="other">%d values</item>
+    </plurals>
     <string name="app_name">OSH Android</string>
     <string name="hello_world">Configure settings and tap the play button to start SmartHub</string>
     <string name="action_settings">Settings</string>

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
@@ -18,9 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.OSHShapes
 import org.sensorhub.android.ui.theme.SecondaryContainer
 import org.sensorhub.android.ui.theme.TextPrimary
 
@@ -30,15 +31,14 @@ fun OSHCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier,
+        shape = OSHShapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = SecondaryContainer,
             contentColor = TextPrimary
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
+            defaultElevation = OshDimensions.cardElevation,
         ),
         content = content
     )
@@ -53,14 +53,14 @@ fun OSHSensorCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
+            .padding(vertical = OshDimensions.cardOuterVertical),
+        shape = OSHShapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = SecondaryContainer,
             contentColor = TextPrimary
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp,
+            defaultElevation = OshDimensions.sensorCardElevation,
         ),
         content = content
     )
@@ -73,7 +73,7 @@ fun OSHClickableCardWithIcon(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    OSHCard(modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+    OSHCard(modifier = modifier.fillMaxWidth().padding(horizontal = OshDimensions.screenHorizontal, vertical = OshDimensions.cardOuterVertical)) {
         OSHClickableRowWithIcon(
             title = title,
             imageVector = imageVector,
@@ -100,7 +100,8 @@ fun OSHActionCard(
 ) {
     OSHCard(
         modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()
+            .padding(horizontal = OshDimensions.screenHorizontal, vertical = OshDimensions.cardOuterVertical)
             .then(
             if (onLongClick != null) {
                 Modifier.combinedClickable(

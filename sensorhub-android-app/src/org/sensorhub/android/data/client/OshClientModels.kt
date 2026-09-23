@@ -85,4 +85,13 @@ data class RemoteControlStream(
     val supportsRelativeTilt: Boolean,
     val supportsRelativeZoom: Boolean,
     val supportsPresets: Boolean,
+    val absolutePanRange: PtzAxisRange? = null,
+    val absoluteTiltRange: PtzAxisRange? = null,
+    val absoluteZoomRange: PtzAxisRange? = null,
+)
+
+data class PtzAxisRange(
+    val minimum: Float,
+    val maximum: Float,
+    val unit: String,
 )

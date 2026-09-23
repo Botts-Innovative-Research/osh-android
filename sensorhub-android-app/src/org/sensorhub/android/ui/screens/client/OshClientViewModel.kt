@@ -19,12 +19,13 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import org.sensorhub.android.data.client.ObservationSubscriptionManager
+import org.sensorhub.android.data.client.PtzAxisRange
 import org.sensorhub.android.data.client.RemoteControlStream
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
 import org.sensorhub.android.data.client.RemoteVisualization
-import org.sensorhub.android.data.client.StreamStatus
 import org.sensorhub.android.data.client.StreamCardState
+import org.sensorhub.android.data.client.StreamStatus
 import org.sensorhub.android.data.client.SystemDetailUiState
 import org.sensorhub.android.data.client.TrackRepository
 import org.sensorhub.android.data.servers.ServerProfileItem
@@ -96,6 +97,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                     status = status,
                     error = videoErrors[visualization.dataStreamId],
                 )
+
                 RemoteVisualization.Kind.LOCATION -> StreamCardState.Location(
                     streamId = visualization.dataStreamId,
                     name = visualization.name,
@@ -104,6 +106,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                         ?.let { it.latitude to it.longitude }
                         ?: currentSystem.location,
                 )
+
                 RemoteVisualization.Kind.OTHER -> StreamCardState.Values(
                     streamId = visualization.dataStreamId,
                     name = visualization.name,
@@ -189,7 +192,9 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             },
             onDisconnected = { error ->
                 _enabledVideos.update { it - visualization.dataStreamId }
-                _videoErrors.update { it + (visualization.dataStreamId to (error?.message ?: "Connection closed.")) }
+                _videoErrors.update {
+                    it + (visualization.dataStreamId to (error?.message ?: "Connection closed."))
+                }
                 _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
             },
         )
@@ -206,7 +211,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             .filter { it.kind == RemoteVisualization.Kind.VIDEO }
             .forEach { visualization ->
                 setVideoEnabled(profileId, visualization, false)
-                videoRenderers.remove(visualization.dataStreamId)?.disconnect()
+                videoRenderers[visualization.dataStreamId]?.disconnect()
             }
     }
 
@@ -234,7 +239,11 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             .forEach { setOtherEnabled(profileId, it, false) }
     }
 
-    private fun setOtherEnabled(profileId: String, visualization: RemoteVisualization, enabled: Boolean) {
+    private fun setOtherEnabled(
+        profileId: String,
+        visualization: RemoteVisualization,
+        enabled: Boolean
+    ) {
         if (!enabled) {
             subscriptions.unsubscribe(visualization.dataStreamId, "system screen closed")
             _otherValues.update { it - visualization.dataStreamId }
@@ -247,7 +256,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
-            "/datastreams/${visualization.dataStreamId}/observations?format=application/json"
+                "/datastreams/${visualization.dataStreamId}/observations?format=application/json"
         val request = authorizedRequest(url, profile).build()
         subscriptions.subscribe(
             streamId = visualization.dataStreamId,
@@ -255,7 +264,12 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             onText = { text ->
                 handleOtherMessage(text, visualization.dataStreamId)
             },
-            onBytes = { bytes -> handleOtherMessage(bytes.toString(Charsets.UTF_8), visualization.dataStreamId) },
+            onBytes = { bytes ->
+                handleOtherMessage(
+                    bytes.toString(Charsets.UTF_8),
+                    visualization.dataStreamId
+                )
+            },
             onDisconnected = {
                 _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
             },
@@ -264,7 +278,8 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun handleOtherMessage(text: String, dataStreamId: String) {
         val values = runCatching {
-            val observation = org.json.JSONTokener(text).nextValue() as? JSONObject ?: return@runCatching emptyMap()
+            val observation = org.json.JSONTokener(text).nextValue() as? JSONObject
+                ?: return@runCatching emptyMap()
             flattenFields(observation.opt("result"))
         }.getOrNull() ?: return
         if (values.isNotEmpty()) _otherValues.update { it + (dataStreamId to values) }
@@ -276,12 +291,14 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             is JSONObject -> value.keys().forEach { key ->
                 putAll(flattenFields(value.opt(key), if (prefix.isBlank()) key else "$prefix.$key"))
             }
+
             is JSONArray -> {
                 if (value.length() == 0) put(prefix, "[]")
                 else (0 until value.length()).forEach { index ->
                     putAll(flattenFields(value.opt(index), "$prefix[$index]"))
                 }
             }
+
             else -> if (prefix.isNotBlank()) put(prefix, value?.toString() ?: "null")
         }
     }
@@ -313,7 +330,13 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             onText = { text ->
                 handleLocationMessage(text, visualization, system)
             },
-            onBytes = { bytes -> handleLocationMessage(bytes.toString(Charsets.UTF_8), visualization, system) },
+            onBytes = { bytes ->
+                handleLocationMessage(
+                    bytes.toString(Charsets.UTF_8),
+                    visualization,
+                    system
+                )
+            },
             onDisconnected = {
                 _enabledLocations.update { it - visualization.dataStreamId }
                 _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
@@ -335,13 +358,17 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun discoverNode(profile: ServerProfileItem): List<RemoteSystem> {
-        val systemsJson = getJson("${apiBase(profile.endpointUrl)}/systems?limit=10000&f=geojson", profile)
-        val datastreamsJson = getJson("${apiBase(profile.endpointUrl)}/datastreams?limit=10000", profile)
-        val controlStreamsJson = getJson("${apiBase(profile.endpointUrl)}/controlstreams?limit=10000", profile)
+        val systemsJson =
+            getJson("${apiBase(profile.endpointUrl)}/systems?limit=10000&f=geojson", profile)
+        val datastreamsJson =
+            getJson("${apiBase(profile.endpointUrl)}/datastreams?limit=10000", profile)
+        val controlStreamsJson =
+            getJson("${apiBase(profile.endpointUrl)}/controlstreams?limit=10000", profile)
         val visualizations = classifyDatastreams(datastreamsJson)
-        val ptzBySystem = classifyControlStreams(controlStreamsJson)
+        val ptzBySystem = classifyControlStreams(controlStreamsJson, profile)
 
-        val items = systemsJson.optJSONArray("features") ?: systemsJson.optJSONArray("items") ?: JSONArray()
+        val items =
+            systemsJson.optJSONArray("features") ?: systemsJson.optJSONArray("items") ?: JSONArray()
         return buildList {
             for (index in 0 until items.length()) {
                 val item = items.optJSONObject(index) ?: continue
@@ -374,7 +401,10 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    private fun classifyControlStreams(json: JSONObject): Map<String, RemoteControlStream> {
+    private fun classifyControlStreams(
+        json: JSONObject,
+        profile: ServerProfileItem,
+    ): Map<String, RemoteControlStream> {
         val result = mutableMapOf<String, RemoteControlStream>()
         val items = json.optJSONArray("items") ?: return emptyMap()
 
@@ -385,13 +415,25 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             if (systemId.isBlank() || controlStreamId.isBlank()) continue
 
             val definitions = item.optJSONArray("controlledProperties")?.let { props ->
-                (0 until props.length()).mapNotNull { props.optJSONObject(it)?.optString("definition") }
-            }.orEmpty().toSet() // dedupe repeated entries
+                (0 until props.length()).mapNotNull {
+                    props.optJSONObject(it)?.optString("definition")
+                }
+            }.orEmpty().toSet()
 
             val hasPtz = definitions.any {
-                it.endsWith("/Pan") || it.endsWith("/Tilt") || it.endsWith("/ZoomFactor")
+                it.endsWith("Pan") || it.endsWith("Tilt") || it.endsWith("ZoomFactor")
             }
             if (!hasPtz) continue
+
+            val schema = runCatching {
+                getJson(
+                    "${apiBase(profile.endpointUrl)}/controlstreams/$controlStreamId/schema",
+                    profile,
+                )
+            }.getOrNull()
+            val absolutePanRange = schema?.let { absolutePtzRange(it, "pan") }
+            val absoluteTiltRange = schema?.let { absolutePtzRange(it, "tilt") }
+            val absoluteZoomRange = schema?.let { absolutePtzRange(it, "zoom") }
 
             result[systemId] = RemoteControlStream(
                 controlStreamId = controlStreamId,
@@ -402,9 +444,43 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 supportsRelativeTilt = "http://sensorml.com/ont/swe/property/RelativeTilt" in definitions,
                 supportsRelativeZoom = "http://sensorml.com/ont/swe/property/RelativeZoomFactor" in definitions,
                 supportsPresets = "http://sensorml.com/ont/swe/property/CameraPresetPositionName" in definitions,
+                absolutePanRange = absolutePanRange,
+                absoluteTiltRange = absoluteTiltRange,
+                absoluteZoomRange = absoluteZoomRange,
             )
         }
         return result
+    }
+
+    private fun absolutePtzRange(controlStream: JSONObject, name: String): PtzAxisRange? {
+        val schema = controlStream.optJSONObject("parametersSchema") ?: return null
+        val directItems = schema.optJSONArray("items") ?: return null
+        val candidates = buildList {
+            for (index in 0 until directItems.length()) {
+                val item = directItems.optJSONObject(index) ?: continue
+                add(item)
+                if (item.optString("type") == "DataRecord") {
+                    val fields = item.optJSONArray("fields") ?: continue
+                    for (fieldIndex in 0 until fields.length()) {
+                        fields.optJSONObject(fieldIndex)?.let(::add)
+                    }
+                }
+            }
+        }
+        val parameter = candidates.firstOrNull { it.optString("name") == name } ?: return null
+        val interval = parameter.optJSONObject("constraint")
+            ?.optJSONArray("intervals")
+            ?.optJSONArray(0)
+            ?: return null
+        val minimum = interval.optDouble(0, Double.NaN)
+        val maximum = interval.optDouble(1, Double.NaN)
+        if (!minimum.isFinite() || !maximum.isFinite() || minimum >= maximum) return null
+
+        return PtzAxisRange(
+            minimum = minimum.toFloat(),
+            maximum = maximum.toFloat(),
+            unit = parameter.optJSONObject("uom")?.optString("code").orEmpty(),
+        )
     }
 
     private fun pointFromGeoJson(geometry: JSONObject?): Pair<Double, Double>? {
@@ -428,36 +504,60 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
             val resultType = item.optString("resultType")
             val definitions = item.optJSONArray("observedProperties")?.let { props ->
-                (0 until props.length()).mapNotNull { props.optJSONObject(it)?.optString("definition") }
+                (0 until props.length()).mapNotNull {
+                    props.optJSONObject(it)?.optString("definition")
+                }
             }.orEmpty()
 
             val kind = when {
                 resultType == "coverage" && definitions.any { it.endsWith("/RasterImage") } ->
                     RemoteVisualization.Kind.VIDEO
-                resultType == "vector" && definitions.any { it.endsWith("/LocationVector") || it.endsWith("SensorLocation") } ->
+
+                resultType == "vector" && definitions.any {
+                    it.endsWith("/LocationVector") || it.endsWith(
+                        "SensorLocation"
+                    )
+                } ->
                     RemoteVisualization.Kind.LOCATION
+
                 definitions.any { it.endsWith("/GeodeticLatitude") } &&
                         definitions.any { it.endsWith("/Longitude") } ->
                     RemoteVisualization.Kind.LOCATION
+
                 else -> RemoteVisualization.Kind.OTHER
             }
 
-            result.getOrPut(systemId) { mutableListOf() }.add(RemoteVisualization(dataStreamId, name, kind))
+            result.getOrPut(systemId) { mutableListOf() }
+                .add(RemoteVisualization(dataStreamId, name, kind))
         }
         return result
     }
 
-    fun sendPtzCommand(profileId: String, controlStream: RemoteControlStream, params: Map<String, Any>) {
+    fun sendPtzCommand(
+        profileId: String,
+        controlStream: RemoteControlStream,
+        params: Map<String, Any>
+    ) {
         val profile = profiles.getById(profileId) ?: return
         viewModelScope.launch {
-            runCatching { withContext(Dispatchers.IO) { postCommand(controlStream.controlStreamId, params, profile) } }
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    postCommand(controlStream.controlStreamId, params, profile)
+                }
+            }
                 .onFailure { /* surface to a _commandError flow if you want UI feedback */ }
         }
     }
 
-    private fun postCommand(controlStreamId: String, params: Map<String, Any>, profile: ServerProfileItem) {
+    private fun postCommand(
+        controlStreamId: String,
+        params: Map<String, Any>,
+        profile: ServerProfileItem,
+    ) {
         val url = "${apiBase(profile.endpointUrl)}/controlstreams/$controlStreamId/commands"
-        val body = JSONObject(params).toString().toByteArray(Charsets.UTF_8)
+        val body = JSONObject(params)
+            .toString()
+            .toByteArray(Charsets.UTF_8)
             .toRequestBody("application/swe+json".toMediaType())
         val request = authorizedRequest(url, profile).post(body).build()
         http.newCall(request).execute().use {
@@ -498,6 +598,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 if (latitude != null && longitude != null) return latitude to longitude
                 value.keys().forEach { key -> findCoordinates(value.opt(key))?.let { return it } }
             }
+
             is JSONArray -> for (index in 0 until value.length()) {
                 findCoordinates(value.opt(index))?.let { return it }
             }
@@ -508,8 +609,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private fun number(json: JSONObject, vararg keys: String): Double? {
         for (key in keys) {
             if (!json.has(key)) continue
-            val value = json.opt(key)
-            when (value) {
+            when (val value = json.opt(key)) {
                 is Number -> return value.toDouble()
                 is String -> value.toDoubleOrNull()?.let { return it }
             }
