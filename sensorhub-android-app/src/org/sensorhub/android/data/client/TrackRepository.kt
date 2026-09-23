@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.update
 
 class TrackRepository {
     private val maxTrailPoints = 200
-
     private val _tracks = MutableStateFlow<Map<String, RemoteTrack>>(emptyMap())
     val tracks: StateFlow<Map<String, RemoteTrack>> = _tracks.asStateFlow()
 
@@ -33,11 +32,6 @@ class TrackRepository {
         }
     }
 
-    fun remove(streamId: String) {
-        _tracks.update { it - streamId }
-    }
-
-    fun clear() {
-        _tracks.value = emptyMap()
-    }
+    fun remove(streamId: String) { _tracks.update { it - streamId } }
+    fun clear() { _tracks.value = emptyMap() }
 }

@@ -24,6 +24,7 @@ import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
 import org.sensorhub.android.data.client.RemoteVisualization
 import org.sensorhub.android.data.client.StreamStatus
+import org.sensorhub.android.data.client.StreamCardState
 import org.sensorhub.android.data.client.SystemDetailUiState
 import org.sensorhub.android.data.client.TrackRepository
 import org.sensorhub.android.data.servers.ServerProfileItem
@@ -77,7 +78,42 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             otherValues = values,
         )
     }.combine(streamStatuses) { state, statuses -> state.copy(streamStatuses = statuses) }
-        .combine(tracks) { state, tracks -> state.copy(tracks = tracks) }
+        .combine(tracks) { state, tracks ->
+            state.copy(tracks = tracks).withCards()
+        }
+
+    private fun SystemDetailUiState.withCards(): SystemDetailUiState {
+        val currentSystem = system ?: return this
+        val cards = currentSystem.visualizations.map { visualization ->
+            val status = streamStatuses[visualization.dataStreamId] ?: when (visualization.kind) {
+                RemoteVisualization.Kind.VIDEO -> StreamStatus.PAUSED
+                else -> StreamStatus.CONNECTING
+            }
+            when (visualization.kind) {
+                RemoteVisualization.Kind.VIDEO -> StreamCardState.Video(
+                    streamId = visualization.dataStreamId,
+                    name = visualization.name,
+                    status = status,
+                    error = videoErrors[visualization.dataStreamId],
+                )
+                RemoteVisualization.Kind.LOCATION -> StreamCardState.Location(
+                    streamId = visualization.dataStreamId,
+                    name = visualization.name,
+                    status = status,
+                    position = tracks[visualization.dataStreamId]
+                        ?.let { it.latitude to it.longitude }
+                        ?: currentSystem.location,
+                )
+                RemoteVisualization.Kind.OTHER -> StreamCardState.Values(
+                    streamId = visualization.dataStreamId,
+                    name = visualization.name,
+                    status = status,
+                    values = otherValues[visualization.dataStreamId].orEmpty(),
+                )
+            }
+        }
+        return copy(cards = cards)
+    }
 
     init {
         refreshProfiles()

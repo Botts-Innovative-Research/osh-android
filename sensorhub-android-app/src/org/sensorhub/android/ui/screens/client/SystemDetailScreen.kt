@@ -69,8 +69,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.sensorhub.android.R
 import org.sensorhub.android.data.client.RemoteControlStream
+import org.sensorhub.android.data.client.RemoteSystem
 import org.sensorhub.android.data.client.RemoteVisualization
 import org.sensorhub.android.data.client.StreamStatus
+import org.sensorhub.android.data.client.StreamCardState
 import org.sensorhub.android.data.client.SystemDetailUiState
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
@@ -122,6 +124,16 @@ fun SystemDetailRoute(
         }
     }
 
+    val rendererFor: (RemoteSystem, RemoteVisualization) -> VideoStream = remember(viewModel) {
+        { selectedSystem, visualization -> viewModel.videoRenderer(selectedSystem, visualization) }
+    }
+    val onVideoToggle: (RemoteVisualization, Boolean) -> Unit = { visualization, enable ->
+        viewModel.setVideoEnabled(profileId, visualization, enable)
+    }
+    val onPtz: (RemoteControlStream, PtzCommand) -> Unit = { controlStream, command ->
+        viewModel.sendPtzCommand(profileId, controlStream, mapOf(command.item to command.delta))
+    }
+
     SystemDetailScreen(
         title = system?.name ?: "System",
         onBack = onBack,
@@ -136,12 +148,9 @@ fun SystemDetailRoute(
                 Text("This system is no longer available.")
             }
         } else {
-            val videoStreams =
-                system.visualizations.filter { it.kind == RemoteVisualization.Kind.VIDEO }
-            val locationStreams =
-                system.visualizations.filter { it.kind == RemoteVisualization.Kind.LOCATION }
-            val otherStreams =
-                system.visualizations.filter { it.kind == RemoteVisualization.Kind.OTHER }
+            val videoCards = detailState.cards.filterIsInstance<StreamCardState.Video>()
+            val locationCards = detailState.cards.filterIsInstance<StreamCardState.Location>()
+            val valueCards = detailState.cards.filterIsInstance<StreamCardState.Values>()
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -149,42 +158,39 @@ fun SystemDetailRoute(
                 contentPadding = PaddingValues(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
-                if (videoStreams.isNotEmpty()) {
-                    items(videoStreams, key = { it.dataStreamId }) { visualization ->
+                if (videoCards.isNotEmpty()) {
+                    items(videoCards, key = { it.streamId }) { card ->
+                        val visualization = RemoteVisualization(card.streamId, card.name, RemoteVisualization.Kind.VIDEO)
                         VideoStreamCard(
                             visualization = visualization,
-                            status = detailState.streamStatuses[visualization.dataStreamId] ?: StreamStatus.PAUSED,
-                            error = detailState.videoErrors[visualization.dataStreamId],
+                            status = card.status,
+                            error = card.error,
                             renderer = remember(visualization.dataStreamId) {
-                                viewModel.videoRenderer(system, visualization)
+                                rendererFor(system, visualization)
                             },
                             onPlayPause = {
-                                viewModel.setVideoEnabled(
-                                    profileId,
-                                    visualization,
-                                    detailState.streamStatuses[visualization.dataStreamId] != StreamStatus.RECEIVING,
-                                )
+                                onVideoToggle(visualization, card.status != StreamStatus.RECEIVING)
                             },
                         )
                     }
                 }
-                if (locationStreams.isNotEmpty()) {
-                    items(locationStreams, key = { it.dataStreamId }) { visualization ->
+                if (locationCards.isNotEmpty()) {
+                    items(locationCards, key = { it.streamId }) { card ->
+                        val visualization = RemoteVisualization(card.streamId, card.name, RemoteVisualization.Kind.LOCATION)
                         MapLocationCard(
                             visualization = visualization,
-                            status = detailState.streamStatuses[visualization.dataStreamId] ?: StreamStatus.CONNECTING,
-                            position = detailState.tracks[visualization.dataStreamId]
-                                ?.let { it.latitude to it.longitude }
-                                ?: system.location,
+                            status = card.status,
+                            position = card.position,
                         )
                     }
                 }
-                if (otherStreams.isNotEmpty()) {
-                    items(otherStreams, key = { it.dataStreamId }) { visualization ->
+                if (valueCards.isNotEmpty()) {
+                    items(valueCards, key = { it.streamId }) { card ->
+                        val visualization = RemoteVisualization(card.streamId, card.name, RemoteVisualization.Kind.OTHER)
                         OtherStreamCard(
                             visualization = visualization,
-                            values = detailState.otherValues[visualization.dataStreamId].orEmpty(),
-                            status = detailState.streamStatuses[visualization.dataStreamId] ?: StreamStatus.CONNECTING,
+                            values = card.values,
+                            status = card.status,
                         )
                     }
                 }
@@ -201,13 +207,7 @@ fun SystemDetailRoute(
                     item(key = "ptz") {
                         PTZCommandCard(
                             controlStream = ptz,
-                            onPtz = { command ->
-                                viewModel.sendPtzCommand(
-                                    profileId,
-                                    ptz,
-                                    mapOf(command.item to command.delta),
-                                )
-                            },
+                            onPtz = { command -> onPtz(ptz, command) },
                         )
                     }
                 }

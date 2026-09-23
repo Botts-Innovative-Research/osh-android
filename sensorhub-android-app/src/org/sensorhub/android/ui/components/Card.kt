@@ -31,15 +31,14 @@ fun OSHCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SecondaryContainer,
             contentColor = TextPrimary
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp,
+            defaultElevation = 2.dp,
         ),
         content = content
     )
@@ -74,7 +73,7 @@ fun OSHClickableCardWithIcon(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    OSHCard(modifier = modifier) {
+    OSHCard(modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         OSHClickableRowWithIcon(
             title = title,
             imageVector = imageVector,
@@ -100,7 +99,9 @@ fun OSHActionCard(
     onLongClick: (() -> Unit)? = null
 ) {
     OSHCard(
-        modifier = modifier.then(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .then(
             if (onLongClick != null) {
                 Modifier.combinedClickable(
                     onClick = {},

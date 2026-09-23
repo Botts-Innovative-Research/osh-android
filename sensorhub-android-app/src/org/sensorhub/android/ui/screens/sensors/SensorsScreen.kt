@@ -68,7 +68,7 @@ fun SensorsScreen(
     var activeDialog by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
-    val scanner = remember { BluetoothScanner(context) }
+    val scanner = remember(context) { BluetoothScanner(context) }
     val bluetoothDevices = scanner.foundDevices
 
     val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

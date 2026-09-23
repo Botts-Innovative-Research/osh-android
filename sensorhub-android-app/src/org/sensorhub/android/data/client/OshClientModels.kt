@@ -46,7 +46,35 @@ data class SystemDetailUiState(
     val otherValues: Map<String, Map<String, String>> = emptyMap(),
     val streamStatuses: Map<String, StreamStatus> = emptyMap(),
     val tracks: Map<String, RemoteTrack> = emptyMap(),
+    val cards: List<StreamCardState> = emptyList(),
 )
+
+sealed interface StreamCardState {
+    val streamId: String
+    val name: String
+    val status: StreamStatus
+
+    data class Video(
+        override val streamId: String,
+        override val name: String,
+        override val status: StreamStatus,
+        val error: String?,
+    ) : StreamCardState
+
+    data class Location(
+        override val streamId: String,
+        override val name: String,
+        override val status: StreamStatus,
+        val position: Pair<Double, Double>?,
+    ) : StreamCardState
+
+    data class Values(
+        override val streamId: String,
+        override val name: String,
+        override val status: StreamStatus,
+        val values: Map<String, String>,
+    ) : StreamCardState
+}
 
 data class RemoteControlStream(
     val controlStreamId: String,
