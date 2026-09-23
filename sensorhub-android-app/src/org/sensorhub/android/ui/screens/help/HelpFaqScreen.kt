@@ -11,16 +11,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHExpandableCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.Primary
 import org.sensorhub.android.ui.theme.TextSecondary
-import org.sensorhub.android.R
-import androidx.compose.ui.res.stringResource
 
 
 @Composable

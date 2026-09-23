@@ -1,11 +1,10 @@
 package org.sensorhub.android.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.filled.SettingsSystemDaydream
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -13,16 +12,16 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import org.sensorhub.android.ui.theme.AccentOrangeDim
 import org.sensorhub.android.ui.theme.BottomNavBg
 import org.sensorhub.android.ui.theme.BottomNavSelected
 import org.sensorhub.android.ui.theme.BottomNavUnselected
-import org.sensorhub.android.ui.theme.AccentOrangeDim
 import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
@@ -43,6 +42,11 @@ fun Navbar(
             title = "Map",
             icon = Icons.Default.Map,
             route = Screen.Map.route
+        ),
+        NavigationItem(
+            title = "Client",
+            icon = Icons.Default.Monitor,
+            route = Screen.Client.route
         ),
         NavigationItem(
             title = "Sensors",

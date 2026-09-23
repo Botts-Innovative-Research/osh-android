@@ -1,12 +1,12 @@
 package org.sensorhub.android.ui.screens.settings
 
-import org.sensorhub.android.data.settings.LocalServiceSettings
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.sensorhub.android.data.settings.LocalServiceSettings
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)

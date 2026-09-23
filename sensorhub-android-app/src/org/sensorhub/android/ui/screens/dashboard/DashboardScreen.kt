@@ -3,6 +3,7 @@ package org.sensorhub.android.ui.screens.dashboard
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.os.Build
+import android.util.Log
 import android.view.TextureView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -165,6 +166,14 @@ fun DashboardScreen(
                                 server.allOk -> R.string.destination_active
                                 else -> R.string.destination_attention
                             })
+                            LaunchedEffect(server.serverName, summary, server.errorText) {
+                                Log.d(
+                                    "ServerDestination",
+                                    "${server.serverName}: $summary" +
+                                        (server.errorText?.let { " — $it" } ?: "")
+                                )
+                            }
+
                             OSHStatusRow(
                                 title = server.serverName,
                                 subtitle = if (hasError) {

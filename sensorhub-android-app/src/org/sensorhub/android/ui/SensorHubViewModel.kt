@@ -1,45 +1,48 @@
 package org.sensorhub.android.ui
 
-import org.sensorhub.android.ui.screens.dashboard.SensorCardReader
-import org.sensorhub.android.ui.screens.dashboard.ServerStatusReader
-import org.sensorhub.android.ui.screens.dashboard.SensorCardUi
-import org.sensorhub.android.ui.screens.dashboard.ServerStatusUi
-import org.sensorhub.android.data.sensors.SensorRegistry
-import org.sensorhub.android.data.sensors.SensorUiEntry
-import org.sensorhub.android.data.settings.LocalServiceSettings
-import org.sensorhub.android.config.DiscoveryRulesDownloader
-import org.sensorhub.android.config.PreferenceSnapshot
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import org.sensorhub.android.data.sensors.SensorBinding
-import org.sensorhub.impl.sensor.android.AndroidSensorsConfig
-import org.sensorhub.impl.sensor.controller.ControllerDriver
-
-import org.sensorhub.android.R
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.sensorhub.api.module.ModuleEvent.ModuleState
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.sensorhub.android.R
 import org.sensorhub.android.SensorHubService
+import org.sensorhub.android.config.DiscoveryRulesDownloader
+import org.sensorhub.android.config.PreferenceSnapshot
 import org.sensorhub.android.config.SensorHubConfigFactory
+import org.sensorhub.android.data.sensors.SensorBinding
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.data.sensors.SensorUiEntry
 import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.settings.LocalServiceSettings
+import org.sensorhub.android.ui.screens.dashboard.SensorCardReader
+import org.sensorhub.android.ui.screens.dashboard.SensorCardUi
+import org.sensorhub.android.ui.screens.dashboard.ServerStatusReader
+import org.sensorhub.android.ui.screens.dashboard.ServerStatusUi
+import org.sensorhub.api.module.ModuleEvent.ModuleState
+import org.sensorhub.impl.sensor.android.AndroidSensorsConfig
+import org.sensorhub.impl.sensor.controller.ControllerDriver
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class SensorHubViewModel(private val application: Application) : AndroidViewModel(application) {
+    private companion object {
+        const val TAG = "SensorHubViewModel"
+    }
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
     private val profiles = ServerProfileRepository.getInstance(application)
     private val sensorCardReader = SensorCardReader(application)
@@ -159,6 +162,7 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
         val snapshot = PreferenceSnapshot(prefs)
         viewModelScope.launch {
             try {
+                Log.i(TAG, "Preparing SensorHub configuration for run '${runName.trim()}'")
                 val config = withContext(Dispatchers.IO) {
                     val settings = LocalServiceSettings.read(snapshot)
                     val rules = if (settings.discoveryEnabled)
@@ -168,8 +172,10 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
                 val app = application
                 app.startService(Intent(app, SensorHubService::class.java))
                 activeSensors = SensorRegistry.enabledSensorEntries(snapshot).toList()
+                Log.i(TAG, "Requesting SensorHub start with ${activeSensors.size} enabled sensor(s)")
                 current.startSensorHub(config.modules, config.cameraEnabled)
             } catch (e: Exception) {
+                Log.e(TAG, "Unable to prepare or request SensorHub startup", e)
                 reportError(e.message ?: application.getString(R.string.ui_unable_to_start_smart_hub))
             } finally {
                 preparing = false

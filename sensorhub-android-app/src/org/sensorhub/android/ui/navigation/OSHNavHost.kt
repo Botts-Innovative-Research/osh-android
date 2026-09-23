@@ -11,22 +11,26 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
+import org.sensorhub.android.ui.screens.client.OshClientScreen
+import org.sensorhub.android.ui.screens.client.OshClientViewModel
+import org.sensorhub.android.ui.screens.client.SystemDetailScreen
+import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
 import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
-import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
 import org.sensorhub.android.ui.screens.maps.MapScreen
+import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.servers.ServerFormScreen
-import org.sensorhub.android.ui.screens.settings.SettingsScreen
 import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.settings.SettingsScreen
 
 @Composable
 fun OSHNavHost(
     navController: NavHostController,
     hubViewModel: SensorHubViewModel,
+    clientViewModel: OshClientViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -43,6 +47,29 @@ fun OSHNavHost(
         composable(Screen.Map.route) {
             MapScreen(
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
+            )
+        }
+        composable(Screen.Client.route) {
+            OshClientScreen(
+                onNavigateToSettings = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
+                onOpenSystem = { profileId, systemId ->
+                    navController.navigate(Screen.SystemDetail.createRoute(profileId, systemId))
+                },
+                viewModel = clientViewModel,
+            )
+        }
+        composable(
+            route = Screen.SystemDetail.route,
+            arguments = listOf(
+                navArgument("profileId") { type = NavType.StringType },
+                navArgument("systemId") { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            SystemDetailScreen(
+                profileId = backStackEntry.arguments?.getString("profileId").orEmpty(),
+                systemId = backStackEntry.arguments?.getString("systemId").orEmpty(),
+                onBack = { navController.popBackStack() },
+                viewModel = clientViewModel,
             )
         }
         composable(Screen.Sensors.route) {
