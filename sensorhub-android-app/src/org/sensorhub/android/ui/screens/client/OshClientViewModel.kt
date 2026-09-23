@@ -286,9 +286,13 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 val description = item.optString("description").ifBlank {
                     properties?.optString("description").orEmpty()
                 }
+                val uid = item.optString("uid").ifBlank {
+                    properties?.optString("uid").orEmpty()
+                }
                 add(
                     RemoteSystem(
                         id = id,
+                        uid = uid,
                         name = name,
                         description = description,
                         location = pointFromGeoJson(item.optJSONObject("geometry")),

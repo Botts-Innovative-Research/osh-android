@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.SettingsSystemDaydream
 import androidx.compose.material.icons.filled.Visibility
@@ -47,7 +48,7 @@ fun Navbar(
         ),
         NavigationItem(
             title = "Client",
-            icon = Icons.Default.Visibility,
+            icon = Icons.Default.Monitor,
             route = Screen.Client.route
         ),
         NavigationItem(

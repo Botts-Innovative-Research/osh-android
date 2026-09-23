@@ -10,6 +10,7 @@ data class RemoteVisualization(
 
 data class RemoteSystem(
     val id: String,
+    val uid: String,
     val name: String,
     val description: String,
     val location: Pair<Double, Double>? = null,
