@@ -15,7 +15,7 @@ import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
 import org.sensorhub.android.ui.screens.client.OshClientScreen
 import org.sensorhub.android.ui.screens.client.OshClientViewModel
-import org.sensorhub.android.ui.screens.client.SystemDetailScreen
+import org.sensorhub.android.ui.screens.client.SystemDetailRoute
 import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
 import org.sensorhub.android.ui.screens.help.FaqItem
 import org.sensorhub.android.ui.screens.help.HelpFaqScreen
@@ -46,7 +46,8 @@ fun OSHNavHost(
         }
         composable(Screen.Map.route) {
             MapScreen(
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
+                tracks = clientViewModel.tracks,
             )
         }
         composable(Screen.Client.route) {
@@ -65,7 +66,7 @@ fun OSHNavHost(
                 navArgument("systemId") { type = NavType.StringType },
             ),
         ) { backStackEntry ->
-            SystemDetailScreen(
+            SystemDetailRoute(
                 profileId = backStackEntry.arguments?.getString("profileId").orEmpty(),
                 systemId = backStackEntry.arguments?.getString("systemId").orEmpty(),
                 onBack = { navController.popBackStack() },

@@ -8,6 +8,8 @@ data class RemoteVisualization(
     enum class Kind { LOCATION, VIDEO, OTHER }
 }
 
+enum class StreamStatus { CONNECTING, RECEIVING, DISCONNECTED, PAUSED }
+
 data class RemoteSystem(
     val id: String,
     val uid: String,
@@ -34,6 +36,16 @@ data class RemoteTrack(
     val latitude: Double,
     val longitude: Double,
     val trail: List<Pair<Double, Double>>,
+)
+
+data class SystemDetailUiState(
+    val system: RemoteSystem? = null,
+    val enabledLocations: Set<String> = emptySet(),
+    val enabledVideos: Set<String> = emptySet(),
+    val videoErrors: Map<String, String> = emptyMap(),
+    val otherValues: Map<String, Map<String, String>> = emptyMap(),
+    val streamStatuses: Map<String, StreamStatus> = emptyMap(),
+    val tracks: Map<String, RemoteTrack> = emptyMap(),
 )
 
 data class RemoteControlStream(

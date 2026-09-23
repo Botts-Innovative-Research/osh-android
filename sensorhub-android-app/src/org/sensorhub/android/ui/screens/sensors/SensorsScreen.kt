@@ -104,6 +104,7 @@ fun SensorsScreen(
                 scanner.stopDiscovery()
             },
             onStartScan = { permissionLauncher.launch(requiredPermissions) },
+            onStopScan = scanner::stopDiscovery,
         )
     }
 

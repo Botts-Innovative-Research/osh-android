@@ -351,6 +351,7 @@
     <string name="empty_server_profiles">No server profiles configured.\nTap + to create one.</string>
     <string name="content_desc_add_server">Add server profile</string>
     <string name="title_delete_server">Delete Server</string>
+    <string name="title_server_profiles">Server Profiles</string>
     <string name="msg_delete_server">Remove \"%s\"?</string>
 
     <!-- Edit Server Profile -->

@@ -74,13 +74,12 @@ fun OSHClickableCardWithIcon(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    OSHCard()
-     {
+    OSHCard(modifier = modifier) {
         OSHClickableRowWithIcon(
             title = title,
             imageVector = imageVector,
             contentDescription = contentDescription,
-            modifier = modifier,
+            modifier = Modifier,
             onClick = onClick
         )
     }

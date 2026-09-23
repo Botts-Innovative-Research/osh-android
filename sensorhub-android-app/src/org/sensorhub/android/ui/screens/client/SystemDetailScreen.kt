@@ -59,15 +59,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.sensorhub.android.R
-import org.sensorhub.android.data.client.OshMapStore
 import org.sensorhub.android.data.client.RemoteControlStream
 import org.sensorhub.android.data.client.RemoteVisualization
+import org.sensorhub.android.data.client.StreamStatus
+import org.sensorhub.android.data.client.SystemDetailUiState
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.StatusDot
@@ -75,42 +79,52 @@ import org.sensorhub.android.ui.theme.Background
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
-fun SystemDetailScreen(
+fun SystemDetailRoute(
     profileId: String,
     systemId: String,
     onBack: () -> Unit,
     viewModel: OshClientViewModel,
 ) {
-    val nodes by viewModel.nodes.collectAsStateWithLifecycle()
-    val enabledLocations by viewModel.enabledLocations.collectAsStateWithLifecycle()
-    val enabledVideos by viewModel.enabledVideos.collectAsStateWithLifecycle()
-    val videoErrors by viewModel.videoErrors.collectAsStateWithLifecycle()
-    val otherValues by viewModel.otherValues.collectAsStateWithLifecycle()
-    val remoteTracks by OshMapStore.tracks.collectAsStateWithLifecycle()
-    val system = nodes.firstOrNull { it.profileId == profileId }
-        ?.systems
-        ?.firstOrNull { it.id == systemId }
+    val detailState by viewModel.systemDetailState(profileId, systemId).collectAsStateWithLifecycle(
+        initialValue = SystemDetailUiState(),
+    )
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val system = detailState.system
 
     system?.let { selectedSystem ->
-        DisposableEffect(profileId, selectedSystem.id) {
-            viewModel.startSystemLocationStreams(profileId, selectedSystem)
-            viewModel.startSystemOtherStreams(profileId, selectedSystem)
-            onDispose {
-                viewModel.stopSystemVideos(profileId, selectedSystem)
+        DisposableEffect(profileId, selectedSystem.id, selectedSystem.visualizations, lifecycle) {
+            var streamsStarted = false
+            fun startAutomaticStreams() {
+                if (streamsStarted) return
+                streamsStarted = true
+                viewModel.startSystemLocationStreams(profileId, selectedSystem)
+                viewModel.startSystemOtherStreams(profileId, selectedSystem)
+            }
+            fun stopAutomaticStreams() {
+                if (!streamsStarted) return
+                streamsStarted = false
                 viewModel.stopSystemLocationStreams(profileId, selectedSystem)
                 viewModel.stopSystemOtherStreams(profileId, selectedSystem)
+            }
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_START -> startAutomaticStreams()
+                    Lifecycle.Event.ON_STOP -> stopAutomaticStreams()
+                    else -> Unit
+                }
+            }
+            lifecycle.addObserver(observer)
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) startAutomaticStreams()
+            onDispose {
+                lifecycle.removeObserver(observer)
+                stopAutomaticStreams()
             }
         }
     }
 
-    Scaffold(
-        topBar = {
-            OSHTopAppBarWithBack(
-                title = system?.name ?: "System",
-                onBackClick = onBack,
-            )
-        },
-        containerColor = Background,
+    SystemDetailScreen(
+        title = system?.name ?: "System",
+        onBack = onBack,
     ) { padding ->
         if (system == null) {
             Box(
@@ -139,13 +153,17 @@ fun SystemDetailScreen(
                     items(videoStreams, key = { it.dataStreamId }) { visualization ->
                         VideoStreamCard(
                             visualization = visualization,
-                            playing = visualization.dataStreamId in enabledVideos,
-                            error = videoErrors[visualization.dataStreamId],
+                            status = detailState.streamStatuses[visualization.dataStreamId] ?: StreamStatus.PAUSED,
+                            error = detailState.videoErrors[visualization.dataStreamId],
                             renderer = remember(visualization.dataStreamId) {
                                 viewModel.videoRenderer(system, visualization)
                             },
-                            onPlayPause = { playing ->
-                                viewModel.setVideoEnabled(profileId, visualization, !playing)
+                            onPlayPause = {
+                                viewModel.setVideoEnabled(
+                                    profileId,
+                                    visualization,
+                                    detailState.streamStatuses[visualization.dataStreamId] != StreamStatus.RECEIVING,
+                                )
                             },
                         )
                     }
@@ -154,8 +172,8 @@ fun SystemDetailScreen(
                     items(locationStreams, key = { it.dataStreamId }) { visualization ->
                         MapLocationCard(
                             visualization = visualization,
-                            enabled = visualization.dataStreamId in enabledLocations,
-                            position = remoteTracks[visualization.dataStreamId]
+                            status = detailState.streamStatuses[visualization.dataStreamId] ?: StreamStatus.CONNECTING,
+                            position = detailState.tracks[visualization.dataStreamId]
                                 ?.let { it.latitude to it.longitude }
                                 ?: system.location,
                         )
@@ -165,7 +183,8 @@ fun SystemDetailScreen(
                     items(otherStreams, key = { it.dataStreamId }) { visualization ->
                         OtherStreamCard(
                             visualization = visualization,
-                            values = otherValues[visualization.dataStreamId].orEmpty(),
+                            values = detailState.otherValues[visualization.dataStreamId].orEmpty(),
+                            status = detailState.streamStatuses[visualization.dataStreamId] ?: StreamStatus.CONNECTING,
                         )
                     }
                 }
@@ -197,16 +216,31 @@ fun SystemDetailScreen(
     }
 }
 
+/** Stateless screen shell: routes provide state, callbacks, and body content. */
+@Composable
+private fun SystemDetailScreen(
+    title: String,
+    onBack: () -> Unit,
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    Scaffold(
+        topBar = { OSHTopAppBarWithBack(title = title, onBackClick = onBack) },
+        containerColor = Background,
+        content = content,
+    )
+}
+
 
 @Composable
 private fun OtherStreamCard(
     visualization: RemoteVisualization,
     values: Map<String, String>,
+    status: StreamStatus,
 ) {
     OSHCard {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.SsidChart, contentDescription = "Datastream")
+                StatusDot(status = status.dotStatus())
                 Spacer(Modifier.width(10.dp))
                 Text(
                     visualization.name.ifBlank { "Datastream" },
@@ -216,7 +250,7 @@ private fun OtherStreamCard(
             }
             if (values.isEmpty()) {
                 Text(
-                    "Waiting for observations…",
+                    status.message(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp),
@@ -350,13 +384,13 @@ private fun PTZCommandCard(
 @Composable
 private fun MapLocationCard(
     visualization: RemoteVisualization,
-    enabled: Boolean,
+    status: StreamStatus,
     position: Pair<Double, Double>?,
 ) {
     OSHCard {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusDot(status = if (enabled) "started" else "unknown")
+                StatusDot(status = status.dotStatus())
                 Spacer(Modifier.width(10.dp))
                 Text(
                     visualization.name.ifBlank { "Location" },
@@ -376,7 +410,7 @@ private fun MapLocationCard(
                 if (position == null) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            "Waiting for a location update",
+                            status.message(),
                             color = Color.White.copy(alpha = 0.55f),
                         )
                     }
@@ -443,17 +477,17 @@ private fun LocationMap(
 @Composable
 private fun VideoStreamCard(
     visualization: RemoteVisualization,
-    playing: Boolean,
+    status: StreamStatus,
     error: String?,
     renderer: VideoStream,
-    onPlayPause: (playing: Boolean) -> Unit,
+    onPlayPause: () -> Unit,
 ) {
     OSHCard {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(
                     status = when {
-                        playing -> "started"
+                        status == StreamStatus.RECEIVING -> "started"
                         error != null -> "error"
                         else -> "unknown"
                     },
@@ -468,7 +502,7 @@ private fun VideoStreamCard(
             }
             Text(
                 text = when {
-                    playing -> "Live"
+                    status == StreamStatus.RECEIVING -> "Live"
                     error != null -> "Disconnected: $error"
                     else -> "Paused"
                 },
@@ -490,18 +524,18 @@ private fun VideoStreamCard(
                     onSurfaceReady = {},
                     modifier = Modifier.fillMaxSize(),
                 )
-                if (!playing) {
+                if (status != StreamStatus.RECEIVING) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color(0xCC1A1A1A)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text("Paused", color = Color.White.copy(alpha = 0.35f))
+                        Text(status.message(), color = Color.White.copy(alpha = 0.35f))
                     }
                 }
                 IconButton(
-                    onClick = { onPlayPause(playing) },
+                    onClick = onPlayPause,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(12.dp)
@@ -510,14 +544,27 @@ private fun VideoStreamCard(
                         .background(Color(0xD9000000)),
                 ) {
                     Icon(
-                        imageVector = if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = if (playing) "Pause video" else "Play video",
+                        imageVector = if (status == StreamStatus.RECEIVING) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = if (status == StreamStatus.RECEIVING) "Pause video" else "Play video",
                         tint = Color.White,
                     )
                 }
             }
         }
     }
+}
+
+private fun StreamStatus.dotStatus() = when (this) {
+    StreamStatus.RECEIVING -> "started"
+    StreamStatus.DISCONNECTED -> "error"
+    else -> "unknown"
+}
+
+private fun StreamStatus.message() = when (this) {
+    StreamStatus.CONNECTING -> "Waiting for observations…"
+    StreamStatus.RECEIVING -> "Receiving observations"
+    StreamStatus.DISCONNECTED -> "Disconnected"
+    StreamStatus.PAUSED -> "Paused"
 }
 
 @Composable

@@ -23,6 +23,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -30,7 +32,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.sensorhub.android.R
-import org.sensorhub.android.data.client.OshMapStore
+import org.sensorhub.android.data.client.RemoteTrack
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
@@ -43,9 +45,10 @@ private data class TrackOverlays(
 @Composable
 fun MapScreen(
     onNavigateToSettings : () -> Unit,
+    tracks: StateFlow<Map<String, RemoteTrack>>,
 ) {
     val context = LocalContext.current
-    val remoteTracks by OshMapStore.tracks.collectAsStateWithLifecycle()
+    val remoteTracks by tracks.collectAsStateWithLifecycle()
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val mapView = remember(context, lifecycle) {
@@ -161,7 +164,8 @@ fun MapScreen(
 private fun MapScreenPreview() {
     OSHTheme {
         MapScreen(
-            {}
+            onNavigateToSettings = {},
+            tracks = remember { MutableStateFlow(emptyMap()) },
         )
     }
 }

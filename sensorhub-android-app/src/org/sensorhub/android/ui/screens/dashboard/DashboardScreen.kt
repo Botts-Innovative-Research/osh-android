@@ -3,7 +3,6 @@ package org.sensorhub.android.ui.screens.dashboard
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.os.Build
-import android.util.Log
 import android.view.TextureView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -40,9 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import org.sensorhub.android.R
 import org.sensorhub.android.SensorHubService
@@ -58,12 +54,7 @@ import org.sensorhub.api.module.ModuleEvent.ModuleState
 
 @Composable
 fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewModel) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val state by produceState(viewModel.state.value, viewModel, lifecycle) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            viewModel.state.collect { value = it }
-        }
-    }
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val permissions = permissionsForEnabledSensors(context)
     fun permissionsGranted() = permissions.all {
@@ -166,14 +157,6 @@ fun DashboardScreen(
                                 server.allOk -> R.string.destination_active
                                 else -> R.string.destination_attention
                             })
-                            LaunchedEffect(server.serverName, summary, server.errorText) {
-                                Log.d(
-                                    "ServerDestination",
-                                    "${server.serverName}: $summary" +
-                                        (server.errorText?.let { " — $it" } ?: "")
-                                )
-                            }
-
                             OSHStatusRow(
                                 title = server.serverName,
                                 subtitle = if (hasError) {

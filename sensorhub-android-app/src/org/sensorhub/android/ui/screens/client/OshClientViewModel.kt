@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -15,17 +16,16 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
-import okio.ByteString
 import org.json.JSONArray
 import org.json.JSONObject
-import org.sensorhub.android.data.client.OshMapStore
+import org.sensorhub.android.data.client.ObservationSubscriptionManager
 import org.sensorhub.android.data.client.RemoteControlStream
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
 import org.sensorhub.android.data.client.RemoteVisualization
+import org.sensorhub.android.data.client.StreamStatus
+import org.sensorhub.android.data.client.SystemDetailUiState
+import org.sensorhub.android.data.client.TrackRepository
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
 import java.util.concurrent.ConcurrentHashMap
@@ -36,7 +36,9 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private val http = OkHttpClient.Builder()
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
-    private val sockets = ConcurrentHashMap<String, WebSocket>()
+    private val subscriptions = ObservationSubscriptionManager(http)
+    private val trackRepository = TrackRepository()
+    val tracks = trackRepository.tracks
     private val videoRenderers = ConcurrentHashMap<String, VideoStream>()
 
     private val _nodes = MutableStateFlow<List<RemoteNodeState>>(emptyList())
@@ -56,6 +58,26 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _otherValues = MutableStateFlow<Map<String, Map<String, String>>>(emptyMap())
     val otherValues: StateFlow<Map<String, Map<String, String>>> = _otherValues.asStateFlow()
+
+    private val _streamStatuses = MutableStateFlow<Map<String, StreamStatus>>(emptyMap())
+    val streamStatuses: StateFlow<Map<String, StreamStatus>> = _streamStatuses.asStateFlow()
+
+    fun systemDetailState(profileId: String, systemId: String) = combine(
+        nodes,
+        enabledLocations,
+        enabledVideos,
+        videoErrors,
+        otherValues,
+    ) { nodes, locations, videos, errors, values ->
+        SystemDetailUiState(
+            system = nodes.firstOrNull { it.profileId == profileId }?.systems?.firstOrNull { it.id == systemId },
+            enabledLocations = locations,
+            enabledVideos = videos,
+            videoErrors = errors,
+            otherValues = values,
+        )
+    }.combine(streamStatuses) { state, statuses -> state.copy(streamStatuses = statuses) }
+        .combine(tracks) { state, tracks -> state.copy(tracks = tracks) }
 
     init {
         refreshProfiles()
@@ -91,7 +113,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             runCatching { withContext(Dispatchers.IO) { discoverNode(profile) } }
                 .onSuccess { systems ->
-                    OshMapStore.replaceSystemLocations(profileId, systems)
+                    trackRepository.replaceSystemLocations(profileId, systems)
                     updateNode(profileId) { it.copy(loading = false, systems = systems) }
                 }
                 .onFailure { error ->
@@ -104,14 +126,16 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setVideoEnabled(profileId: String, visualization: RemoteVisualization, enabled: Boolean) {
         if (!enabled) {
-            sockets.remove(visualization.dataStreamId)?.close(1000, "disabled")
+            subscriptions.unsubscribe(visualization.dataStreamId, "disabled")
             _enabledVideos.update { it - visualization.dataStreamId }
             _videoErrors.update { it - visualization.dataStreamId }
+            _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.PAUSED) }
             return
         }
 
         val profile = profiles.getById(profileId) ?: return
         _videoErrors.update { it - visualization.dataStreamId }
+        _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.CONNECTING) }
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
@@ -119,27 +143,20 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 // This must match platform-ui's SWE_BINARY_FORMAT exactly.
                 "/datastreams/${visualization.dataStreamId}/observations?format=application/swe%2Bbinary"
         val request = authorizedRequest(url, profile).build()
-        val socket = http.newWebSocket(request, object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                // Video frames use the binary SWE stream. Text messages are not frames.
-            }
-
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+        subscriptions.subscribe(
+            streamId = visualization.dataStreamId,
+            request = request,
+            onBytes = { bytes ->
                 videoRenderers[visualization.dataStreamId]
-                    ?.update(System.currentTimeMillis(), bytes.toByteArray())
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                if (sockets.remove(visualization.dataStreamId, webSocket)) {
-                    _enabledVideos.update { it - visualization.dataStreamId }
-                    _videoErrors.update {
-                        it + (visualization.dataStreamId to (t.message ?: "Could not connect to the server."))
-                    }
-                }
-            }
-        })
-        sockets[visualization.dataStreamId]?.cancel()
-        sockets[visualization.dataStreamId] = socket
+                    ?.update(System.currentTimeMillis(), bytes)
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.RECEIVING) }
+            },
+            onDisconnected = { error ->
+                _enabledVideos.update { it - visualization.dataStreamId }
+                _videoErrors.update { it + (visualization.dataStreamId to (error?.message ?: "Connection closed.")) }
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
+            },
+        )
         _enabledVideos.update { it + visualization.dataStreamId }
     }
 
@@ -183,32 +200,30 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun setOtherEnabled(profileId: String, visualization: RemoteVisualization, enabled: Boolean) {
         if (!enabled) {
-            sockets.remove(visualization.dataStreamId)?.close(1000, "system screen closed")
+            subscriptions.unsubscribe(visualization.dataStreamId, "system screen closed")
             _otherValues.update { it - visualization.dataStreamId }
+            _streamStatuses.update { it - visualization.dataStreamId }
             return
         }
 
         val profile = profiles.getById(profileId) ?: return
+        _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.CONNECTING) }
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
             "/datastreams/${visualization.dataStreamId}/observations?format=application/json"
         val request = authorizedRequest(url, profile).build()
-        val socket = http.newWebSocket(request, object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
+        subscriptions.subscribe(
+            streamId = visualization.dataStreamId,
+            request = request,
+            onText = { text ->
                 handleOtherMessage(text, visualization.dataStreamId)
-            }
-
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                handleOtherMessage(bytes.utf8(), visualization.dataStreamId)
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                sockets.remove(visualization.dataStreamId, webSocket)
-            }
-        })
-        sockets[visualization.dataStreamId]?.cancel()
-        sockets[visualization.dataStreamId] = socket
+            },
+            onBytes = { bytes -> handleOtherMessage(bytes.toString(Charsets.UTF_8), visualization.dataStreamId) },
+            onDisconnected = {
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
+            },
+        )
     }
 
     private fun handleOtherMessage(text: String, dataStreamId: String) {
@@ -217,6 +232,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             flattenFields(observation.opt("result"))
         }.getOrNull() ?: return
         if (values.isNotEmpty()) _otherValues.update { it + (dataStreamId to values) }
+        if (values.isNotEmpty()) _streamStatuses.update { it + (dataStreamId to StreamStatus.RECEIVING) }
     }
 
     private fun flattenFields(value: Any?, prefix: String = ""): Map<String, String> = buildMap {
@@ -241,35 +257,32 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         enabled: Boolean,
     ) {
         if (!enabled) {
-            sockets.remove(visualization.dataStreamId)?.close(1000, "disabled")
+            subscriptions.unsubscribe(visualization.dataStreamId, "disabled")
             _enabledLocations.update { it - visualization.dataStreamId }
-            OshMapStore.remove(visualization.dataStreamId)
+            _streamStatuses.update { it - visualization.dataStreamId }
+            trackRepository.remove(visualization.dataStreamId)
             return
         }
 
         val profile = profiles.getById(profileId) ?: return
+        _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.CONNECTING) }
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
                 "/datastreams/${visualization.dataStreamId}/observations?format=application/om%2Bjson"
         val request = authorizedRequest(url, profile).build()
-        val socket = http.newWebSocket(request, object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
+        subscriptions.subscribe(
+            streamId = visualization.dataStreamId,
+            request = request,
+            onText = { text ->
                 handleLocationMessage(text, visualization, system)
-            }
-
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                handleLocationMessage(bytes.utf8(), visualization, system)
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                if (sockets.remove(visualization.dataStreamId, webSocket)) {
-                    _enabledLocations.update { it - visualization.dataStreamId }
-                }
-            }
-        })
-        sockets[visualization.dataStreamId]?.cancel()
-        sockets[visualization.dataStreamId] = socket
+            },
+            onBytes = { bytes -> handleLocationMessage(bytes.toString(Charsets.UTF_8), visualization, system) },
+            onDisconnected = {
+                _enabledLocations.update { it - visualization.dataStreamId }
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
+            },
+        )
         _enabledLocations.update { it + visualization.dataStreamId }
     }
 
@@ -280,7 +293,8 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         system: RemoteSystem,
     ) {
         findCoordinates(text)?.let { (lat, lon) ->
-            OshMapStore.update(visualization.dataStreamId, system.id, system.name, lat, lon)
+            trackRepository.update(visualization.dataStreamId, system.id, system.name, lat, lon)
+            _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.RECEIVING) }
         }
     }
 
@@ -483,8 +497,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     override fun onCleared() {
-        sockets.values.forEach { it.close(1000, "client closed") }
-        sockets.clear()
+        subscriptions.closeAll("client closed")
         videoRenderers.values.forEach { it.disconnect() }
         videoRenderers.clear()
         http.dispatcher.executorService.shutdown()
