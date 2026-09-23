@@ -1,20 +1,20 @@
 package org.sensorhub.android.ui.screens.servers
 
-import org.sensorhub.android.data.servers.ServerProfileItem
-import org.sensorhub.android.data.servers.ServerProfileRepository
-import org.sensorhub.android.data.servers.ServerConnectionTester
-import org.sensorhub.android.data.servers.serverUrlError
-import org.sensorhub.android.R
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.CancellationException
+import org.sensorhub.android.R
+import org.sensorhub.android.data.servers.ServerConnectionTester
+import org.sensorhub.android.data.servers.ServerProfileItem
+import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.servers.serverUrlError
 
 class ServerFormViewModel(application: Application) : AndroidViewModel(application) {
 

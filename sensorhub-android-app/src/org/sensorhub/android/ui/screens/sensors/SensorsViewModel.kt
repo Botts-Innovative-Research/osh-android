@@ -1,13 +1,11 @@
 package org.sensorhub.android.ui.screens.sensors
 
-import org.sensorhub.android.data.sensors.SensorRegistry
-import org.sensorhub.android.data.sensors.SensorCategory
-import org.sensorhub.android.data.sensors.SensorUiEntry
-
 import android.app.Application
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.preference.PreferenceManager
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.data.sensors.SensorUiEntry
 
 class SensorsViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)

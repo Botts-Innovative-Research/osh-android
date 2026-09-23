@@ -55,7 +55,6 @@ import org.sensorhub.android.ui.components.OSHStatusRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.api.module.ModuleEvent.ModuleState
-import kotlin.math.log
 
 @Composable
 fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewModel) {

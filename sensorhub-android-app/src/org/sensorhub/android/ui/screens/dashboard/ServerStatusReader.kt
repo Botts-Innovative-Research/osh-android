@@ -2,12 +2,11 @@ package org.sensorhub.android.ui.screens.dashboard
 
 import android.content.Context
 import androidx.annotation.StringRes
-import java.util.regex.Pattern
 import org.sensorhub.android.R
 import org.sensorhub.android.SensorHubService
-import org.sensorhub.api.module.ModuleEvent
 import org.sensorhub.impl.client.sost.SOSTClient
 import org.sensorhub.impl.service.consys.client.ConSysApiClientModule
+import java.util.regex.Pattern
 
 class ServerStatusReader(private val context: Context) {
 

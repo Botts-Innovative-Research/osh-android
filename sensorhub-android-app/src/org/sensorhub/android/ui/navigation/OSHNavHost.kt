@@ -11,20 +11,20 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
-import org.sensorhub.android.ui.screens.help.FaqItem
-import org.sensorhub.android.ui.screens.help.HelpFaqScreen
-import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
-import org.sensorhub.android.ui.screens.maps.MapScreen
 import org.sensorhub.android.ui.screens.client.OshClientScreen
 import org.sensorhub.android.ui.screens.client.OshClientViewModel
 import org.sensorhub.android.ui.screens.client.SystemDetailScreen
+import org.sensorhub.android.ui.screens.dashboard.DashboardRoute
+import org.sensorhub.android.ui.screens.help.FaqItem
+import org.sensorhub.android.ui.screens.help.HelpFaqScreen
+import org.sensorhub.android.ui.screens.maps.MapScreen
+import org.sensorhub.android.ui.screens.preferences.AppPreferencesScreen
 import org.sensorhub.android.ui.screens.sensors.SensorsScreen
 import org.sensorhub.android.ui.screens.servers.ServerFormScreen
-import org.sensorhub.android.ui.screens.settings.SettingsScreen
 import org.sensorhub.android.ui.screens.servers.ServerProfilesScreen
+import org.sensorhub.android.ui.screens.settings.SettingsScreen
 
 @Composable
 fun OSHNavHost(

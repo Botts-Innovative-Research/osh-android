@@ -1,6 +1,5 @@
 package org.sensorhub.android.ui.screens.servers
 
-import org.sensorhub.android.data.servers.ServerProfileItem
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,23 +19,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.navigation.Screen
+import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.ui.components.OSHActionCard
 import org.sensorhub.android.ui.components.OSHAddFAB
 import org.sensorhub.android.ui.components.OSHAlertDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
+import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 

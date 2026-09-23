@@ -1,9 +1,9 @@
 package org.sensorhub.android.ui.screens.client
 
+import android.view.TextureView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import android.view.TextureView
 import org.sensorhub.android.data.client.RemoteControlStream
 
 @Composable

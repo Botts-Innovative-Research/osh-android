@@ -1,24 +1,5 @@
 package org.sensorhub.android.ui
 
-import org.sensorhub.android.ui.screens.dashboard.SensorCardReader
-import org.sensorhub.android.ui.screens.dashboard.ServerStatusReader
-import org.sensorhub.android.ui.screens.dashboard.SensorCardUi
-import org.sensorhub.android.ui.screens.dashboard.ServerStatusUi
-import org.sensorhub.android.data.sensors.SensorRegistry
-import org.sensorhub.android.data.sensors.SensorUiEntry
-import org.sensorhub.android.data.settings.LocalServiceSettings
-import org.sensorhub.android.config.DiscoveryRulesDownloader
-import org.sensorhub.android.config.PreferenceSnapshot
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import org.sensorhub.android.data.sensors.SensorBinding
-import org.sensorhub.impl.sensor.android.AndroidSensorsConfig
-import org.sensorhub.impl.sensor.controller.ControllerDriver
-
-import org.sensorhub.android.R
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
@@ -26,19 +7,37 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.sensorhub.api.module.ModuleEvent.ModuleState
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.sensorhub.android.R
 import org.sensorhub.android.SensorHubService
+import org.sensorhub.android.config.DiscoveryRulesDownloader
+import org.sensorhub.android.config.PreferenceSnapshot
 import org.sensorhub.android.config.SensorHubConfigFactory
+import org.sensorhub.android.data.sensors.SensorBinding
+import org.sensorhub.android.data.sensors.SensorRegistry
+import org.sensorhub.android.data.sensors.SensorUiEntry
 import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.settings.LocalServiceSettings
+import org.sensorhub.android.ui.screens.dashboard.SensorCardReader
+import org.sensorhub.android.ui.screens.dashboard.SensorCardUi
+import org.sensorhub.android.ui.screens.dashboard.ServerStatusReader
+import org.sensorhub.android.ui.screens.dashboard.ServerStatusUi
+import org.sensorhub.api.module.ModuleEvent.ModuleState
+import org.sensorhub.impl.sensor.android.AndroidSensorsConfig
+import org.sensorhub.impl.sensor.controller.ControllerDriver
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class SensorHubViewModel(private val application: Application) : AndroidViewModel(application) {
     private companion object {

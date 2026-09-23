@@ -1,6 +1,5 @@
 package org.sensorhub.android.ui.screens.client
 
-import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

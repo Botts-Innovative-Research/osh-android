@@ -1,6 +1,7 @@
 package org.sensorhub.android.ui.screens.client
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
@@ -12,13 +13,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString
 import org.json.JSONArray
 import org.json.JSONObject
@@ -31,7 +32,6 @@ import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import android.graphics.Bitmap
 
 class OshClientViewModel(application: Application) : AndroidViewModel(application) {
     private val profiles = ServerProfileRepository.getInstance(application)
