@@ -46,9 +46,3 @@ data class RemoteControlStream(
     val supportsRelativeZoom: Boolean,
     val supportsPresets: Boolean,
 )
-
-data class SelectedVideo(
-    val profileId: String,
-    val system: RemoteSystem,
-    val visualization: RemoteVisualization,
-)

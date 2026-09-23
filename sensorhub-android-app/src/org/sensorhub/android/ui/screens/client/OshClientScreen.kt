@@ -19,11 +19,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
@@ -39,8 +39,8 @@ fun OshClientScreen(
     onOpenSystem: (profileId: String, systemId: String) -> Unit,
     viewModel: OshClientViewModel = viewModel(),
 ) {
-    val nodes by viewModel.nodes.collectAsState()
-    val visibleProfileIds by viewModel.visibleProfileIds.collectAsState()
+    val nodes by viewModel.nodes.collectAsStateWithLifecycle()
+    val visibleProfileIds by viewModel.visibleProfileIds.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
@@ -144,15 +144,13 @@ private fun SystemRow(
     system: RemoteSystem,
     onClick: () -> Unit,
 ) {
-    Column {
-        OSHClickableStatusRowWithIcon(
-            title = system.name,
-            imageVector = Icons.Filled.Sensors,
-            contentDescription = "Server",
-            subtitle = system.uid,
-            summary =  "${system.visualizations.size} datastreams",
-            status = if (system.visualizations.isEmpty()) "unknown" else "started",
-            onClick = onClick,
-        )
-    }
+    OSHClickableStatusRowWithIcon(
+        title = system.name,
+        imageVector = Icons.Filled.Sensors,
+        contentDescription = "System",
+        subtitle = system.uid,
+        summary =  "${system.visualizations.size} datastreams",
+        status = "unknown",
+        onClick = onClick,
+    )
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,13 +39,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +58,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -72,11 +72,7 @@ import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.StatusDot
 import org.sensorhub.android.ui.theme.Background
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun SystemDetailScreen(
@@ -85,12 +81,12 @@ fun SystemDetailScreen(
     onBack: () -> Unit,
     viewModel: OshClientViewModel,
 ) {
-    val nodes by viewModel.nodes.collectAsState()
-    val enabledLocations by viewModel.enabledLocations.collectAsState()
-    val enabledVideos by viewModel.enabledVideos.collectAsState()
-    val videoErrors by viewModel.videoErrors.collectAsState()
-    val otherValues by viewModel.otherValues.collectAsState()
-    val remoteTracks by OshMapStore.tracks.collectAsState()
+    val nodes by viewModel.nodes.collectAsStateWithLifecycle()
+    val enabledLocations by viewModel.enabledLocations.collectAsStateWithLifecycle()
+    val enabledVideos by viewModel.enabledVideos.collectAsStateWithLifecycle()
+    val videoErrors by viewModel.videoErrors.collectAsStateWithLifecycle()
+    val otherValues by viewModel.otherValues.collectAsStateWithLifecycle()
+    val remoteTracks by OshMapStore.tracks.collectAsStateWithLifecycle()
     val system = nodes.firstOrNull { it.profileId == profileId }
         ?.systems
         ?.firstOrNull { it.id == systemId }
@@ -176,7 +172,7 @@ fun SystemDetailScreen(
                 if (system.visualizations.isEmpty()) {
                     item(key = "empty") {
                         Text(
-                            "No supported video or location streams.",
+                            "No datastreams are available for this system.",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(24.dp),
                         )
@@ -323,11 +319,7 @@ private fun PTZCommandCard(
                             onPtz(PtzCommand.PAN_LEFT)
                         }
 
-                        PtzButton(
-                            Icons.Default.MyLocation,
-                            "Home position",
-                            enabled = false
-                        ) {}
+                        Spacer(Modifier.size(48.dp))
 
                         PtzButton(
                             Icons.Default.KeyboardArrowRight,
@@ -350,58 +342,6 @@ private fun PTZCommandCard(
                     }
                 }
 
-            }
-        }
-    }
-}
-
-@Composable
-private fun SimpleChartCard(
-    visualization: RemoteVisualization,
-) {
-    val points = listOf(10f, 25f, 15f, 40f, 30f, 55f, 45f)
-
-    OSHCard {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    visualization.name.ifBlank { "Chart" },
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                Icon(Icons.Filled.SsidChart, contentDescription = "Chart")
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
-                    .aspectRatio(16f / 9f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF1A1A1A)),
-            ) {
-                Canvas (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                ) {
-                    val maxVal = points.maxOrNull() ?: 1f
-                    val stepX = size.width / (points.size - 1)
-                    val path = Path()
-
-                    points.forEachIndexed { index, value ->
-                        val x = index * stepX
-                        val y = size.height - (value / maxVal) * size.height
-
-                        if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                    }
-
-                    drawPath (
-                        path = path,
-                        color = Color.White,
-                        style = Stroke(width = 3.dp.toPx())
-                    )
-                }
             }
         }
     }
@@ -466,6 +406,14 @@ private fun LocationMap(
             isClickable = false
         }
     }
+    val marker = remember(mapView) {
+        Marker(mapView).apply {
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_location)
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            mapView.overlays += this
+        }
+    }
+    var hasCentered by remember(mapView) { mutableStateOf(false) }
 
     DisposableEffect(mapView) {
         mapView.onResume()
@@ -480,15 +428,13 @@ private fun LocationMap(
         modifier = Modifier.fillMaxSize(),
         update = { map ->
             val point = GeoPoint(position.first, position.second)
-            map.overlays.clear()
-            map.overlays += Marker(map).apply {
-                this.position = point
-                title = label
-                icon = ContextCompat.getDrawable(context, R.drawable.ic_location)
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            marker.position = point
+            marker.title = label
+            if (!hasCentered) {
+                map.controller.setZoom(16.0)
+                map.controller.setCenter(point)
+                hasCentered = true
             }
-            map.controller.setZoom(16.0)
-            map.controller.setCenter(point)
             map.invalidate()
         },
     )
@@ -575,34 +521,6 @@ private fun VideoStreamCard(
 }
 
 @Composable
-private fun StreamRow(
-    visualization: RemoteVisualization,
-    enabled: Boolean,
-    onLocationEnabled: (Boolean) -> Unit,
-) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(Icons.Filled.LocationOn, contentDescription = null)
-        Spacer(Modifier.width(8.dp))
-        Column(Modifier.weight(1f)) {
-            Text(visualization.name, style = MaterialTheme.typography.bodyMedium)
-            Text(
-                visualization.dataStreamId,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-            )
-        }
-        Switch(checked = enabled, onCheckedChange = onLocationEnabled)
-    }
-}
-
-
-@Composable
 private fun PtzButton(
     icon: ImageVector,
     description: String,
@@ -622,7 +540,7 @@ private fun PtzButton(
     Box(
         modifier
             .padding(2.dp)
-            .size(36.dp)
+            .size(48.dp)
             .shadow(4.dp, CircleShape)
             .clip(CircleShape)
             .background(fill, CircleShape)
@@ -638,7 +556,7 @@ private fun PtzButton(
             icon,
             description,
             tint = Color.White.copy(alpha = alpha),
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(20.dp)
         )
     }
 }

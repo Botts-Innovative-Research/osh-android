@@ -1,8 +1,6 @@
 package org.sensorhub.android.ui.screens.client
 
 import android.app.Application
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,7 +21,6 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import org.json.JSONArray
 import org.json.JSONObject
-import org.json.JSONTokener
 import org.sensorhub.android.data.client.OshMapStore
 import org.sensorhub.android.data.client.RemoteControlStream
 import org.sensorhub.android.data.client.RemoteNodeState
@@ -50,9 +47,6 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _enabledLocations = MutableStateFlow<Set<String>>(emptySet())
     val enabledLocations: StateFlow<Set<String>> = _enabledLocations.asStateFlow()
-
-    private val _videoFrames = MutableStateFlow<Map<String, Bitmap>>(emptyMap())
-    val videoFrames: StateFlow<Map<String, Bitmap>> = _videoFrames.asStateFlow()
 
     private val _enabledVideos = MutableStateFlow<Set<String>>(emptySet())
     val enabledVideos: StateFlow<Set<String>> = _enabledVideos.asStateFlow()
@@ -113,7 +107,6 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             sockets.remove(visualization.dataStreamId)?.close(1000, "disabled")
             _enabledVideos.update { it - visualization.dataStreamId }
             _videoErrors.update { it - visualization.dataStreamId }
-            _videoFrames.update { it - visualization.dataStreamId }
             return
         }
 
@@ -128,7 +121,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         val request = authorizedRequest(url, profile).build()
         val socket = http.newWebSocket(request, object : WebSocketListener() {
             override fun onMessage(webSocket: WebSocket, text: String) {
-                handleVideoMessage(text, visualization.dataStreamId)
+                // Video frames use the binary SWE stream. Text messages are not frames.
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
@@ -220,7 +213,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun handleOtherMessage(text: String, dataStreamId: String) {
         val values = runCatching {
-            val observation = JSONTokener(text).nextValue() as? JSONObject ?: return@runCatching emptyMap()
+            val observation = org.json.JSONTokener(text).nextValue() as? JSONObject ?: return@runCatching emptyMap()
             flattenFields(observation.opt("result"))
         }.getOrNull() ?: return
         if (values.isNotEmpty()) _otherValues.update { it + (dataStreamId to values) }
@@ -239,54 +232,6 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             }
             else -> if (prefix.isNotBlank()) put(prefix, value?.toString() ?: "null")
         }
-    }
-
-    private fun handleVideoMessage(text: String, dataStreamId: String) {
-        val frameBytes = runCatching { findImageFrame(JSONObject(text)) }.getOrNull() ?: return
-        decodeJpeg(frameBytes)?.let { bitmap ->
-            _videoFrames.update { it + (dataStreamId to bitmap) }
-        }
-    }
-
-    private fun decodeJpeg(bytes: ByteArray): Bitmap? =
-        runCatching { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }.getOrNull()
-
-    // Recursively hunt for a base64 string field whose decoded bytes start with
-// the JPEG SOI marker (0xFFD8), same tree-search style as findCoordinates().
-    private fun findImageFrame(value: Any?): ByteArray? {
-        when (value) {
-            is JSONObject -> {
-                value.keys().forEach { key ->
-                    val v = value.opt(key)
-                    if (v is String) {
-                        val decoded = runCatching { Base64.decode(v, Base64.DEFAULT) }.getOrNull()
-                        if (decoded != null && decoded.size > 2 &&
-                            decoded[0] == 0xFF.toByte() && decoded[1] == 0xD8.toByte()
-                        ) return decoded
-                    }
-                }
-                value.keys().forEach { key -> findImageFrame(value.opt(key))?.let { return it } }
-            }
-            is JSONArray -> for (i in 0 until value.length()) {
-                findImageFrame(value.opt(i))?.let { return it }
-            }
-        }
-        return null
-    }
-
-    private fun fetchVideoEncoding(
-        dataStreamId: String,
-        profile: ServerProfileItem
-    ): String? {
-        val schema = getJson(
-            "${apiBase(profile.endpointUrl)}/datastreams/$dataStreamId/schema?obsFormat=application/swe+binary",
-            profile,
-        )
-        val members = schema.optJSONObject("resultEncoding")?.optJSONArray("members") ?: return null
-        for (index in 0 until members.length()) {
-            members.optJSONObject(index)?.optString("compression")?.takeIf { it.isNotBlank() }?.let { return it }
-        }
-        return null
     }
 
     fun setLocationEnabled(
@@ -318,8 +263,9 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                sockets.remove(visualization.dataStreamId)
-                _enabledLocations.update { it - visualization.dataStreamId }
+                if (sockets.remove(visualization.dataStreamId, webSocket)) {
+                    _enabledLocations.update { it - visualization.dataStreamId }
+                }
             }
         })
         sockets[visualization.dataStreamId]?.cancel()

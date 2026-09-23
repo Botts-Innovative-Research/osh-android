@@ -10,7 +10,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -23,12 +22,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.Polyline
 import org.sensorhub.android.R
 import org.sensorhub.android.data.client.OshMapStore
@@ -36,12 +35,17 @@ import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 
+private data class TrackOverlays(
+    val marker: Marker,
+    var trail: Polyline? = null,
+)
+
 @Composable
 fun MapScreen(
     onNavigateToSettings : () -> Unit,
 ) {
     val context = LocalContext.current
-    val remoteTracks by OshMapStore.tracks.collectAsState()
+    val remoteTracks by OshMapStore.tracks.collectAsStateWithLifecycle()
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val mapView = remember(context, lifecycle) {
@@ -58,7 +62,7 @@ fun MapScreen(
             controller.setCenter(GeoPoint(33.4484, -86.7987))
         }
     }
-    val clientOverlays = remember(mapView) { mutableListOf<Overlay>() }
+    val trackOverlays = remember(mapView) { mutableMapOf<String, TrackOverlays>() }
 
     LaunchedEffect(remoteTracks.keys) {
         remoteTracks.values.firstOrNull()?.let { track ->
@@ -113,27 +117,37 @@ fun MapScreen(
                     .padding(padding),
                 factory = { mapView },
                 update = { map ->
-                    map.overlays.removeAll(clientOverlays.toSet())
-                    clientOverlays.clear()
+                    (trackOverlays.keys - remoteTracks.keys).forEach { streamId ->
+                        trackOverlays.remove(streamId)?.let { overlays ->
+                            map.overlays.remove(overlays.marker)
+                            overlays.trail?.let(map.overlays::remove)
+                        }
+                    }
                     remoteTracks.values.forEach { track ->
+                        val overlays = trackOverlays.getOrPut(track.streamId) {
+                            TrackOverlays(
+                                marker = Marker(map).apply {
+                                    icon = ContextCompat.getDrawable(context, R.drawable.ic_location)
+                                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                    map.overlays += this
+                                },
+                            )
+                        }
+                        overlays.marker.position = GeoPoint(track.latitude, track.longitude)
+                        overlays.marker.title = track.label
+                        overlays.marker.snippet = "${track.latitude}, ${track.longitude}"
                         if (track.trail.size > 1) {
-                            val trail = Polyline(map).apply {
-                                setPoints(track.trail.map { (lat, lon) -> GeoPoint(lat, lon) })
-                                outlinePaint.color = android.graphics.Color.rgb(255, 145, 0)
-                                outlinePaint.strokeWidth = 6f
+                            val trail = overlays.trail ?: Polyline(map).also {
+                                it.outlinePaint.color = android.graphics.Color.rgb(255, 145, 0)
+                                it.outlinePaint.strokeWidth = 6f
+                                map.overlays += it
+                                overlays.trail = it
                             }
-                            clientOverlays += trail
-                            map.overlays += trail
+                            trail.setPoints(track.trail.map { (lat, lon) -> GeoPoint(lat, lon) })
+                        } else {
+                            overlays.trail?.let(map.overlays::remove)
+                            overlays.trail = null
                         }
-                        val marker = Marker(map).apply {
-                            position = GeoPoint(track.latitude, track.longitude)
-                            title = track.label
-                            snippet = "${track.latitude} , ${track.longitude}"
-                            icon = ContextCompat.getDrawable(context, R.drawable.ic_location)
-                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        }
-                        clientOverlays += marker
-                        map.overlays += marker
                     }
                     map.invalidate()
                 },
