@@ -27,7 +27,6 @@ import org.sensorhub.android.data.client.RemoteControlStream
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
 import org.sensorhub.android.data.client.RemoteVisualization
-import org.sensorhub.android.data.client.SelectedVideo
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
 import java.util.concurrent.ConcurrentHashMap
@@ -57,8 +56,8 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private val _enabledVideos = MutableStateFlow<Set<String>>(emptySet())
     val enabledVideos: StateFlow<Set<String>> = _enabledVideos.asStateFlow()
 
-    private val _selectedVideo = MutableStateFlow<SelectedVideo?>(null)
-    val selectedVideo: StateFlow<SelectedVideo?> = _selectedVideo.asStateFlow()
+    private val _videoErrors = MutableStateFlow<Map<String, String>>(emptyMap())
+    val videoErrors: StateFlow<Map<String, String>> = _videoErrors.asStateFlow()
 
     init {
         refreshProfiles()
@@ -109,11 +108,13 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         if (!enabled) {
             sockets.remove(visualization.dataStreamId)?.close(1000, "disabled")
             _enabledVideos.update { it - visualization.dataStreamId }
+            _videoErrors.update { it - visualization.dataStreamId }
             _videoFrames.update { it - visualization.dataStreamId }
             return
         }
 
         val profile = profiles.getById(profileId) ?: return
+        _videoErrors.update { it - visualization.dataStreamId }
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
@@ -132,8 +133,12 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                sockets.remove(visualization.dataStreamId)
-                _enabledVideos.update { it - visualization.dataStreamId }
+                if (sockets.remove(visualization.dataStreamId, webSocket)) {
+                    _enabledVideos.update { it - visualization.dataStreamId }
+                    _videoErrors.update {
+                        it + (visualization.dataStreamId to (t.message ?: "Could not connect to the server."))
+                    }
+                }
             }
         })
         sockets[visualization.dataStreamId]?.cancel()
@@ -141,30 +146,18 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         _enabledVideos.update { it + visualization.dataStreamId }
     }
 
-    fun openVideo(profileId: String, system: RemoteSystem, visualization: RemoteVisualization) {
+    fun videoRenderer(system: RemoteSystem, visualization: RemoteVisualization): VideoStream =
         videoRenderers.getOrPut(visualization.dataStreamId) {
             VideoStream(listOf(visualization.dataStreamId), system.name, 1280, 720)
         }
-        _selectedVideo.value = SelectedVideo(profileId, system, visualization)
-    }
 
-    /** Starts the feed only after [VideoFrame] has attached a usable TextureView. */
-    fun startSelectedVideo() {
-        _selectedVideo.value?.let { video ->
-            if (video.visualization.dataStreamId !in _enabledVideos.value) {
-                setVideoEnabled(video.profileId, video.visualization, true)
+    fun stopSystemVideos(profileId: String, system: RemoteSystem) {
+        system.visualizations
+            .filter { it.kind == RemoteVisualization.Kind.VIDEO }
+            .forEach { visualization ->
+                setVideoEnabled(profileId, visualization, false)
+                videoRenderers.remove(visualization.dataStreamId)?.disconnect()
             }
-        }
-    }
-
-    fun videoRenderer(streamId: String): VideoStream? = videoRenderers[streamId]
-
-    fun disconnectVideo() {
-        _selectedVideo.value?.let {
-            setVideoEnabled(it.profileId, it.visualization, false)
-            videoRenderers.remove(it.visualization.dataStreamId)?.disconnect()
-        }
-        _selectedVideo.value = null
     }
 
     private fun handleVideoMessage(text: String, dataStreamId: String) {
@@ -493,6 +486,8 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     override fun onCleared() {
         sockets.values.forEach { it.close(1000, "client closed") }
         sockets.clear()
+        videoRenderers.values.forEach { it.disconnect() }
+        videoRenderers.clear()
         http.dispatcher.executorService.shutdown()
         super.onCleared()
     }

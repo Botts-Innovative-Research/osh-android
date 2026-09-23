@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.components.OSHCard
 import java.nio.ByteBuffer
 import java.util.ArrayDeque
 
@@ -276,113 +278,6 @@ class VideoStream(
             0x4B,
             0x22,
             0xC0.toByte()
-        )
-    }
-}
-
-@Composable
-fun VideoScreen(
-    videoSurface: @Composable (Modifier) -> Unit,
-    onExit: () -> Unit,
-    onPtz: (PtzCommand) -> Unit
-) {
-    Box(Modifier
-        .fillMaxSize()
-        .background(Color.Black)) {
-        videoSurface(Modifier.fillMaxSize())
-        PtzButton(
-            Icons.Default.ArrowBack,
-            "Close video",
-            Modifier
-                .align(Alignment.TopStart)
-                .padding(8.dp),
-            onClick = onExit
-        )
-        Column(
-            Modifier
-                .align(Alignment.CenterEnd)
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row {
-                Spacer(Modifier.size(64.dp)); PtzButton(
-                Icons.Default.KeyboardArrowUp,
-                "Tilt up"
-            ) { onPtz(PtzCommand.TILT_UP) }; Spacer(Modifier.size(64.dp))
-            }
-            Row {
-                PtzButton(
-                    Icons.Default.KeyboardArrowLeft,
-                    "Pan left"
-                ) { onPtz(PtzCommand.PAN_LEFT) }; PtzButton(
-                Icons.Default.MyLocation,
-                "Home position",
-                enabled = false
-            ) {}; PtzButton(
-                Icons.Default.KeyboardArrowRight,
-                "Pan right"
-            ) { onPtz(PtzCommand.PAN_RIGHT) }
-            }
-            Row {
-                Spacer(Modifier.size(64.dp)); PtzButton(
-                Icons.Default.KeyboardArrowDown,
-                "Tilt down"
-            ) { onPtz(PtzCommand.TILT_DOWN) }; Spacer(Modifier.size(64.dp))
-            }
-            Row(
-                Modifier.padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
-            ) {
-                PtzButton(
-                    Icons.Default.ZoomOut,
-                    "Zoom out"
-                ) { onPtz(PtzCommand.ZOOM_OUT) }; PtzButton(Icons.Default.ZoomIn, "Zoom in") {
-                onPtz(
-                    PtzCommand.ZOOM_IN
-                )
-            }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PtzButton(
-    icon: ImageVector,
-    description: String,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onClick: () -> Unit
-) {
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val alpha = if (enabled) 1f else .5f
-    val fill = if (pressed) Brush.linearGradient(
-        listOf(
-            Color(0xCC1B6EC2),
-            Color(0xCC1B6EC2)
-        )
-    ) else Brush.verticalGradient(listOf(Color(0xD92E343D), Color(0xD914171C)))
-    Box(
-        modifier
-            .padding(4.dp)
-            .size(56.dp)
-            .shadow(4.dp, CircleShape)
-            .clip(CircleShape)
-            .background(fill, CircleShape)
-            .border(1.dp, Color.White.copy(alpha = .33f * alpha), CircleShape)
-            .clickable(
-                onClick = onClick,
-                enabled = enabled,
-                interactionSource = interaction,
-                indication = null
-            ), contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            icon,
-            description,
-            tint = Color.White.copy(alpha = alpha),
-            modifier = Modifier.size(24.dp)
         )
     }
 }
