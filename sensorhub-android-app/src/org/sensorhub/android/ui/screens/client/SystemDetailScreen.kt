@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SsidChart
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
@@ -50,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -69,6 +72,11 @@ import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.StatusDot
 import org.sensorhub.android.ui.theme.Background
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun SystemDetailScreen(
@@ -81,6 +89,7 @@ fun SystemDetailScreen(
     val enabledLocations by viewModel.enabledLocations.collectAsState()
     val enabledVideos by viewModel.enabledVideos.collectAsState()
     val videoErrors by viewModel.videoErrors.collectAsState()
+    val otherValues by viewModel.otherValues.collectAsState()
     val remoteTracks by OshMapStore.tracks.collectAsState()
     val system = nodes.firstOrNull { it.profileId == profileId }
         ?.systems
@@ -88,7 +97,13 @@ fun SystemDetailScreen(
 
     system?.let { selectedSystem ->
         DisposableEffect(profileId, selectedSystem.id) {
-            onDispose { viewModel.stopSystemVideos(profileId, selectedSystem) }
+            viewModel.startSystemLocationStreams(profileId, selectedSystem)
+            viewModel.startSystemOtherStreams(profileId, selectedSystem)
+            onDispose {
+                viewModel.stopSystemVideos(profileId, selectedSystem)
+                viewModel.stopSystemLocationStreams(profileId, selectedSystem)
+                viewModel.stopSystemOtherStreams(profileId, selectedSystem)
+            }
         }
     }
 
@@ -115,6 +130,8 @@ fun SystemDetailScreen(
                 system.visualizations.filter { it.kind == RemoteVisualization.Kind.VIDEO }
             val locationStreams =
                 system.visualizations.filter { it.kind == RemoteVisualization.Kind.LOCATION }
+            val otherStreams =
+                system.visualizations.filter { it.kind == RemoteVisualization.Kind.OTHER }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -148,6 +165,14 @@ fun SystemDetailScreen(
                         )
                     }
                 }
+                if (otherStreams.isNotEmpty()) {
+                    items(otherStreams, key = { it.dataStreamId }) { visualization ->
+                        OtherStreamCard(
+                            visualization = visualization,
+                            values = otherValues[visualization.dataStreamId].orEmpty(),
+                        )
+                    }
+                }
                 if (system.visualizations.isEmpty()) {
                     item(key = "empty") {
                         Text(
@@ -168,6 +193,51 @@ fun SystemDetailScreen(
                                     mapOf(command.item to command.delta),
                                 )
                             },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun OtherStreamCard(
+    visualization: RemoteVisualization,
+    values: Map<String, String>,
+) {
+    OSHCard {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.SsidChart, contentDescription = "Datastream")
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    visualization.name.ifBlank { "Datastream" },
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            if (values.isEmpty()) {
+                Text(
+                    "Waiting for observations…",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            } else {
+                values.toSortedMap().forEach { (field, value) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text(field, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                        Text(
+                            value,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End
                         )
                     }
                 }
@@ -286,6 +356,58 @@ private fun PTZCommandCard(
 }
 
 @Composable
+private fun SimpleChartCard(
+    visualization: RemoteVisualization,
+) {
+    val points = listOf(10f, 25f, 15f, 40f, 30f, 55f, 45f)
+
+    OSHCard {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    visualization.name.ifBlank { "Chart" },
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                Icon(Icons.Filled.SsidChart, contentDescription = "Chart")
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF1A1A1A)),
+            ) {
+                Canvas (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    val maxVal = points.maxOrNull() ?: 1f
+                    val stepX = size.width / (points.size - 1)
+                    val path = Path()
+
+                    points.forEachIndexed { index, value ->
+                        val x = index * stepX
+                        val y = size.height - (value / maxVal) * size.height
+
+                        if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    }
+
+                    drawPath (
+                        path = path,
+                        color = Color.White,
+                        style = Stroke(width = 3.dp.toPx())
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun MapLocationCard(
     visualization: RemoteVisualization,
     enabled: Boolean,
@@ -327,7 +449,10 @@ private fun MapLocationCard(
 }
 
 @Composable
-private fun LocationMap(position: Pair<Double, Double>, label: String) {
+private fun LocationMap(
+    position: Pair<Double, Double>,
+    label: String
+) {
     val context = LocalContext.current
     val mapView = remember(context) {
         Configuration.getInstance().load(

@@ -5,7 +5,7 @@ data class RemoteVisualization(
     val name: String,
     val kind: Kind,
 ) {
-    enum class Kind { LOCATION, VIDEO }
+    enum class Kind { LOCATION, VIDEO, OTHER }
 }
 
 data class RemoteSystem(
