@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Refresh
@@ -17,13 +19,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
@@ -32,6 +36,7 @@ import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
 import org.sensorhub.android.ui.components.OSHDropDown
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.Background
+import org.sensorhub.android.ui.theme.SecondaryContainer
 
 @Composable
 fun OshClientScreen(
@@ -39,8 +44,8 @@ fun OshClientScreen(
     onOpenSystem: (profileId: String, systemId: String) -> Unit,
     viewModel: OshClientViewModel = viewModel(),
 ) {
-    val nodes by viewModel.nodes.collectAsState()
-    val visibleProfileIds by viewModel.visibleProfileIds.collectAsState()
+    val nodes by viewModel.nodes.collectAsStateWithLifecycle()
+    val visibleProfileIds by viewModel.visibleProfileIds.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
@@ -59,7 +64,10 @@ fun OshClientScreen(
     ) { padding ->
         if (nodes.isEmpty()) {
             Column(
-                Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -67,7 +75,9 @@ fun OshClientScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentPadding = PaddingValues(vertical = 8.dp),
             ) {
                 item(key = "server-selector") {
@@ -89,14 +99,31 @@ fun OshClientScreen(
                 }
                 val visibleNodes = nodes.filter { it.profileId in visibleProfileIds }
                 if (visibleNodes.isEmpty()) {
-                    item { Text("Select a server profile to view its systems.", Modifier.padding(24.dp)) }
+                    item {
+                        Text(
+                            "Select a server profile to view its systems.",
+                            Modifier.padding(24.dp)
+                        )
+                    }
                 }
-                items(visibleNodes, key = { it.profileId }) { node ->
-                    ServerCard(
-                        node = node,
-                        onDiscover = { viewModel.discover(node.profileId) },
-                        onOpenSystem = { system -> onOpenSystem(node.profileId, system.id) },
-                    )
+                visibleNodes.forEach { node ->
+                    item(key = "server:${node.profileId}") {
+                        ServerSectionHeader(
+                            node = node,
+                            onDiscover = { viewModel.discover(node.profileId) },
+                            hasSystems = node.systems.isNotEmpty(),
+                        )
+                    }
+                    itemsIndexed(
+                        items = node.systems,
+                        key = { _, system -> "${node.profileId}:${system.id}" },
+                    ) { index, system ->
+                        ServerSystemRow(
+                            system = system,
+                            isLastInSection = index == node.systems.lastIndex,
+                            onClick = { onOpenSystem(node.profileId, system.id) },
+                        )
+                    }
                 }
             }
         }
@@ -104,12 +131,23 @@ fun OshClientScreen(
 }
 
 @Composable
-private fun ServerCard(
+private fun ServerSectionHeader(
     node: RemoteNodeState,
     onDiscover: () -> Unit,
-    onOpenSystem: (RemoteSystem) -> Unit,
+    hasSystems: Boolean,
 ) {
-    OSHCard {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp)),
+        shape = if (hasSystems) {
+            RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+        } else {
+            RoundedCornerShape(12.dp)
+        },
+        color = SecondaryContainer,
+        shadowElevation = 2.dp,
+    ) {
         Column {
             OSHClickableStatusRowWithIcon(
                 title = node.name,
@@ -130,29 +168,48 @@ private fun ServerCard(
                 },
                 onClick = if (node.loading) null else onDiscover,
             )
-            if (node.loading) CircularProgressIndicator(Modifier.padding(start = 52.dp, bottom = 16.dp))
-            node.systems.forEach { system ->
-                HorizontalDivider()
-                SystemRow(system = system, onClick = { onOpenSystem(system) })
-            }
+            if (node.loading) CircularProgressIndicator(
+                Modifier.padding(
+                    start = 52.dp,
+                    bottom = 16.dp
+                )
+            )
         }
     }
 }
 
 @Composable
-private fun SystemRow(
+private fun ServerSystemRow(
     system: RemoteSystem,
+    isLastInSection: Boolean,
     onClick: () -> Unit,
 ) {
-    Column {
-        OSHClickableStatusRowWithIcon(
-            title = system.name,
-            imageVector = Icons.Filled.Sensors,
-            contentDescription = "Server",
-            subtitle = system.uid,
-            summary =  "${system.visualizations.size} datastreams",
-            status = if (system.visualizations.isEmpty()) "unknown" else "started",
-            onClick = onClick,
-        )
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                bottom = if (isLastInSection) 8.dp else 0.dp,
+            ),
+        shape = if (isLastInSection) {
+            RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+        } else {
+            RectangleShape
+        },
+        color = SecondaryContainer,
+    ) {
+        Column {
+            HorizontalDivider()
+            OSHClickableStatusRowWithIcon(
+                title = system.name,
+                imageVector = Icons.Filled.Sensors,
+                contentDescription = "System",
+                subtitle = system.uid,
+                summary = "${system.visualizations.size} datastreams",
+                status = "unknown",
+                onClick = onClick,
+            )
+        }
     }
 }

@@ -5,9 +5,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-object OshMapStore {
-    private const val MAX_TRAIL_POINTS = 200
-
+class TrackRepository {
+    private val maxTrailPoints = 200
     private val _tracks = MutableStateFlow<Map<String, RemoteTrack>>(emptyMap())
     val tracks: StateFlow<Map<String, RemoteTrack>> = _tracks.asStateFlow()
 
@@ -15,7 +14,7 @@ object OshMapStore {
         if (latitude !in -90.0..90.0 || longitude !in -180.0..180.0) return
         _tracks.update { current ->
             val old = current[streamId]
-            val points = (old?.trail.orEmpty() + (latitude to longitude)).takeLast(MAX_TRAIL_POINTS)
+            val points = (old?.trail.orEmpty() + (latitude to longitude)).takeLast(maxTrailPoints)
             current + (streamId to RemoteTrack(streamId, systemId, label, latitude, longitude, points))
         }
     }
@@ -33,11 +32,6 @@ object OshMapStore {
         }
     }
 
-    fun remove(streamId: String) {
-        _tracks.update { it - streamId }
-    }
-
-    fun clear() {
-        _tracks.value = emptyMap()
-    }
+    fun remove(streamId: String) { _tracks.update { it - streamId } }
+    fun clear() { _tracks.value = emptyMap() }
 }

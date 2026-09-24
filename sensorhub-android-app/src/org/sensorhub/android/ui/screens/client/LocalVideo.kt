@@ -11,12 +11,14 @@ import java.nio.ByteBuffer
 import java.util.ArrayDeque
 
 enum class PtzCommand(val item: String, val delta: Double) {
-    PAN_LEFT("rpan", -5.0), PAN_RIGHT("rpan", 5.0),
-    TILT_UP("rtilt", 5.0), TILT_DOWN("rtilt", -5.0),
-    ZOOM_IN("rzoom", 1000.0), ZOOM_OUT("rzoom", -1000.0),
+    PAN_LEFT("rpan", -5.0),
+    PAN_RIGHT("rpan", 5.0),
+    TILT_UP("rtilt", 5.0),
+    TILT_DOWN("rtilt", -5.0),
+    ZOOM_IN("rzoom", 1000.0),
+    ZOOM_OUT("rzoom", -1000.0),
 }
 
-/** Platform UI's video protocol and decoder behavior, adapted to this Compose host. */
 class VideoStream(
     private val streamIds: Collection<String>,
     private val name: String?,
@@ -54,7 +56,10 @@ class VideoStream(
 
             override fun onSurfaceTextureUpdated(st: android.graphics.SurfaceTexture) = Unit
         }
-        if (view.isAvailable) surface = Surface(view.surfaceTexture)
+        if (view.isAvailable) {
+            surface?.release()
+            surface = Surface(view.surfaceTexture)
+        }
     }
 
     fun update(timestamp: Long, record: ByteArray) {

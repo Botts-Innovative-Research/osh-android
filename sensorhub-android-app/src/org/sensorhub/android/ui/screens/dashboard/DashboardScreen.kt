@@ -1,10 +1,7 @@
 package org.sensorhub.android.ui.screens.dashboard
 
 import android.content.pm.PackageManager
-import android.graphics.SurfaceTexture
 import android.os.Build
-import android.util.Log
-import android.view.TextureView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,14 +34,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import org.sensorhub.android.R
-import org.sensorhub.android.SensorHubService
 import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.ui.HubUiState
 import org.sensorhub.android.ui.SensorHubViewModel
@@ -58,12 +50,7 @@ import org.sensorhub.api.module.ModuleEvent.ModuleState
 
 @Composable
 fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewModel) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val state by produceState(viewModel.state.value, viewModel, lifecycle) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            viewModel.state.collect { value = it }
-        }
-    }
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val permissions = permissionsForEnabledSensors(context)
     fun permissionsGranted() = permissions.all {
@@ -144,7 +131,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                OSHCard(modifier = Modifier.fillMaxWidth()) {
+                OSHCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                     OSHStatusRow(
                         title = stringResource(R.string.ui_smarthub),
                         subtitle = state.runName.takeIf { running }.orEmpty(),
@@ -166,14 +153,6 @@ fun DashboardScreen(
                                 server.allOk -> R.string.destination_active
                                 else -> R.string.destination_attention
                             })
-                            LaunchedEffect(server.serverName, summary, server.errorText) {
-                                Log.d(
-                                    "ServerDestination",
-                                    "${server.serverName}: $summary" +
-                                        (server.errorText?.let { " — $it" } ?: "")
-                                )
-                            }
-
                             OSHStatusRow(
                                 title = server.serverName,
                                 subtitle = if (hasError) {
@@ -242,30 +221,6 @@ fun DashboardScreen(
     }
 }
 
-
-@Composable
-private fun CameraPreview() {
-    AndroidView(
-        modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f),
-        factory = { context ->
-            TextureView(context).apply {
-                surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-                    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-                        val shared = SensorHubService.getVideoTexture()
-                        if (shared != null && !shared.isReleased && surfaceTexture !== shared) {
-                            setSurfaceTexture(shared)
-                            surface.release()
-                        }
-                    }
-                    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) = Unit
-                    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) = Unit
-                    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean =
-                        surface !== SensorHubService.getVideoTexture()
-                }
-            }
-        }
-    )
-}
 
 @Preview(showBackground = true)
 @Composable

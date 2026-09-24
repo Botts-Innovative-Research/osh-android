@@ -39,6 +39,11 @@ fun Navbar(
             route = Screen.Dashboard.route
         ),
         NavigationItem(
+            title = "Sensors",
+            icon = Icons.Default.Sensors,
+            route = Screen.Sensors.route
+        ),
+        NavigationItem(
             title = "Map",
             icon = Icons.Default.Map,
             route = Screen.Map.route
@@ -47,11 +52,6 @@ fun Navbar(
             title = "Client",
             icon = Icons.Default.Monitor,
             route = Screen.Client.route
-        ),
-        NavigationItem(
-            title = "Sensors",
-            icon = Icons.Default.Sensors,
-            route = Screen.Sensors.route
         ),
     )
 

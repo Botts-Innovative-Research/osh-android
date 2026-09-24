@@ -76,7 +76,7 @@ fun ServerProfilesScreen(
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
-                title = "Server Profiles",
+                title = stringResource(R.string.title_server_profiles),
                 onBackClick = onBackClick
             )
         },

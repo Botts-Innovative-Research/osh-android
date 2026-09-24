@@ -5,8 +5,10 @@ data class RemoteVisualization(
     val name: String,
     val kind: Kind,
 ) {
-    enum class Kind { LOCATION, VIDEO }
+    enum class Kind { LOCATION, VIDEO, OTHER }
 }
+
+enum class StreamStatus { CONNECTING, RECEIVING, DISCONNECTED, PAUSED }
 
 data class RemoteSystem(
     val id: String,
@@ -36,6 +38,44 @@ data class RemoteTrack(
     val trail: List<Pair<Double, Double>>,
 )
 
+data class SystemDetailUiState(
+    val system: RemoteSystem? = null,
+    val enabledLocations: Set<String> = emptySet(),
+    val enabledVideos: Set<String> = emptySet(),
+    val videoErrors: Map<String, String> = emptyMap(),
+    val otherValues: Map<String, Map<String, String>> = emptyMap(),
+    val streamStatuses: Map<String, StreamStatus> = emptyMap(),
+    val tracks: Map<String, RemoteTrack> = emptyMap(),
+    val cards: List<StreamCardState> = emptyList(),
+)
+
+sealed interface StreamCardState {
+    val streamId: String
+    val name: String
+    val status: StreamStatus
+
+    data class Video(
+        override val streamId: String,
+        override val name: String,
+        override val status: StreamStatus,
+        val error: String?,
+    ) : StreamCardState
+
+    data class Location(
+        override val streamId: String,
+        override val name: String,
+        override val status: StreamStatus,
+        val position: Pair<Double, Double>?,
+    ) : StreamCardState
+
+    data class Values(
+        override val streamId: String,
+        override val name: String,
+        override val status: StreamStatus,
+        val values: Map<String, String>,
+    ) : StreamCardState
+}
+
 data class RemoteControlStream(
     val controlStreamId: String,
     val supportsAbsolutePan: Boolean,
@@ -45,10 +85,13 @@ data class RemoteControlStream(
     val supportsRelativeTilt: Boolean,
     val supportsRelativeZoom: Boolean,
     val supportsPresets: Boolean,
+    val absolutePanRange: PtzAxisRange? = null,
+    val absoluteTiltRange: PtzAxisRange? = null,
+    val absoluteZoomRange: PtzAxisRange? = null,
 )
 
-data class SelectedVideo(
-    val profileId: String,
-    val system: RemoteSystem,
-    val visualization: RemoteVisualization,
+data class PtzAxisRange(
+    val minimum: Float,
+    val maximum: Float,
+    val unit: String?,
 )

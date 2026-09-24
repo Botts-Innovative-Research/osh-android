@@ -30,9 +30,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,12 +75,12 @@ fun OSHAlertDialog(
         confirmButton = {
             OSHButton(
                 onClick = { onConfirmation() },
-                text = "OK"
+                text = stringResource(R.string.btn_ok)
             )
         },
         dismissButton = {
             TextButton(onClick = { onDismissRequest() }) {
-                Text("Cancel")
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )
@@ -110,7 +112,7 @@ fun OSHAlertDialogWithoutDismiss(
         confirmButton = {
             OSHButton(
                 onClick = { onConfirmation() },
-                text = "OK"
+                text = stringResource(R.string.btn_ok)
             )
         }
     )
@@ -126,7 +128,7 @@ fun OSHTextInputDialog(
     initialValue: String = "",
     placeholder: String = ""
 ) {
-    var textValue by remember { mutableStateOf(initialValue) }
+    var textValue by rememberSaveable(initialValue) { mutableStateOf(initialValue) }
 
     AlertDialog(
         title = {
@@ -161,12 +163,12 @@ fun OSHTextInputDialog(
         confirmButton = {
             OSHButton(
                 onClick = { onConfirmation(textValue) },
-                text = "OK"
+                text = stringResource(R.string.btn_ok)
             )
         },
         dismissButton = {
             TextButton(onClick = { onDismissRequest() }) {
-                Text("Cancel")
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )
@@ -211,10 +213,7 @@ fun OSHSingleChoiceDialog(
                     ) {
                         RadioButton(
                             selected = index == selectedIndex,
-                            onClick = {
-                                onOptionSelected(index)
-                                onDismissRequest()
-                            },
+                            onClick = null,
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = Primary
                             )
@@ -229,7 +228,7 @@ fun OSHSingleChoiceDialog(
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = { onDismissRequest() }) {
-                Text("Cancel")
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )
@@ -242,15 +241,14 @@ fun OSHBluetoothPickerDialog(
     currentAddress: String,
     onDeviceSelected: (address: String, displayName: String) -> Unit,
     onDismiss: () -> Unit,
-    onStartScan: () -> Unit
+    onStartScan: () -> Unit,
+    onStopScan: () -> Unit,
 ) {
     var manualEntry by remember { mutableStateOf("") }
     var showManualInput by remember { mutableStateOf(false) }
 
-    DisposableEffect(Unit) {
-        onStartScan()
-        onDispose { }
-    }
+    LaunchedEffect(Unit) { onStartScan() }
+    DisposableEffect(Unit) { onDispose { onStopScan() } }
 
     AlertDialog(
         onDismissRequest = onDismiss,

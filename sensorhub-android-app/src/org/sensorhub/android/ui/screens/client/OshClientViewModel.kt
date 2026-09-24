@@ -1,8 +1,6 @@
 package org.sensorhub.android.ui.screens.client
 
 import android.app.Application
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,17 +16,18 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
-import okio.ByteString
 import org.json.JSONArray
 import org.json.JSONObject
-import org.sensorhub.android.data.client.OshMapStore
+import org.sensorhub.android.data.client.ObservationSubscriptionManager
+import org.sensorhub.android.data.client.PtzAxisRange
 import org.sensorhub.android.data.client.RemoteControlStream
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
 import org.sensorhub.android.data.client.RemoteVisualization
+import org.sensorhub.android.data.client.StreamCardState
+import org.sensorhub.android.data.client.StreamStatus
+import org.sensorhub.android.data.client.SystemDetailUiState
+import org.sensorhub.android.data.client.TrackRepository
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
 import java.util.concurrent.ConcurrentHashMap
@@ -38,7 +38,9 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private val http = OkHttpClient.Builder()
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
-    private val sockets = ConcurrentHashMap<String, WebSocket>()
+    private val subscriptions = ObservationSubscriptionManager(http)
+    private val trackRepository = TrackRepository()
+    val tracks = trackRepository.tracks
     private val videoRenderers = ConcurrentHashMap<String, VideoStream>()
 
     private val _nodes = MutableStateFlow<List<RemoteNodeState>>(emptyList())
@@ -50,14 +52,71 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private val _enabledLocations = MutableStateFlow<Set<String>>(emptySet())
     val enabledLocations: StateFlow<Set<String>> = _enabledLocations.asStateFlow()
 
-    private val _videoFrames = MutableStateFlow<Map<String, Bitmap>>(emptyMap())
-    val videoFrames: StateFlow<Map<String, Bitmap>> = _videoFrames.asStateFlow()
-
     private val _enabledVideos = MutableStateFlow<Set<String>>(emptySet())
     val enabledVideos: StateFlow<Set<String>> = _enabledVideos.asStateFlow()
 
     private val _videoErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     val videoErrors: StateFlow<Map<String, String>> = _videoErrors.asStateFlow()
+
+    private val _otherValues = MutableStateFlow<Map<String, Map<String, String>>>(emptyMap())
+    val otherValues: StateFlow<Map<String, Map<String, String>>> = _otherValues.asStateFlow()
+
+    private val _streamStatuses = MutableStateFlow<Map<String, StreamStatus>>(emptyMap())
+    val streamStatuses: StateFlow<Map<String, StreamStatus>> = _streamStatuses.asStateFlow()
+
+    fun systemDetailState(profileId: String, systemId: String) = combine(
+        nodes,
+        enabledLocations,
+        enabledVideos,
+        videoErrors,
+        otherValues,
+    ) { nodes, locations, videos, errors, values ->
+        SystemDetailUiState(
+            system = nodes.firstOrNull { it.profileId == profileId }?.systems?.firstOrNull { it.id == systemId },
+            enabledLocations = locations,
+            enabledVideos = videos,
+            videoErrors = errors,
+            otherValues = values,
+        )
+    }.combine(streamStatuses) { state, statuses -> state.copy(streamStatuses = statuses) }
+        .combine(tracks) { state, tracks ->
+            state.copy(tracks = tracks).withCards()
+        }
+
+    private fun SystemDetailUiState.withCards(): SystemDetailUiState {
+        val currentSystem = system ?: return this
+        val cards = currentSystem.visualizations.map { visualization ->
+            val status = streamStatuses[visualization.dataStreamId] ?: when (visualization.kind) {
+                RemoteVisualization.Kind.VIDEO -> StreamStatus.PAUSED
+                else -> StreamStatus.CONNECTING
+            }
+            when (visualization.kind) {
+                RemoteVisualization.Kind.VIDEO -> StreamCardState.Video(
+                    streamId = visualization.dataStreamId,
+                    name = visualization.name,
+                    status = status,
+                    error = videoErrors[visualization.dataStreamId],
+                )
+
+                RemoteVisualization.Kind.LOCATION -> StreamCardState.Location(
+                    streamId = visualization.dataStreamId,
+                    name = visualization.name,
+                    status = status,
+                    position = tracks[visualization.dataStreamId]
+                        ?.let { it.latitude to it.longitude }
+                        ?: currentSystem.location,
+                )
+
+                RemoteVisualization.Kind.OTHER -> StreamCardState.Values(
+                    streamId = visualization.dataStreamId,
+                    name = visualization.name,
+                    status = status,
+                    values = otherValues[visualization.dataStreamId].orEmpty(),
+                )
+            }
+        }
+        return copy(cards = cards)
+    }
 
     init {
         refreshProfiles()
@@ -93,7 +152,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             runCatching { withContext(Dispatchers.IO) { discoverNode(profile) } }
                 .onSuccess { systems ->
-                    OshMapStore.replaceSystemLocations(profileId, systems)
+                    trackRepository.replaceSystemLocations(profileId, systems)
                     updateNode(profileId) { it.copy(loading = false, systems = systems) }
                 }
                 .onFailure { error ->
@@ -106,15 +165,16 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setVideoEnabled(profileId: String, visualization: RemoteVisualization, enabled: Boolean) {
         if (!enabled) {
-            sockets.remove(visualization.dataStreamId)?.close(1000, "disabled")
+            subscriptions.unsubscribe(visualization.dataStreamId, "disabled")
             _enabledVideos.update { it - visualization.dataStreamId }
             _videoErrors.update { it - visualization.dataStreamId }
-            _videoFrames.update { it - visualization.dataStreamId }
+            _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.PAUSED) }
             return
         }
 
         val profile = profiles.getById(profileId) ?: return
         _videoErrors.update { it - visualization.dataStreamId }
+        _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.CONNECTING) }
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
@@ -122,27 +182,22 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 // This must match platform-ui's SWE_BINARY_FORMAT exactly.
                 "/datastreams/${visualization.dataStreamId}/observations?format=application/swe%2Bbinary"
         val request = authorizedRequest(url, profile).build()
-        val socket = http.newWebSocket(request, object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                handleVideoMessage(text, visualization.dataStreamId)
-            }
-
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+        subscriptions.subscribe(
+            streamId = visualization.dataStreamId,
+            request = request,
+            onBytes = { bytes ->
                 videoRenderers[visualization.dataStreamId]
-                    ?.update(System.currentTimeMillis(), bytes.toByteArray())
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                if (sockets.remove(visualization.dataStreamId, webSocket)) {
-                    _enabledVideos.update { it - visualization.dataStreamId }
-                    _videoErrors.update {
-                        it + (visualization.dataStreamId to (t.message ?: "Could not connect to the server."))
-                    }
+                    ?.update(System.currentTimeMillis(), bytes)
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.RECEIVING) }
+            },
+            onDisconnected = { error ->
+                _enabledVideos.update { it - visualization.dataStreamId }
+                _videoErrors.update {
+                    it + (visualization.dataStreamId to (error?.message ?: "Connection closed."))
                 }
-            }
-        })
-        sockets[visualization.dataStreamId]?.cancel()
-        sockets[visualization.dataStreamId] = socket
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
+            },
+        )
         _enabledVideos.update { it + visualization.dataStreamId }
     }
 
@@ -156,56 +211,96 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             .filter { it.kind == RemoteVisualization.Kind.VIDEO }
             .forEach { visualization ->
                 setVideoEnabled(profileId, visualization, false)
-                videoRenderers.remove(visualization.dataStreamId)?.disconnect()
+                videoRenderers[visualization.dataStreamId]?.disconnect()
             }
     }
 
-    private fun handleVideoMessage(text: String, dataStreamId: String) {
-        val frameBytes = runCatching { findImageFrame(JSONObject(text)) }.getOrNull() ?: return
-        decodeJpeg(frameBytes)?.let { bitmap ->
-            _videoFrames.update { it + (dataStreamId to bitmap) }
+    fun startSystemLocationStreams(profileId: String, system: RemoteSystem) {
+        system.visualizations
+            .filter { it.kind == RemoteVisualization.Kind.LOCATION }
+            .forEach { setLocationEnabled(profileId, system, it, true) }
+    }
+
+    fun stopSystemLocationStreams(profileId: String, system: RemoteSystem) {
+        system.visualizations
+            .filter { it.kind == RemoteVisualization.Kind.LOCATION }
+            .forEach { setLocationEnabled(profileId, system, it, false) }
+    }
+
+    fun startSystemOtherStreams(profileId: String, system: RemoteSystem) {
+        system.visualizations
+            .filter { it.kind == RemoteVisualization.Kind.OTHER }
+            .forEach { setOtherEnabled(profileId, it, true) }
+    }
+
+    fun stopSystemOtherStreams(profileId: String, system: RemoteSystem) {
+        system.visualizations
+            .filter { it.kind == RemoteVisualization.Kind.OTHER }
+            .forEach { setOtherEnabled(profileId, it, false) }
+    }
+
+    private fun setOtherEnabled(
+        profileId: String,
+        visualization: RemoteVisualization,
+        enabled: Boolean
+    ) {
+        if (!enabled) {
+            subscriptions.unsubscribe(visualization.dataStreamId, "system screen closed")
+            _otherValues.update { it - visualization.dataStreamId }
+            _streamStatuses.update { it - visualization.dataStreamId }
+            return
         }
-    }
 
-    private fun decodeJpeg(bytes: ByteArray): Bitmap? =
-        runCatching { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }.getOrNull()
-
-    // Recursively hunt for a base64 string field whose decoded bytes start with
-// the JPEG SOI marker (0xFFD8), same tree-search style as findCoordinates().
-    private fun findImageFrame(value: Any?): ByteArray? {
-        when (value) {
-            is JSONObject -> {
-                value.keys().forEach { key ->
-                    val v = value.opt(key)
-                    if (v is String) {
-                        val decoded = runCatching { Base64.decode(v, Base64.DEFAULT) }.getOrNull()
-                        if (decoded != null && decoded.size > 2 &&
-                            decoded[0] == 0xFF.toByte() && decoded[1] == 0xD8.toByte()
-                        ) return decoded
-                    }
-                }
-                value.keys().forEach { key -> findImageFrame(value.opt(key))?.let { return it } }
-            }
-            is JSONArray -> for (i in 0 until value.length()) {
-                findImageFrame(value.opt(i))?.let { return it }
-            }
-        }
-        return null
-    }
-
-    private fun fetchVideoEncoding(
-        dataStreamId: String,
-        profile: ServerProfileItem
-    ): String? {
-        val schema = getJson(
-            "${apiBase(profile.endpointUrl)}/datastreams/$dataStreamId/schema?obsFormat=application/swe+binary",
-            profile,
+        val profile = profiles.getById(profileId) ?: return
+        _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.CONNECTING) }
+        val url = apiBase(profile.endpointUrl)
+            .replaceFirst("https://", "wss://")
+            .replaceFirst("http://", "ws://") +
+                "/datastreams/${visualization.dataStreamId}/observations?format=application/json"
+        val request = authorizedRequest(url, profile).build()
+        subscriptions.subscribe(
+            streamId = visualization.dataStreamId,
+            request = request,
+            onText = { text ->
+                handleOtherMessage(text, visualization.dataStreamId)
+            },
+            onBytes = { bytes ->
+                handleOtherMessage(
+                    bytes.toString(Charsets.UTF_8),
+                    visualization.dataStreamId
+                )
+            },
+            onDisconnected = {
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
+            },
         )
-        val members = schema.optJSONObject("resultEncoding")?.optJSONArray("members") ?: return null
-        for (index in 0 until members.length()) {
-            members.optJSONObject(index)?.optString("compression")?.takeIf { it.isNotBlank() }?.let { return it }
+    }
+
+    private fun handleOtherMessage(text: String, dataStreamId: String) {
+        val values = runCatching {
+            val observation = org.json.JSONTokener(text).nextValue() as? JSONObject
+                ?: return@runCatching emptyMap()
+            flattenFields(observation.opt("result"))
+        }.getOrNull() ?: return
+        if (values.isNotEmpty()) _otherValues.update { it + (dataStreamId to values) }
+        if (values.isNotEmpty()) _streamStatuses.update { it + (dataStreamId to StreamStatus.RECEIVING) }
+    }
+
+    private fun flattenFields(value: Any?, prefix: String = ""): Map<String, String> = buildMap {
+        when (value) {
+            is JSONObject -> value.keys().forEach { key ->
+                putAll(flattenFields(value.opt(key), if (prefix.isBlank()) key else "$prefix.$key"))
+            }
+
+            is JSONArray -> {
+                if (value.length() == 0) put(prefix, "[]")
+                else (0 until value.length()).forEach { index ->
+                    putAll(flattenFields(value.opt(index), "$prefix[$index]"))
+                }
+            }
+
+            else -> if (prefix.isNotBlank()) put(prefix, value?.toString() ?: "null")
         }
-        return null
     }
 
     fun setLocationEnabled(
@@ -215,34 +310,38 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         enabled: Boolean,
     ) {
         if (!enabled) {
-            sockets.remove(visualization.dataStreamId)?.close(1000, "disabled")
+            subscriptions.unsubscribe(visualization.dataStreamId, "disabled")
             _enabledLocations.update { it - visualization.dataStreamId }
-            OshMapStore.remove(visualization.dataStreamId)
+            _streamStatuses.update { it - visualization.dataStreamId }
+            trackRepository.remove(visualization.dataStreamId)
             return
         }
 
         val profile = profiles.getById(profileId) ?: return
+        _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.CONNECTING) }
         val url = apiBase(profile.endpointUrl)
             .replaceFirst("https://", "wss://")
             .replaceFirst("http://", "ws://") +
-                "/datastreams/${visualization.dataStreamId}/observations?format=application/json"
+                "/datastreams/${visualization.dataStreamId}/observations?format=application/om%2Bjson"
         val request = authorizedRequest(url, profile).build()
-        val socket = http.newWebSocket(request, object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
+        subscriptions.subscribe(
+            streamId = visualization.dataStreamId,
+            request = request,
+            onText = { text ->
                 handleLocationMessage(text, visualization, system)
-            }
-
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                handleLocationMessage(bytes.utf8(), visualization, system)
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                sockets.remove(visualization.dataStreamId)
+            },
+            onBytes = { bytes ->
+                handleLocationMessage(
+                    bytes.toString(Charsets.UTF_8),
+                    visualization,
+                    system
+                )
+            },
+            onDisconnected = {
                 _enabledLocations.update { it - visualization.dataStreamId }
-            }
-        })
-        sockets[visualization.dataStreamId]?.cancel()
-        sockets[visualization.dataStreamId] = socket
+                _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.DISCONNECTED) }
+            },
+        )
         _enabledLocations.update { it + visualization.dataStreamId }
     }
 
@@ -253,18 +352,23 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         system: RemoteSystem,
     ) {
         findCoordinates(text)?.let { (lat, lon) ->
-            OshMapStore.update(visualization.dataStreamId, system.id, system.name, lat, lon)
+            trackRepository.update(visualization.dataStreamId, system.id, system.name, lat, lon)
+            _streamStatuses.update { it + (visualization.dataStreamId to StreamStatus.RECEIVING) }
         }
     }
 
     private fun discoverNode(profile: ServerProfileItem): List<RemoteSystem> {
-        val systemsJson = getJson("${apiBase(profile.endpointUrl)}/systems?limit=10000&f=geojson", profile)
-        val datastreamsJson = getJson("${apiBase(profile.endpointUrl)}/datastreams?limit=10000", profile)
-        val controlStreamsJson = getJson("${apiBase(profile.endpointUrl)}/controlstreams?limit=10000", profile)
+        val systemsJson =
+            getJson("${apiBase(profile.endpointUrl)}/systems?limit=10000&f=geojson", profile)
+        val datastreamsJson =
+            getJson("${apiBase(profile.endpointUrl)}/datastreams?limit=10000", profile)
+        val controlStreamsJson =
+            getJson("${apiBase(profile.endpointUrl)}/controlstreams?limit=10000", profile)
         val visualizations = classifyDatastreams(datastreamsJson)
-        val ptzBySystem = classifyControlStreams(controlStreamsJson)
+        val ptzBySystem = classifyControlStreams(controlStreamsJson, profile)
 
-        val items = systemsJson.optJSONArray("features") ?: systemsJson.optJSONArray("items") ?: JSONArray()
+        val items =
+            systemsJson.optJSONArray("features") ?: systemsJson.optJSONArray("items") ?: JSONArray()
         return buildList {
             for (index in 0 until items.length()) {
                 val item = items.optJSONObject(index) ?: continue
@@ -297,7 +401,10 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    private fun classifyControlStreams(json: JSONObject): Map<String, RemoteControlStream> {
+    private fun classifyControlStreams(
+        json: JSONObject,
+        profile: ServerProfileItem,
+    ): Map<String, RemoteControlStream> {
         val result = mutableMapOf<String, RemoteControlStream>()
         val items = json.optJSONArray("items") ?: return emptyMap()
 
@@ -308,13 +415,25 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             if (systemId.isBlank() || controlStreamId.isBlank()) continue
 
             val definitions = item.optJSONArray("controlledProperties")?.let { props ->
-                (0 until props.length()).mapNotNull { props.optJSONObject(it)?.optString("definition") }
-            }.orEmpty().toSet() // dedupe repeated entries
+                (0 until props.length()).mapNotNull {
+                    props.optJSONObject(it)?.optString("definition")
+                }
+            }.orEmpty().toSet()
 
             val hasPtz = definitions.any {
-                it.endsWith("/Pan") || it.endsWith("/Tilt") || it.endsWith("/ZoomFactor")
+                it.endsWith("Pan") || it.endsWith("Tilt") || it.endsWith("ZoomFactor")
             }
             if (!hasPtz) continue
+
+            val schema = runCatching {
+                getJson(
+                    "${apiBase(profile.endpointUrl)}/controlstreams/$controlStreamId/schema",
+                    profile,
+                )
+            }.getOrNull()
+            val absolutePanRange = schema?.let { absolutePtzRange(it, "pan") }
+            val absoluteTiltRange = schema?.let { absolutePtzRange(it, "tilt") }
+            val absoluteZoomRange = schema?.let { absolutePtzRange(it, "zoom") }
 
             result[systemId] = RemoteControlStream(
                 controlStreamId = controlStreamId,
@@ -325,12 +444,45 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 supportsRelativeTilt = "http://sensorml.com/ont/swe/property/RelativeTilt" in definitions,
                 supportsRelativeZoom = "http://sensorml.com/ont/swe/property/RelativeZoomFactor" in definitions,
                 supportsPresets = "http://sensorml.com/ont/swe/property/CameraPresetPositionName" in definitions,
+                absolutePanRange = absolutePanRange,
+                absoluteTiltRange = absoluteTiltRange,
+                absoluteZoomRange = absoluteZoomRange,
             )
         }
         return result
     }
 
-    /** GeoJSON coordinates are longitude, latitude; the app map uses latitude, longitude. */
+    private fun absolutePtzRange(controlStream: JSONObject, name: String): PtzAxisRange? {
+        val schema = controlStream.optJSONObject("parametersSchema") ?: return null
+        val directItems = schema.optJSONArray("items") ?: return null
+        val candidates = buildList {
+            for (index in 0 until directItems.length()) {
+                val item = directItems.optJSONObject(index) ?: continue
+                add(item)
+                if (item.optString("type") == "DataRecord") {
+                    val fields = item.optJSONArray("fields") ?: continue
+                    for (fieldIndex in 0 until fields.length()) {
+                        fields.optJSONObject(fieldIndex)?.let(::add)
+                    }
+                }
+            }
+        }
+        val parameter = candidates.firstOrNull { it.optString("name") == name } ?: return null
+        val interval = parameter.optJSONObject("constraint")
+            ?.optJSONArray("intervals")
+            ?.optJSONArray(0)
+            ?: return null
+        val minimum = interval.optDouble(0, Double.NaN)
+        val maximum = interval.optDouble(1, Double.NaN)
+        if (!minimum.isFinite() || !maximum.isFinite() || minimum >= maximum) return null
+
+        return PtzAxisRange(
+            minimum = minimum.toFloat(),
+            maximum = maximum.toFloat(),
+            unit = parameter.optJSONObject("uom")?.optString("code").orEmpty(),
+        )
+    }
+
     private fun pointFromGeoJson(geometry: JSONObject?): Pair<Double, Double>? {
         if (geometry?.optString("type") != "Point") return null
         val coordinates = geometry.optJSONArray("coordinates") ?: return null
@@ -352,41 +504,60 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
             val resultType = item.optString("resultType")
             val definitions = item.optJSONArray("observedProperties")?.let { props ->
-                (0 until props.length()).mapNotNull { props.optJSONObject(it)?.optString("definition") }
+                (0 until props.length()).mapNotNull {
+                    props.optJSONObject(it)?.optString("definition")
+                }
             }.orEmpty()
 
             val kind = when {
                 resultType == "coverage" && definitions.any { it.endsWith("/RasterImage") } ->
                     RemoteVisualization.Kind.VIDEO
-                resultType == "vector" && definitions.any { it.endsWith("/LocationVector") || it.endsWith("SensorLocation") } ->
+
+                resultType == "vector" && definitions.any {
+                    it.endsWith("/LocationVector") || it.endsWith(
+                        "SensorLocation"
+                    )
+                } ->
                     RemoteVisualization.Kind.LOCATION
-                // fallback for servers that report lat/lon as two scalar fields instead of a vector
+
                 definitions.any { it.endsWith("/GeodeticLatitude") } &&
                         definitions.any { it.endsWith("/Longitude") } ->
                     RemoteVisualization.Kind.LOCATION
-                else -> null
-            } ?: continue
 
-            result.getOrPut(systemId) { mutableListOf() }.add(RemoteVisualization(dataStreamId, name, kind))
+                else -> RemoteVisualization.Kind.OTHER
+            }
+
+            result.getOrPut(systemId) { mutableListOf() }
+                .add(RemoteVisualization(dataStreamId, name, kind))
         }
         return result
     }
 
-    fun sendPtzCommand(profileId: String, controlStream: RemoteControlStream, params: Map<String, Any>) {
+    fun sendPtzCommand(
+        profileId: String,
+        controlStream: RemoteControlStream,
+        params: Map<String, Any>
+    ) {
         val profile = profiles.getById(profileId) ?: return
         viewModelScope.launch {
-            runCatching { withContext(Dispatchers.IO) { postCommand(controlStream.controlStreamId, params, profile) } }
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    postCommand(controlStream.controlStreamId, params, profile)
+                }
+            }
                 .onFailure { /* surface to a _commandError flow if you want UI feedback */ }
         }
     }
 
-    private fun postCommand(controlStreamId: String, params: Map<String, Any>, profile: ServerProfileItem) {
+    private fun postCommand(
+        controlStreamId: String,
+        params: Map<String, Any>,
+        profile: ServerProfileItem,
+    ) {
         val url = "${apiBase(profile.endpointUrl)}/controlstreams/$controlStreamId/commands"
-        // Commands are SWE Common records, not ConSys JSON resources.  For a
-        // DataChoice PTZ stream this is, for example, {"rpan":-5.0}.  Use a
-        // byte-array body so OkHttp does not append `charset=UTF-8`: ConSys
-        // matches its request format against the exact SWE media type.
-        val body = JSONObject(params).toString().toByteArray(Charsets.UTF_8)
+        val body = JSONObject(params)
+            .toString()
+            .toByteArray(Charsets.UTF_8)
             .toRequestBody("application/swe+json".toMediaType())
         val request = authorizedRequest(url, profile).post(body).build()
         http.newCall(request).execute().use {
@@ -415,28 +586,6 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         return builder
     }
 
-    private fun parseVisualizations(json: JSONObject): Map<String, List<RemoteVisualization>> {
-        val result = mutableMapOf<String, MutableList<RemoteVisualization>>()
-        val rows = json.optJSONArray("resultSet") ?: return emptyMap()
-        for (index in 0 until rows.length()) {
-            val row = rows.optJSONObject(index) ?: continue
-            val systemId = row.optString("systemId")
-            if (systemId.isBlank()) continue
-            fun add(kind: RemoteVisualization.Kind, key: String) {
-                val values = row.optJSONArray(key) ?: return
-                for (itemIndex in 0 until values.length()) {
-                    val id = values.optJSONObject(itemIndex)?.optString("dataStreamId").orEmpty()
-                    val name = values.optJSONObject(itemIndex)?.optString("name").orEmpty()
-                    if (id.isNotBlank()) result.getOrPut(systemId) { mutableListOf() }
-                        .add(RemoteVisualization(id, name, kind))
-                }
-            }
-            add(RemoteVisualization.Kind.LOCATION, "location")
-            add(RemoteVisualization.Kind.VIDEO, "video")
-        }
-        return result
-    }
-
     private fun findCoordinates(text: String): Pair<Double, Double>? = runCatching {
         findCoordinates(JSONObject(text))
     }.getOrNull()
@@ -449,6 +598,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 if (latitude != null && longitude != null) return latitude to longitude
                 value.keys().forEach { key -> findCoordinates(value.opt(key))?.let { return it } }
             }
+
             is JSONArray -> for (index in 0 until value.length()) {
                 findCoordinates(value.opt(index))?.let { return it }
             }
@@ -459,8 +609,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private fun number(json: JSONObject, vararg keys: String): Double? {
         for (key in keys) {
             if (!json.has(key)) continue
-            val value = json.opt(key)
-            when (value) {
+            when (val value = json.opt(key)) {
                 is Number -> return value.toDouble()
                 is String -> value.toDoubleOrNull()?.let { return it }
             }
@@ -484,8 +633,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     override fun onCleared() {
-        sockets.values.forEach { it.close(1000, "client closed") }
-        sockets.clear()
+        subscriptions.closeAll("client closed")
         videoRenderers.values.forEach { it.disconnect() }
         videoRenderers.clear()
         http.dispatcher.executorService.shutdown()

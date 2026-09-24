@@ -86,7 +86,10 @@ fun ServerFormScreen(
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.ui_connection), style = MaterialTheme.typography.titleMedium)
                         OSHSegmentedButton(
-                            options = listOf("CS API Client", "SOS-T Client"),
+                            options = listOf(
+                                stringResource(R.string.btn_csapi_client),
+                                stringResource(R.string.btn_sost_client),
+                            ),
                             selectedIndex = if (state.useConSysClient) 0 else 1,
                             onOptionSelected = { viewModel.updateUseConSysClient(it == 0) }
                         )

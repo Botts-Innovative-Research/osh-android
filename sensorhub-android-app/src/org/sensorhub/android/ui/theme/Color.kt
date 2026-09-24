@@ -69,6 +69,11 @@ val Unknown = Color(0xFF757575)
 // Overlays
 val OverlayLight = Color(0x1AFFFFFF)
 val OverlayDark = Color(0x99000000)
+val ControlSurface = Color(0xFF1A1A1A)
+val ControlOverlay = Color(0xCC1A1A1A)
+val ControlButtonTop = Color(0xD92E343D)
+val ControlButtonBottom = Color(0xD914171C)
+val ControlButtonPressed = Color(0xCC1B6EC2)
 
 // Cards & Dialogs
 val CardInfoBg = Color(0xFF212121)
