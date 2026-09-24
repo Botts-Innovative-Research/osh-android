@@ -93,5 +93,5 @@ data class RemoteControlStream(
 data class PtzAxisRange(
     val minimum: Float,
     val maximum: Float,
-    val unit: String,
+    val unit: String?,
 )

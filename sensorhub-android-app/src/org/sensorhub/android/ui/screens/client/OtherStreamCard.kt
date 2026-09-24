@@ -44,16 +44,6 @@ fun OtherStreamCard(
                 modifier = Modifier.padding(top = OshDimensions.compactGap)
             )
             else {
-                Text(
-                    pluralStringResource(
-                        R.plurals.system_detail_value_count,
-                        values.size,
-                        values.size
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = OshDimensions.compactGap)
-                )
                 values.toSortedMap().forEach { (field, value) ->
                     Row(
                         Modifier

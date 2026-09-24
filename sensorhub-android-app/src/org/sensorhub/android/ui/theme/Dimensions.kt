@@ -12,5 +12,6 @@ object OshDimensions {
     val cardElevation = 2.dp
     val sensorCardElevation = 8.dp
     val controlButtonSize = 48.dp
+    val controlButtonSizeSmall = 24.dp
     val controlButtonElevation = 4.dp
 }
