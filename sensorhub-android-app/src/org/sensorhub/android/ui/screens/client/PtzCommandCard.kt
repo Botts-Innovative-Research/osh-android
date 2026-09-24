@@ -70,7 +70,11 @@ fun PtzCommandCard(
     var tilt by rememberSaveable(controlStream.controlStreamId) { mutableFloatStateOf(tiltRange.initialValue()) }
     var zoom by rememberSaveable(controlStream.controlStreamId) { mutableFloatStateOf(zoomRange.initialValue()) }
 
-    OSHCard(Modifier.fillMaxWidth()) {
+    OSHCard(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = OshDimensions.screenHorizontal)
+    ) {
         Column(Modifier.padding(OshDimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot("started")

@@ -166,13 +166,13 @@
     <string name="msg_enter_run_name">請輸入此次執行的名稱</string>
     <string name="title_send_meshtastic">傳送 Meshtastic 訊息</string>
 
-    <!-- Server Profiles -->
+    <!-- Nodes -->
     <string name="empty_server_profiles">尚未配置伺服器。\n點擊 + 建立一個。</string>
     <string name="content_desc_add_server">新增伺服器配置</string>
     <string name="title_delete_server">刪除伺服器</string>
     <string name="msg_delete_server">移除「%s」？</string>
 
-    <!-- Edit Server Profile -->
+    <!-- Edit Node -->
     <string name="section_client">用戶端</string>
     <string name="btn_csapi_client">CS API 用戶端</string>
     <string name="btn_sost_client">SOS-T 用戶端</string>

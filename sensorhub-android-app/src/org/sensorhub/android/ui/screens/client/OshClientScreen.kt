@@ -36,6 +36,7 @@ import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
 import org.sensorhub.android.ui.components.OSHDropDown
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.Background
+import org.sensorhub.android.ui.theme.OshDimensions
 import org.sensorhub.android.ui.theme.SecondaryContainer
 
 @Composable
@@ -71,7 +72,7 @@ fun OshClientScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Add and enable a server profile in Settings to use OSH Client.")
+                Text("Add and enable a node in Settings to use OSH Client.")
             }
         } else {
             LazyColumn(
@@ -81,7 +82,11 @@ fun OshClientScreen(
                 contentPadding = PaddingValues(vertical = 8.dp),
             ) {
                 item(key = "server-selector") {
-                    OSHCard {
+                    OSHCard(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = OshDimensions.screenHorizontal)
+                    ) {
                         Column(Modifier.padding(16.dp)) {
                             OSHDropDown(
                                 title = "Servers",
@@ -92,7 +97,7 @@ fun OshClientScreen(
                                 itemLabel = { it.name },
                                 itemSummary = { it.endpointUrl },
                                 onSelectionChange = viewModel::setProfileVisible,
-                                emptyText = "No enabled server profiles",
+                                emptyText = "No configured nodes",
                             )
                         }
                     }
@@ -101,7 +106,7 @@ fun OshClientScreen(
                 if (visibleNodes.isEmpty()) {
                     item {
                         Text(
-                            "Select a server profile to view its systems.",
+                            "Select a node to view its systems.",
                             Modifier.padding(24.dp)
                         )
                     }

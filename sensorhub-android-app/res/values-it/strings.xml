@@ -34,7 +34,7 @@
 
     <string name="device_name">Nome dispositivo</string>
     <string name="device_ip_address">Indirizzo IP del dispositivo</string>
-    <string name="server_profiles">Profili server</string>
+    <string name="server_profiles">Nodi</string>
     <string name="manage_servers">Gestisci server</string>
     <string name="services">Servizi su questo dispositivo</string>
     <string name="enable_sos_service">Servizio SOS</string>
@@ -336,7 +336,7 @@
     <string name="title_send_meshtastic">Invia messaggio Meshtastic</string>
 
     <!-- Profili server -->
-    <string name="empty_server_profiles">Nessun profilo server configurato.\nTocca + per crearne uno.</string>
+    <string name="empty_server_profiles">Nessun nodo configurato.\nTocca + per crearne uno.</string>
     <string name="content_desc_add_server">Aggiungi profilo server</string>
     <string name="title_delete_server">Elimina server</string>
     <string name="msg_delete_server">Rimuovere \"%s\"?</string>

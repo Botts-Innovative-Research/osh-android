@@ -123,20 +123,23 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun refreshProfiles() {
-        val enabledProfiles = profiles.enabled
+        val configuredProfiles = profiles.all
         val currentNodes = _nodes.value.associateBy { it.profileId }
-        val enabledIds = enabledProfiles.mapTo(mutableSetOf()) { it.id }
+        val configuredIds = configuredProfiles.mapTo(mutableSetOf()) { it.id }
+        val enabledIds = configuredProfiles
+            .filter { it.enabled }
+            .mapTo(mutableSetOf()) { it.id }
 
         // Refreshing the profile list must not discard a completed discovery or
         // close a stream that is feeding the map while this screen is away.
-        _nodes.value = enabledProfiles.map { profile ->
+        _nodes.value = configuredProfiles.map { profile ->
             currentNodes[profile.id]?.copy(
                 name = profile.serverName,
                 endpointUrl = profile.endpointUrl,
             ) ?: RemoteNodeState(profile.id, profile.serverName, profile.endpointUrl)
         }
         _visibleProfileIds.update { selected ->
-            (selected intersect enabledIds).ifEmpty { enabledIds }
+            (selected intersect configuredIds).ifEmpty { enabledIds }
         }
     }
 

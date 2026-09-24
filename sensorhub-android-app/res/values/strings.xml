@@ -378,14 +378,14 @@
     <string name="msg_enter_run_name">Please enter the name for this run</string>
     <string name="title_send_meshtastic">Send Meshtastic Message</string>
 
-    <!-- Server Profiles -->
-    <string name="empty_server_profiles">No server profiles configured.\nTap + to create one.</string>
-    <string name="content_desc_add_server">Add server profile</string>
+    <!-- Nodes -->
+    <string name="empty_server_profiles">No nodes configured.\nTap + to create one.</string>
+    <string name="content_desc_add_server">Add node</string>
     <string name="title_delete_server">Delete Server</string>
-    <string name="title_server_profiles">Server Profiles</string>
+    <string name="title_server_profiles">Configured Nodes</string>
     <string name="msg_delete_server">Remove \"%s\"?</string>
 
-    <!-- Edit Server Profile -->
+    <!-- Edit Node -->
     <string name="section_client">CLIENT</string>
     <string name="btn_csapi_client">CS API Client</string>
     <string name="btn_sost_client">SOS-T Client</string>

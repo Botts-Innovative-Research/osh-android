@@ -29,6 +29,7 @@ import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.OshDimensions
 
 @Composable
 fun SettingsScreen(
@@ -65,7 +66,10 @@ fun SettingsScreen(
 
             Text(stringResource(R.string.services), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.titleMedium)
-            OSHCard {
+            OSHCard(
+                Modifier
+                    .padding(horizontal = OshDimensions.screenHorizontal)
+            ) {
                 OSHSwitchRow(
                     title = stringResource(R.string.enable_sos_service),
                     subtitle = stringResource(R.string.summary_sos),

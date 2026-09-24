@@ -120,7 +120,6 @@ private fun TopAppBarPreview() {
 @Composable
 private fun TopAppBarWithBackPreview() {
     OSHTheme {
-        OSHTopAppBarWithBack(title = "Server Profiles", onBackClick = {})
+        OSHTopAppBarWithBack(title = "Configured Nodes", onBackClick = {})
     }
 }
-

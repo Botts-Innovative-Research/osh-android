@@ -34,7 +34,7 @@
 
     <string name="device_name">Gerätename</string>
     <string name="device_ip_address">Geräte-IP-Adresse</string>
-    <string name="server_profiles">Serverprofile</string>
+    <string name="server_profiles">Knoten</string>
     <string name="manage_servers">Server verwalten</string>
     <string name="services">Dienste auf diesem Gerät</string>
     <string name="enable_sos_service">SOS-Dienst</string>
@@ -336,7 +336,7 @@
     <string name="title_send_meshtastic">Meshtastic-Nachricht senden</string>
 
     <!-- Serverprofile -->
-    <string name="empty_server_profiles">Keine Serverprofile konfiguriert.\nTippen Sie auf +, um eines zu erstellen.</string>
+    <string name="empty_server_profiles">Keine Knoten konfiguriert.\nTippen Sie auf +, um einen zu erstellen.</string>
     <string name="content_desc_add_server">Serverprofil hinzufügen</string>
     <string name="title_delete_server">Server löschen</string>
     <string name="msg_delete_server">\"%s\" entfernen?</string>

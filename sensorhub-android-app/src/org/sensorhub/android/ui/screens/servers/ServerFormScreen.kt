@@ -51,6 +51,7 @@ import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.Error
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.OshDimensions
 import org.sensorhub.android.ui.theme.Success
 import org.sensorhub.android.ui.theme.TextSecondary
 
@@ -82,7 +83,11 @@ fun ServerFormScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
             item {
-                OSHCard {
+                OSHCard(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = OshDimensions.screenHorizontal)
+                ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.ui_connection), style = MaterialTheme.typography.titleMedium)
                         OSHSegmentedButton(
@@ -116,7 +121,11 @@ fun ServerFormScreen(
                 }
             }
             item {
-                OSHCard {
+                OSHCard(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = OshDimensions.screenHorizontal)
+                ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.ui_authentication), style = MaterialTheme.typography.titleMedium)
                         OSHInputField(
@@ -148,7 +157,11 @@ fun ServerFormScreen(
             }
             item {
                 if (state.useConSysClient) {
-                    OSHCard {
+                    OSHCard(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = OshDimensions.screenHorizontal)
+                    ) {
                         OSHSwitchRow(
                             title = stringResource(R.string.ui_enable_oauth),
                             checked = state.enableOAuth,

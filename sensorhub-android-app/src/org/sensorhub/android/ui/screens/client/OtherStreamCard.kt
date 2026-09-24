@@ -27,7 +27,11 @@ fun OtherStreamCard(
     values: Map<String, String>,
     status: StreamStatus
 ) {
-    OSHCard(Modifier.fillMaxWidth()) {
+    OSHCard(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = OshDimensions.screenHorizontal)
+    ) {
         Column(Modifier.padding(OshDimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(status.dotStatus()); Spacer(Modifier.width(OshDimensions.titleGap))

@@ -34,7 +34,7 @@
 
     <string name="device_name">Nombre del dispositivo</string>
     <string name="device_ip_address">Dirección IP del dispositivo</string>
-    <string name="server_profiles">Perfiles de servidor</string>
+    <string name="server_profiles">Nodos</string>
     <string name="manage_servers">Administrar servidores</string>
     <string name="services">Servicios en este dispositivo</string>
     <string name="enable_sos_service">Servicio SOS</string>
@@ -102,13 +102,13 @@
     <string name="msg_enter_run_name">Ingrese el nombre para esta ejecución</string>
     <string name="title_send_meshtastic">Enviar mensaje Meshtastic</string>
 
-    <!-- Server Profiles -->
-    <string name="empty_server_profiles">No hay perfiles de servidor configurados.\nToque + para crear uno.</string>
+    <!-- Nodes -->
+    <string name="empty_server_profiles">No hay nodos configurados.\nToque + para crear uno.</string>
     <string name="content_desc_add_server">Agregar perfil de servidor</string>
     <string name="title_delete_server">Eliminar servidor</string>
     <string name="msg_delete_server">¿Eliminar \"%s\"?</string>
 
-    <!-- Edit Server Profile -->
+    <!-- Edit Node -->
     <string name="section_client">CLIENTE</string>
     <string name="btn_csapi_client">Cliente CS API</string>
     <string name="btn_sost_client">Cliente SOS-T</string>

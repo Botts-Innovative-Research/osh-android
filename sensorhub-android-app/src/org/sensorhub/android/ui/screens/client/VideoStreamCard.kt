@@ -44,7 +44,11 @@ fun VideoStreamCard(
     onPlayPause: () -> Unit
 ) {
     val video = stringResource(R.string.system_detail_video)
-    OSHCard(Modifier.fillMaxWidth()) {
+    OSHCard(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = OshDimensions.screenHorizontal)
+    ) {
         Column(Modifier.padding(OshDimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(if (status == StreamStatus.RECEIVING) "started" else if (error != null) "error" else "unknown")
