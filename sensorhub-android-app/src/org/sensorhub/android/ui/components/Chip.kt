@@ -31,7 +31,7 @@ fun OSHFilterChip(
             {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Selcted filter",
+                    contentDescription = "Selected filter",
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }

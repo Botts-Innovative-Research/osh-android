@@ -25,7 +25,6 @@ import org.sensorhub.android.SensorHubService
 import org.sensorhub.android.data.sensors.SensorUiEntry
 import org.sensorhub.android.ui.components.OSHExpandableCard
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OnSurfaceVariant
 import org.sensorhub.api.data.IDataProducer
 import org.sensorhub.api.data.IStreamingDataInterface
 import java.text.DateFormat
@@ -138,7 +137,7 @@ internal fun SensorOutputCard(
                         DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(Date(it)))
                 } ?: stringResource(R.string.dashboard_no_reading_yet),
                 style = MaterialTheme.typography.bodySmall,
-                color = OnSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         expandedContent = {
@@ -148,7 +147,12 @@ internal fun SensorOutputCard(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(row.label, Modifier.weight(1f), color = OnSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            row.label,
+                            Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                         Text(row.value, modifier = Modifier.widthIn(max = 160.dp), style = MaterialTheme.typography.bodySmall)
                     }
                 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -28,7 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,9 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.SecondaryContainer
-import org.sensorhub.android.ui.theme.TextPrimary
-import org.sensorhub.android.ui.theme.TextSecondary
 
 @Composable
 fun OSHExpandableCard(
@@ -51,7 +47,7 @@ fun OSHExpandableCard(
     collapsedContent: @Composable ColumnScope.() -> Unit = {},
     expandedContent: @Composable ColumnScope.() -> Unit
 ) {
-    var internalExpanded by remember { mutableStateOf(false) }
+    var internalExpanded by rememberSaveable(title) { mutableStateOf(false) }
     val isExpanded = expanded ?: internalExpanded
     val toggleExpanded = {
         val newValue = !isExpanded
@@ -67,10 +63,10 @@ fun OSHExpandableCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
@@ -127,9 +123,9 @@ fun OSHExpandableSwitchCard(
     configHint: String = "",
     expanded: Boolean? = null,
     onExpandChange: ((Boolean) -> Unit)? = null,
-    expandedContent: @Composable ColumnScope.() -> Unit
+    expandedContent: @Composable ColumnScope.() -> Unit,
 ) {
-    var internalExpanded by remember { mutableStateOf(false) }
+    var internalExpanded by rememberSaveable(title) { mutableStateOf(false) }
     val isExpanded = expanded ?: internalExpanded
     val toggleExpanded = {
         val newValue = !isExpanded
@@ -145,10 +141,10 @@ fun OSHExpandableSwitchCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
@@ -171,7 +167,7 @@ fun OSHExpandableSwitchCard(
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -253,7 +249,7 @@ private fun ExpandableCardCollapsedPreview() {
                 Text(
                     text = "Streaming location data",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             expandedContent = {
@@ -276,7 +272,7 @@ private fun ExpandableCardExpandedPreview() {
                 Text(
                     text = "Motion sensor active",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             expandedContent = {

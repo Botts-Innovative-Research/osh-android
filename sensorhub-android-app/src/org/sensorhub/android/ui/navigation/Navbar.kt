@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Monitor
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -32,6 +33,8 @@ fun Navbar(
     val currentRoute = backStackEntry?.destination?.route.let {
         it
     }
+    if (currentRoute?.startsWith("enrollment/") == true ||
+        currentRoute == Screen.EnrollmentServerList.route || currentRoute == Screen.EnrollmentServerForm.route) return
     val navigationItems = listOf(
         NavigationItem(
             title = "Dashboard",

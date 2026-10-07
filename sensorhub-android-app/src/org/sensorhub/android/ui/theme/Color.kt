@@ -5,8 +5,8 @@ import androidx.compose.ui.graphics.Color
 // Primary
 val Primary = Color(0xFFE64A19)
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFE64A19)
-val OnPrimaryContainer = Color(0xFFFFCCBC)
+val PrimaryContainer = Color(0xFF8D260A)
+val OnPrimaryContainer = Color(0xFFFFDBCF)
 val PrimaryDark = Color(0xFFBF360C)
 
 // Secondary
@@ -22,8 +22,8 @@ val TertiaryContainer = Color(0xFF4E1700)
 val OnTertiaryContainer = Color(0xFFFFCCBC)
 
 // Error
-val Error = Color(0xFFCF6679)
-val OnError = Color(0xFF1C0006)
+val Error = Color(0xFFFFB4AB)
+val OnError = Color(0xFF690005)
 val ErrorContainer = Color(0xFF93000A)
 val OnErrorContainer = Color(0xFFFFDAD6)
 
@@ -62,9 +62,12 @@ val BottomNavUnselected = Color(0xFF757575)
 
 // Status
 val Success = Color(0xFF4CAF50)
-//val Error = Color(0xFFEF5350)
 val Warning = Color(0xFFFF9800)
 val Unknown = Color(0xFF757575)
+val SuccessContainer = Color(0xFF0E3B1B)
+val OnSuccessContainer = Color(0xFFB7F7C6)
+val WarningContainer = Color(0xFF4B3500)
+val OnWarningContainer = Color(0xFFFFDEA6)
 
 // Overlays
 val OverlayLight = Color(0x1AFFFFFF)
