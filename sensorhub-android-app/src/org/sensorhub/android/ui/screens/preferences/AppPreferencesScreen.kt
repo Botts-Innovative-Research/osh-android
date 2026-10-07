@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +54,22 @@ fun AppPreferencesScreen(
             options = LANGUAGE_LABELS,
             selectedIndex = state.selectedLanguageIndex,
             onOptionSelected = { index -> viewModel.selectLanguage(index) }
+        )
+    }
+
+    var showThemeDialog by rememberSaveable { mutableStateOf(false) }
+    if (showThemeDialog) {
+        OSHSingleChoiceDialog(
+            onDismissRequest = { showThemeDialog = false },
+            dialogTitle = stringResource(R.string.title_theme),
+            icon = Icons.Filled.Palette,
+            options = listOf(
+                stringResource(R.string.theme_system_default),
+                stringResource(R.string.theme_light),
+                stringResource(R.string.theme_dark),
+            ),
+            selectedIndex = state.selectedThemeIndex,
+            onOptionSelected = viewModel::selectTheme,
         )
     }
 
@@ -109,6 +126,12 @@ fun AppPreferencesScreen(
                 OSHInfoRow(
                     label = stringResource(R.string.title_version),
                     value = state.appVersion
+                )
+                OSHClickableRowWithIcon(
+                    title = stringResource(R.string.title_theme),
+                    imageVector = Icons.Default.Palette,
+                    contentDescription = stringResource(R.string.title_theme),
+                    onClick = { showThemeDialog = true },
                 )
             }
             OSHCard {
