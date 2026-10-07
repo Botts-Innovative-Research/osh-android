@@ -17,10 +17,8 @@ import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHExpandableCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.Primary
-import org.sensorhub.android.ui.theme.TextSecondary
 
 
 @Composable
@@ -35,7 +33,7 @@ fun HelpFaqScreen(
                 onBackClick = onBackClick
             )
         },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -71,7 +69,7 @@ fun HelpFaqScreen(
                                 Text(
                                     text = item.answer,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = TextSecondary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         )

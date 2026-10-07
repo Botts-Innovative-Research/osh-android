@@ -14,17 +14,17 @@
 
 package org.sensorhub.android;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import javax.net.ssl.HttpsURLConnection;
-
-import org.sensorhub.android.UnsafeTls;
 import org.sensorhub.impl.client.sost.SOSTClient;
 import org.vast.ows.OWSException;
 import org.vast.ows.OWSRequest;
 import org.vast.ows.sos.SOSUtils;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class InsecureSOSTClient extends SOSTClient
 {

@@ -28,7 +28,6 @@ import org.sensorhub.android.data.client.StreamCardState
 import org.sensorhub.android.data.client.StreamStatus
 import org.sensorhub.android.data.client.SystemDetailUiState
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OshDimensions
 
 @Composable
@@ -190,7 +189,7 @@ private fun SystemDetailScreen(
 ) {
     Scaffold(
         topBar = { OSHTopAppBarWithBack(title = title, onBackClick = onBack) },
-        containerColor = Background,
+        containerColor = MaterialTheme.colorScheme.background,
         content = content
     )
 }

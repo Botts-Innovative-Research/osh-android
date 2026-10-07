@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
@@ -51,7 +52,6 @@ import org.osmdroid.views.overlay.Polyline
 import org.sensorhub.android.R
 import org.sensorhub.android.data.client.RemoteTrack
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 
 private data class TrackOverlays(
@@ -132,7 +132,7 @@ fun MapScreen(
                 },
             )
         },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         key(mapView) {
             Box(Modifier.fillMaxSize()) {

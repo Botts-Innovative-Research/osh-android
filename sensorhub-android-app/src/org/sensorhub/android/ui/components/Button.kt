@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OnPrimary
 import org.sensorhub.android.ui.theme.Primary
-import org.sensorhub.android.ui.theme.PrimaryDark
 import org.sensorhub.android.ui.theme.SecondaryContainer
 
 
@@ -47,7 +46,7 @@ fun OSHButton(
         enabled = enabled,
         shape = PillShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = PrimaryDark,
+            containerColor = Primary,
             contentColor = OnPrimary
         ),
 
@@ -156,7 +155,7 @@ private fun SegmentedButtonPreview() {
 fun OSHAddFAB(onClick: () -> Unit = {}) {
     FloatingActionButton(
         onClick = onClick,
-        containerColor = SecondaryContainer,
+        containerColor = Primary,
         contentColor = OnPrimary,
     ) {
         Icon(imageVector = Icons.Default.Add, contentDescription = "Add new item")

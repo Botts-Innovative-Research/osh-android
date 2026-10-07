@@ -615,4 +615,27 @@
     <string name="client_systems_discovered">%1$d systems discovered</string>
     <string name="client_datastream_count">%1$d datastreams</string>
     <string name="content_desc_edit_server">Edit %1$s</string>
+    <string name="ui_enter_a_valid_https_url">Enter a valid HTTPS URL</string>
+    <string name="client_title">Client</string>
+    <string name="client_empty">Add and enable a node in Settings to use OSH Client.</string>
+    <string name="client_servers">Select Node(s)</string>
+    <string name="client_selected_count">%1$d selected</string>
+    <string name="client_no_configured_nodes">No configured nodes</string>
+    <string name="client_select_node">Select a node to view its systems.</string>
+    <string name="content_desc_server">Server</string>
+    <string name="content_desc_system">System</string>
+    <string name="client_discovering_systems">Discovering systems</string>
+    <string name="client_tap_to_discover">Tap to discover systems</string>
+    <string name="client_systems_discovered">%1$d systems discovered</string>
+    <string name="client_datastream_count">%1$d datastreams</string>
+    <string name="content_desc_edit_server">Edit %1$s</string>
+    <string name="content_desc_toggle_map_layer">Toggle map layer</string>
+    <string name="content_desc_map_options">Map options</string>
+    <string name="content_desc_refresh_profiles">Refresh profiles</string>
+    <string name="sensors_empty">No sensors to show</string>
+    <string name="sensors_sample_rate_hz">%1$s Hz</string>
+    <string name="sensors_bit_rate_kbps">%1$s kbps</string>
+    <string name="sensors_camera_number">Camera %1$s</string>
+    <string name="sensors_frame_rate_fps">%1$s fps</string>
+
 </resources>

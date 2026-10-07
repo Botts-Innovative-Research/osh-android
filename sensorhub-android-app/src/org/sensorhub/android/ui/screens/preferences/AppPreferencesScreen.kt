@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +34,8 @@ import org.sensorhub.android.ui.components.OSHInfoRow
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHTextInputDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.OshDimensions
 
 @Composable
 fun AppPreferencesScreen(
@@ -105,7 +106,6 @@ fun AppPreferencesScreen(
                 onBackClick = onBackClick
             )
         },
-        containerColor = Background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -113,7 +113,10 @@ fun AppPreferencesScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            OSHCard {
+            OSHCard(
+                Modifier
+                    .padding(horizontal = OshDimensions.screenHorizontal)
+            ) {
                 OSHInfoRow(
                     label = stringResource(R.string.device_name),
                     value = state.deviceName,
@@ -127,14 +130,18 @@ fun AppPreferencesScreen(
                     label = stringResource(R.string.title_version),
                     value = state.appVersion
                 )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            OSHCard(
+                Modifier
+                    .padding(horizontal = OshDimensions.screenHorizontal)
+            ) {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_theme),
                     imageVector = Icons.Default.Palette,
                     contentDescription = stringResource(R.string.title_theme),
                     onClick = { showThemeDialog = true },
                 )
-            }
-            OSHCard {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_language),
                     imageVector = Icons.Default.Language,
@@ -142,7 +149,11 @@ fun AppPreferencesScreen(
                     onClick = { showLanguageDialog = true }
                 )
             }
-            OSHCard {
+            Spacer(modifier = Modifier.height(16.dp))
+            OSHCard(
+                Modifier
+                    .padding(horizontal = OshDimensions.screenHorizontal)
+            ) {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_help_faq),
                     imageVector = Icons.AutoMirrored.Filled.Help,

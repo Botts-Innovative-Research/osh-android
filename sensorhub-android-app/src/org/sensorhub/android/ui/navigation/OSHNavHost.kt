@@ -52,7 +52,7 @@ fun OSHNavHost(
         }
         composable(Screen.Client.route) {
             OshClientScreen(
-                onNavigateToSettings = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
                 onOpenSystem = { profileId, systemId ->
                     navController.navigate(Screen.SystemDetail.createRoute(profileId, systemId))
                 },
