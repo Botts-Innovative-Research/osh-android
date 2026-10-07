@@ -83,7 +83,7 @@ fun VideoStreamCard(
                     .clip(OSHShapes.medium)
                     .background(ControlSurface)
             ) {
-                VideoFrame(renderer, Modifier.fillMaxSize())
+                VideoFrame(renderer)
                 if (status != StreamStatus.RECEIVING) Box(
                     Modifier
                         .fillMaxSize()

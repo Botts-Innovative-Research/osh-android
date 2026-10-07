@@ -46,7 +46,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.Primary
 
 @Composable
 fun OSHAlertDialog(
@@ -57,6 +56,11 @@ fun OSHAlertDialog(
     icon: ImageVector,
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        iconContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null)
@@ -94,6 +98,11 @@ fun OSHAlertDialogWithoutDismiss(
     icon: ImageVector,
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        iconContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null)
@@ -131,6 +140,11 @@ fun OSHTextInputDialog(
     var textValue by rememberSaveable(initialValue) { mutableStateOf(initialValue) }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        iconContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null)
@@ -153,8 +167,8 @@ fun OSHTextInputDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Primary,
-                        cursorColor = Primary
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary,
                     )
                 )
             }
@@ -184,6 +198,11 @@ fun OSHSingleChoiceDialog(
     onOptionSelected: (Int) -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        iconContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null)
@@ -215,7 +234,8 @@ fun OSHSingleChoiceDialog(
                             selected = index == selectedIndex,
                             onClick = null,
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = Primary
+                                selectedColor = MaterialTheme.colorScheme.primary,
+                                unselectedColor = MaterialTheme.colorScheme.outline,
                             )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -251,6 +271,11 @@ fun OSHBluetoothPickerDialog(
     DisposableEffect(Unit) { onDispose { onStopScan() } }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        iconContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Bluetooth, contentDescription = null) },
         title = { Text(stringResource(R.string.title_select_device)) },

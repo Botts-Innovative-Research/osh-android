@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.math.BigInteger
 import java.net.InetAddress
 import java.nio.ByteOrder
+import org.sensorhub.android.ui.theme.AppThemePreference
 
 class AppPreferencesViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
@@ -25,12 +26,15 @@ class AppPreferencesViewModel(application: Application) : AndroidViewModel(appli
         val version = getAppVersion()
         val currentLang = prefs.getString("app_language", "en") ?: "en"
         val langIndex = LANGUAGE_VALUES.indexOf(currentLang).coerceAtLeast(0)
+        val currentTheme = prefs.getString(AppThemePreference.PREFERENCE_KEY, AppThemePreference.SYSTEM.name)
+        val themeIndex = THEME_VALUES.indexOf(currentTheme).coerceAtLeast(0)
 
         _state.value = AppPreferencesState(
             deviceName = deviceName,
             deviceIpAddress = ipAddress,
             appVersion = version,
-            selectedLanguageIndex = langIndex
+            selectedLanguageIndex = langIndex,
+            selectedThemeIndex = themeIndex,
         )
     }
 
@@ -46,6 +50,12 @@ class AppPreferencesViewModel(application: Application) : AndroidViewModel(appli
 
         val localeManager = getApplication<Application>().getSystemService(LocaleManager::class.java)
         localeManager.applicationLocales = LocaleList.forLanguageTags(localeTag)
+    }
+
+    fun selectTheme(index: Int) {
+        val theme = THEME_VALUES[index]
+        prefs.edit().putString(AppThemePreference.PREFERENCE_KEY, theme).apply()
+        _state.value = _state.value.copy(selectedThemeIndex = index)
     }
 
     private fun getDeviceIpAddress(): String {

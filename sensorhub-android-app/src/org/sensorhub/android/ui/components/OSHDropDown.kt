@@ -2,9 +2,12 @@ package org.sensorhub.android.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,6 +18,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,8 +33,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.theme.OverlayDark
+import org.sensorhub.android.ui.theme.OverlayLight
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun <T> OSHDropDown(
     summary: String,
     items: List<T>,
@@ -41,11 +48,12 @@ fun <T> OSHDropDown(
     onSelectionChange: (String, Boolean) -> Unit,
     emptyText: String,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var anchorWidth by remember { mutableIntStateOf(0) }
     val menuWidth = with(LocalDensity.current) { anchorWidth.toDp() }
+    val selectedItems = items.filter { itemId(it) in selectedIds }
 
     Column(modifier.fillMaxWidth()) {
         Box(Modifier.fillMaxWidth().onSizeChanged { anchorWidth = it.width }) {
@@ -55,7 +63,33 @@ fun <T> OSHDropDown(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(summary, modifier = Modifier.weight(1f))
+                if (selectedItems.isEmpty()) {
+                    Text(
+                        text = summary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                } else {
+                    FlowRow(
+                        modifier = Modifier.weight(1f),
+                        maxItemsInEachRow = 2,
+                    ) {
+                        selectedItems.forEach { item ->
+                            Surface(
+                                color = OverlayDark,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                shape = RoundedCornerShape(24.dp),
+                                modifier = Modifier.padding(end = 8.dp, bottom = 4.dp),
+                            ) {
+                                Text(
+                                    text = itemLabel(item),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                )
+                            }
+                        }
+                    }
+                }
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
             }
             DropdownMenu(

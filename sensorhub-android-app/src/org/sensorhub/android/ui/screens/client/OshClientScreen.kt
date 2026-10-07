@@ -1,14 +1,11 @@
 package org.sensorhub.android.ui.screens.client
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,9 +33,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.sensorhub.android.R
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
-import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
 import org.sensorhub.android.ui.components.OSHDropDown
@@ -114,18 +111,17 @@ fun OshClientScreen(
                             ) {
                                 Text(
                                     stringResource(R.string.client_servers),
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleSmall
                                 )
-
-                                IconButton(onClick = viewModel::refreshProfiles) {
-                                    Icon(
-                                        Icons.Default.Refresh,
-                                        contentDescription = stringResource(R.string.content_desc_refresh_profiles)
-                                    )
-                                }
+//                                IconButton(onClick = viewModel::refreshProfiles) {
+//                                    Icon(
+//                                        Icons.Default.Refresh,
+//                                        contentDescription = stringResource(R.string.content_desc_refresh_profiles)
+//                                    )
+//                                }
                             }
                             OSHDropDown(
-                                summary = stringResource(R.string.client_selected_count, visibleProfileIds.size),
+                                summary = stringResource(R.string.client_select_node),
                                 items = nodes,
                                 selectedIds = visibleProfileIds,
                                 itemId = { it.profileId },
@@ -134,7 +130,12 @@ fun OshClientScreen(
                                 onSelectionChange = viewModel::setProfileVisible,
                                 emptyText = stringResource(R.string.client_no_configured_nodes),
                             )
-
+//                            Text(
+//                                text = stringResource(R.string.client_select_node),
+//                                style = MaterialTheme.typography.bodyLarge,
+//                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                                modifier = Modifier.padding(start = 16.dp, top = 8.dp),
+//                            )
                         }
                     }
                 }

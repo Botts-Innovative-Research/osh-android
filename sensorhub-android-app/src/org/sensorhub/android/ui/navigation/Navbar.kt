@@ -10,20 +10,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.sensorhub.android.ui.theme.AccentOrangeDim
-import org.sensorhub.android.ui.theme.BottomNavBg
-import org.sensorhub.android.ui.theme.BottomNavSelected
-import org.sensorhub.android.ui.theme.BottomNavUnselected
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.OverlayLight
 
 @Composable
 fun Navbar(
@@ -33,8 +33,6 @@ fun Navbar(
     val currentRoute = backStackEntry?.destination?.route.let {
         it
     }
-    if (currentRoute?.startsWith("enrollment/") == true ||
-        currentRoute == Screen.EnrollmentServerList.route || currentRoute == Screen.EnrollmentServerForm.route) return
     val navigationItems = listOf(
         NavigationItem(
             title = "Dashboard",
@@ -59,7 +57,8 @@ fun Navbar(
     )
 
     NavigationBar(
-        containerColor = BottomNavBg
+        containerColor = MaterialTheme.colorScheme.primary,
+        tonalElevation = 0.dp,
     ) {
         navigationItems.forEach { item ->
         NavigationBarItem(
@@ -76,14 +75,13 @@ fun Navbar(
             label = {
                 Text(
                     item.title,
-                    color = if (currentRoute == item.route)
-                        BottomNavSelected
-                    else BottomNavUnselected
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = BottomNavSelected,
-                indicatorColor = AccentOrangeDim
+                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                indicatorColor = OverlayLight,
             )
 
         )}

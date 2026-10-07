@@ -1,6 +1,7 @@
 package org.sensorhub.android.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -41,8 +42,9 @@ fun OSHCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = OshDimensions.cardElevation,
+            defaultElevation = 0.dp,
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         content = content
     )
 }
@@ -63,8 +65,9 @@ fun OSHSensorCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = OshDimensions.sensorCardElevation,
+            defaultElevation = 0.dp,
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         content = content
     )
 }

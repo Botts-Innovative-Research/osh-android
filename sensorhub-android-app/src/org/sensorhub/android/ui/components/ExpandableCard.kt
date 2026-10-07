@@ -3,6 +3,7 @@ package org.sensorhub.android.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -69,8 +70,9 @@ fun OSHExpandableCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp
-        )
+            defaultElevation = 0.dp
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -147,8 +149,9 @@ fun OSHExpandableSwitchCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp
-        )
+            defaultElevation = 0.dp
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

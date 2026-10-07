@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
@@ -42,10 +43,12 @@ import org.sensorhub.android.R
 import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.ui.HubUiState
 import org.sensorhub.android.ui.SensorHubViewModel
+import org.sensorhub.android.ui.components.OSHAlertDialog
 import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHStatusChip
 import org.sensorhub.android.ui.components.OSHStatusRow
+import org.sensorhub.android.ui.components.OSHTextInputDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.components.OshStatusTone
 import org.sensorhub.android.ui.theme.OSHTheme
@@ -101,24 +104,18 @@ fun DashboardScreen(
         else -> stringResource(R.string.ui_start_streaming)
     }
     if (showRunNameDialog) {
-        AlertDialog(
+        OSHTextInputDialog(
             onDismissRequest = { showRunNameDialog = false },
-            title = { Text(stringResource(R.string.ui_start_streaming_title)) },
-            text = {
-                org.sensorhub.android.ui.components.OSHInputField(
-                    value = runNameDraft,
-                    onValueChange = { runNameDraft = it },
-                    label = stringResource(R.string.ui_run_name)
-                )
+            dialogTitle = stringResource(R.string.ui_start_streaming_title),
+            dialogText = stringResource(R.string.ui_run_name),
+            onConfirmation = {
+                onRunNameChange(runNameDraft.trim())
+                showRunNameDialog = false
+                onStart()
             },
-            confirmButton = {
-                OSHButton(text = stringResource(R.string.ui_start_streaming), enabled = runNameDraft.isNotBlank() && !busy, onClick = {
-                    onRunNameChange(runNameDraft.trim())
-                    showRunNameDialog = false
-                    onStart()
-                })
-            },
-            dismissButton = { TextButton(onClick = { showRunNameDialog = false }) { Text(stringResource(R.string.btn_cancel)) } }
+            icon = Icons.Default.PlayCircleFilled,
+            initialValue = runNameDraft,
+            placeholder = stringResource(R.string.ui_run_name_placeholder)
         )
     }
     Scaffold(topBar = {

@@ -549,6 +549,10 @@
     <string name="sensors_live">Ao vivo</string>
     <string name="sensors_live_start_run">Inicie uma sessão para ver as leituras dos sensores ao vivo.</string>
     <string name="sensors_live_no_enabled">Nenhum sensor ativado. Ative sensores em Configurar.</string>
+    <string name="title_theme">Tema</string>
+    <string name="theme_system_default">Padrão do sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
     <string name="configuration">Configuração</string>
     <string name="review">Revisar</string>
     <string name="scanner">Digitalizar</string>

@@ -549,6 +549,10 @@
     <string name="sensors_live">In tempo reale</string>
     <string name="sensors_live_start_run">Avvia una sessione per vedere le misurazioni dei sensori in tempo reale.</string>
     <string name="sensors_live_no_enabled">Nessun sensore abilitato. Abilita i sensori in Configura.</string>
+    <string name="title_theme">Tema</string>
+    <string name="theme_system_default">Predefinito di sistema</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
     <string name="configuration">Configurazione</string>
     <string name="review">Verifica</string>
     <string name="scanner">Scansiona</string>

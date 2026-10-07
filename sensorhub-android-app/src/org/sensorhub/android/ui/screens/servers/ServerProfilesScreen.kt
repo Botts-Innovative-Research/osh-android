@@ -37,7 +37,6 @@ import org.sensorhub.android.ui.components.OSHAddFAB
 import org.sensorhub.android.ui.components.OSHAlertDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.navigation.Screen
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
@@ -85,7 +84,7 @@ fun ServerProfilesScreen(
                 onClick = { navController.navigate(Screen.ServerForm.createRoute()) }
             )
         },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (profiles.isEmpty()) {
             Box(

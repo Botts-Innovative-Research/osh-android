@@ -12,6 +12,7 @@ import java.net.URL
 import java.util.Collections
 import java.util.Date
 import org.sensorhub.android.InsecureOkHttpClientWrapper
+import org.sensorhub.android.InsecureSOSTClient
 import org.sensorhub.android.OkHttpClientWrapper
 import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.data.sensors.SensorRuntimeConfiguration
@@ -22,7 +23,6 @@ import org.sensorhub.android.data.settings.LocalServiceSettings
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.impl.client.sost.SOSTClientConfig
-import org.sensorhub.impl.client.sost.InsecureSOSTClient
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig
 import org.sensorhub.impl.module.InMemoryConfigDb

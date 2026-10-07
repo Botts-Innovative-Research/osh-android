@@ -378,4 +378,8 @@
     <string name="client_systems_discovered">%1$d sistemas descubiertos</string>
     <string name="client_datastream_count">%1$d flujos de datos</string>
     <string name="content_desc_edit_server">Editar %1$s</string>
+    <string name="title_theme">Tema</string>
+    <string name="theme_system_default">Predeterminado del sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
 </resources>

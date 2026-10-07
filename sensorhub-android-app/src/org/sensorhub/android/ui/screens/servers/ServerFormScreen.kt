@@ -43,11 +43,9 @@ import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTonalButton
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.OshStatusTone
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OshDimensions
 import org.sensorhub.android.ui.theme.OshSpacing
-import org.sensorhub.android.ui.theme.TextSecondary
 
 @Composable
 fun ServerFormScreen(
@@ -70,7 +68,7 @@ fun ServerFormScreen(
                 onBackClick = onBackClick
             )
         },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
@@ -107,7 +105,7 @@ fun ServerFormScreen(
                             placeholder = {
                                 Text(
                                     stringResource(R.string.ui_https_ip_port_sensorhub_api),
-                                    color = TextSecondary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)

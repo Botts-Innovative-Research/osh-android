@@ -408,7 +408,7 @@ private fun TruPulseConfig(
 private fun SensorsScreenPreview() {
     OSHTheme {
         SensorsScreen(
-            {}, {}
+            {}
         )
     }
 }

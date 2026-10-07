@@ -549,6 +549,10 @@
     <string name="sensors_live">En direct</string>
     <string name="sensors_live_start_run">Démarrez une session pour voir les mesures des capteurs en direct.</string>
     <string name="sensors_live_no_enabled">Aucun capteur activé. Activez des capteurs dans Configurer.</string>
+    <string name="title_theme">Thème</string>
+    <string name="theme_system_default">Par défaut du système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
     <string name="configuration">Configuration</string>
     <string name="review">Vérifier</string>
     <string name="scanner">Analyser</string>

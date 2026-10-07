@@ -5,14 +5,13 @@ import androidx.compose.ui.graphics.Color
 // Primary
 val Primary = Color(0xFFE64A19)
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFF8D260A)
+val PrimaryContainer = Color(0xFF7A2D17)
 val OnPrimaryContainer = Color(0xFFFFDBCF)
-val PrimaryDark = Color(0xFFBF360C)
 
 // Secondary
 val Secondary = Color(0xFF9E9E9E)
 val OnSecondary = Color(0xFF0A0A0A)
-val SecondaryContainer = Color(0xFF272727)
+val SecondaryContainer = Color(0xFF3A3A3A)
 val OnSecondaryContainer = Color(0xFFE0E0E0)
 
 // Tertiary
@@ -28,18 +27,13 @@ val ErrorContainer = Color(0xFF93000A)
 val OnErrorContainer = Color(0xFFFFDAD6)
 
 // Background & Surface
-val Background = Color(0xFF121212)
+val Background = Color(0xFF212121)
 val OnBackground = Color(0xFFE0E0E0)
-val Surface = Color(0xFF1E1E1E)
+val Surface = Color(0xFF212121)
 val OnSurface = Color(0xFFE0E0E0)
-val SurfaceVariant = Color(0xFF2C2C2C)
-val OnSurfaceVariant = Color(0xFFBDBDBD)
-val Outline = Color(0xFF616161)
-
-// Surface levels
-val SurfaceLow = Color(0xFF1E1E1E)
-val SurfaceCard = Color(0xFF2C2C2C)
-val SurfaceElevated = Color(0xFF333333)
+val SurfaceVariant = Color(0xFF3A3A3A)
+val OnSurfaceVariant = Color(0xFFFFFFFF)
+val Outline = Color(0xFF505050)
 
 // Text
 val TextPrimary = Color(0xFFFFFFFF)
@@ -71,7 +65,7 @@ val OnWarningContainer = Color(0xFFFFDEA6)
 
 // Overlays
 val OverlayLight = Color(0x1AFFFFFF)
-val OverlayDark = Color(0x99000000)
+val OverlayDark = Color(0x88E64A19)
 val ControlSurface = Color(0xFF1A1A1A)
 val ControlOverlay = Color(0xCC1A1A1A)
 val ControlButtonTop = Color(0xD92E343D)
