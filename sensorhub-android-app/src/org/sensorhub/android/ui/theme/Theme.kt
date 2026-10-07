@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val OSHColorScheme = darkColorScheme(
+private val OSHDarkColorScheme = darkColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
     primaryContainer = PrimaryContainer,
@@ -37,6 +38,32 @@ private val OSHColorScheme = darkColorScheme(
     surfaceVariant = SurfaceVariant,
     onSurfaceVariant = OnSurfaceVariant,
     outline = Outline
+)
+
+private val OSHLightColorScheme = lightColorScheme(
+    primary = PrimaryDark,
+    onPrimary = OnPrimary,
+    primaryContainer = Color(0xFFFFDBCF),
+    onPrimaryContainer = Color(0xFF381000),
+    secondary = Color(0xFF5F5E5E),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE5E2E1),
+    onSecondaryContainer = Color(0xFF1C1B1B),
+    tertiary = Color(0xFF9C4325),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFFFDBCF),
+    onTertiaryContainer = Color(0xFF351000),
+    error = Color(0xFFBA1A1A),
+    onError = Color.White,
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFFFBFF),
+    onBackground = Color(0xFF201A18),
+    surface = Color(0xFFFFFBFF),
+    onSurface = Color(0xFF201A18),
+    surfaceVariant = Color(0xFFF3DED7),
+    onSurfaceVariant = Color(0xFF51433F),
+    outline = Color(0xFF83736E),
 )
 
 @Immutable
