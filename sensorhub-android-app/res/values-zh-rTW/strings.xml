@@ -428,4 +428,8 @@
     <string name="client_systems_discovered">已探索 %1$d 個系統</string>
     <string name="client_datastream_count">%1$d 個資料串流</string>
     <string name="content_desc_edit_server">編輯 %1$s</string>
+    <string name="title_theme">主題</string>
+    <string name="theme_system_default">系統預設</string>
+    <string name="theme_light">淺色</string>
+    <string name="theme_dark">深色</string>
 </resources>

@@ -578,4 +578,8 @@
     <string name="client_systems_discovered">%1$d Systeme ermittelt</string>
     <string name="client_datastream_count">%1$d Datenströme</string>
     <string name="content_desc_edit_server">%1$s bearbeiten</string>
+    <string name="title_theme">Design</string>
+    <string name="theme_system_default">Systemstandard</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
 </resources>
