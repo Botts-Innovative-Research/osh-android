@@ -26,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -63,9 +65,9 @@ fun SensorsScreen(
     onNavigateToSettings : () -> Unit,
     viewModel: SensorsViewModel = viewModel(),
 ) {
-    var selectedCategories by remember { mutableStateOf(emptySet<SensorCategory>()) }
+    var selectedCategories by rememberSaveable { mutableStateOf(emptySet<SensorCategory>()) }
     val scrollState = rememberScrollState()
-    var activeDialog by remember { mutableStateOf<String?>(null) }
+    var activeDialog by rememberSaveable { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val scanner = remember(context) { BluetoothScanner(context) }
@@ -308,14 +310,14 @@ private fun AudioConfig(
     )
     OSHClickableRowWithIcon(
         title = stringResource(R.string.title_sample_rate),
-        subtitle = "$sampleRate Hz",
+        subtitle = stringResource(R.string.sensors_sample_rate_hz, sampleRate),
         imageVector = Icons.Default.Audiotrack,
         contentDescription = stringResource(R.string.title_sample_rate),
         onClick = onSampleRateClick,
     )
     OSHClickableRowWithIcon(
         title = stringResource(R.string.title_bitrate),
-        subtitle = "$bitRate kbps",
+        subtitle = stringResource(R.string.sensors_bit_rate_kbps, bitRate),
         imageVector = Icons.Default.Audiotrack,
         contentDescription = stringResource(R.string.title_bitrate),
         onClick = onBitRateClick,
@@ -335,7 +337,7 @@ private fun VideoConfig(
 ) {
     OSHClickableRowWithIcon(
         title = stringResource(R.string.title_camera),
-        subtitle = "Camera $camera",
+        subtitle = stringResource(R.string.sensors_camera_number, camera),
         imageVector = Icons.Default.Videocam,
         contentDescription = stringResource(R.string.title_camera),
         onClick = onCameraClick,
@@ -356,7 +358,7 @@ private fun VideoConfig(
     )
     OSHClickableRowWithIcon(
         title = stringResource(R.string.title_frame_rate),
-        subtitle = "$frameRate fps",
+        subtitle = stringResource(R.string.sensors_frame_rate_fps, frameRate),
         imageVector = Icons.Default.Videocam,
         contentDescription = stringResource(R.string.title_frame_rate),
         onClick = onFrameRateClick,
@@ -406,7 +408,7 @@ private fun TruPulseConfig(
 private fun SensorsScreenPreview() {
     OSHTheme {
         SensorsScreen(
-            {}
+            {}, {}
         )
     }
 }

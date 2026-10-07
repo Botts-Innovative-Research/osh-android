@@ -2,7 +2,7 @@ package org.sensorhub.android.ui.screens.client
 
 import android.view.TextureView
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,7 +14,6 @@ import org.sensorhub.android.data.client.RemoteControlStream
 @Composable
 fun VideoFrame(
     renderer: VideoStream?,
-    isConnecting: Boolean,
     modifier: Modifier = Modifier,
 ) {
     var textureView by remember { mutableStateOf<TextureView?>(null) }
@@ -27,11 +26,11 @@ fun VideoFrame(
         modifier = modifier,
     )
 
-    LaunchedEffect(renderer, textureView) {
+    DisposableEffect(renderer, textureView) {
         textureView?.let { view -> renderer?.attach(view) }
-    }
-    LaunchedEffect(renderer, isConnecting, textureView) {
-        if (isConnecting) textureView?.let { view -> renderer?.attach(view) }
+        onDispose {
+            renderer?.disconnect()
+        }
     }
 }
 
