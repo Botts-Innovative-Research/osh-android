@@ -56,7 +56,7 @@ private val OSHDarkColorScheme = darkColorScheme(
     onBackground = OnBackground,
     surface = Surface,
     onSurface = OnSurface,
-    surfaceVariant = Color.Transparent,
+    surfaceVariant = SurfaceVariant,
     onSurfaceVariant = OnSurfaceVariant,
     outline = Outline
 )
@@ -64,7 +64,7 @@ private val OSHDarkColorScheme = darkColorScheme(
 private val OSHLightColorScheme = lightColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
-    primaryContainer = Color(0xFFFFDBCF),
+    primaryContainer = Color(0xFFFFFFFF),
     onPrimaryContainer = Color(0xFF381000),
     secondary = Color(0xFF5F5E5E),
     onSecondary = Color.White,
@@ -72,7 +72,7 @@ private val OSHLightColorScheme = lightColorScheme(
     onSecondaryContainer = Color(0xFF1C1B1B),
     tertiary = Color(0xFF9C4325),
     onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFFFDBCF),
+    tertiaryContainer = Color(0xFFFFFFFF),
     onTertiaryContainer = Color(0xFF351000),
     error = Color(0xFFBA1A1A),
     onError = Color.White,
@@ -84,7 +84,7 @@ private val OSHLightColorScheme = lightColorScheme(
     onSurface = Color(0xFF201A18),
     surfaceVariant = Color.Transparent,
     onSurfaceVariant = Color.Black,
-    outline = Outline,
+    outline = Color(0xE0E0E0E0),
 )
 
 @Immutable
