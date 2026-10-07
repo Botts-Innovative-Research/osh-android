@@ -3,18 +3,13 @@ package org.sensorhub.android.ui.screens.servers
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
@@ -27,11 +22,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,14 +38,15 @@ import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSegmentedButton
+import org.sensorhub.android.ui.components.OSHStatusChip
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTonalButton
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
+import org.sensorhub.android.ui.components.OshStatusTone
 import org.sensorhub.android.ui.theme.Background
-import org.sensorhub.android.ui.theme.Error
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OshDimensions
-import org.sensorhub.android.ui.theme.Success
+import org.sensorhub.android.ui.theme.OshSpacing
 import org.sensorhub.android.ui.theme.TextSecondary
 
 @Composable
@@ -66,8 +60,8 @@ fun ServerFormScreen(
     }
 
     val state = viewModel.state
-    var isPasswordVisible by remember { mutableStateOf(false) }
-    var isClientSecretVisible by remember { mutableStateOf(false) }
+    var isPasswordVisible by rememberSaveable(profileId) { mutableStateOf(false) }
+    var isClientSecretVisible by rememberSaveable(profileId) { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -80,7 +74,8 @@ fun ServerFormScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
+            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(OshSpacing.sm),
         ) {
             item {
                 OSHCard(
@@ -117,6 +112,18 @@ fun ServerFormScreen(
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
                         )
+                        OSHSwitchRow(
+                            title = stringResource(R.string.switch_disable_ssl),
+                            subtitle = stringResource(R.string.disable_ssl_description),
+                            checked = state.disableSSL,
+                            onCheckedChange = viewModel::updateDisableSsl,
+                        )
+                        if (state.disableSSL) {
+                            OSHStatusChip(
+                                label = stringResource(R.string.disable_ssl_warning),
+                                tone = OshStatusTone.Warning,
+                            )
+                        }
                     }
                 }
             }
@@ -229,8 +236,7 @@ fun ServerFormScreen(
                     viewModel.connectionTestResult?.let { result ->
                         ResultMessage(
                             label = result,
-                            icon = if (viewModel.connectionTestSuccessful) Icons.Default.CheckCircle else Icons.Default.Error,
-                            color = if (viewModel.connectionTestSuccessful) Success else Error
+                            successful = viewModel.connectionTestSuccessful,
                         )
                     }
                 }
@@ -242,22 +248,22 @@ fun ServerFormScreen(
 @Composable
 private fun ResultMessage(
     label: String,
-    icon: ImageVector,
-    color: Color
+    successful: Boolean,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Icon(icon, contentDescription = null, tint = color)
-        Spacer(modifier = Modifier.width(15.dp))
+        OSHStatusChip(
+            label = stringResource(if (successful) R.string.ui_connected else R.string.ui_connection_failed),
+            tone = if (successful) OshStatusTone.Success else OshStatusTone.Error,
+        )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-            color = color
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

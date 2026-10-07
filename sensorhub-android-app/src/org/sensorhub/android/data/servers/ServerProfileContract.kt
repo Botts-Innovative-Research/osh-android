@@ -9,6 +9,7 @@ data class ServerProfileItem(
     val endpointUrl: String = "",
     val username: String = "",
     val password: String = "",
+    val disableSSL: Boolean = false,
     val useConSysClient: Boolean = true,
     val enableOAuth: Boolean = false,
     val clientId: String = "",
@@ -23,6 +24,7 @@ data class ServerProfileItem(
         put("username", username)
         put("useConSysClient", useConSysClient)
         put("enableOAuth", enableOAuth)
+        put("disableSSL", disableSSL)
         put("enabled", enabled)
     }
 
@@ -36,6 +38,7 @@ data class ServerProfileItem(
             username = obj.optString("username", ""),
             useConSysClient = obj.optBoolean("useConSysClient", true),
             enableOAuth = obj.optBoolean("enableOAuth", false),
+            disableSSL = obj.optBoolean("disableSSL", false),
             enabled = obj.optBoolean("enabled", true),
         )
     }
