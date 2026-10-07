@@ -11,15 +11,18 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Collections
 import java.util.Date
+import org.sensorhub.android.InsecureOkHttpClientWrapper
 import org.sensorhub.android.OkHttpClientWrapper
 import org.sensorhub.android.data.sensors.SensorRegistry
 import org.sensorhub.android.data.sensors.SensorRuntimeConfiguration
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.servers.serverUrlError
 import org.sensorhub.android.data.settings.LocalServiceSettings
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.impl.client.sost.SOSTClientConfig
+import org.sensorhub.impl.client.sost.InsecureSOSTClient
 import org.sensorhub.impl.datastore.h2.MVObsSystemDatabaseConfig
 import org.sensorhub.impl.datastore.view.ObsSystemDatabaseViewConfig
 import org.sensorhub.impl.module.InMemoryConfigDb
@@ -32,6 +35,7 @@ import org.sensorhub.impl.service.consys.client.ConSysOAuthConfig
 import org.sensorhub.impl.service.sos.SOSService
 import org.sensorhub.impl.service.sos.SOSServiceConfig
 import org.slf4j.LoggerFactory
+import java.net.URI
 
 class SensorHubConfigFactory(
     context: Context,
@@ -49,8 +53,6 @@ class SensorHubConfigFactory(
 
         val serverRepo = serverRepository
         val enabledServers: MutableList<ServerProfileItem> = serverRepo.getEnabled()
-
-
         //---------- SENSORS ---------------------
         val deviceID = Secure.getString(context.contentResolver, Secure.ANDROID_ID)
         var deviceName = prefs.getString("device_name", null)
@@ -64,15 +66,19 @@ class SensorHubConfigFactory(
         serverConfig.autoStart = true
         config.add(serverConfig)
 
-
         val sensorsConfig = SensorRuntimeConfiguration.create(
             context, prefs, config, deviceID, deviceName, runName, sensorsLastUpdated
         )
 
         if (SensorRegistry.hasEnabledSensor(prefs)) {
             for (sp in enabledServers) {
+                if (serverUrlError(sp.endpointUrl) != null ||
+                    (sp.enableOAuth && serverUrlError(serverRepo.getOAuthTokenEndpoint(sp.id)) != null)) {
+                    log.error("Skipping server profile '{}': remote endpoints must use HTTPS", sp.serverName)
+                    continue
+                }
                 val profileUrl = try {
-                    java.net.URI(sp.endpointUrl.trim()).toURL()
+                    URI(sp.endpointUrl.trim()).toURL()
                 } catch (_: Exception) {
                     null
                 }
@@ -167,6 +173,9 @@ class SensorHubConfigFactory(
         pwd: String
     ) {
         val sosConfig = SOSTClientConfig()
+        if (profile.disableSSL) {
+            sosConfig.moduleClass = InsecureSOSTClient::class.java.canonicalName
+        }
         sosConfig.id = sensorConf.id + "_SOST_" + profile.id
         sosConfig.name =
             sensorConf.name.replace("\\[.*\\]".toRegex(), "") + " -> " + profile.serverName
@@ -208,7 +217,11 @@ class SensorHubConfigFactory(
         consysConfig.conSys.password = apiPwd
         consysConfig.connection.connectTimeout = 10000
         consysConfig.connection.reconnectAttempts = 9
-        consysConfig.httpClientImplClass = OkHttpClientWrapper::class.java.canonicalName
+        consysConfig.httpClientImplClass = if (profile.disableSSL) {
+            InsecureOkHttpClientWrapper::class.java.canonicalName
+        } else {
+            OkHttpClientWrapper::class.java.canonicalName
+        }
         consysConfig.dataSourceSelector = ObsSystemDatabaseViewConfig()
         consysConfig.conSysOAuth = oAuthConfig
         config.add(consysConfig)
@@ -225,7 +238,6 @@ class SensorHubConfigFactory(
         }
         return false
     }
-
 
 }
 

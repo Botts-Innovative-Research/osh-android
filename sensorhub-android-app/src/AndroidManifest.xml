@@ -43,7 +43,7 @@
         android:label="@string/app_name"
         android:largeHeap="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"
+        android:usesCleartextTraffic="false"
         android:localeConfig="@xml/locales_config">
         <activity
             android:name=".ComposeMainActivity"
@@ -57,11 +57,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    <service
-        android:name=".SensorHubService"
-        android:enabled="true"
-        android:foregroundServiceType="location|camera|microphone"
-        android:exported="false"
-        tools:ignore="ForegroundServicePermission" />
+        <service
+            android:name=".SensorHubService"
+            android:enabled="true"
+            android:foregroundServiceType="location|camera|microphone"
+            android:exported="false"
+            tools:ignore="ForegroundServicePermission" />
     </application>
 </manifest>

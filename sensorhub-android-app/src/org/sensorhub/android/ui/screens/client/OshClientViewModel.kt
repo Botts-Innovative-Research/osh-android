@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
@@ -30,6 +31,8 @@ import org.sensorhub.android.data.client.SystemDetailUiState
 import org.sensorhub.android.data.client.TrackRepository
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
+import org.sensorhub.android.data.servers.requireHttpsUrl
+import org.sensorhub.android.UnsafeTls
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -38,7 +41,8 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     private val http = OkHttpClient.Builder()
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
-    private val subscriptions = ObservationSubscriptionManager(http)
+    private val insecureHttp by lazy { UnsafeTls.insecureClient(http) }
+    private val subscriptions = ObservationSubscriptionManager()
     private val trackRepository = TrackRepository()
     val tracks = trackRepository.tracks
     private val videoRenderers = ConcurrentHashMap<String, VideoStream>()
@@ -130,8 +134,6 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             .filter { it.enabled }
             .mapTo(mutableSetOf()) { it.id }
 
-        // Refreshing the profile list must not discard a completed discovery or
-        // close a stream that is feeding the map while this screen is away.
         _nodes.value = configuredProfiles.map { profile ->
             currentNodes[profile.id]?.copy(
                 name = profile.serverName,
@@ -186,6 +188,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 "/datastreams/${visualization.dataStreamId}/observations?format=application/swe%2Bbinary"
         val request = authorizedRequest(url, profile).build()
         subscriptions.subscribe(
+            client = clientFor(profile),
             streamId = visualization.dataStreamId,
             request = request,
             onBytes = { bytes ->
@@ -214,7 +217,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             .filter { it.kind == RemoteVisualization.Kind.VIDEO }
             .forEach { visualization ->
                 setVideoEnabled(profileId, visualization, false)
-                videoRenderers[visualization.dataStreamId]?.disconnect()
+                videoRenderers.remove(visualization.dataStreamId)?.disconnect()
             }
     }
 
@@ -262,6 +265,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 "/datastreams/${visualization.dataStreamId}/observations?format=application/json"
         val request = authorizedRequest(url, profile).build()
         subscriptions.subscribe(
+            client = clientFor(profile),
             streamId = visualization.dataStreamId,
             request = request,
             onText = { text ->
@@ -328,6 +332,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                 "/datastreams/${visualization.dataStreamId}/observations?format=application/om%2Bjson"
         val request = authorizedRequest(url, profile).build()
         subscriptions.subscribe(
+            client = clientFor(profile),
             streamId = visualization.dataStreamId,
             request = request,
             onText = { text ->
@@ -397,6 +402,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
                         description = description,
                         location = pointFromGeoJson(item.optJSONObject("geometry")),
                         visualizations = visualizations[id].orEmpty(),
+                        status = "",
                         ptz = ptzBySystem[id],
                     )
                 )
@@ -563,13 +569,13 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
             .toByteArray(Charsets.UTF_8)
             .toRequestBody("application/swe+json".toMediaType())
         val request = authorizedRequest(url, profile).post(body).build()
-        http.newCall(request).execute().use {
+        clientFor(profile).newCall(request).execute().use {
             if (!it.isSuccessful) error("${it.code} ${it.message} sending PTZ command to $controlStreamId")
         }
     }
 
     private fun getJson(url: String, profile: ServerProfileItem): JSONObject {
-        val response = http.newCall(authorizedRequest(url, profile).get().build()).execute()
+        val response = clientFor(profile).newCall(authorizedRequest(url, profile).get().build()).execute()
         response.use {
             if (!it.isSuccessful) error("${it.code} ${it.message} from $url")
             return JSONObject(it.body?.string().orEmpty())
@@ -588,6 +594,9 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         }
         return builder
     }
+
+    private fun clientFor(profile: ServerProfileItem): OkHttpClient =
+        if (profile.disableSSL) insecureHttp else http
 
     private fun findCoordinates(text: String): Pair<Double, Double>? = runCatching {
         findCoordinates(JSONObject(text))
@@ -621,7 +630,7 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun apiBase(endpoint: String): String {
-        val normalized = endpoint.trim().trimEnd('/')
+        val normalized = requireHttpsUrl(endpoint, "Node endpoint").trimEnd('/')
         return if (normalized.endsWith("/api")) normalized else
             "${nodeBase(normalized)}/sensorhub/api"
     }

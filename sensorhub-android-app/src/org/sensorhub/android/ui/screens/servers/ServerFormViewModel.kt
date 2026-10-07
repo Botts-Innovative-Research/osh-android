@@ -15,6 +15,7 @@ import org.sensorhub.android.data.servers.ServerConnectionTester
 import org.sensorhub.android.data.servers.ServerProfileItem
 import org.sensorhub.android.data.servers.ServerProfileRepository
 import org.sensorhub.android.data.servers.serverUrlError
+import org.sensorhub.android.data.servers.requireHttpsUrl
 
 class ServerFormViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -83,6 +84,12 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
         connectionTestSuccessful = false
     }
 
+    fun updateDisableSsl(value: Boolean) {
+        state = state.copy(disableSSL = value)
+        connectionTestResult = null
+        connectionTestSuccessful = false
+    }
+
     fun updateUsername(value: String) {
         state = state.copy(username = value)
         usernameError = null
@@ -130,10 +137,6 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
     fun validate(requireName: Boolean = true): Boolean {
         nameError = if (requireName && state.serverName.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_server_name) else null
         endpointUrlError = serverUrlError(state.endpointUrl)?.let { getApplication<Application>().getString(it) }
-        if (endpointUrlError == null && state.enableOAuth &&
-            state.endpointUrl.trim().startsWith("http://", ignoreCase = true)) {
-            endpointUrlError = getApplication<Application>().getString(R.string.ui_https_required_for_authenticated_connections)
-        }
         tokenEndpointError = if (state.enableOAuth) serverUrlError(state.tokenEndpoint)?.let { getApplication<Application>().getString(it) } else null
         clientIdError = if (state.enableOAuth && state.clientId.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_client_id) else null
         clientSecretError = if (state.enableOAuth && state.clientSecret.isBlank()) getApplication<Application>().getString(R.string.ui_enter_a_client_secret) else null
@@ -148,7 +151,7 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
         val profile = state.copy(
             id = existingProfileId ?: state.id,
             serverName = state.serverName.trim(),
-            endpointUrl = state.endpointUrl.trim(),
+            endpointUrl = requireHttpsUrl(state.endpointUrl, "Server endpoint"),
             username = if (!state.enableOAuth) state.username.trim() else "",
         )
 
@@ -158,7 +161,7 @@ class ServerFormViewModel(application: Application) : AndroidViewModel(applicati
         if (state.enableOAuth) {
             repo.setOAuthClientId(profile.id, state.clientId.trim())
             repo.setOAuthClientSecret(profile.id, state.clientSecret)
-            repo.setOAuthTokenEndpoint(profile.id, state.tokenEndpoint.trim())
+            repo.setOAuthTokenEndpoint(profile.id, requireHttpsUrl(state.tokenEndpoint, "OAuth token endpoint"))
         }
 
         repo.save(profile)

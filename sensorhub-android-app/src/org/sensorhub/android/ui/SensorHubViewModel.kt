@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.sensorhub.android.R
 import org.sensorhub.android.SensorHubService
 import org.sensorhub.android.config.DiscoveryRulesDownloader
@@ -58,6 +60,7 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
     private var bound = false
     private var preparing = false
     private var startWhenConnected = false
+    private val refreshMutex = Mutex()
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             service = (binder as SensorHubService.LocalBinder).service
@@ -197,25 +200,37 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
     }
 
     private fun refresh() {
-        val current = service
-        val status = if (preparing) ModuleState.STARTING else when (current?.hubState) {
-            SensorHubService.HubState.STOPPED -> ModuleState.STOPPED
-            SensorHubService.HubState.STARTING -> ModuleState.STARTING
-            SensorHubService.HubState.RUNNING -> ModuleState.STARTED
-            SensorHubService.HubState.STOPPING -> ModuleState.STOPPING
-            SensorHubService.HubState.ERROR -> ModuleState.STOPPED
-            else -> ModuleState.LOADED
-        }
-        val cards = sensorCardReader.read(current, activeSensors)
-        val servers = serverStatusReader.read(current)
-        _uiState.update {
-            it.copy(
-                sensorCards = cards,
-                serverStatuses = servers,
-                hubStatus = status,
-                error = it.error ?: if (current?.hubState == SensorHubService.HubState.ERROR)
-                    application.getString(R.string.ui_unable_to_start_sensor_settings) else null
-            )
+        viewModelScope.launch {
+            refreshMutex.withLock {
+                val current = service
+                val sensors = activeSensors
+                val isPreparing = preparing
+                val snapshot = withContext(Dispatchers.Default) {
+                    val hubState = current?.hubState
+                    HubSnapshot(
+                        cards = sensorCardReader.read(current, sensors),
+                        servers = serverStatusReader.read(current),
+                        status = if (isPreparing) ModuleState.STARTING else when (hubState) {
+                            SensorHubService.HubState.STOPPED -> ModuleState.STOPPED
+                            SensorHubService.HubState.STARTING -> ModuleState.STARTING
+                            SensorHubService.HubState.RUNNING -> ModuleState.STARTED
+                            SensorHubService.HubState.STOPPING -> ModuleState.STOPPING
+                            SensorHubService.HubState.ERROR -> ModuleState.STOPPED
+                            else -> ModuleState.LOADED
+                        },
+                        hasError = hubState == SensorHubService.HubState.ERROR,
+                    )
+                }
+                _uiState.update {
+                    it.copy(
+                        sensorCards = snapshot.cards,
+                        serverStatuses = snapshot.servers,
+                        hubStatus = snapshot.status,
+                        error = it.error ?: if (snapshot.hasError)
+                            application.getString(R.string.ui_unable_to_start_sensor_settings) else null,
+                    )
+                }
+            }
         }
     }
 
@@ -224,6 +239,13 @@ class SensorHubViewModel(private val application: Application) : AndroidViewMode
         super.onCleared()
     }
 }
+
+private data class HubSnapshot(
+    val cards: List<SensorCardUi>,
+    val servers: List<ServerStatusUi>,
+    val status: ModuleState,
+    val hasError: Boolean,
+)
 
 data class HubUiState(
     val runName: String = "",

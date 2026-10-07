@@ -15,6 +15,7 @@ data class RemoteSystem(
     val uid: String,
     val name: String,
     val description: String,
+    val status: String,
     val location: Pair<Double, Double>? = null,
     val visualizations: List<RemoteVisualization>,
     val ptz: RemoteControlStream? = null

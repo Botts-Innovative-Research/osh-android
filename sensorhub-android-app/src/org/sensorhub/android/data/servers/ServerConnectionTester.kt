@@ -3,22 +3,12 @@ package org.sensorhub.android.data.servers
 import org.sensorhub.android.R
 import com.google.gson.JsonParser
 import java.net.HttpURLConnection
-import java.net.URI
 import java.net.URLEncoder
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.util.Base64
-
-internal fun serverUrlError(value: String): Int? {
-    val uri = try { URI(value.trim()) } catch (_: Exception) { return R.string.ui_enter_a_valid_http_or_https_url }
-    return when {
-        value.isBlank() -> R.string.ui_enter_a_valid_url
-        uri.scheme?.lowercase() !in listOf("http", "https") || uri.host.isNullOrBlank() -> R.string.ui_enter_a_valid_http_or_https_url
-        uri.port != -1 && uri.port !in 1..65535 -> R.string.ui_port_must_be_between_1_and_65535
-        uri.rawAuthority?.endsWith(":") == true -> R.string.ui_enter_a_valid_port
-        else -> null
-    }
-}
+import javax.net.ssl.HttpsURLConnection
+import org.sensorhub.android.UnsafeTls
 
 internal data class ConnectionTestResult(val message: String, val successful: Boolean)
 
@@ -35,6 +25,7 @@ internal class ServerConnectionTester(private val text: (Int, Array<out Any>) ->
     private fun test(profile: ServerProfileItem): String {
         var stage = message(R.string.ui_server)
         return try {
+            val endpointUrl = requireHttpsUrl(profile.endpointUrl, "Server endpoint")
             val authorization = if (profile.enableOAuth) {
                 stage = message(R.string.ui_oauth_token_endpoint)
                 "Bearer ${requestToken(profile)}"
@@ -44,11 +35,12 @@ internal class ServerConnectionTester(private val text: (Int, Array<out Any>) ->
             } else null
             stage = message(R.string.ui_server)
 
-            val url = URL(profile.endpointUrl.trim())
+            val url = URL(endpointUrl)
             val connection = (url.openConnection() as HttpURLConnection).apply {
                 connectTimeout = 5000
                 readTimeout = 5000
                 instanceFollowRedirects = false
+                configureSslValidation(profile.disableSSL)
             }
             try {
                 authorization?.let { connection.setRequestProperty("Authorization", it) }
@@ -71,11 +63,12 @@ internal class ServerConnectionTester(private val text: (Int, Array<out Any>) ->
 
 
     private fun requestToken(profile: ServerProfileItem): String {
-        val url = URL(profile.tokenEndpoint.trim())
+        val url = URL(requireHttpsUrl(profile.tokenEndpoint, "OAuth token endpoint"))
         val connection = (url.openConnection() as HttpURLConnection).apply {
             connectTimeout = 5000
             readTimeout = 5000
             instanceFollowRedirects = false
+            configureSslValidation(profile.disableSSL)
         }
         try {
             connection.requestMethod = "POST"
@@ -110,4 +103,10 @@ internal class ServerConnectionTester(private val text: (Int, Array<out Any>) ->
     }
 
     private class TokenFailure(message: String) : Exception(message)
+}
+
+private fun HttpURLConnection.configureSslValidation(disableSslCheck: Boolean) {
+    if (!disableSslCheck || this !is HttpsURLConnection) return
+
+    UnsafeTls.configure(this)
 }

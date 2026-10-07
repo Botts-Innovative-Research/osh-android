@@ -9,19 +9,18 @@ import okio.ByteString
 import java.util.concurrent.ConcurrentHashMap
 
 /** Owns the current WebSocket for every active observation stream. */
-class ObservationSubscriptionManager(
-    private val http: OkHttpClient,
-) {
+class ObservationSubscriptionManager {
     private val sockets = ConcurrentHashMap<String, WebSocket>()
 
     fun subscribe(
+        client: OkHttpClient,
         streamId: String,
         request: Request,
         onText: (String) -> Unit = {},
         onBytes: (ByteArray) -> Unit = {},
         onDisconnected: (Throwable?) -> Unit = {},
     ) {
-        val socket = http.newWebSocket(request, object : WebSocketListener() {
+        val socket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onMessage(webSocket: WebSocket, text: String) = onText(text)
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) = onBytes(bytes.toByteArray())
