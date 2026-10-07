@@ -34,7 +34,6 @@ fun OSHCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val elevation = if (MaterialTheme.colorScheme.surfaceVariant.alpha == 0f) 0.dp else OshDimensions.cardElevation
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
@@ -43,7 +42,7 @@ fun OSHCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = elevation,
+            defaultElevation = 0.dp,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         content = content
@@ -56,7 +55,6 @@ fun OSHSensorCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val elevation = if (MaterialTheme.colorScheme.surfaceVariant.alpha == 0f) 0.dp else OshDimensions.sensorCardElevation
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -67,7 +65,7 @@ fun OSHSensorCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = elevation,
+            defaultElevation = 0.dp,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         content = content

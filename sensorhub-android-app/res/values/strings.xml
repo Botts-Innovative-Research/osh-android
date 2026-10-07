@@ -479,6 +479,7 @@
     <string name="ui_start_streaming">Start Streaming</string>
     <string name="ui_start_streaming_title">Start streaming</string>
     <string name="ui_run_name">Run name</string>
+    <string name="ui_run_name_placeholder">Enter a run name</string>
     <string name="ui_smarthub">SmartHub</string>
     <string name="ui_enable_sensors_on_the_sensors_screen_to_see_their_readings">Enable sensors on the Sensors screen to see their readings.</string>
     <string name="ui_grant_required_sensor_permissions">Grant the requested permissions for your enabled sensors to start collection.</string>
@@ -618,8 +619,8 @@
     <string name="ui_enter_a_valid_https_url">Enter a valid HTTPS URL</string>
     <string name="client_title">Client</string>
     <string name="client_empty">Add and enable a node in Settings to use OSH Client.</string>
-    <string name="client_servers">Select Node(s)</string>
-    <string name="client_selected_count">%1$d selected</string>
+    <string name="client_servers">Node Selection</string>
+    <string name="client_selected_name">Select node(s) to fetch system(s) from</string>
     <string name="client_no_configured_nodes">No configured nodes</string>
     <string name="client_select_node">Select a node to view its systems.</string>
     <string name="content_desc_server">Server</string>

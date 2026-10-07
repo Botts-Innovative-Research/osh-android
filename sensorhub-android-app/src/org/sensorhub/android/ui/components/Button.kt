@@ -88,11 +88,6 @@ fun OSHTonalButton(
         modifier = modifier,
         enabled = enabled,
         shape = PillShape,
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 8.dp,
-            pressedElevation = 12.dp,
-            disabledElevation = 0.dp
-        )
     ) {
         Text(text)
     }
