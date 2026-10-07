@@ -43,7 +43,15 @@ fun HelpFaqScreen(
                 .padding(padding),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            items(items) { item ->
+            items(
+                items = items,
+                key = { item ->
+                    when (item) {
+                        is FaqItem.Header -> "header:${item.title}"
+                        is FaqItem.Entry -> "entry:${item.question}"
+                    }
+                },
+            ) { item ->
                 when (item) {
                     is FaqItem.Header -> {
                         Text(

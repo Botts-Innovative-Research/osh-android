@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,7 +44,7 @@ fun AppPreferencesScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
     if (showLanguageDialog) {
         OSHSingleChoiceDialog(
             onDismissRequest = { showLanguageDialog = false },
@@ -55,7 +56,7 @@ fun AppPreferencesScreen(
         )
     }
 
-    var showDeviceNameEdit by remember { mutableStateOf(false) }
+    var showDeviceNameEdit by rememberSaveable { mutableStateOf(false) }
     if (showDeviceNameEdit) {
         OSHTextInputDialog(
             onDismissRequest = { showDeviceNameEdit = false },
@@ -70,7 +71,7 @@ fun AppPreferencesScreen(
         )
     }
 
-    var showAbout by remember { mutableStateOf(false) }
+    var showAbout by rememberSaveable { mutableStateOf(false) }
     if (showAbout) {
         OSHAlertDialogWithoutDismiss(
             onConfirmation = { showAbout = false },

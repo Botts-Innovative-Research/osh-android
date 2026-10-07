@@ -115,7 +115,7 @@ fun ServerProfilesScreen(
                         onCheckedChange = { enabled -> viewModel.setEnabled(item.id, enabled) },
                         onClick = { navController.navigate(Screen.ServerForm.createRoute(item.id)) },
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = "Edit ${item.serverName}",
+                        contentDescription = stringResource(R.string.content_desc_edit_server, item.serverName),
                         onLongClick = { profileToDelete = item },
                     )
                 }

@@ -322,6 +322,9 @@
     <string name="app_preferences">App Preferences</string>
     <string name="add_server">New Node</string>
     <string name="summary_app_preferences">summ</string>
+    <string name="configuration">Configuration</string>
+    <string name="review">Review</string>
+    <string name="scanner">Scan</string>
 
     <string name="meshtastic_msg">Enter a message!</string>
     <string name="message_hint">Enter a message!</string>
@@ -396,6 +399,8 @@
     <string name="hint_endpoint_path">Endpoint path</string>
     <string name="switch_enable_tls">Enable TLS</string>
     <string name="switch_disable_ssl">Disable SSL Validation</string>
+    <string name="disable_ssl_description">Accept certificates and hostnames that Android cannot verify.</string>
+    <string name="disable_ssl_warning">Certificate validation is disabled for this server.</string>
     <string name="section_authentication">AUTHENTICATION</string>
     <string name="auth_none">None</string>
     <string name="auth_basic">Basic</string>
@@ -406,11 +411,12 @@
     <string name="hint_client_id">Client ID</string>
     <string name="hint_client_secret">Client Secret</string>
     <string name="btn_add_server">Add Server</string>
+    <string name="btn_edit">Edit</string>
+    <string name="btn_delete">Delete</string>
 
     <!-- Dialogs -->
     <string name="btn_ok">OK</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="btn_delete">Delete</string>
     <string name="btn_send">Send</string>
     <string name="title_select_device">Select Device</string>
     <string name="title_enter_device">Enter Device Name or Address</string>
@@ -477,8 +483,8 @@
     <string name="ui_connection_url">Connection URL</string>
     <string name="ui_https_ip_port_sensorhub_api">https://ip:port/sensorhub/api</string>
     <string name="ui_authentication">Authentication</string>
-    <string name="ui_username_optional">Username (Optional)</string>
-    <string name="ui_password_optional">Password (Optional)</string>
+    <string name="ui_username_optional">Username </string>
+    <string name="ui_password_optional">Password </string>
     <string name="ui_toggle_password_visibility">Toggle password visibility</string>
     <string name="ui_enable_oauth">Enable OAuth</string>
     <string name="ui_token_endpoint">Token endpoint</string>
@@ -526,13 +532,17 @@
     <string name="ui_enter_a_client_secret">Enter a client secret</string>
     <string name="ui_enter_a_username_without_a_colon">Enter a username without a colon</string>
     <string name="ui_check_the_highlighted_fields_before_testing">Check the highlighted fields before testing</string>
-    <string name="ui_enter_a_valid_http_or_https_url">Enter a valid HTTP or HTTPS URL</string>
+    <string name="ui_enter_a_valid_http_or_https_url">Enter a valid HTTPS URL</string>
+    <string name="ui_enter_a_valid_https_url">Enter a valid HTTPS URL</string>
     <string name="ui_enter_a_valid_url">Enter a valid URL</string>
     <string name="ui_port_must_be_between_1_and_65535">Port must be between 1 and 65535</string>
     <string name="ui_enter_a_valid_port">Enter a valid port</string>
     <string name="ui_server">server</string>
     <string name="ui_oauth_token_endpoint">OAuth token endpoint</string>
     <string name="ui_connected">Endpoint reachable</string>
+    <string name="ui_connection_failed">Connection failed</string>
+    <string name="ui_success">Success</string>
+    <string name="ui_attention_required">Attention required</string>
     <string name="ui_authentication_401">401 Unauthorized: Request lacks valid credentials</string>
     <string name="ui_access_denied_403">403 Forbidden: Access denied to this resource</string>
     <string name="ui_unable_to_obtain_oauth_token">Unable to obtain OAuth token</string>
@@ -580,4 +590,25 @@
     <string name="sensors_live">Live</string>
     <string name="sensors_live_start_run">Start a run to view live sensor readings.</string>
     <string name="sensors_live_no_enabled">No sensors are enabled. Enable sensors in Configure.</string>
+    <string name="sensors_empty">No sensors to show</string>
+    <string name="sensors_sample_rate_hz">%1$s Hz</string>
+    <string name="sensors_bit_rate_kbps">%1$s kbps</string>
+    <string name="sensors_camera_number">Camera %1$s</string>
+    <string name="sensors_frame_rate_fps">%1$s fps</string>
+    <string name="content_desc_toggle_map_layer">Toggle map layer</string>
+    <string name="content_desc_map_options">Map options</string>
+    <string name="client_title">Client</string>
+    <string name="content_desc_refresh_profiles">Refresh profiles</string>
+    <string name="client_empty">Add and enable a node in Settings to use OSH Client.</string>
+    <string name="client_servers">Select Node(s)</string>
+    <string name="client_selected_count">%1$d selected</string>
+    <string name="client_no_configured_nodes">No configured nodes</string>
+    <string name="client_select_node">Select a node to view its systems.</string>
+    <string name="content_desc_server">Server</string>
+    <string name="content_desc_system">System</string>
+    <string name="client_discovering_systems">Discovering systems</string>
+    <string name="client_tap_to_discover">Tap to discover systems</string>
+    <string name="client_systems_discovered">%1$d systems discovered</string>
+    <string name="client_datastream_count">%1$d datastreams</string>
+    <string name="content_desc_edit_server">Edit %1$s</string>
 </resources>
