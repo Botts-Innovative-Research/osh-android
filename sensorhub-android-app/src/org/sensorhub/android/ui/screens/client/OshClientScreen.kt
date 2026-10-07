@@ -1,10 +1,14 @@
 package org.sensorhub.android.ui.screens.client
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,6 +22,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,18 +32,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.data.client.RemoteNodeState
 import org.sensorhub.android.data.client.RemoteSystem
+import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
 import org.sensorhub.android.ui.components.OSHDropDown
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
-import org.sensorhub.android.ui.theme.Background
 import org.sensorhub.android.ui.theme.OshDimensions
-import org.sensorhub.android.ui.theme.SecondaryContainer
+import org.sensorhub.android.ui.theme.OshSpacing
 
 @Composable
 fun OshClientScreen(
@@ -50,36 +57,48 @@ fun OshClientScreen(
     Scaffold(
         topBar = {
             OSHTopAppBarWithLogo(
-                title = "Client",
+                title = stringResource(R.string.client_title),
                 actions = {
-                    IconButton(onClick = viewModel::refreshProfiles) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh profiles")
-                    }
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.action_settings))
                     }
                 },
             )
         },
-        containerColor = Background,
+        containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         if (nodes.isEmpty()) {
             Column(
                 Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(OshSpacing.lg),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Add and enable a node in Settings to use OSH Client.")
+                Icon(
+                    imageVector = Icons.Default.Cloud,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(R.string.client_empty),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = OshSpacing.md),
+                )
+                OutlinedButton(
+                    onClick = onNavigateToSettings,
+                    modifier = Modifier.padding(top = OshSpacing.md),
+                ) {
+                    Text(stringResource(R.string.action_settings))
+                }
             }
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(vertical = 8.dp),
+                contentPadding = PaddingValues(vertical = OshSpacing.sm),
             ) {
                 item(key = "server-selector") {
                     OSHCard(
@@ -87,18 +106,35 @@ fun OshClientScreen(
                             .fillMaxWidth()
                             .padding(horizontal = OshDimensions.screenHorizontal)
                     ) {
-                        Column(Modifier.padding(16.dp)) {
+                        Column(Modifier.padding(OshSpacing.md)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    stringResource(R.string.client_servers),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                IconButton(onClick = viewModel::refreshProfiles) {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = stringResource(R.string.content_desc_refresh_profiles)
+                                    )
+                                }
+                            }
                             OSHDropDown(
-                                title = "Servers",
-                                summary = "${visibleProfileIds.size} selected",
+                                summary = stringResource(R.string.client_selected_count, visibleProfileIds.size),
                                 items = nodes,
                                 selectedIds = visibleProfileIds,
                                 itemId = { it.profileId },
                                 itemLabel = { it.name },
                                 itemSummary = { it.endpointUrl },
                                 onSelectionChange = viewModel::setProfileVisible,
-                                emptyText = "No configured nodes",
+                                emptyText = stringResource(R.string.client_no_configured_nodes),
                             )
+
                         }
                     }
                 }
@@ -106,7 +142,7 @@ fun OshClientScreen(
                 if (visibleNodes.isEmpty()) {
                     item {
                         Text(
-                            "Select a node to view its systems.",
+                            stringResource(R.string.client_select_node),
                             Modifier.padding(24.dp)
                         )
                     }
@@ -150,20 +186,20 @@ private fun ServerSectionHeader(
         } else {
             RoundedCornerShape(12.dp)
         },
-        color = SecondaryContainer,
+        color = MaterialTheme.colorScheme.secondaryContainer,
         shadowElevation = 2.dp,
     ) {
         Column {
             OSHClickableStatusRowWithIcon(
                 title = node.name,
                 imageVector = Icons.Filled.Cloud,
-                contentDescription = "Server",
+                contentDescription = stringResource(R.string.content_desc_server),
                 subtitle = node.endpointUrl,
                 summary = when {
-                    node.loading -> "Discovering systems"
+                    node.loading -> stringResource(R.string.client_discovering_systems)
                     node.error != null -> node.error
-                    node.systems.isEmpty() -> "Tap to discover systems"
-                    else -> "${node.systems.size} systems discovered"
+                    node.systems.isEmpty() -> stringResource(R.string.client_tap_to_discover)
+                    else -> stringResource(R.string.client_systems_discovered, node.systems.size)
                 },
                 status = when {
                     node.loading -> "starting"
@@ -202,17 +238,17 @@ private fun ServerSystemRow(
         } else {
             RectangleShape
         },
-        color = SecondaryContainer,
+        color = MaterialTheme.colorScheme.secondaryContainer,
     ) {
         Column {
             HorizontalDivider()
             OSHClickableStatusRowWithIcon(
                 title = system.name,
                 imageVector = Icons.Filled.Sensors,
-                contentDescription = "System",
+                contentDescription = stringResource(R.string.content_desc_system),
                 subtitle = system.uid,
-                summary = "${system.visualizations.size} datastreams",
-                status = "unknown",
+                summary = stringResource(R.string.client_datastream_count, system.visualizations.size),
+                status = system.status,
                 onClick = onClick,
             )
         }

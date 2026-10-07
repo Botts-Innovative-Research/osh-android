@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun <T> OSHDropDown(
-    title: String,
     summary: String,
     items: List<T>,
     selectedIds: Set<String>,
@@ -41,18 +40,18 @@ fun <T> OSHDropDown(
     itemSummary: (T) -> String,
     onSelectionChange: (String, Boolean) -> Unit,
     emptyText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var anchorWidth by remember { mutableIntStateOf(0) }
     val menuWidth = with(LocalDensity.current) { anchorWidth.toDp() }
 
     Column(modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
         Box(Modifier.fillMaxWidth().onSizeChanged { anchorWidth = it.width }) {
             OutlinedButton(
                 onClick = { expanded = true },
+                enabled = enabled,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -60,7 +59,7 @@ fun <T> OSHDropDown(
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
             }
             DropdownMenu(
-                expanded = expanded,
+                expanded = expanded && enabled,
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.width(menuWidth)
             ) {

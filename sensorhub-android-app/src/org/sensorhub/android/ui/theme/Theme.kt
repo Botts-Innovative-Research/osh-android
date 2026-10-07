@@ -4,7 +4,11 @@ import android.app.Activity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -35,6 +39,23 @@ private val OSHColorScheme = darkColorScheme(
     outline = Outline
 )
 
+@Immutable
+data class OshStatusColors(
+    val success: Color,
+    val onSuccess: Color,
+    val warning: Color,
+    val onWarning: Color,
+)
+
+private val DefaultStatusColors = OshStatusColors(
+    success = SuccessContainer,
+    onSuccess = OnSuccessContainer,
+    warning = WarningContainer,
+    onWarning = OnWarningContainer,
+)
+
+val LocalOshStatusColors = staticCompositionLocalOf { DefaultStatusColors }
+
 @Composable
 fun OSHTheme(content: @Composable () -> Unit) {
     val view = LocalView.current
@@ -50,10 +71,12 @@ fun OSHTheme(content: @Composable () -> Unit) {
         }
     }
 
-    MaterialTheme(
-        colorScheme = OSHColorScheme,
-        typography = OSHTypography,
-        shapes = OSHShapes,
-        content = content
-    )
+    CompositionLocalProvider(LocalOshStatusColors provides DefaultStatusColors) {
+        MaterialTheme(
+            colorScheme = OSHColorScheme,
+            typography = OSHTypography,
+            shapes = OSHShapes,
+            content = content,
+        )
+    }
 }

@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,7 +83,7 @@ fun MapScreen(
         }
     }
 
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
     val rotation by animateFloatAsState(targetValue = if (isExpanded) 45f else 0f)
 
     val trackOverlays = remember(mapView) { mutableMapOf<String, TrackOverlays>() }
@@ -193,13 +194,19 @@ fun MapScreen(
                             SmallFloatingActionButton(
                                 onClick = { mapView.controller.zoomIn() }
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Zoom In")
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = stringResource(R.string.content_desc_zoom_in),
+                                )
                             }
 
                             SmallFloatingActionButton(
                                 onClick = { mapView.controller.zoomOut() }
                             ) {
-                                Icon(Icons.Default.Remove, contentDescription = "Zoom Out")
+                                Icon(
+                                    Icons.Default.Remove,
+                                    contentDescription = stringResource(R.string.content_desc_zoom_out),
+                                )
                             }
 
                             SmallFloatingActionButton(
@@ -212,7 +219,10 @@ fun MapScreen(
                                     mapView.setTileSource(source)
                                 }
                             ) {
-                                Icon(Icons.Filled.Layers, contentDescription = "Toggle Layer")
+                                Icon(
+                                    Icons.Filled.Layers,
+                                    contentDescription = stringResource(R.string.content_desc_toggle_map_layer),
+                                )
                             }
                         }
                     }
@@ -223,7 +233,7 @@ fun MapScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Map Menu Options"
+                            contentDescription = stringResource(R.string.content_desc_map_options)
                         )
                     }
                 }

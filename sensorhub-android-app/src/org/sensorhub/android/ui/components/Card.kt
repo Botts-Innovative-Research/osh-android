@@ -4,7 +4,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -13,17 +17,16 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OshDimensions
-import org.sensorhub.android.ui.theme.OSHShapes
-import org.sensorhub.android.ui.theme.SecondaryContainer
-import org.sensorhub.android.ui.theme.TextPrimary
 
 @Composable
 fun OSHCard(
@@ -32,10 +35,10 @@ fun OSHCard(
 ) {
     Card(
         modifier = modifier,
-        shape = OSHShapes.medium,
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = OshDimensions.cardElevation,
@@ -54,10 +57,10 @@ fun OSHSensorCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = OshDimensions.cardOuterVertical),
-        shape = OSHShapes.medium,
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = SecondaryContainer,
-            contentColor = TextPrimary
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = OshDimensions.sensorCardElevation,
@@ -129,6 +132,71 @@ fun OSHActionCard(
     }
 }
 
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+fun OSHEditActionCard(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    contentDescription: String,
+    additionalActions: @Composable ColumnScope.() -> Unit = {},
+    onLongClick: (() -> Unit)? = null
+) {
+    val cardModifier = if (onLongClick != null) {
+        modifier.combinedClickable(
+            onClick = onClick,
+            onLongClick = onLongClick
+        )
+    } else {
+        modifier
+    }
+
+    OSHCard(
+        modifier = cardModifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                if (subtitle.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            IconButton(
+                onClick = onClick
+            ) {
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = contentDescription
+                )
+            }
+        }
+
+        additionalActions()
+    }
+}
+
+
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
 private fun DeviceInfoCardPreview() {
@@ -183,10 +251,18 @@ private fun ServerItemsCard() {
         Column {
             OSHActionCard(
                 title = "Local Server",
-                subtitle = "http:localhost:8080/sensorhub/api",
+                subtitle = "https://localhost:8080/sensorhub/api",
                 checked = true,
                 onCheckedChange = {},
-                 onClick = {},
+                onClick = {},
+                imageVector = Icons.Filled.Edit,
+                contentDescription = "Update Server"
+            )
+
+            OSHEditActionCard(
+                title = "Local Server",
+                subtitle = "https://localhost:8080/sensorhub/api",
+                onClick = {},
                 imageVector = Icons.Filled.Edit,
                 contentDescription = "Update Server"
             )

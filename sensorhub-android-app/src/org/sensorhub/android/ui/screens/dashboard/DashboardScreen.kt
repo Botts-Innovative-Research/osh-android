@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,9 +44,12 @@ import org.sensorhub.android.ui.HubUiState
 import org.sensorhub.android.ui.SensorHubViewModel
 import org.sensorhub.android.ui.components.OSHButton
 import org.sensorhub.android.ui.components.OSHCard
+import org.sensorhub.android.ui.components.OSHStatusChip
 import org.sensorhub.android.ui.components.OSHStatusRow
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
+import org.sensorhub.android.ui.components.OshStatusTone
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.OshSpacing
 import org.sensorhub.api.module.ModuleEvent.ModuleState
 
 @Composable
@@ -127,11 +131,11 @@ fun DashboardScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 2.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(top = OshSpacing.md, bottom = OshSpacing.xs),
+            verticalArrangement = Arrangement.spacedBy(OshSpacing.md),
         ) {
             item {
-                OSHCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                OSHCard(modifier = Modifier.fillMaxWidth().padding(horizontal = OshSpacing.md)) {
                     OSHStatusRow(
                         title = stringResource(R.string.ui_smarthub),
                         subtitle = state.runName.takeIf { running }.orEmpty(),
@@ -140,7 +144,7 @@ fun DashboardScreen(
                     )
                     if (running && state.serverStatuses.isNotEmpty()) {
                         HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
+                            modifier = Modifier.padding(horizontal = OshSpacing.md),
                             color = MaterialTheme.colorScheme.outlineVariant,
                         )
                         state.serverStatuses.forEach { server ->
@@ -180,14 +184,14 @@ fun DashboardScreen(
                     },
                     text = buttonText,
                     enabled = !busy,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = OshSpacing.md)
                 )
             }
             if (!running) {
                 item {
                     Text(
                         stringResource(R.string.sensors_live_start_run),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp),
+                        modifier = Modifier.padding(horizontal = OshSpacing.md, vertical = OshSpacing.lg),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -195,13 +199,13 @@ fun DashboardScreen(
                 item {
                     Text(
                         stringResource(R.string.sensors_live_no_enabled),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp),
+                        modifier = Modifier.padding(horizontal = OshSpacing.md, vertical = OshSpacing.lg),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
                 items(state.sensorCards, key = { "sensor:${it.id}" }) { sensor ->
-                    Box(Modifier.padding(horizontal = 16.dp)) {
+                    Box(Modifier.padding(horizontal = OshSpacing.md)) {
                         SensorOutputCard(sensor)
                     }
                 }
@@ -209,12 +213,26 @@ fun DashboardScreen(
 
             state.error?.let { error ->
                 item {
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                    OSHCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = OshSpacing.md),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(OshSpacing.md),
+                            verticalArrangement = Arrangement.spacedBy(OshSpacing.sm),
+                        ) {
+                            OSHStatusChip(
+                                label = stringResource(R.string.destination_error),
+                                tone = OshStatusTone.Error,
+                            )
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
                 }
             }
         }

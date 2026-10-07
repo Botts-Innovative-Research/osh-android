@@ -4,15 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
+import org.sensorhub.android.ui.theme.LocalOshStatusColors
 
 @Composable
 fun StatusDot(
@@ -21,12 +22,13 @@ fun StatusDot(
     dotSize: Dp = 10.dp
 ) {
     val _status = status.trim().lowercase()
+    val statusColors = LocalOshStatusColors.current
     val color = when {
-        _status == "ok" || _status == "started" -> Color(0xFF4CAF50)
-        _status == "nok" -> Color(0xFFFF9800)
-        _status.contains("error") -> Color(0xFFEF5350)
-        _status.contains("starting") || _status.contains("initializ") -> Color(0xFFFF9800)
-        else -> Color(0xFF757575)
+        _status == "ok" || _status == "started" || _status == "success" -> statusColors.onSuccess
+        _status == "nok" -> statusColors.onWarning
+        _status.contains("error") || _status == "failed" -> MaterialTheme.colorScheme.error
+        _status.contains("starting") || _status.contains("initializ") -> MaterialTheme.colorScheme.outline
+        else -> MaterialTheme.colorScheme.outline
     }
     val description = stringResource(when {
         _status == "ok" || _status == "started" -> R.string.health_active
