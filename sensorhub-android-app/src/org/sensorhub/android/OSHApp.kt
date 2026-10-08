@@ -1,7 +1,7 @@
 package org.sensorhub.android
 
 import org.sensorhub.android.ui.SensorHubViewModel
-import org.sensorhub.android.ui.screens.client.OshClientViewModel
+import org.sensorhub.android.ui.features.client.OshClientViewModel
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
