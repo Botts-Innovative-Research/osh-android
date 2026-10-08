@@ -1,13 +1,19 @@
 package org.sensorhub.android.ui.navigation
 
+import android.net.Uri
+
 sealed class Screen(val route: String) {
     object Dashboard : Screen("dashboard_screen")
     object Settings : Screen("settings_screen")
     object Map : Screen("map_screen")
+    object FullscreenMap : Screen("fullscreen_map_screen/{profileId}/{systemId}/{streamId}") {
+        fun createRoute(profileId: String, systemId: String, streamId: String): String =
+            "fullscreen_map_screen/${Uri.encode(profileId)}/${Uri.encode(systemId)}/${Uri.encode(streamId)}"
+    }
     object Client : Screen("client_screen")
     object SystemDetail : Screen("system_detail_screen/{profileId}/{systemId}") {
         fun createRoute(profileId: String, systemId: String): String {
-            return "system_detail_screen/${android.net.Uri.encode(profileId)}/${android.net.Uri.encode(systemId)}"
+            return "system_detail_screen/${Uri.encode(profileId)}/${Uri.encode(systemId)}"
         }
     }
     object Sensors : Screen("sensors_screen")

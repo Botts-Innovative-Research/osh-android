@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
+import org.sensorhub.android.ui.screens.client.FullscreenMap
 import org.sensorhub.android.ui.screens.client.OshClientScreen
 import org.sensorhub.android.ui.screens.client.OshClientViewModel
 import org.sensorhub.android.ui.screens.client.SystemDetailRoute
@@ -70,6 +71,13 @@ fun OSHNavHost(
                 profileId = backStackEntry.arguments?.getString("profileId").orEmpty(),
                 systemId = backStackEntry.arguments?.getString("systemId").orEmpty(),
                 onBack = { navController.popBackStack() },
+                onOpenFullscreenMap = { streamId ->
+                    navController.navigate(Screen.FullscreenMap.createRoute(
+                        backStackEntry.arguments?.getString("profileId").orEmpty(),
+                        backStackEntry.arguments?.getString("systemId").orEmpty(),
+                        streamId,
+                    ))
+                },
                 viewModel = clientViewModel,
             )
         }
@@ -126,6 +134,24 @@ fun OSHNavHost(
                 profileId = profileId
             )
         }
+
+        composable(
+            route = Screen.FullscreenMap.route,
+            arguments = listOf(
+                navArgument("profileId") { type = NavType.StringType },
+                navArgument("systemId") { type = NavType.StringType },
+                navArgument("streamId") { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            FullscreenMap(
+                onBackClick = { navController.popBackStack() },
+                profileId = backStackEntry.arguments?.getString("profileId").orEmpty(),
+                systemId = backStackEntry.arguments?.getString("systemId").orEmpty(),
+                streamId = backStackEntry.arguments?.getString("streamId").orEmpty(),
+                viewModel = clientViewModel,
+            )
+        }
+
     }
 }
 

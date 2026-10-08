@@ -113,12 +113,12 @@ fun OshClientScreen(
                                     stringResource(R.string.client_servers),
                                     style = MaterialTheme.typography.titleSmall
                                 )
-//                                IconButton(onClick = viewModel::refreshProfiles) {
-//                                    Icon(
-//                                        Icons.Default.Refresh,
-//                                        contentDescription = stringResource(R.string.content_desc_refresh_profiles)
-//                                    )
-//                                }
+                                IconButton(onClick = viewModel::refreshProfiles) {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = stringResource(R.string.content_desc_refresh_profiles)
+                                    )
+                                }
                             }
                             OSHDropDown(
                                 summary = stringResource(R.string.client_select_node),
