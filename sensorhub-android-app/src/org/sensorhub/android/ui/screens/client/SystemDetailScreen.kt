@@ -35,6 +35,7 @@ fun SystemDetailRoute(
     profileId: String,
     systemId: String,
     onBack: () -> Unit,
+    onOpenFullscreenMap: (String) -> Unit,
     viewModel: OshClientViewModel
 ) {
     val detailState by viewModel.systemDetailState(profileId, systemId)
@@ -136,7 +137,8 @@ fun SystemDetailRoute(
                             RemoteVisualization.Kind.LOCATION
                         ),
                         card.status,
-                        card.position
+                        card.position,
+                        onFullscreen = { onOpenFullscreenMap(card.streamId) },
                     )
                 }
                 items(valueCards, key = { it.streamId }) { card ->

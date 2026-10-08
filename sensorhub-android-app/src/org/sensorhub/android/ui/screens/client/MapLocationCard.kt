@@ -1,6 +1,7 @@
 package org.sensorhub.android.ui.screens.client
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +50,8 @@ import org.sensorhub.android.ui.theme.OshDimensions
 fun MapLocationCard(
     visualization: RemoteVisualization,
     status: StreamStatus,
-    position: Pair<Double, Double>?
+    position: Pair<Double, Double>?,
+    onFullscreen: () -> Unit,
 ) {
     val location = stringResource(R.string.system_detail_location)
     OSHCard(
@@ -59,13 +61,14 @@ fun MapLocationCard(
     ) {
         Column(Modifier.padding(OshDimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusDot(status.dotStatus()); Spacer(
-                Modifier.width(OshDimensions.titleGap)
-            ); Text(
-                visualization.name.ifBlank { location },
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            ); Icon(Icons.Filled.LocationOn, contentDescription = location)
+                StatusDot(status.dotStatus());
+                Spacer(Modifier.width(OshDimensions.titleGap));
+                Text(
+                    visualization.name.ifBlank { location },
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                );
+                Icon(Icons.Filled.LocationOn, contentDescription = location)
             }
             Box(
                 Modifier
@@ -75,20 +78,42 @@ fun MapLocationCard(
                     .clip(OSHShapes.medium)
                     .background(ControlSurface)
             ) {
-                if (position == null) Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(status.message(), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (position == null) {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(status.message(), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
-                else LocationMap(position, visualization.name.ifBlank { location })
+                else {
+                    LocationMap(position, visualization.name.ifBlank { location })
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(onClick = onFullscreen),
+                    )
+                }
+            }
+            if (position != null) {
+                Spacer(Modifier.padding(top = OshDimensions.contentGap));
+                Text(
+                    "${position.first},${position.second}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
 }
 
 @Composable
-private fun LocationMap(position: Pair<Double, Double>, label: String) {
+fun LocationMap(
+    position: Pair<Double, Double>,
+    label: String,
+    interactive: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val mapView = remember(context) {
         Configuration.getInstance().load(
@@ -98,8 +123,8 @@ private fun LocationMap(position: Pair<Double, Double>, label: String) {
         Configuration.getInstance().userAgentValue = context.packageName
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(false)
-            isClickable = false
+            setMultiTouchControls(interactive)
+            isClickable = interactive
         }
     }
     val marker = remember(mapView) {
@@ -122,12 +147,12 @@ private fun LocationMap(position: Pair<Double, Double>, label: String) {
     }
     AndroidView(
         factory = { mapView },
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) { map ->
         val point = GeoPoint(position.first, position.second)
         marker.position = point
         marker.title = label
-        marker.snippet = "${position.first},${position.second}"
+//        marker.snippet = "${position.first},${position.second}"
         if (!centered) {
             map.controller.setZoom(16.0)
             map.controller.setCenter(point)
