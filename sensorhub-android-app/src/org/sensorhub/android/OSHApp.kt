@@ -6,11 +6,14 @@ import org.sensorhub.android.ui.screens.client.OshClientViewModel
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.ui.navigation.Navbar
 import org.sensorhub.android.ui.navigation.OSHNavHost
+import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.theme.OSHTheme
 
 @Composable
@@ -18,8 +21,19 @@ fun OSHApp(hubViewModel: SensorHubViewModel = androidx.lifecycle.viewmodel.compo
     val navController = rememberNavController()
     val clientViewModel: OshClientViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
+    val bottomNavRoutes = setOf(
+        Screen.Dashboard.route,
+        Screen.Sensors.route,
+        Screen.Map.route,
+        Screen.Client.route,
+    )
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val showBottomNav = backStackEntry?.destination?.route in bottomNavRoutes
+
     Scaffold(
-        bottomBar = { Navbar(navController = navController) }
+        bottomBar = {
+            if (showBottomNav) Navbar(navController = navController)
+        }
     ) { padding ->
         OSHNavHost(
             navController = navController,
