@@ -5,12 +5,14 @@ import android.content.SharedPreferences
 data class LocalServiceSettings(
     val sosEnabled: Boolean = true,
     val csApiEnabled: Boolean = true,
+    val localStorageEnabled: Boolean = false,
     val discoveryEnabled: Boolean = false,
     val rulesLink: String = "",
 ) {
     companion object {
         const val SOS_ENABLED = "sos_service"
         const val CS_API_ENABLED = "csapi_service"
+        const val LOCAL_STORAGE_ENABLED = "local_storage_enabled"
         const val DISCOVERY_ENABLED = "discovery_service"
         const val RULES_LINK = "rules_link"
 
@@ -19,6 +21,7 @@ data class LocalServiceSettings(
             return LocalServiceSettings(
                 sosEnabled = prefs.getBoolean(SOS_ENABLED, defaults.sosEnabled),
                 csApiEnabled = prefs.getBoolean(CS_API_ENABLED, defaults.csApiEnabled),
+                localStorageEnabled = prefs.getBoolean(LOCAL_STORAGE_ENABLED, defaults.localStorageEnabled),
                 discoveryEnabled = prefs.getBoolean(DISCOVERY_ENABLED, defaults.discoveryEnabled),
                 rulesLink = prefs.getString(RULES_LINK, defaults.rulesLink) ?: defaults.rulesLink,
             )

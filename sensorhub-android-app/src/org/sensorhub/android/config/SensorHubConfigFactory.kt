@@ -112,7 +112,7 @@ class SensorHubConfigFactory(
             }
         }
 
-        if (shouldStore(prefs)) {
+        if (services.localStorageEnabled) {
             val dbFile = File(context.filesDir.toString() + "/db/")
             dbFile.mkdirs()
             val basicStorageConfig = MVObsSystemDatabaseConfig()
@@ -224,18 +224,6 @@ class SensorHubConfigFactory(
         consysConfig.dataSourceSelector = ObsSystemDatabaseViewConfig()
         consysConfig.conSysOAuth = oAuthConfig
         config.add(consysConfig)
-    }
-
-    private fun shouldStore(prefs: SharedPreferences): Boolean {
-        val prefMap = prefs.all
-        for ((_, value) in prefMap) {
-            if (value is Set<*>) {
-                if (value.contains("STORE_LOCAL")) {
-                    return true
-                }
-            }
-        }
-        return false
     }
 
 }

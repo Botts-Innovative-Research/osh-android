@@ -90,6 +90,12 @@ fun OnDeviceNodeScreen(
                     onCheckedChange = viewModel::setCsApiEnabled,
                 )
                 OSHSwitchRow(
+                    title = stringResource(R.string.enable_local_storage),
+                    subtitle = stringResource(R.string.summary_local_storage),
+                    checked = state.services.localStorageEnabled,
+                    onCheckedChange = viewModel::setLocalStorageEnabled,
+                )
+                OSHSwitchRow(
                     title = stringResource(R.string.enable_discovery_service),
                     subtitle = stringResource(R.string.summary_discovery),
                     checked = state.services.discoveryEnabled,
