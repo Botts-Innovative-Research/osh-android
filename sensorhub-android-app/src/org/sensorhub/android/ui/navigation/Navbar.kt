@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -24,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OverlayLight
+import org.sensorhub.android.R
 
 @Composable
 fun Navbar(
@@ -35,9 +37,14 @@ fun Navbar(
     }
     val navigationItems = listOf(
         NavigationItem(
-            title = "Dashboard",
+            title = "Home",
             icon = Icons.Default.Home,
             route = Screen.Dashboard.route
+        ),
+        NavigationItem(
+            title = "Node",
+            iconRes = R.drawable.ic_node,
+            route = Screen.Node.route
         ),
         NavigationItem(
             title = "Sensors",
@@ -48,12 +55,7 @@ fun Navbar(
             title = "Map",
             icon = Icons.Default.Map,
             route = Screen.Map.route
-        ),
-        NavigationItem(
-            title = "Client",
-            icon = Icons.Default.Monitor,
-            route = Screen.Client.route
-        ),
+        )
     )
 
     NavigationBar(
@@ -70,7 +72,11 @@ fun Navbar(
                 }
             },
             icon = {
-                Icon(imageVector = item.icon, contentDescription = item.title)
+                item.icon?.let {
+                    Icon(imageVector = it, contentDescription = item.title)
+                } ?: item.iconRes?.let {
+                    Icon(painter = painterResource(it), contentDescription = item.title)
+                }
             },
             label = {
                 Text(
@@ -90,7 +96,8 @@ fun Navbar(
 
 data class NavigationItem(
     val title: String,
-    val icon: ImageVector,
+    val icon: ImageVector? = null,
+    val iconRes: Int? = null,
     val route: String
 )
 

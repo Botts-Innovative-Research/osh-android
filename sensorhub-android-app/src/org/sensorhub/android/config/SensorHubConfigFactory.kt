@@ -14,12 +14,11 @@ import java.util.Date
 import org.sensorhub.android.InsecureOkHttpClientWrapper
 import org.sensorhub.android.InsecureSOSTClient
 import org.sensorhub.android.OkHttpClientWrapper
-import org.sensorhub.android.data.sensors.SensorRegistry
-import org.sensorhub.android.data.sensors.SensorRuntimeConfiguration
-import org.sensorhub.android.data.servers.ServerProfileItem
-import org.sensorhub.android.data.servers.ServerProfileRepository
-import org.sensorhub.android.data.servers.serverUrlError
-import org.sensorhub.android.data.settings.LocalServiceSettings
+import org.sensorhub.android.ui.features.sensors.data.SensorRegistry
+import org.sensorhub.android.ui.features.sensors.data.SensorRuntimeConfiguration
+import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.servers.data.serverUrlError
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.impl.client.sost.SOSTClientConfig
@@ -36,7 +35,7 @@ import org.sensorhub.impl.service.sos.SOSService
 import org.sensorhub.impl.service.sos.SOSServiceConfig
 import org.slf4j.LoggerFactory
 import java.net.URI
-
+import org.sensorhub.android.ui.features.nodes.ondevice.LocalServiceSettings
 class SensorHubConfigFactory(
     context: Context,
     private val serverRepository: ServerProfileRepository,

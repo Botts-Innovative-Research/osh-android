@@ -1,7 +1,7 @@
 package org.sensorhub.android
 
 import org.sensorhub.android.ui.SensorHubViewModel
-import org.sensorhub.android.ui.screens.client.OshClientViewModel
+import org.sensorhub.android.ui.features.client.OshClientViewModel
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -25,7 +25,7 @@ fun OSHApp(hubViewModel: SensorHubViewModel = androidx.lifecycle.viewmodel.compo
         Screen.Dashboard.route,
         Screen.Sensors.route,
         Screen.Map.route,
-        Screen.Client.route,
+        Screen.Node.route,
     )
     val backStackEntry by navController.currentBackStackEntryAsState()
     val showBottomNav = backStackEntry?.destination?.route in bottomNavRoutes

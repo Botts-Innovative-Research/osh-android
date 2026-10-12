@@ -34,6 +34,7 @@
     <string name="app_name">OSH Android</string>
     <string name="hello_world">Configure settings and tap the play button to start SmartHub</string>
     <string name="action_settings">Settings</string>
+    <string name="action_nodes">Nodes</string>
     <string name="action_start">Start SmartHub</string>
     <string name="action_stop">Stop SmartHub</string>
     <string name="action_status">App Status</string>
@@ -68,6 +69,7 @@
     <string name="device_ip_address">Device IP Address</string>
     <string name="server_profiles">Configured Nodes</string>
     <string name="manage_servers">Manage Nodes</string>
+    <string name="manage_vis">Manage Visualizations</string>
     <string name="services">Services on this device</string>
     <string name="enable_sos_service">SOS Service</string>
     <string name="enable_csapi_service">Connected Systems Service</string>
@@ -389,7 +391,15 @@
     <string name="empty_server_profiles">No nodes configured.\nTap + to create one.</string>
     <string name="content_desc_add_server">Add node</string>
     <string name="title_delete_server">Delete Server</string>
-    <string name="title_server_profiles">Configured Nodes</string>
+    <string name="title_server_profiles">Node Manager</string>
+    <string name="node_manager_title">Node Manager</string>
+    <string name="visualizations_title">Client Visualizations</string>
+    <string name="this_device">This Device</string>
+    <string name="this_device_summary">Local services and connection details</string>
+    <string name="remote_nodes">Remote Nodes</string>
+    <string name="content_desc_open_this_device">Open this device node</string>
+    <string name="local_services">Services</string>
+    <string name="ip_address_unavailable">Unavailable</string>
     <string name="msg_delete_server">Remove \"%s\"?</string>
 
     <!-- Edit Node -->
