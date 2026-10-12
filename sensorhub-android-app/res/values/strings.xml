@@ -73,10 +73,12 @@
     <string name="services">Services on this device</string>
     <string name="enable_sos_service">SOS Service</string>
     <string name="enable_csapi_service">Connected Systems Service</string>
+    <string name="enable_local_storage">Store data locally</string>
     <string name="enable_discovery_service">Discovery Service</string>
 
     <string name="summary_push_options">Options for pushing data</string>
     <string name="summary_csapi">OGC standard REST API serving this device’s sensor data.</string>
+    <string name="summary_local_storage">Persist sensor data and this device’s deployment on the device.</string>
     <string name="summary_sos">Legacy API serving sensor data as XML over HTTP</string>
     <string name="summary_discovery">Service providing discovery based on definable rulesets</string>
     <string name="summary_select_device">Tap to select or enter device address</string>

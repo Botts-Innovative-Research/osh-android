@@ -24,6 +24,11 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
         _state.value = _state.value.copy(services = _state.value.services.copy(csApiEnabled = enabled))
     }
 
+    fun setLocalStorageEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(LocalServiceSettings.LOCAL_STORAGE_ENABLED, enabled).apply()
+        _state.value = _state.value.copy(services = _state.value.services.copy(localStorageEnabled = enabled))
+    }
+
     fun setDiscoveryEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(LocalServiceSettings.DISCOVERY_ENABLED, enabled).apply()
         _state.value = _state.value.copy(services = _state.value.services.copy(discoveryEnabled = enabled))
