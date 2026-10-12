@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,27 +38,25 @@ import org.sensorhub.android.ui.features.client.data.RemoteSystem
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
 import org.sensorhub.android.ui.components.OSHDropDown
+import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.theme.OshDimensions
 import org.sensorhub.android.ui.theme.OshSpacing
 
 @Composable
 fun OshClientScreen(
-    onNavigateToSettings: () -> Unit,
+    onNavigateToNodeManager: () -> Unit,
     onOpenSystem: (profileId: String, systemId: String) -> Unit,
     viewModel: OshClientViewModel = viewModel(),
+    onBackClick: () -> Unit
 ) {
     val nodes by viewModel.nodes.collectAsStateWithLifecycle()
     val visibleProfileIds by viewModel.visibleProfileIds.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
-            OSHTopAppBarWithLogo(
-                title = stringResource(R.string.client_title),
-                actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.action_settings))
-                    }
-                },
+            OSHTopAppBarWithBack(
+                title = stringResource(R.string.visualizations_title),
+                onBackClick = onBackClick
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -74,7 +71,7 @@ fun OshClientScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Cloud,
+                    imageVector = Icons.Default.Sensors,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                 )
@@ -84,10 +81,10 @@ fun OshClientScreen(
                     modifier = Modifier.padding(top = OshSpacing.md),
                 )
                 OutlinedButton(
-                    onClick = onNavigateToSettings,
+                    onClick = onNavigateToNodeManager,
                     modifier = Modifier.padding(top = OshSpacing.md),
                 ) {
-                    Text(stringResource(R.string.action_settings))
+                    Text(stringResource(R.string.node_manager_title))
                 }
             }
         } else {

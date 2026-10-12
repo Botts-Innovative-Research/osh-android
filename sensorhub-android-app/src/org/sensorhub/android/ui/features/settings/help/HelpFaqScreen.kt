@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.help
+package org.sensorhub.android.ui.features.settings.help
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize

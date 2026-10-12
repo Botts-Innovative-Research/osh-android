@@ -11,6 +11,7 @@ sealed class Screen(val route: String) {
             "fullscreen_map_screen/${Uri.encode(profileId)}/${Uri.encode(systemId)}/${Uri.encode(streamId)}"
     }
     object Client : Screen("client_screen")
+    object Node : Screen("node_screen")
     object SystemDetail : Screen("system_detail_screen/{profileId}/{systemId}") {
         fun createRoute(profileId: String, systemId: String): String {
             return "system_detail_screen/${Uri.encode(profileId)}/${Uri.encode(systemId)}"
@@ -18,8 +19,8 @@ sealed class Screen(val route: String) {
     }
     object Sensors : Screen("sensors_screen")
     object ServerProfiles : Screen("server_profiles_screen")
+    object OnDeviceNode : Screen("on_device_node_screen")
     object HelpFaq : Screen("help_faq_screen")
-    object AppPreferences : Screen("app_prefs_screen")
     object ServerForm : Screen("server_form_screen/{profileId}") {
         fun createRoute(profileId: String? = null): String {
             return "server_form_screen/${profileId ?: "new"}"

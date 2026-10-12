@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.client
+package org.sensorhub.android.ui.features.client.visualizations
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

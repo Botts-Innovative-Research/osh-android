@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.help
+package org.sensorhub.android.ui.features.settings.help
 
 sealed class FaqItem {
     data class Header(val title: String) : FaqItem()

@@ -13,15 +13,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.SensorHubViewModel
-import org.sensorhub.android.ui.features.client.FullscreenMap
+import org.sensorhub.android.ui.features.client.visualizations.FullscreenMap
 import org.sensorhub.android.ui.features.client.OshClientScreen
 import org.sensorhub.android.ui.features.client.OshClientViewModel
 import org.sensorhub.android.ui.features.client.SystemDetailRoute
 import org.sensorhub.android.ui.features.dashboard.DashboardRoute
-import org.sensorhub.android.ui.features.help.FaqItem
-import org.sensorhub.android.ui.features.help.HelpFaqScreen
+import org.sensorhub.android.ui.features.settings.help.FaqItem
+import org.sensorhub.android.ui.features.settings.help.HelpFaqScreen
 import org.sensorhub.android.ui.features.maps.MapScreen
-import org.sensorhub.android.ui.features.preferences.AppPreferencesScreen
+import org.sensorhub.android.ui.features.nodes.NodeScreen
+import org.sensorhub.android.ui.features.nodes.ondevice.OnDeviceNodeScreen
 import org.sensorhub.android.ui.features.sensors.SensorsScreen
 import org.sensorhub.android.ui.features.servers.ServerFormScreen
 import org.sensorhub.android.ui.features.servers.ServerProfilesScreen
@@ -39,25 +40,66 @@ fun OSHNavHost(
         startDestination = Screen.Dashboard.route,
         modifier = modifier
     ) {
+
+        // settings
+        composable(Screen.Settings.route) {
+            val context = LocalContext.current
+            SettingsScreen(
+                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
+                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.HelpFaq.route) {
+            val context = LocalContext.current
+            val questions = context.resources.getStringArray(R.array.faq_questions)
+            val answers = context.resources.getStringArray(R.array.faq_answers)
+            val categories = context.resources.getStringArray(R.array.faq_categories)
+
+            val faqItems = buildFaqItems(questions, answers, categories)
+
+            HelpFaqScreen(
+                items = faqItems,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         composable(Screen.Dashboard.route) {
             DashboardRoute(
                 viewModel = hubViewModel,
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
             )
         }
+
+        composable(Screen.Sensors.route) {
+            SensorsScreen(
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
+            )
+        }
+
         composable(Screen.Map.route) {
             MapScreen(
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
                 tracks = clientViewModel.tracks,
             )
         }
+
+        composable(Screen.Node.route) {
+            NodeScreen(
+                onNavigateToVisualizations = { navController.navigate(Screen.Client.route) { launchSingleTop = true } },
+                onNavigateToNodes = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
+            )
+        }
+
+        // visualizations
         composable(Screen.Client.route) {
             OshClientScreen(
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
+                onNavigateToNodeManager = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
                 onOpenSystem = { profileId, systemId ->
                     navController.navigate(Screen.SystemDetail.createRoute(profileId, systemId))
                 },
                 viewModel = clientViewModel,
+                onBackClick = { navController.popBackStack() },
             )
         }
         composable(
@@ -81,60 +123,6 @@ fun OSHNavHost(
                 viewModel = clientViewModel,
             )
         }
-        composable(Screen.Sensors.route) {
-            SensorsScreen(
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }
-            )
-        }
-
-        composable(Screen.Settings.route) {
-            SettingsScreen(
-                onBackClick = { navController.popBackStack() },
-                onNavigateToPreferences = { navController.navigate(Screen.AppPreferences.route) },
-                onNavigateToProfiles = { navController.navigate(Screen.ServerProfiles.route) }
-            )
-        }
-
-        composable(Screen.AppPreferences.route) {
-            val context = LocalContext.current
-            AppPreferencesScreen(
-                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
-                onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) },
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-
-        composable(Screen.HelpFaq.route) {
-            val context = LocalContext.current
-            val questions = context.resources.getStringArray(R.array.faq_questions)
-            val answers = context.resources.getStringArray(R.array.faq_answers)
-            val categories = context.resources.getStringArray(R.array.faq_categories)
-
-            val faqItems = buildFaqItems(questions, answers, categories)
-
-            HelpFaqScreen(
-                items = faqItems,
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-        composable(Screen.ServerProfiles.route) {
-            ServerProfilesScreen(
-                onBackClick = { navController.popBackStack() },
-                navController = navController
-            )
-        }
-
-        composable(
-            route = Screen.ServerForm.route,
-            arguments = listOf(navArgument("profileId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val profileId = backStackEntry.arguments?.getString("profileId")
-            ServerFormScreen(
-                onBackClick = { navController.popBackStack() },
-                profileId = profileId
-            )
-        }
-
         composable(
             route = Screen.FullscreenMap.route,
             arguments = listOf(
@@ -152,6 +140,28 @@ fun OSHNavHost(
             )
         }
 
+
+        // node manager
+        composable(Screen.ServerProfiles.route) {
+            ServerProfilesScreen(
+                onBackClick = { navController.popBackStack() },
+                onOpenThisDevice = { navController.navigate(Screen.OnDeviceNode.route) },
+                navController = navController
+            )
+        }
+        composable(Screen.OnDeviceNode.route) {
+            OnDeviceNodeScreen(onBackClick = { navController.popBackStack() })
+        }
+        composable(
+            route = Screen.ServerForm.route,
+            arguments = listOf(navArgument("profileId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getString("profileId")
+            ServerFormScreen(
+                onBackClick = { navController.popBackStack() },
+                profileId = profileId
+            )
+        }
     }
 }
 

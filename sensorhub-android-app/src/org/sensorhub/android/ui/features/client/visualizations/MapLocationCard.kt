@@ -1,5 +1,6 @@
-package org.sensorhub.android.ui.features.client
+package org.sensorhub.android.ui.features.client.visualizations
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -115,7 +116,7 @@ fun LocationMap(
     val mapView = remember(context) {
         Configuration.getInstance().load(
             context,
-            context.getSharedPreferences("osmdroid", android.content.Context.MODE_PRIVATE)
+            context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
         )
         Configuration.getInstance().userAgentValue = context.packageName
         MapView(context).apply {

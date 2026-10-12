@@ -25,7 +25,7 @@ fun OSHApp(hubViewModel: SensorHubViewModel = androidx.lifecycle.viewmodel.compo
         Screen.Dashboard.route,
         Screen.Sensors.route,
         Screen.Map.route,
-        Screen.Client.route,
+        Screen.Node.route,
     )
     val backStackEntry by navController.currentBackStackEntryAsState()
     val showBottomNav = backStackEntry?.destination?.route in bottomNavRoutes

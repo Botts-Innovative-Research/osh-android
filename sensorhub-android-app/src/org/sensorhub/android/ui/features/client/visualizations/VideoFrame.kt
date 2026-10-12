@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.client
+package org.sensorhub.android.ui.features.client.visualizations
 
 import android.view.TextureView
 import androidx.compose.runtime.Composable

@@ -1,6 +1,5 @@
 package org.sensorhub.android.ui.features.servers
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,7 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +34,7 @@ import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
 import org.sensorhub.android.ui.components.OSHActionCard
 import org.sensorhub.android.ui.components.OSHAddFAB
 import org.sensorhub.android.ui.components.OSHAlertDialog
+import org.sensorhub.android.ui.components.OSHEditActionCard
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.navigation.Screen
 import org.sensorhub.android.ui.theme.OSHTheme
@@ -42,6 +42,7 @@ import org.sensorhub.android.ui.theme.OSHTheme
 @Composable
 fun ServerProfilesScreen(
     onBackClick: () -> Unit,
+    onOpenThisDevice: () -> Unit,
     navController: NavController = rememberNavController(),
     viewModel: ServerProfilesViewModel = viewModel()
 ) {
@@ -86,26 +87,38 @@ fun ServerProfilesScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        if (profiles.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.empty_server_profiles),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 88.dp)
+        ) {
+            item(key = "this-device") {
+                OSHEditActionCard(
+                    title = stringResource(R.string.this_device),
+                    subtitle = stringResource(R.string.this_device_summary),
+                    onClick = onOpenThisDevice,
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = stringResource(R.string.content_desc_open_this_device),
                 )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(top = 16.dp, bottom = 88.dp)
-            ) {
+            item(key = "remote-nodes-heading") {
+                Text(
+                    text = stringResource(R.string.remote_nodes),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                )
+            }
+            if (profiles.isEmpty()) {
+                item(key = "empty-remote-nodes") {
+                    Text(
+                        text = stringResource(R.string.empty_server_profiles),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+            } else {
                 items(profiles, key = { it.id }) { item ->
                     OSHActionCard(
                         title = item.serverName,
@@ -128,7 +141,8 @@ fun ServerProfilesScreen(
 private fun ServerProfilesScreenPreview() {
     OSHTheme {
         ServerProfilesScreen(
-            onBackClick = {}
+            onBackClick = {},
+            onOpenThisDevice = {},
         )
     }
 }

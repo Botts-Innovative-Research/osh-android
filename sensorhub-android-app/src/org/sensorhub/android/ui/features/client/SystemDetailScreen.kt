@@ -28,6 +28,11 @@ import org.sensorhub.android.ui.features.client.data.StreamCardState
 import org.sensorhub.android.ui.features.client.data.StreamStatus
 import org.sensorhub.android.ui.features.client.data.SystemDetailUiState
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
+import org.sensorhub.android.ui.features.client.visualizations.MapLocationCard
+import org.sensorhub.android.ui.features.client.visualizations.OtherStreamCard
+import org.sensorhub.android.ui.features.client.visualizations.PtzCommandCard
+import org.sensorhub.android.ui.features.client.visualizations.VideoStream
+import org.sensorhub.android.ui.features.client.visualizations.VideoStreamCard
 import org.sensorhub.android.ui.theme.OshDimensions
 
 @Composable

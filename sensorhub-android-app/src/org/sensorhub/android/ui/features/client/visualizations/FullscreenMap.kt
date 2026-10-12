@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.client
+package org.sensorhub.android.ui.features.client.visualizations
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +18,7 @@ import org.sensorhub.android.ui.features.client.data.RemoteVisualization
 import org.sensorhub.android.ui.features.client.data.StreamCardState
 import org.sensorhub.android.ui.features.client.data.SystemDetailUiState
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
+import org.sensorhub.android.ui.features.client.OshClientViewModel
 
 @Composable
 fun FullscreenMap(

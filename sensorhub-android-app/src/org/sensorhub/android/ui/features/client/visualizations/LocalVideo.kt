@@ -1,8 +1,9 @@
-package org.sensorhub.android.ui.features.client
+package org.sensorhub.android.ui.features.client.visualizations
 
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.view.Surface
@@ -37,7 +38,7 @@ class VideoStream(
     fun attach(view: TextureView) {
         view.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
             override fun onSurfaceTextureAvailable(
-                st: android.graphics.SurfaceTexture,
+                st: SurfaceTexture,
                 w: Int,
                 h: Int
             ) {
@@ -45,16 +46,16 @@ class VideoStream(
             }
 
             override fun onSurfaceTextureSizeChanged(
-                st: android.graphics.SurfaceTexture,
+                st: SurfaceTexture,
                 w: Int,
                 h: Int
             ) = Unit
 
-            override fun onSurfaceTextureDestroyed(st: android.graphics.SurfaceTexture): Boolean {
+            override fun onSurfaceTextureDestroyed(st: SurfaceTexture): Boolean {
                 disconnect(); return true
             }
 
-            override fun onSurfaceTextureUpdated(st: android.graphics.SurfaceTexture) = Unit
+            override fun onSurfaceTextureUpdated(st: SurfaceTexture) = Unit
         }
         if (view.isAvailable) {
             surface?.release()

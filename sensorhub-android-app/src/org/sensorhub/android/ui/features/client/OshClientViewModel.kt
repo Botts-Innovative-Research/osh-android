@@ -32,6 +32,7 @@ import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
 import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
 import org.sensorhub.android.ui.features.servers.data.requireHttpsUrl
 import org.sensorhub.android.UnsafeTls
+import org.sensorhub.android.ui.features.client.visualizations.VideoStream
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -147,6 +148,9 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     fun setProfileVisible(profileId: String, visible: Boolean) {
         _visibleProfileIds.update { selected ->
             if (visible) selected + profileId else selected - profileId
+        }
+        if (visible && _nodes.value.firstOrNull { it.profileId == profileId }?.systems.isNullOrEmpty()) {
+            discover(profileId)
         }
     }
 

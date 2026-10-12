@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.settings.data
+package org.sensorhub.android.ui.features.nodes.ondevice
 
 import android.content.SharedPreferences
 
