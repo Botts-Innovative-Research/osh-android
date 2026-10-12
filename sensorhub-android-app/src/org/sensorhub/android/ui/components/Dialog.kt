@@ -3,6 +3,7 @@ package org.sensorhub.android.ui.components
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -135,7 +136,8 @@ fun OSHTextInputDialog(
     dialogText: String,
     icon: ImageVector,
     initialValue: String = "",
-    placeholder: String = ""
+    placeholder: String = "",
+    additionalContent: @Composable ColumnScope.() -> Unit = {},
 ) {
     var textValue by rememberSaveable(initialValue) { mutableStateOf(initialValue) }
 
@@ -171,6 +173,7 @@ fun OSHTextInputDialog(
                         cursorColor = MaterialTheme.colorScheme.primary,
                     )
                 )
+                additionalContent()
             }
         },
         onDismissRequest = { onDismissRequest() },

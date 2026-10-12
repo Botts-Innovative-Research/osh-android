@@ -400,6 +400,10 @@
     <string name="content_desc_open_this_device">Open this device node</string>
     <string name="local_services">Services</string>
     <string name="ip_address_unavailable">Unavailable</string>
+    <string name="ui_streaming_configuration">Streaming configuration</string>
+    <string name="ui_sensors_enabled_count">%1$d sensors enabled</string>
+    <string name="ui_no_sensors_enabled">No sensors enabled</string>
+    <string name="ui_more_sensors">+%1$d more</string>
     <string name="msg_delete_server">Remove \"%s\"?</string>
 
     <!-- Edit Node -->

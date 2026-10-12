@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -54,6 +55,9 @@ import org.sensorhub.api.module.ModuleEvent.ModuleState
 fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val enabledSensorNames = SensorRegistry.enabledSensorEntries(
+        PreferenceManager.getDefaultSharedPreferences(context)
+    ).map { context.getString(it.nameRes) }
     val permissions = permissionsForEnabledSensors(context)
     fun permissionsGranted() = permissions.all {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
@@ -71,6 +75,7 @@ fun DashboardRoute(onNavigateToSettings: () -> Unit, viewModel: SensorHubViewMod
         onRunNameChange = viewModel::setRunName,
         onStart = { if (permissionsGranted()) viewModel.startHub() else launcher.launch(permissions) },
         onStop = viewModel::stopHub,
+        enabledSensorNames = enabledSensorNames,
     )
 }
 
@@ -86,6 +91,7 @@ fun DashboardScreen(
     onRunNameChange: (String) -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    enabledSensorNames: List<String> = emptyList(),
 ) {
     var showRunNameDialog by rememberSaveable { mutableStateOf(false) }
     var runNameDraft by rememberSaveable { mutableStateOf("") }
@@ -110,7 +116,25 @@ fun DashboardScreen(
             },
             icon = Icons.Default.PlayCircleFilled,
             initialValue = runNameDraft,
-            placeholder = stringResource(R.string.ui_run_name_placeholder)
+            placeholder = stringResource(R.string.ui_run_name_placeholder),
+            additionalContent = {
+                Spacer(modifier = Modifier.padding(top = OshSpacing.sm))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Text(
+                    text = stringResource(R.string.ui_streaming_configuration),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(top = OshSpacing.md),
+                )
+                Text(
+                    text = if (enabledSensorNames.isEmpty()) {
+                        stringResource(R.string.ui_no_sensors_enabled)
+                    } else {
+                        stringResource(R.string.ui_sensors_enabled_count, enabledSensorNames.size)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = OshSpacing.xs),
+                )
+            },
         )
     }
     Scaffold(topBar = {
