@@ -109,8 +109,8 @@ fun DashboardScreen(
             onDismissRequest = { showRunNameDialog = false },
             dialogTitle = stringResource(R.string.ui_start_streaming_title),
             dialogText = stringResource(R.string.ui_run_name),
-            onConfirmation = {
-                onRunNameChange(runNameDraft.trim())
+            onConfirmation = { runName ->
+                onRunNameChange(runName.trim())
                 showRunNameDialog = false
                 onStart()
             },
