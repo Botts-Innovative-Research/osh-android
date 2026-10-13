@@ -158,6 +158,9 @@ fun OSHEditActionCard(
 
     OSHCard(
         modifier = cardModifier
+            .fillMaxWidth()
+            .padding(horizontal = OshDimensions.screenHorizontal, vertical = OshDimensions.cardOuterVertical)
+
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
