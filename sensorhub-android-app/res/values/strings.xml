@@ -411,6 +411,7 @@
     <string name="hint_host_ip">Host / IP</string>
     <string name="hint_port">Port</string>
     <string name="hint_endpoint_path">Endpoint path</string>
+    <string name="default_endpoint_path" translatable="false">/sensorhub/api</string>
     <string name="switch_enable_tls">Enable TLS</string>
     <string name="switch_disable_ssl">Disable SSL Validation</string>
     <string name="disable_ssl_description">Accept certificates and hostnames that Android cannot verify.</string>

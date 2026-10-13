@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/sensor_group_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="?attr/selectableItemBackground">
+
+        <ImageView
+            android:id="@+id/sensor_group_arrow"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/md_theme_onSurfaceVariant"
+            android:scaleType="centerInside" />
+
+        <TextView
+            android:id="@+id/sensor_group_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/md_theme_onSurface"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-medium" />
+        <View
+            android:id="@+id/server_status_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/ic_circle" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sensor_group_streams"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+</LinearLayout>
