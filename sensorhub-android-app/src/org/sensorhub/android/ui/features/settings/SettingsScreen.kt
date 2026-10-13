@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LineWeight
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +42,7 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     onNavigateToHelpFaq: () -> Unit,
     onNavigateToRepo: () -> Unit,
+    onExportLogs: () -> Unit,
     viewModel: SettingsViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
