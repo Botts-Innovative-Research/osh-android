@@ -160,7 +160,7 @@ class SensorHubConfigFactory(
             config.add(discoveryServiceConfig)
         }
 
-        return SensorHubConfiguration(config, deviceID, sensorsConfig.enableCamera)
+        return SensorHubConfiguration(config, deviceID, runName, sensorsConfig.enableCamera)
     }
 
     private fun addSosTConfig(
@@ -231,6 +231,7 @@ class SensorHubConfigFactory(
 data class SensorHubConfiguration(
     val modules: IModuleConfigRepository,
     val deviceId: String,
+    val runName: String?,
     val cameraEnabled: Boolean,
 )
 

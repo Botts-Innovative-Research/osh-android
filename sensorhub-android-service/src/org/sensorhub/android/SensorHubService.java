@@ -26,6 +26,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
 
 import org.sensorhub.api.common.SensorHubException;
+import org.sensorhub.api.database.IObsSystemDatabase;
 import org.sensorhub.api.module.IModuleConfigRepository;
 import org.sensorhub.impl.SensorHub;
 import org.sensorhub.impl.SensorHubConfig;
@@ -175,7 +176,8 @@ public class SensorHubService extends Service
         startForeground(NOTIFICATION_ID, notification);
     }
 
-    public synchronized void startSensorHub(final IModuleConfigRepository config, final boolean hasVideo)
+    public synchronized void startSensorHub(final IModuleConfigRepository config, final String deviceId,
+                                            final String runName, final boolean hasVideo)
     {
         Log.i(ANDROID_LOG_TAG, "SensorHub start requested; video=" + hasVideo);
         if (hubState == HubState.STARTING || hubState == HubState.RUNNING || hubState == HubState.STOPPING) {
