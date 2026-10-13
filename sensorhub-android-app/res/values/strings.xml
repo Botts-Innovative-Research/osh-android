@@ -339,6 +339,7 @@
     <string name="title_version">Version</string>
     <string name="title_about">About application</string>
     <string name="github_repo">GitHub repository</string>
+    <string name="export_logs">Export Logs</string>
     <string name="title_help_faq">Help / FAQ</string>
     <string name="title_language_dialog">Language</string>
     <string name="title_theme">Theme</string>

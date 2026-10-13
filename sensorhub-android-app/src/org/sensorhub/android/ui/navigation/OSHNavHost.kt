@@ -47,6 +47,7 @@ fun OSHNavHost(
             SettingsScreen(
                 onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
                 onNavigateToRepo = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/botts-innovative-research/osh-android".toUri())) },
+                onExportLogs = {},
                 onBackClick = { navController.popBackStack() }
             )
         }

@@ -12,7 +12,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +30,7 @@ import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
+import org.sensorhub.android.ui.components.OSHInfoRow
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.OSHTheme
@@ -70,16 +73,6 @@ fun SettingsScreen(
         )
     }
 
-    var showAbout by rememberSaveable { mutableStateOf(false) }
-    if (showAbout) {
-        OSHAlertDialogWithoutDismiss(
-            onConfirmation = { showAbout = false },
-            dialogText = stringResource(R.string.about_description),
-            dialogTitle = stringResource(R.string.app_name),
-            icon = Icons.Filled.Info
-        )
-    }
-
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
@@ -112,6 +105,29 @@ fun SettingsScreen(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.title_about),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+            OSHCard(
+                Modifier
+                    .padding(horizontal = OshDimensions.screenHorizontal)
+            ) {
+                OSHInfoRow(
+                    label = stringResource(R.string.title_version),
+                    value = state.appVersion
+                )
+                OSHClickableRowWithIcon(
+                    title = stringResource(R.string.github_repo),
+                    imageVector = Icons.Default.Link,
+                    contentDescription = stringResource(R.string.github_repo),
+                    onClick = onNavigateToRepo
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
             OSHCard(
                 Modifier
                     .padding(horizontal = OshDimensions.screenHorizontal)
@@ -122,17 +138,18 @@ fun SettingsScreen(
                     contentDescription = stringResource(R.string.title_help_faq),
                     onClick = onNavigateToHelpFaq
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            OSHCard(
+                Modifier
+                    .padding(horizontal = OshDimensions.screenHorizontal)
+            ) {
                 OSHClickableRowWithIcon(
-                    title = stringResource(R.string.title_about),
-                    imageVector = Icons.Default.Info,
-                    contentDescription = stringResource(R.string.title_about),
-                    onClick = { showAbout = true }
-                )
-                OSHClickableRowWithIcon(
-                    title = stringResource(R.string.github_repo),
-                    imageVector = Icons.Default.Link,
-                    contentDescription = stringResource(R.string.github_repo),
-                    onClick = onNavigateToRepo
+                    title = stringResource(R.string.export_logs),
+                    imageVector = Icons.Default.LineWeight,
+                    contentDescription = stringResource(R.string.export_logs),
+                    onClick = onExportLogs
                 )
             }
         }
@@ -143,6 +160,6 @@ fun SettingsScreen(
 @Composable
 private fun SettingsScreenPreview() {
     OSHTheme {
-        SettingsScreen({}, {}, {})
+        SettingsScreen({}, {}, {}, {})
     }
 }
