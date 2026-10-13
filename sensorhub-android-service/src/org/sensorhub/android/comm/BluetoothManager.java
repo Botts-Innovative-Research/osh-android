@@ -94,7 +94,7 @@ public class BluetoothManager
                     }
                 }
             }
-        }, filter, Context.RECEIVER_EXPORTED);
+        }, filter, Context.RECEIVER_EXPORTED); // Don't forget to unregister during onDestroy
 
         // Getting the Bluetooth adapter
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();

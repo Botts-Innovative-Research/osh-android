@@ -33,8 +33,7 @@ def repos = [
                 'processing/sensorhub-process-vecmath',
                 'processing/sensorhub-process-geoloc',
                 'services/sensorhub-service-discovery',
-                'util/sensorhub-lib-rules-engine',
-
+                'util/sensorhub-lib-rules-engine'
         ]
 ]
 

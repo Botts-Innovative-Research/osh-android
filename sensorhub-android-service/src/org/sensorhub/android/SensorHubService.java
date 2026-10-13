@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.ctc.wstx.stax.WstxInputFactory;
 import com.ctc.wstx.stax.WstxOutputFactory;
@@ -36,12 +37,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class SensorHubService extends Service
 {
+    private static final String ANDROID_LOG_TAG = "SensorHubStartup";
     private static final Logger log = LoggerFactory.getLogger(SensorHubService.class);
     final IBinder binder = new LocalBinder();
     private HandlerThread msgThread;
     private Handler msgHandler;
-    SensorHubAndroid sensorhub;
-    boolean hasVideo;
+    volatile SensorHubAndroid sensorhub;
+    volatile boolean hasVideo;
+    public enum HubState { STOPPED, STARTING, RUNNING, STOPPING, ERROR }
+    private volatile HubState hubState = HubState.STOPPED;
+    public HubState getHubState() { return hubState; }
     private static Context appContext;
     private static SurfaceTexture videoTex;
 
@@ -55,7 +60,7 @@ public class SensorHubService extends Service
     private LocationListener locationListener;
 
     public class LocalBinder extends Binder {
-        SensorHubService getService() {
+        public SensorHubService getService() {
             return SensorHubService.this;
         }
     }
@@ -66,6 +71,7 @@ public class SensorHubService extends Service
 
         try
         {
+            log.info("Initializing SensorHub Android service");
             SensorHubService.appContext = getApplicationContext();
 
             SensorHubService.videoTex = new SurfaceTexture(1);
@@ -89,10 +95,11 @@ public class SensorHubService extends Service
             msgHandler = new Handler(msgThread.getLooper());
 
             startForegroundService();
+            log.info("SensorHub Android service initialized");
         }
         catch (Exception e)
         {
-            log.error("Error: " + e.getMessage());
+            Log.e(ANDROID_LOG_TAG, "SensorHub Android service initialization failed", e);
         }
     }
 
@@ -122,7 +129,7 @@ public class SensorHubService extends Service
         Intent notificationIntent = new Intent();
         notificationIntent.setClassName(
                 getApplicationContext(),
-                "org.sensorhub.android.MainActivity"
+                "org.sensorhub.android.ComposeMainActivity"
         );
 
         PendingIntent pendingIntent;
@@ -146,6 +153,7 @@ public class SensorHubService extends Service
         Notification notification;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notification = new Notification.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.stat_notify_sync)
                     .setContentTitle("SensorHub Running")
                     .setContentText("Collecting and transmitting sensor data")
                     .setContentIntent(pendingIntent)
@@ -154,6 +162,7 @@ public class SensorHubService extends Service
                     .build();
         } else {
             notification = new Notification.Builder(this)
+                    .setSmallIcon(android.R.drawable.stat_notify_sync)
                     .setContentTitle("SensorHub Running")
                     .setContentText("Collecting and transmitting sensor data")
                     .setContentIntent(pendingIntent)
@@ -168,8 +177,13 @@ public class SensorHubService extends Service
 
     public synchronized void startSensorHub(final IModuleConfigRepository config, final boolean hasVideo)
     {
-        if (sensorhub != null)
+        Log.i(ANDROID_LOG_TAG, "SensorHub start requested; video=" + hasVideo);
+        if (hubState == HubState.STARTING || hubState == HubState.RUNNING || hubState == HubState.STOPPING) {
+            log.warn("Ignoring SensorHub start request while hub is {}", hubState);
             return;
+        }
+        log.info("Starting SensorHub (video enabled: {})", hasVideo);
+        hubState = HubState.STARTING;
 
         this.hasVideo = hasVideo;
 
@@ -181,24 +195,40 @@ public class SensorHubService extends Service
             videoTex.detachFromGLContext();
         }
 
-        acquireWakeLocks();
-        startForegroundService();
+        try {
+            acquireWakeLocks();
+            startForegroundService();
+            if (msgHandler == null)
+                throw new IllegalStateException("SensorHub service did not initialize");
+        } catch (RuntimeException e) {
+            hubState = HubState.ERROR;
+            this.hasVideo = false;
+            releaseWakeLocks();
+            Log.e(ANDROID_LOG_TAG, "SensorHub startup failed before background initialization", e);
+            throw e;
+        }
 
         msgHandler.post(new Runnable() {
             public void run() {
-                sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
                 try {
+                    Log.i(ANDROID_LOG_TAG, "Creating and starting SensorHub modules");
+                    log.info("Creating SensorHub instance");
+                    sensorhub = new SensorHubAndroid(new SensorHubConfig(), config);
+                    log.info("Starting SensorHub modules");
                     sensorhub.start();
-                } catch (SensorHubException e) {
-                    log.error("Error starting SensorHub: " + e.getMessage());
+                    hubState = HubState.RUNNING;
+                    log.info("SensorHub started successfully");
+                } catch (Throwable e) {
+                    Log.e(ANDROID_LOG_TAG, "SensorHub startup failed", e);
                     try {
-                        sensorhub.stop();
-                    } catch (Exception ex) {
-                        log.error("Error stopping failed SensorHub", ex);
+                        if (sensorhub != null) sensorhub.stop();
+                    } catch (Throwable ex) {
+                        Log.e(ANDROID_LOG_TAG, "Error stopping failed SensorHub", ex);
                     }
                     sensorhub = null;
                     SensorHubService.this.hasVideo = false;
                     releaseWakeLocks();
+                    hubState = HubState.ERROR;
                 }
             }
         });
@@ -212,7 +242,7 @@ public class SensorHubService extends Service
                     PowerManager.PARTIAL_WAKE_LOCK,
                     "SensorHub::DataCollection"
             );
-            wakeLock.acquire(10000);
+            wakeLock.acquire();
         }
 
         // Acquire WiFi lock to keep WiFi active
@@ -243,6 +273,7 @@ public class SensorHubService extends Service
 
     public synchronized void stopSensorHub()
     {
+        hubState = HubState.STOPPING;
         msgHandler.post(() -> {
             if (sensorhub != null) {
                 try {
@@ -252,6 +283,7 @@ public class SensorHubService extends Service
                 }
                 sensorhub = null;
             }
+            hubState = HubState.STOPPED;
         });
 
         this.hasVideo = false;

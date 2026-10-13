@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ master, dev, ci-cd ]
+    branches: [ master, dev ]
     tags: [ 'v*' ]
   pull_request:
     branches: [ master, dev ]
@@ -31,7 +31,7 @@ jobs:
       - name: Build APK
         run: |
           chmod +x ./gradlew
-          ./gradlew build -x test -x osgi -x lintDebug -x javadoc
+          ./gradlew build -x test
 
 #      - name: Upload APK artifact
 #        uses: actions/upload-artifact@v4
