@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -177,8 +176,7 @@ private fun ClientNodeCard(
             .padding(
                 horizontal = OshDimensions.screenHorizontal,
                 vertical = OshDimensions.cardOuterVertical,
-            )
-            .alpha(if (node.enabled) 1f else 0.55f),
+            ),
     ) {
         Column {
             OSHClickableStatusRowWithIcon(
@@ -187,7 +185,6 @@ private fun ClientNodeCard(
                 contentDescription = stringResource(R.string.content_desc_server),
                 subtitle = node.endpointUrl,
                 summary = when {
-                    !node.enabled -> stringResource(R.string.client_node_disabled)
                     node.loading -> stringResource(R.string.client_discovering_systems)
                     node.error != null -> node.error
                     node.systems.isEmpty() -> stringResource(R.string.client_tap_to_discover)

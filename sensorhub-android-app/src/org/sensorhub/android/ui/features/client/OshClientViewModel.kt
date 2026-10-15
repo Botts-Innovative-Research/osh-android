@@ -129,20 +129,16 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         val configuredProfiles = profiles.all
         val currentNodes = _nodes.value.associateBy { it.profileId }
 
-        _nodes.value = configuredProfiles
-            .sortedByDescending { it.enabled }
-            .map { profile ->
-                currentNodes[profile.id]?.copy(
-                    name = profile.serverName,
-                    endpointUrl = profile.endpointUrl,
-                    enabled = profile.enabled,
-                ) ?: RemoteNodeState(
-                    profileId = profile.id,
-                    name = profile.serverName,
-                    endpointUrl = profile.endpointUrl,
-                    enabled = profile.enabled,
-                )
-            }
+        _nodes.value = configuredProfiles.map { profile ->
+            currentNodes[profile.id]?.copy(
+                name = profile.serverName,
+                endpointUrl = profile.endpointUrl,
+            ) ?: RemoteNodeState(
+                profileId = profile.id,
+                name = profile.serverName,
+                endpointUrl = profile.endpointUrl,
+            )
+        }
     }
 
     fun discover(profileId: String) {

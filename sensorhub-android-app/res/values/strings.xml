@@ -395,7 +395,7 @@
     <string name="title_delete_server">Delete Server</string>
     <string name="title_server_profiles">Node Manager</string>
     <string name="node_manager_title">Node Manager</string>
-    <string name="visualizations_title">Client Visualizations</string>
+    <string name="visualizations_title">Visualizations</string>
     <string name="this_device">This Device</string>
     <string name="this_device_summary">Local services and connection details</string>
     <string name="remote_nodes">Remote Nodes</string>
@@ -626,7 +626,6 @@
     <string name="client_discovering_systems">Discovering systems</string>
     <string name="client_tap_to_discover">Tap to discover systems</string>
     <string name="client_systems_discovered">%1$d systems discovered</string>
-    <string name="client_node_disabled">Disabled</string>
     <string name="client_systems_title">Systems</string>
     <string name="client_no_systems">No systems found for this node.</string>
     <string name="client_retry">Retry</string>
