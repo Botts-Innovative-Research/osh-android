@@ -6,8 +6,9 @@
     <string name="system_detail_datastream">Datastream</string>
     <string name="system_detail_location">Location</string>
     <string name="system_detail_video">Video</string>
-    <string name="system_detail_ptz_controls">PTZ controls</string>
+    <string name="system_detail_ptz_controls">PTZ Controls</string>
     <string name="system_detail_absolute_position">Absolute position</string>
+    <string name="system_detail_relative_controls">Relative controls</string>
     <string name="system_detail_pan">Pan</string>
     <string name="system_detail_tilt">Tilt</string>
     <string name="system_detail_zoom">Zoom</string>
@@ -21,6 +22,7 @@
     <string name="system_detail_tilt_up">Tilt up</string>
     <string name="system_detail_tilt_down">Tilt down</string>
     <string name="system_detail_pan_left">Pan left</string>
+    <string name="system_detail_home">Home Preset</string>
     <string name="system_detail_pan_right">Pan right</string>
     <string name="system_detail_zoom_out">Zoom out</string>
     <string name="system_detail_zoom_in">Zoom in</string>
