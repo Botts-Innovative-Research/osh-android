@@ -28,7 +28,7 @@ import org.sensorhub.android.config.SensorHubConfigFactory
 import org.sensorhub.android.ui.features.sensors.data.SensorBinding
 import org.sensorhub.android.ui.features.sensors.data.SensorRegistry
 import org.sensorhub.android.ui.features.sensors.data.SensorUiEntry
-import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileRepository
 import org.sensorhub.android.ui.features.nodes.ondevice.LocalServiceSettings
 import org.sensorhub.android.ui.features.dashboard.SensorCardReader
 import org.sensorhub.android.ui.features.dashboard.SensorCardUi

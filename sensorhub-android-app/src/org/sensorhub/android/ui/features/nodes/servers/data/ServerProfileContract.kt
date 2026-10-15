@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers.data
+package org.sensorhub.android.ui.features.nodes.servers.data
 
 import org.json.JSONObject
 import java.util.UUID
