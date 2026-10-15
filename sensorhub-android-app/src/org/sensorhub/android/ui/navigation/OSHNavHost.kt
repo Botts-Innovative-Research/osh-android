@@ -24,8 +24,8 @@ import org.sensorhub.android.ui.features.maps.MapScreen
 import org.sensorhub.android.ui.features.nodes.NodeScreen
 import org.sensorhub.android.ui.features.nodes.ondevice.OnDeviceNodeScreen
 import org.sensorhub.android.ui.features.sensors.SensorsScreen
-import org.sensorhub.android.ui.features.servers.ServerFormScreen
-import org.sensorhub.android.ui.features.servers.ServerProfilesScreen
+import org.sensorhub.android.ui.features.nodes.servers.ServerFormScreen
+import org.sensorhub.android.ui.features.nodes.servers.ServerProfilesScreen
 import org.sensorhub.android.ui.features.settings.SettingsScreen
 
 @Composable
@@ -88,6 +88,7 @@ fun OSHNavHost(
             NodeScreen(
                 onNavigateToVisualizations = { navController.navigate(Screen.Client.route) { launchSingleTop = true } },
                 onNavigateToNodes = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } },
             )
         }
 

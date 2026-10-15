@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers
+package org.sensorhub.android.ui.features.nodes.servers
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileItem
 import org.sensorhub.android.ui.components.OSHActionCard
 import org.sensorhub.android.ui.components.OSHAddFAB
 import org.sensorhub.android.ui.components.OSHAlertDialog

@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers
+package org.sensorhub.android.ui.features.nodes.servers
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -11,11 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.sensorhub.android.R
-import org.sensorhub.android.ui.features.servers.data.ServerConnectionTester
-import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
-import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
-import org.sensorhub.android.ui.features.servers.data.serverUrlError
-import org.sensorhub.android.ui.features.servers.data.requireHttpsUrl
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerConnectionTester
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.nodes.servers.data.serverUrlError
+import org.sensorhub.android.ui.features.nodes.servers.data.requireHttpsUrl
 
 class ServerFormViewModel(application: Application) : AndroidViewModel(application) {
 

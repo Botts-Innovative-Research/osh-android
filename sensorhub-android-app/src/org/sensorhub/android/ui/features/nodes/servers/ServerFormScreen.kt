@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers
+package org.sensorhub.android.ui.features.nodes.servers
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

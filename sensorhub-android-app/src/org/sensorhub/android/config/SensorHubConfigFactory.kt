@@ -16,9 +16,9 @@ import org.sensorhub.android.InsecureSOSTClient
 import org.sensorhub.android.OkHttpClientWrapper
 import org.sensorhub.android.ui.features.sensors.data.SensorRegistry
 import org.sensorhub.android.ui.features.sensors.data.SensorRuntimeConfiguration
-import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
-import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
-import org.sensorhub.android.ui.features.servers.data.serverUrlError
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.nodes.servers.data.serverUrlError
 import org.sensorhub.api.module.IModuleConfigRepository
 import org.sensorhub.api.sensor.SensorConfig
 import org.sensorhub.impl.client.sost.SOSTClientConfig
