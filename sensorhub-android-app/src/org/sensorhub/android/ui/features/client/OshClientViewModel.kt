@@ -2,6 +2,8 @@ package org.sensorhub.android.ui.features.client
 
 import android.app.Application
 import android.util.Base64
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -551,13 +553,16 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         params: Map<String, Any>
     ) {
         val profile = profiles.getById(profileId) ?: return
+
         viewModelScope.launch {
             runCatching {
                 withContext(Dispatchers.IO) {
                     postCommand(controlStream.controlStreamId, params, profile)
                 }
             }
-                .onFailure { /* surface to a _commandError flow if you want UI feedback */ }
+                .onFailure { error ->
+                    Toast.makeText(getApplication<Application>(), "Command Failed: ${error.message ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 
