@@ -28,9 +28,9 @@ import org.sensorhub.android.ui.features.client.data.StreamCardState
 import org.sensorhub.android.ui.features.client.data.StreamStatus
 import org.sensorhub.android.ui.features.client.data.SystemDetailUiState
 import org.sensorhub.android.ui.features.client.data.TrackRepository
-import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
-import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
-import org.sensorhub.android.ui.features.servers.data.requireHttpsUrl
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.nodes.servers.data.requireHttpsUrl
 import org.sensorhub.android.UnsafeTls
 import org.sensorhub.android.ui.features.client.visualizations.VideoStream
 import java.util.concurrent.ConcurrentHashMap

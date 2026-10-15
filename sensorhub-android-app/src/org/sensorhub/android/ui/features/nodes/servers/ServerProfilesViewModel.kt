@@ -1,12 +1,12 @@
-package org.sensorhub.android.ui.features.servers
+package org.sensorhub.android.ui.features.nodes.servers
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
-import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileRepository
 
 class ServerProfilesViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = ServerProfileRepository.getInstance(application)
