@@ -25,6 +25,7 @@ data class RemoteNodeState(
     val profileId: String,
     val name: String,
     val endpointUrl: String,
+    val enabled: Boolean = true,
     val loading: Boolean = false,
     val error: String? = null,
     val systems: List<RemoteSystem> = emptyList(),

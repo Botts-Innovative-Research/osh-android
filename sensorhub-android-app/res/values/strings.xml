@@ -626,6 +626,10 @@
     <string name="client_discovering_systems">Discovering systems</string>
     <string name="client_tap_to_discover">Tap to discover systems</string>
     <string name="client_systems_discovered">%1$d systems discovered</string>
+    <string name="client_node_disabled">Disabled</string>
+    <string name="client_systems_title">Systems</string>
+    <string name="client_no_systems">No systems found for this node.</string>
+    <string name="client_retry">Retry</string>
     <string name="client_datastream_count">%1$d datastreams</string>
     <string name="content_desc_edit_server">Edit %1$s</string>
     <string name="client_selected_name">Select node(s) to fetch system(s) from</string>

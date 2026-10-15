@@ -3,60 +3,78 @@ package org.sensorhub.android.ui.features.client
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.features.client.data.RemoteNodeState
-import org.sensorhub.android.ui.features.client.data.RemoteSystem
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
-import org.sensorhub.android.ui.components.OSHDropDown
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
-import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
+import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OshDimensions
 import org.sensorhub.android.ui.theme.OshSpacing
 
 @Composable
 fun OshClientScreen(
     onNavigateToNodeManager: () -> Unit,
-    onOpenSystem: (profileId: String, systemId: String) -> Unit,
+    onNavigateToSystemsScreen: (profileId: String) -> Unit,
     viewModel: OshClientViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
     val nodes by viewModel.nodes.collectAsStateWithLifecycle()
-    val visibleProfileIds by viewModel.visibleProfileIds.collectAsStateWithLifecycle()
+    OshClientContent(
+        nodes = nodes,
+        onNavigateToNodeManager = onNavigateToNodeManager,
+        onRefreshProfiles = viewModel::refreshProfiles,
+        onNavigateToSystemsScreen = onNavigateToSystemsScreen,
+        onBackClick = onBackClick,
+    )
+}
+
+@Composable
+private fun OshClientContent(
+    nodes: List<RemoteNodeState>,
+    onNavigateToNodeManager: () -> Unit,
+    onRefreshProfiles: () -> Unit,
+    onNavigateToSystemsScreen: (profileId: String) -> Unit,
+    onBackClick: () -> Unit,
+) {
     Scaffold(
         topBar = {
             OSHTopAppBarWithBack(
                 title = stringResource(R.string.visualizations_title),
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                actions = {
+                    IconButton(onClick = onRefreshProfiles) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.content_desc_refresh_profiles)
+                        )
+                    }
+                }
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -94,73 +112,18 @@ fun OshClientScreen(
                     .padding(padding),
                 contentPadding = PaddingValues(vertical = OshSpacing.sm),
             ) {
-                item(key = "server-selector") {
-                    OSHCard(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = OshDimensions.screenHorizontal)
-                    ) {
-                        Column(Modifier.padding(OshSpacing.md)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    stringResource(R.string.client_servers),
-                                    style = MaterialTheme.typography.titleSmall
-                                )
-                                IconButton(onClick = viewModel::refreshProfiles) {
-                                    Icon(
-                                        Icons.Default.Refresh,
-                                        contentDescription = stringResource(R.string.content_desc_refresh_profiles)
-                                    )
-                                }
-                            }
-                            OSHDropDown(
-                                summary = stringResource(R.string.client_select_node),
-                                items = nodes,
-                                selectedIds = visibleProfileIds,
-                                itemId = { it.profileId },
-                                itemLabel = { it.name },
-                                itemSummary = { it.endpointUrl },
-                                onSelectionChange = viewModel::setProfileVisible,
-                                emptyText = stringResource(R.string.client_no_configured_nodes),
-                            )
-//                            Text(
-//                                text = stringResource(R.string.client_select_node),
-//                                style = MaterialTheme.typography.bodyLarge,
-//                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                                modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-//                            )
-                        }
-                    }
+                item(key = "remote-nodes-heading") {
+                    Text(
+                        text = stringResource(R.string.remote_nodes),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(horizontal = OshDimensions.screenHorizontal, vertical = OshSpacing.sm),
+                    )
                 }
-                val visibleNodes = nodes.filter { it.profileId in visibleProfileIds }
-                if (visibleNodes.isEmpty()) {
-                    item {
-                        Text(
-                            stringResource(R.string.client_select_node),
-                            Modifier.padding(24.dp)
-                        )
-                    }
-                }
-                visibleNodes.forEach { node ->
+                nodes.forEach { node ->
                     item(key = "server:${node.profileId}") {
-                        ServerSectionHeader(
+                        ClientNodeCard(
                             node = node,
-                            onDiscover = { viewModel.discover(node.profileId) },
-                            hasSystems = node.systems.isNotEmpty(),
-                        )
-                    }
-                    itemsIndexed(
-                        items = node.systems,
-                        key = { _, system -> "${node.profileId}:${system.id}" },
-                    ) { index, system ->
-                        ServerSystemRow(
-                            system = system,
-                            isLastInSection = index == node.systems.lastIndex,
-                            onClick = { onOpenSystem(node.profileId, system.id) },
+                            onClick = { onNavigateToSystemsScreen(node.profileId) },
                         )
                     }
                 }
@@ -169,23 +132,53 @@ fun OshClientScreen(
     }
 }
 
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
-private fun ServerSectionHeader(
+private fun OshClientScreenPreview() {
+    val nodes = listOf(
+        RemoteNodeState(
+            profileId = "campus",
+            name = "Campus Node",
+            endpointUrl = "https://osh.example.org",
+        ),
+        RemoteNodeState(
+            profileId = "field",
+            name = "Field Node",
+            endpointUrl = "https://field.osh.example.org",
+            loading = true,
+        ),
+        RemoteNodeState(
+            profileId = "lab",
+            name = "Lab Node",
+            endpointUrl = "https://lab.osh.example.org",
+            error = "Unable to connect",
+        ),
+    )
+
+    OSHTheme {
+        OshClientContent(
+            nodes = nodes,
+            onNavigateToNodeManager = {},
+            onNavigateToSystemsScreen = {},
+            onRefreshProfiles = {},
+            onBackClick = {},
+        )
+    }
+}
+
+@Composable
+private fun ClientNodeCard(
     node: RemoteNodeState,
-    onDiscover: () -> Unit,
-    hasSystems: Boolean,
+    onClick: () -> Unit,
 ) {
-    Surface(
+    OSHCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp)),
-        shape = if (hasSystems) {
-            RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-        } else {
-            RoundedCornerShape(12.dp)
-        },
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        shadowElevation = 2.dp,
+            .padding(
+                horizontal = OshDimensions.screenHorizontal,
+                vertical = OshDimensions.cardOuterVertical,
+            )
+            .alpha(if (node.enabled) 1f else 0.55f),
     ) {
         Column {
             OSHClickableStatusRowWithIcon(
@@ -194,6 +187,7 @@ private fun ServerSectionHeader(
                 contentDescription = stringResource(R.string.content_desc_server),
                 subtitle = node.endpointUrl,
                 summary = when {
+                    !node.enabled -> stringResource(R.string.client_node_disabled)
                     node.loading -> stringResource(R.string.client_discovering_systems)
                     node.error != null -> node.error
                     node.systems.isEmpty() -> stringResource(R.string.client_tap_to_discover)
@@ -205,50 +199,13 @@ private fun ServerSectionHeader(
                     node.systems.isNotEmpty() -> "started"
                     else -> "unknown"
                 },
-                onClick = if (node.loading) null else onDiscover,
+                onClick = if (node.loading) null else onClick,
             )
-            if (node.loading) CircularProgressIndicator(
-                Modifier.padding(
-                    start = 52.dp,
-                    bottom = 16.dp
+            if (node.loading) {
+                CircularProgressIndicator(
+                    Modifier.padding(start = 52.dp, bottom = 16.dp)
                 )
-            )
-        }
-    }
-}
-
-@Composable
-private fun ServerSystemRow(
-    system: RemoteSystem,
-    isLastInSection: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = if (isLastInSection) 8.dp else 0.dp,
-            ),
-        shape = if (isLastInSection) {
-            RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-        } else {
-            RectangleShape
-        },
-        color = MaterialTheme.colorScheme.secondaryContainer,
-    ) {
-        Column {
-            HorizontalDivider()
-            OSHClickableStatusRowWithIcon(
-                title = system.name,
-                imageVector = Icons.Filled.Sensors,
-                contentDescription = stringResource(R.string.content_desc_system),
-                subtitle = system.uid,
-                summary = stringResource(R.string.client_datastream_count, system.visualizations.size),
-                status = system.status,
-                onClick = onClick,
-            )
+            }
         }
     }
 }

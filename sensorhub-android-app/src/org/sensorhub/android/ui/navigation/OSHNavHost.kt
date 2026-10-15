@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,6 +17,7 @@ import org.sensorhub.android.ui.SensorHubViewModel
 import org.sensorhub.android.ui.features.client.visualizations.FullscreenMap
 import org.sensorhub.android.ui.features.client.OshClientScreen
 import org.sensorhub.android.ui.features.client.OshClientViewModel
+import org.sensorhub.android.ui.features.client.NodeSystemsScreen
 import org.sensorhub.android.ui.features.client.SystemDetailRoute
 import org.sensorhub.android.ui.features.dashboard.DashboardRoute
 import org.sensorhub.android.ui.features.settings.help.FaqItem
@@ -96,8 +98,23 @@ fun OSHNavHost(
         composable(Screen.Client.route) {
             OshClientScreen(
                 onNavigateToNodeManager = { navController.navigate(Screen.ServerProfiles.route) { launchSingleTop = true } },
-                onOpenSystem = { profileId, systemId ->
-                    navController.navigate(Screen.SystemDetail.createRoute(profileId, systemId))
+                onNavigateToSystemsScreen = { profileId ->
+                    navController.navigate(Screen.NodeSystems.createRoute(profileId))
+                },
+                viewModel = clientViewModel,
+                onBackClick = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Screen.NodeSystems.route,
+            arguments = listOf(navArgument("profileId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getString("profileId").orEmpty()
+            NodeSystemsScreen(
+                profileId = profileId,
+                onOpenSystem = { selectedProfileId, systemId ->
+                    val destinationProfileId = selectedProfileId.ifBlank { profileId }
+                    navController.navigate(Screen.SystemDetail.createRoute(destinationProfileId, systemId))
                 },
                 viewModel = clientViewModel,
                 onBackClick = { navController.popBackStack() },
