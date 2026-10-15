@@ -1,10 +1,13 @@
 package org.sensorhub.android.ui.features.client.visualizations
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,25 +22,30 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ControlCamera
+import androidx.compose.material.icons.filled.Gamepad
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,6 +72,8 @@ fun PtzCommandCard(
     var pan by rememberSaveable(controlStream.controlStreamId) { mutableFloatStateOf(panRange.initialValue()) }
     var tilt by rememberSaveable(controlStream.controlStreamId) { mutableFloatStateOf(tiltRange.initialValue()) }
     var zoom by rememberSaveable(controlStream.controlStreamId) { mutableFloatStateOf(zoomRange.initialValue()) }
+    var relativeExpanded by rememberSaveable(controlStream.controlStreamId) { mutableStateOf(true) }
+    var absoluteExpanded by rememberSaveable(controlStream.controlStreamId) { mutableStateOf(true) }
 
     OSHCard(
         Modifier
@@ -76,64 +86,61 @@ fun PtzCommandCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                StatusDot("started")
+                Icon(
+                    Icons.Default.ControlCamera,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.width(OshDimensions.titleGap))
                 Text(
                     stringResource(R.string.system_detail_ptz_controls),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
-                Icon(
-                    Icons.Filled.ControlCamera,
-                    stringResource(R.string.system_detail_ptz_control)
-                )
+                StatusDot("started")
             }
             if (controlStream.supportsRelativePan || controlStream.supportsRelativeTilt || controlStream.supportsRelativeZoom) {
-                RelativePtzControls(
-                    controlStream,
-                    onPtz
-                )
+                PtzSection(
+                    title = stringResource(R.string.system_detail_relative_controls),
+                    expanded = relativeExpanded,
+                    Icons.Default.Gamepad,
+                    onExpandedChange = { relativeExpanded = it },
+                ) {
+                    RelativePtzControls(controlStream, onPtz)
+                }
             }
             if (panRange != null || tiltRange != null || zoomRange != null) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = OshDimensions.contentGap)
-                        .clip(OSHShapes.medium)
+                PtzSection(
+                    title = stringResource(R.string.system_detail_absolute_position),
+                    expanded = absoluteExpanded,
+                    Icons.Filled.Tune,
+                    onExpandedChange = { absoluteExpanded = it },
                 ) {
-                    Column(
-                        Modifier.padding(OshDimensions.compactGap)
-                    ) {
-                        Text(
-                            stringResource(R.string.system_detail_absolute_position),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        panRange?.let {
-                            AbsolutePtzSlider(
-                                stringResource(R.string.system_detail_pan),
-                                pan,
-                                it
-                            ) {
-                                pan = it; onAbsolutePtz("pan", it.toDouble())
-                            }
+                    panRange?.let {
+                        AbsolutePtzSlider(
+                            stringResource(R.string.system_detail_pan),
+                            pan,
+                            it
+                        ) {
+                            pan = it; onAbsolutePtz("pan", it.toDouble())
                         }
-                        tiltRange?.let {
-                            AbsolutePtzSlider(
-                                stringResource(R.string.system_detail_tilt),
-                                tilt,
-                                it
-                            ) {
-                                tilt = it; onAbsolutePtz("tilt", it.toDouble())
-                            }
+                    }
+                    tiltRange?.let {
+                        AbsolutePtzSlider(
+                            stringResource(R.string.system_detail_tilt),
+                            tilt,
+                            it
+                        ) {
+                            tilt = it; onAbsolutePtz("tilt", it.toDouble())
                         }
-                        zoomRange?.let {
-                            AbsolutePtzSlider(
+                    }
+                    zoomRange?.let {
+                        AbsolutePtzSlider(
                             stringResource(R.string.system_detail_zoom),
                             zoom,
                             it
-                            ) {
-                                zoom = it; onAbsolutePtz("zoom", it.toDouble())
-                            }
+                        ) {
+                            zoom = it; onAbsolutePtz("zoom", it.toDouble())
                         }
                     }
                 }
@@ -144,17 +151,11 @@ fun PtzCommandCard(
 
 @Composable
 private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand) -> Unit) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = OshDimensions.contentGap)
-            .clip(OSHShapes.medium)
+    Column(
+        Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            Modifier.padding(OshDimensions.compactGap),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row {
+        Row {
                 Spacer(Modifier.size(OshDimensions.controlButtonSize))
                 PtzButton(
                     Icons.Default.KeyboardArrowUp,
@@ -166,8 +167,8 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                 }
                 Spacer(Modifier.size(OshDimensions.controlButtonSize))
             }
-            Spacer(Modifier.size(OshDimensions.compactGap))
-            Row {
+        Spacer(Modifier.size(OshDimensions.compactGap))
+        Row {
                 PtzButton(
                     Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     stringResource(R.string.system_detail_pan_left),
@@ -177,8 +178,8 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                 Spacer(Modifier.size(OshDimensions.compactGap))
                 PtzButton(
                     Icons.Default.Home,
-                    stringResource(R.string.system_detail_pan_right),
-                    stream.supports(PtzCommand.PAN_RIGHT),
+                    stringResource(R.string.system_detail_home),
+                    true,
                     size = OshDimensions.controlButtonSize
                 ) { onPtz(PtzCommand.PAN_RIGHT) }
                 Spacer(Modifier.size(OshDimensions.compactGap))
@@ -189,8 +190,8 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                     size = OshDimensions.controlButtonSize
                 ) { onPtz(PtzCommand.PAN_RIGHT) }
             }
-            Spacer(Modifier.size(OshDimensions.compactGap))
-            Row {
+        Spacer(Modifier.size(OshDimensions.compactGap))
+        Row {
                 Box(Modifier.padding(top = 10.dp)) {
                     PtzButton(
                         Icons.Default.Remove,
@@ -222,8 +223,57 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                     }
                 }
             }
-        }
+    }
+}
 
+@Composable
+private fun PtzSection(
+    title: String,
+    expanded: Boolean,
+    imageVector: ImageVector,
+    onExpandedChange: (Boolean) -> Unit,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = OshDimensions.contentGap)
+            .clip(OSHShapes.medium)
+    ) {
+        Column(Modifier.padding(OshDimensions.compactGap)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = { onExpandedChange(!expanded) }) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = stringResource(
+                            if (expanded) R.string.ui_collapse else R.string.ui_expand
+                        ),
+                    )
+                }
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            ) {
+                Column(content = content)
+            }
+        }
     }
 }
 
@@ -245,11 +295,23 @@ private fun AbsolutePtzSlider(
             Text(
                 label,
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
              if (range.unit != null)
-                Text(sliderValue.format(range.unit))
+                 Surface(
+                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                     shape = MaterialTheme.shapes.small
+                 ) {
+                     Text(
+                         text = sliderValue.format(range.unit),
+                         style = MaterialTheme.typography.labelLarge,
+                         modifier = Modifier.padding(
+                             horizontal = 12.dp,
+                             vertical = 6.dp
+                         )
+                     )
+                 }
         }
         Slider(
             sliderValue,
@@ -282,17 +344,19 @@ private fun PtzButton(
     val colors = MaterialTheme.colorScheme
     val backgroundColor = when {
         !enabled -> colors.onSurface.copy(alpha = 0.12f)
-        pressed -> colors.primary.copy(alpha = 0.82f)
-        else -> colors.primary
+        pressed -> colors.secondaryContainer
+        else -> colors.surfaceContainerHigh
     }
-    val contentColor = if (enabled) colors.onPrimary else colors.onSurface.copy(alpha = 0.38f)
+
+    val contentColor = when {
+        !enabled -> colors.onSurface.copy(alpha = 0.38f)
+        else -> colors.onSurface
+    }
     Box(
         Modifier
             .size(size)
-            .shadow(OshDimensions.controlButtonElevation, CircleShape)
             .clip(CircleShape)
             .background(backgroundColor)
-            .border(1.dp, colors.outline.copy(alpha = 0.5f), CircleShape)
             .clickable(
                 onClick = onClick,
                 enabled = enabled,
@@ -302,7 +366,7 @@ private fun PtzButton(
     ) { Icon(icon, description, tint = contentColor) }
 }
 
-@Preview(showBackground = true)
+@Preview()
 @Composable
 private fun PtzCommandCardPreview() {
     val controlStream = RemoteControlStream(
