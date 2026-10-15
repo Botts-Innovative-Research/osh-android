@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,8 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,10 +48,6 @@ import org.sensorhub.android.ui.features.client.data.PtzAxisRange
 import org.sensorhub.android.ui.features.client.data.RemoteControlStream
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.StatusDot
-import org.sensorhub.android.ui.theme.ControlButtonBottom
-import org.sensorhub.android.ui.theme.ControlButtonPressed
-import org.sensorhub.android.ui.theme.ControlButtonTop
-import org.sensorhub.android.ui.theme.ControlSurface
 import org.sensorhub.android.ui.theme.OSHShapes
 import org.sensorhub.android.ui.theme.OSHTheme
 import org.sensorhub.android.ui.theme.OshDimensions
@@ -75,8 +70,12 @@ fun PtzCommandCard(
             .fillMaxWidth()
             .padding(horizontal = OshDimensions.screenHorizontal)
     ) {
-        Column(Modifier.padding(OshDimensions.cardContent)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            Modifier.padding(OshDimensions.cardContent)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 StatusDot("started")
                 Spacer(Modifier.width(OshDimensions.titleGap))
                 Text(
@@ -101,31 +100,41 @@ fun PtzCommandCard(
                         .fillMaxWidth()
                         .padding(top = OshDimensions.contentGap)
                         .clip(OSHShapes.medium)
-                        .background(ControlSurface)
                 ) {
-                    Column(Modifier.padding(OshDimensions.compactGap)) {
+                    Column(
+                        Modifier.padding(OshDimensions.compactGap)
+                    ) {
                         Text(
                             stringResource(R.string.system_detail_absolute_position),
                             style = MaterialTheme.typography.titleSmall
-                        ); panRange?.let {
-                        AxisSlider(
-                            stringResource(R.string.system_detail_pan),
-                            pan,
-                            it
-                        ) { pan = it; onAbsolutePtz("pan", it.toDouble()) }
-                    }; tiltRange?.let {
-                        AxisSlider(
-                            stringResource(R.string.system_detail_tilt),
-                            tilt,
-                            it
-                        ) { tilt = it; onAbsolutePtz("tilt", it.toDouble()) }
-                    }; zoomRange?.let {
-                        AxisSlider(
+                        )
+                        panRange?.let {
+                            AbsolutePtzSlider(
+                                stringResource(R.string.system_detail_pan),
+                                pan,
+                                it
+                            ) {
+                                pan = it; onAbsolutePtz("pan", it.toDouble())
+                            }
+                        }
+                        tiltRange?.let {
+                            AbsolutePtzSlider(
+                                stringResource(R.string.system_detail_tilt),
+                                tilt,
+                                it
+                            ) {
+                                tilt = it; onAbsolutePtz("tilt", it.toDouble())
+                            }
+                        }
+                        zoomRange?.let {
+                            AbsolutePtzSlider(
                             stringResource(R.string.system_detail_zoom),
                             zoom,
                             it
-                        ) { zoom = it; onAbsolutePtz("zoom", it.toDouble()) }
-                    }
+                            ) {
+                                zoom = it; onAbsolutePtz("zoom", it.toDouble())
+                            }
+                        }
                     }
                 }
             }
@@ -140,7 +149,6 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
             .fillMaxWidth()
             .padding(top = OshDimensions.contentGap)
             .clip(OSHShapes.medium)
-            .background(ControlSurface)
     ) {
         Column(
             Modifier.padding(OshDimensions.compactGap),
@@ -153,7 +161,9 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                     stringResource(R.string.system_detail_tilt_up),
                     stream.supports(PtzCommand.TILT_UP),
                     size = OshDimensions.controlButtonSize
-                ) { onPtz(PtzCommand.TILT_UP) }
+                ) {
+                    onPtz(PtzCommand.TILT_UP)
+                }
                 Spacer(Modifier.size(OshDimensions.controlButtonSize))
             }
             Spacer(Modifier.size(OshDimensions.compactGap))
@@ -187,7 +197,9 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                         stringResource(R.string.system_detail_zoom_out),
                         stream.supports(PtzCommand.ZOOM_OUT),
                         size = OshDimensions.controlButtonSizeSmall
-                    ) { onPtz(PtzCommand.ZOOM_OUT) }
+                    ) {
+                        onPtz(PtzCommand.ZOOM_OUT)
+                    }
                 }
                 Spacer(Modifier.size(OshDimensions.compactGap))
                 PtzButton(
@@ -195,7 +207,9 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                     stringResource(R.string.system_detail_tilt_down),
                     stream.supports(PtzCommand.TILT_DOWN),
                     size = OshDimensions.controlButtonSize
-                ) { onPtz(PtzCommand.TILT_DOWN) }
+                ) {
+                    onPtz(PtzCommand.TILT_DOWN)
+                }
                 Spacer(Modifier.size(OshDimensions.compactGap))
                 Box(Modifier.padding(top = 10.dp)) {
                     PtzButton(
@@ -203,7 +217,9 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
                         stringResource(R.string.system_detail_zoom_in),
                         stream.supports(PtzCommand.ZOOM_IN),
                         size = OshDimensions.controlButtonSizeSmall
-                    ) { onPtz(PtzCommand.ZOOM_IN) }
+                    ) {
+                        onPtz(PtzCommand.ZOOM_IN)
+                    }
                 }
             }
         }
@@ -212,27 +228,40 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
 }
 
 @Composable
-private fun AxisSlider(
+private fun AbsolutePtzSlider(
     label: String,
     value: Float,
     range: PtzAxisRange,
     committed: (Float) -> Unit
 ) {
-    var sliderValue by remember(label) { mutableFloatStateOf(value) }; Column(Modifier.padding(top = OshDimensions.contentGap)) {
+    var sliderValue by remember(label) { mutableFloatStateOf(value) }
+
+    Column(
+        Modifier.padding(top = OshDimensions.contentGap)
+    ) {
         Row(
             Modifier.fillMaxWidth()
         ) {
             Text(
                 label,
-                modifier = Modifier.weight(1f)
-            );
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
              if (range.unit != null)
                 Text(sliderValue.format(range.unit))
-        }; Slider(
-        sliderValue,
-        { sliderValue = it },
-        valueRange = range.minimum..range.maximum,
-        onValueChangeFinished = { committed(sliderValue) })
+        }
+        Slider(
+            sliderValue,
+            { sliderValue = it },
+            valueRange = range.minimum..range.maximum,
+            onValueChangeFinished = { committed(sliderValue) },
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.outline,
+            ),
+        )
     }
 }
 
@@ -250,30 +279,30 @@ private fun PtzButton(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val fill = if (pressed) Brush.linearGradient(
-        listOf(
-            ControlButtonPressed,
-            ControlButtonPressed
-        )
-    ) else
-        Brush.verticalGradient(listOf(ControlButtonTop, ControlButtonBottom))
+    val colors = MaterialTheme.colorScheme
+    val backgroundColor = when {
+        !enabled -> colors.onSurface.copy(alpha = 0.12f)
+        pressed -> colors.primary.copy(alpha = 0.82f)
+        else -> colors.primary
+    }
+    val contentColor = if (enabled) colors.onPrimary else colors.onSurface.copy(alpha = 0.38f)
     Box(
         Modifier
             .size(size)
             .shadow(OshDimensions.controlButtonElevation, CircleShape)
             .clip(CircleShape)
-            .background(fill)
-            .border(1.dp, Color.White.copy(alpha = .33f), CircleShape)
+            .background(backgroundColor)
+            .border(1.dp, colors.outline.copy(alpha = 0.5f), CircleShape)
             .clickable(
                 onClick = onClick,
                 enabled = enabled,
                 interactionSource = interaction,
                 indication = null
             ), contentAlignment = Alignment.Center
-    ) { Icon(icon, description) }
+    ) { Icon(icon, description, tint = contentColor) }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Preview(showBackground = true)
 @Composable
 private fun PtzCommandCardPreview() {
     val controlStream = RemoteControlStream(
