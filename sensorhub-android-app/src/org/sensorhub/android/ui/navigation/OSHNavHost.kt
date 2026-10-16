@@ -123,7 +123,12 @@ fun OSHNavHost(
                     profileId = profileId,
                     onOpenSystem = { selectedProfileId, systemId ->
                         val destinationProfileId = selectedProfileId.ifBlank { profileId }
-                        navController.navigate(Screen.SystemDetail.createRoute(destinationProfileId, systemId))
+                        navController.navigate(
+                            Screen.SystemDetail.createRoute(
+                                destinationProfileId,
+                                systemId
+                            )
+                        )
                     },
                     viewModel = clientViewModel,
                     onBackClick = { navController.popBackStack() },
