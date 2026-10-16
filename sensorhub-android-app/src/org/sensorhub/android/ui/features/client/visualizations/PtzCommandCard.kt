@@ -58,7 +58,7 @@ import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.StatusDot
 import org.sensorhub.android.ui.theme.OSHShapes
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun PtzCommandCard(
@@ -78,10 +78,10 @@ fun PtzCommandCard(
     OSHCard(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = OshDimensions.screenHorizontal)
+            .padding(horizontal = Dimensions.screenHorizontal)
     ) {
         Column(
-            Modifier.padding(OshDimensions.cardContent)
+            Modifier.padding(Dimensions.cardContent)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -91,7 +91,7 @@ fun PtzCommandCard(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.width(OshDimensions.titleGap))
+                Spacer(Modifier.width(Dimensions.titleGap))
                 Text(
                     stringResource(R.string.system_detail_ptz_controls),
                     style = MaterialTheme.typography.titleMedium,
@@ -156,68 +156,68 @@ private fun RelativePtzControls(stream: RemoteControlStream, onPtz: (PtzCommand)
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row {
-                Spacer(Modifier.size(OshDimensions.controlButtonSize))
+                Spacer(Modifier.size(Dimensions.controlButtonSize))
                 PtzButton(
                     Icons.Default.KeyboardArrowUp,
                     stringResource(R.string.system_detail_tilt_up),
                     stream.supports(PtzCommand.TILT_UP),
-                    size = OshDimensions.controlButtonSize
+                    size = Dimensions.controlButtonSize
                 ) {
                     onPtz(PtzCommand.TILT_UP)
                 }
-                Spacer(Modifier.size(OshDimensions.controlButtonSize))
+                Spacer(Modifier.size(Dimensions.controlButtonSize))
             }
-        Spacer(Modifier.size(OshDimensions.compactGap))
+        Spacer(Modifier.size(Dimensions.compactGap))
         Row {
                 PtzButton(
                     Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     stringResource(R.string.system_detail_pan_left),
                     stream.supports(PtzCommand.PAN_LEFT),
-                    size = OshDimensions.controlButtonSize
+                    size = Dimensions.controlButtonSize
                 ) { onPtz(PtzCommand.PAN_LEFT) }
-                Spacer(Modifier.size(OshDimensions.compactGap))
+                Spacer(Modifier.size(Dimensions.compactGap))
                 PtzButton(
                     Icons.Default.Home,
                     stringResource(R.string.system_detail_home),
                     true,
-                    size = OshDimensions.controlButtonSize
+                    size = Dimensions.controlButtonSize
                 ) { onPtz(PtzCommand.PAN_RIGHT) }
-                Spacer(Modifier.size(OshDimensions.compactGap))
+                Spacer(Modifier.size(Dimensions.compactGap))
                 PtzButton(
                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     stringResource(R.string.system_detail_pan_right),
                     stream.supports(PtzCommand.PAN_RIGHT),
-                    size = OshDimensions.controlButtonSize
+                    size = Dimensions.controlButtonSize
                 ) { onPtz(PtzCommand.PAN_RIGHT) }
             }
-        Spacer(Modifier.size(OshDimensions.compactGap))
+        Spacer(Modifier.size(Dimensions.compactGap))
         Row {
                 Box(Modifier.padding(top = 10.dp)) {
                     PtzButton(
                         Icons.Default.Remove,
                         stringResource(R.string.system_detail_zoom_out),
                         stream.supports(PtzCommand.ZOOM_OUT),
-                        size = OshDimensions.controlButtonSizeSmall
+                        size = Dimensions.controlButtonSizeSmall
                     ) {
                         onPtz(PtzCommand.ZOOM_OUT)
                     }
                 }
-                Spacer(Modifier.size(OshDimensions.compactGap))
+                Spacer(Modifier.size(Dimensions.compactGap))
                 PtzButton(
                     Icons.Default.KeyboardArrowDown,
                     stringResource(R.string.system_detail_tilt_down),
                     stream.supports(PtzCommand.TILT_DOWN),
-                    size = OshDimensions.controlButtonSize
+                    size = Dimensions.controlButtonSize
                 ) {
                     onPtz(PtzCommand.TILT_DOWN)
                 }
-                Spacer(Modifier.size(OshDimensions.compactGap))
+                Spacer(Modifier.size(Dimensions.compactGap))
                 Box(Modifier.padding(top = 10.dp)) {
                     PtzButton(
                         Icons.Default.Add,
                         stringResource(R.string.system_detail_zoom_in),
                         stream.supports(PtzCommand.ZOOM_IN),
-                        size = OshDimensions.controlButtonSizeSmall
+                        size = Dimensions.controlButtonSizeSmall
                     ) {
                         onPtz(PtzCommand.ZOOM_IN)
                     }
@@ -237,10 +237,10 @@ private fun PtzSection(
     Box(
         Modifier
             .fillMaxWidth()
-            .padding(top = OshDimensions.contentGap)
+            .padding(top = Dimensions.contentGap)
             .clip(OSHShapes.medium)
     ) {
-        Column(Modifier.padding(OshDimensions.compactGap)) {
+        Column(Modifier.padding(Dimensions.compactGap)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -287,7 +287,7 @@ private fun AbsolutePtzSlider(
     var sliderValue by remember(label) { mutableFloatStateOf(value) }
 
     Column(
-        Modifier.padding(top = OshDimensions.contentGap)
+        Modifier.padding(top = Dimensions.contentGap)
     ) {
         Row(
             Modifier.fillMaxWidth()

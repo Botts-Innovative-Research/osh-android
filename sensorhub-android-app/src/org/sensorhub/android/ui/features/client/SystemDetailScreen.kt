@@ -33,7 +33,7 @@ import org.sensorhub.android.ui.features.client.visualizations.OtherStreamCard
 import org.sensorhub.android.ui.features.client.visualizations.PtzCommandCard
 import org.sensorhub.android.ui.features.client.visualizations.VideoStream
 import org.sensorhub.android.ui.features.client.visualizations.VideoStreamCard
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun SystemDetailRoute(
@@ -108,8 +108,8 @@ fun SystemDetailRoute(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(vertical = OshDimensions.cardOuterVertical),
-                verticalArrangement = Arrangement.spacedBy(OshDimensions.cardOuterVertical)
+                contentPadding = PaddingValues(vertical = Dimensions.cardOuterVertical),
+                verticalArrangement = Arrangement.spacedBy(Dimensions.cardOuterVertical)
             ) {
                 items(videoCards, key = { it.streamId }) { card ->
                     val visualization = RemoteVisualization(
@@ -161,7 +161,7 @@ fun SystemDetailRoute(
                     Text(
                         stringResource(R.string.system_detail_no_datastreams),
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(OshDimensions.cardContent)
+                        modifier = Modifier.padding(Dimensions.cardContent)
                     )
                 }
                 system.ptz?.let { ptz ->

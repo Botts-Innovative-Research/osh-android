@@ -31,7 +31,7 @@ import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun SettingsScreen(
@@ -96,7 +96,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OSHCard(
                 Modifier
-                    .padding(horizontal = OshDimensions.screenHorizontal)
+                    .padding(horizontal = Dimensions.screenHorizontal)
             ) {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_theme),
@@ -114,7 +114,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OSHCard(
                 Modifier
-                    .padding(horizontal = OshDimensions.screenHorizontal)
+                    .padding(horizontal = Dimensions.screenHorizontal)
             ) {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_help_faq),

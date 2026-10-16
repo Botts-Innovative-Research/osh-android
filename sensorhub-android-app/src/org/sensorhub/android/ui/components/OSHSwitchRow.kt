@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.Dimensions
+import org.sensorhub.android.ui.theme.Spacing
 
 @Composable
 fun OSHSwitchRow (
@@ -29,15 +31,15 @@ fun OSHSwitchRow (
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .padding(16.dp)
+            .heightIn(min = Dimensions.buttonHeightLg)
+            .padding(Spacing.lg)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Spacing.xs))
             if (subtitle.isNotBlank()) {
                 Text(
                     text = subtitle,
