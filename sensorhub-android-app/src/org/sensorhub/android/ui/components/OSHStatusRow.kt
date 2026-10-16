@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.theme.Spacing
 
 @Composable
 fun OSHStatusRow(
@@ -27,18 +28,18 @@ fun OSHStatusRow(
         modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         StatusDot(status = status)
-        Spacer(modifier = Modifier.width(15.dp))
+        Spacer(modifier = Modifier.width(Spacing.lg))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Spacing.xs))
             if (subtitle.isNotBlank()) {
                 Text(
                     text = subtitle,

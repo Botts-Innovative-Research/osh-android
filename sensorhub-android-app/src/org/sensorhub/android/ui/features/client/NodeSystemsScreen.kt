@@ -36,8 +36,8 @@ import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.StatusDot
 import org.sensorhub.android.ui.features.client.data.RemoteNodeState
 import org.sensorhub.android.ui.features.client.data.RemoteSystem
-import org.sensorhub.android.ui.theme.OshDimensions
-import org.sensorhub.android.ui.theme.OshSpacing
+import org.sensorhub.android.ui.theme.Dimensions
+import org.sensorhub.android.ui.theme.Spacing
 
 @Composable
 fun NodeSystemsScreen(
@@ -92,7 +92,7 @@ private fun MissingNodeContent(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(OshSpacing.lg),
+            .padding(Spacing.lg),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -112,7 +112,7 @@ private fun NodeSystemsContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = OshSpacing.sm),
+        contentPadding = PaddingValues(vertical = Spacing.sm),
     ) {
         item(key = "node-status") {
             SelectedNodeHeader(node = node)
@@ -150,8 +150,8 @@ private fun SelectedNodeHeader(node: RemoteNodeState) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                horizontal = OshDimensions.screenHorizontal,
-                vertical = OshSpacing.md,
+                horizontal = Dimensions.screenHorizontal,
+                vertical = Spacing.md,
             ),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -159,7 +159,7 @@ private fun SelectedNodeHeader(node: RemoteNodeState) {
                 imageVector = Icons.Filled.Cloud,
                 contentDescription = stringResource(R.string.content_desc_server),
             )
-            Spacer(Modifier.width(OshSpacing.md))
+            Spacer(Modifier.width(Spacing.md))
             Column {
                 Text(text = node.name, style = MaterialTheme.typography.titleMedium)
                 Text(
@@ -170,7 +170,7 @@ private fun SelectedNodeHeader(node: RemoteNodeState) {
             }
         }
         Row(
-            modifier = Modifier.padding(top = OshSpacing.sm),
+            modifier = Modifier.padding(top = Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             StatusDot(
@@ -180,7 +180,7 @@ private fun SelectedNodeHeader(node: RemoteNodeState) {
                     else -> "started"
                 }
             )
-            Spacer(Modifier.width(OshSpacing.sm))
+            Spacer(Modifier.width(Spacing.sm))
             Text(
                 text = when {
                     node.loading -> stringResource(R.string.client_discovering_systems)
@@ -201,13 +201,13 @@ private fun LoadingContent() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(OshSpacing.xl),
+            .padding(Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         CircularProgressIndicator()
         Text(
             text = stringResource(R.string.client_discovering_systems),
-            modifier = Modifier.padding(top = OshSpacing.md),
+            modifier = Modifier.padding(top = Spacing.md),
             style = MaterialTheme.typography.bodyLarge,
         )
     }
@@ -218,13 +218,13 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(OshSpacing.lg),
+            .padding(Spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = message, color = MaterialTheme.colorScheme.error)
         Button(
             onClick = onRetry,
-            modifier = Modifier.padding(top = OshSpacing.md),
+            modifier = Modifier.padding(top = Spacing.md),
         ) {
             Text(stringResource(R.string.client_retry))
         }
@@ -237,7 +237,7 @@ private fun EmptySystemsContent() {
         text = stringResource(R.string.client_no_systems),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(OshSpacing.lg),
+        modifier = Modifier.padding(Spacing.lg),
     )
 }
 
@@ -247,8 +247,8 @@ private fun SystemCard(system: RemoteSystem, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                horizontal = OshDimensions.screenHorizontal,
-                vertical = OshDimensions.cardOuterVertical,
+                horizontal = Dimensions.screenHorizontal,
+                vertical = Dimensions.cardOuterVertical,
             ),
     ) {
         OSHClickableStatusRowWithIcon(

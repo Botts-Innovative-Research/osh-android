@@ -27,7 +27,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
+import org.sensorhub.android.ui.theme.Elevation
+import org.sensorhub.android.ui.theme.Spacing
 
 @Composable
 fun OSHCard(
@@ -42,7 +44,7 @@ fun OSHCard(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp,
+            defaultElevation = Elevation.none,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         content = content
@@ -58,14 +60,14 @@ fun OSHSensorCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = OshDimensions.cardOuterVertical),
+            .padding(vertical = Dimensions.cardOuterVertical),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp,
+            defaultElevation = Elevation.none,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         content = content
@@ -79,7 +81,7 @@ fun OSHClickableCardWithIcon(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    OSHCard(modifier = modifier.fillMaxWidth().padding(horizontal = OshDimensions.screenHorizontal, vertical = OshDimensions.cardOuterVertical)) {
+    OSHCard(modifier = modifier.fillMaxWidth().padding(horizontal = Dimensions.screenHorizontal, vertical = Dimensions.cardOuterVertical)) {
         OSHClickableRowWithIcon(
             title = title,
             imageVector = imageVector,
@@ -107,7 +109,7 @@ fun OSHActionCard(
     OSHCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = OshDimensions.screenHorizontal, vertical = OshDimensions.cardOuterVertical)
+            .padding(horizontal = Dimensions.screenHorizontal, vertical = Dimensions.cardOuterVertical)
             .then(
             if (onLongClick != null) {
                 Modifier.combinedClickable(
@@ -159,15 +161,15 @@ fun OSHEditActionCard(
     OSHCard(
         modifier = cardModifier
             .fillMaxWidth()
-            .padding(horizontal = OshDimensions.screenHorizontal, vertical = OshDimensions.cardOuterVertical)
+            .padding(horizontal = Dimensions.screenHorizontal, vertical = Dimensions.cardOuterVertical)
 
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .padding(16.dp)
+                .heightIn(min = Dimensions.buttonHeightLg)
+                .padding(Spacing.lg)
         ) {
             Column(
                 modifier = Modifier.weight(1f)
@@ -178,7 +180,7 @@ fun OSHEditActionCard(
                 )
 
                 if (subtitle.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Spacing.xs))
 
                     Text(
                         text = subtitle,
@@ -243,7 +245,7 @@ private fun CardPreview() {
             OSHCard {
                 Text(
                     text = "Card content goes here",
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(Spacing.lg)
                 )
             }
         }

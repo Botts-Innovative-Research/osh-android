@@ -24,6 +24,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.Elevation
 import org.sensorhub.android.ui.theme.OverlayLight
 import org.sensorhub.android.R
 
@@ -60,7 +61,7 @@ fun Navbar(
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primary,
-        tonalElevation = 0.dp,
+        tonalElevation = Elevation.none,
     ) {
         navigationItems.forEach { item ->
         NavigationBarItem(

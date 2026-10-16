@@ -47,7 +47,7 @@ import org.sensorhub.android.ui.components.OSHTextInputDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithLogo
 import org.sensorhub.android.ui.components.OshStatusTone
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshSpacing
+import org.sensorhub.android.ui.theme.Spacing
 import org.sensorhub.api.module.ModuleEvent.ModuleState
 
 @Composable
@@ -123,11 +123,11 @@ fun DashboardScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(top = OshSpacing.md, bottom = OshSpacing.xs),
-            verticalArrangement = Arrangement.spacedBy(OshSpacing.md),
+            contentPadding = PaddingValues(top = Spacing.md, bottom = Spacing.xs),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
             item {
-                OSHCard(modifier = Modifier.fillMaxWidth().padding(horizontal = OshSpacing.md)) {
+                OSHCard(modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.md)) {
                     OSHStatusRow(
                         title = stringResource(R.string.ui_smarthub),
                         subtitle = state.runName.takeIf { running }.orEmpty(),
@@ -136,7 +136,7 @@ fun DashboardScreen(
                     )
                     if (running && state.serverStatuses.isNotEmpty()) {
                         HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = OshSpacing.md),
+                            modifier = Modifier.padding(horizontal = Spacing.md),
                             color = MaterialTheme.colorScheme.outlineVariant,
                         )
                         state.serverStatuses.forEach { server ->
@@ -176,14 +176,14 @@ fun DashboardScreen(
                     },
                     text = buttonText,
                     enabled = !busy,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = OshSpacing.md)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.md)
                 )
             }
             if (!running) {
                 item {
                     Text(
                         stringResource(R.string.sensors_live_start_run),
-                        modifier = Modifier.padding(horizontal = OshSpacing.md, vertical = OshSpacing.lg),
+                        modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.lg),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -191,13 +191,13 @@ fun DashboardScreen(
                 item {
                     Text(
                         stringResource(R.string.sensors_live_no_enabled),
-                        modifier = Modifier.padding(horizontal = OshSpacing.md, vertical = OshSpacing.lg),
+                        modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.lg),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
                 items(state.sensorCards, key = { "sensor:${it.id}" }) { sensor ->
-                    Box(Modifier.padding(horizontal = OshSpacing.md)) {
+                    Box(Modifier.padding(horizontal = Spacing.md)) {
                         SensorOutputCard(sensor)
                     }
                 }
@@ -208,11 +208,11 @@ fun DashboardScreen(
                     OSHCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = OshSpacing.md),
+                            .padding(horizontal = Spacing.md),
                     ) {
                         Column(
-                            modifier = Modifier.padding(OshSpacing.md),
-                            verticalArrangement = Arrangement.spacedBy(OshSpacing.sm),
+                            modifier = Modifier.padding(Spacing.md),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                         ) {
                             OSHStatusChip(
                                 label = stringResource(R.string.destination_error),

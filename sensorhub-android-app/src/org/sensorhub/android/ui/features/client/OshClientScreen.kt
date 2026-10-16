@@ -33,8 +33,8 @@ import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableStatusRowWithIcon
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshDimensions
-import org.sensorhub.android.ui.theme.OshSpacing
+import org.sensorhub.android.ui.theme.Dimensions
+import org.sensorhub.android.ui.theme.Spacing
 
 @Composable
 fun OshClientScreen(
@@ -83,7 +83,7 @@ private fun OshClientContent(
                 Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(OshSpacing.lg),
+                    .padding(Spacing.lg),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -95,11 +95,11 @@ private fun OshClientContent(
                 Text(
                     text = stringResource(R.string.client_empty),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = OshSpacing.md),
+                    modifier = Modifier.padding(top = Spacing.md),
                 )
                 OutlinedButton(
                     onClick = onNavigateToNodeManager,
-                    modifier = Modifier.padding(top = OshSpacing.md),
+                    modifier = Modifier.padding(top = Spacing.md),
                 ) {
                     Text(stringResource(R.string.node_manager_title))
                 }
@@ -109,13 +109,13 @@ private fun OshClientContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(vertical = OshSpacing.sm),
+                contentPadding = PaddingValues(vertical = Spacing.sm),
             ) {
                 item(key = "remote-nodes-heading") {
                     Text(
                         text = stringResource(R.string.remote_nodes),
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(horizontal = OshDimensions.screenHorizontal, vertical = OshSpacing.sm),
+                        modifier = Modifier.padding(horizontal = Dimensions.screenHorizontal, vertical = Spacing.sm),
                     )
                 }
                 nodes.forEach { node ->
@@ -174,8 +174,8 @@ private fun ClientNodeCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                horizontal = OshDimensions.screenHorizontal,
-                vertical = OshDimensions.cardOuterVertical,
+                horizontal = Dimensions.screenHorizontal,
+                vertical = Dimensions.cardOuterVertical,
             ),
     ) {
         Column {
