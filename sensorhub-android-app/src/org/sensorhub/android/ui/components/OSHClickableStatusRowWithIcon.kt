@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import org.sensorhub.android.ui.theme.Spacing
 
 
 @Composable
@@ -36,10 +37,10 @@ fun OSHClickableStatusRowWithIcon(
         modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-            .padding(16.dp)
+            .padding(Spacing.lg)
     ) {
         Icon(imageVector, contentDescription = contentDescription)
-        Spacer(modifier = Modifier.width(15.dp))
+        Spacer(modifier = Modifier.width(Spacing.lg))
 
 //        if (subtitle != null) {
             Column(modifier = Modifier.weight(1f)) {
@@ -48,19 +49,19 @@ fun OSHClickableStatusRowWithIcon(
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     StatusDot(status = status)
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(Spacing.md))
                     Text(
                         text = title,
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(Spacing.sm))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(Spacing.xs))
                 Text(
                     text = summary,
                     style = MaterialTheme.typography.bodySmall,

@@ -18,7 +18,7 @@ import org.sensorhub.android.ui.features.client.data.RemoteVisualization
 import org.sensorhub.android.ui.features.client.data.StreamStatus
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.StatusDot
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun OtherStreamCard(
@@ -29,11 +29,11 @@ fun OtherStreamCard(
     OSHCard(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = OshDimensions.screenHorizontal)
+            .padding(horizontal = Dimensions.screenHorizontal)
     ) {
-        Column(Modifier.padding(OshDimensions.cardContent)) {
+        Column(Modifier.padding(Dimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusDot(status.dotStatus()); Spacer(Modifier.width(OshDimensions.titleGap))
+                StatusDot(status.dotStatus()); Spacer(Modifier.width(Dimensions.titleGap))
                 Text(
                     visualization.name.ifBlank { stringResource(R.string.system_detail_datastream) },
                     style = MaterialTheme.typography.titleMedium,
@@ -44,14 +44,14 @@ fun OtherStreamCard(
                 status.message(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = OshDimensions.compactGap)
+                modifier = Modifier.padding(top = Dimensions.compactGap)
             )
             else {
                 values.toSortedMap().forEach { (field, value) ->
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .padding(top = OshDimensions.compactGap),
+                            .padding(top = Dimensions.compactGap),
                         verticalAlignment = Alignment.Top
                     ) {
                         Text(

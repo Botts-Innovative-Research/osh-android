@@ -26,7 +26,7 @@ import org.sensorhub.android.ui.components.OSHInputField
 import org.sensorhub.android.ui.components.OSHSwitchRow
 import org.sensorhub.android.ui.components.OSHTextInputDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun OnDeviceNodeScreen(
@@ -64,7 +64,7 @@ fun OnDeviceNodeScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(Modifier.height(16.dp))
-            OSHCard(Modifier.padding(horizontal = OshDimensions.screenHorizontal)) {
+            OSHCard(Modifier.padding(horizontal = Dimensions.screenHorizontal)) {
                 OSHInfoRow(
                     label = stringResource(R.string.device_name),
                     value = state.deviceName,
@@ -76,7 +76,7 @@ fun OnDeviceNodeScreen(
                 )
             }
             Spacer(Modifier.height(16.dp))
-            OSHCard(Modifier.padding(horizontal = OshDimensions.screenHorizontal)) {
+            OSHCard(Modifier.padding(horizontal = Dimensions.screenHorizontal)) {
                 OSHSwitchRow(
                     title = stringResource(R.string.enable_sos_service),
                     subtitle = stringResource(R.string.summary_sos),

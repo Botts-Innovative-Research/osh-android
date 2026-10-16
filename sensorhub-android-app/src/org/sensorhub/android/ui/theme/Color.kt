@@ -21,17 +21,17 @@ val TertiaryContainer = Color(0xFF4E1700)
 val OnTertiaryContainer = Color(0xFFFFCCBC)
 
 // Error
-val Error = Color(0xFFFFB4AB)
+val Error = Color(0xFFEC695B)
 val OnError = Color(0xFF690005)
 val ErrorContainer = Color(0xFF93000A)
 val OnErrorContainer = Color(0xFFFFDAD6)
 
 // Background & Surface
-val Background = Color(0xFF212121)
+val Background = Color(0xFF272727)
 val OnBackground = Color(0xFFE0E0E0)
 val Surface = Color(0xFF212121)
 val OnSurface = Color(0xFFE0E0E0)
-val SurfaceVariant = Color(0xFF3A3A3A)
+val SurfaceVariant = Color(0xFF454545)
 val OnSurfaceVariant = Color(0xFFFFFFFF)
 val Outline = Color(0xFF505050)
 

@@ -33,7 +33,7 @@ import org.sensorhub.android.ui.components.StatusDot
 import org.sensorhub.android.ui.theme.ControlOverlay
 import org.sensorhub.android.ui.theme.ControlSurface
 import org.sensorhub.android.ui.theme.OSHShapes
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun VideoStreamCard(
@@ -47,12 +47,12 @@ fun VideoStreamCard(
     OSHCard(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = OshDimensions.screenHorizontal)
+            .padding(horizontal = Dimensions.screenHorizontal)
     ) {
-        Column(Modifier.padding(OshDimensions.cardContent)) {
+        Column(Modifier.padding(Dimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(if (status == StreamStatus.RECEIVING) "started" else if (error != null) "error" else "unknown")
-                Spacer(Modifier.width(OshDimensions.titleGap))
+                Spacer(Modifier.width(Dimensions.titleGap))
                 Text(
                     visualization.name.ifBlank { video },
                     style = MaterialTheme.typography.titleMedium,
@@ -72,13 +72,13 @@ fun VideoStreamCard(
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = OshDimensions.compactGap),
+                modifier = Modifier.padding(top = Dimensions.compactGap),
                 maxLines = 1
             )
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = OshDimensions.contentGap)
+                    .padding(top = Dimensions.contentGap)
                     .aspectRatio(16f / 9f)
                     .clip(OSHShapes.medium)
                     .background(ControlSurface)
@@ -94,8 +94,8 @@ fun VideoStreamCard(
                     onPlayPause,
                     Modifier
                         .align(Alignment.BottomStart)
-                        .padding(OshDimensions.contentGap)
-                        .size(OshDimensions.controlButtonSize)
+                        .padding(Dimensions.contentGap)
+                        .size(Dimensions.controlButtonSize)
                         .clip(CircleShape)
                         .background(ControlOverlay)
                 ) {
