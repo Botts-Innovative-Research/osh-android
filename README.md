@@ -68,16 +68,18 @@ On macOS this is typically `~/Library/Android/sdk`. On Linux it is often `~/Andr
 
 #### Option B: Command Line
 ```bash
-./gradlew build -x test -x javadoc -x lintDebug
+./gradlew build
 ```
 
 The APK is output to `sensorhub-android-app/build/outputs/apk/debug/`.
 
+
 ### 4. Install on a Device
-Connect an Android device via USB with **USB debugging** enabled (Settings > Developer Options > USB Debugging), then run:
 
 ```bash
-./gradlew installDebug
+./gradlew :sensorhub-android-app:assembleDebug 
+
+adb install -r sensorhub-android-app/build/outputs/apk/debug/sensorhub-android-app-debug.apk
 ```
 
 ## Project Structure

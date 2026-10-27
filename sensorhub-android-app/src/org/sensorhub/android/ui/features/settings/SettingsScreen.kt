@@ -28,6 +28,7 @@ import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
+import org.sensorhub.android.ui.components.OSHInfoRow
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.OSHTheme
@@ -133,6 +134,16 @@ fun SettingsScreen(
                     imageVector = Icons.Default.Link,
                     contentDescription = stringResource(R.string.github_repo),
                     onClick = onNavigateToRepo
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            OSHCard(
+                Modifier
+                    .padding(horizontal = Dimensions.screenHorizontal)
+            ) {
+                OSHInfoRow(
+                    label = stringResource(R.string.title_version),
+                    value = state.appVersion
                 )
             }
         }
