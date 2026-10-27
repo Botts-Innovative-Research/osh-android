@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers
+package org.sensorhub.android.ui.features.nodes.servers
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,8 +43,8 @@ import org.sensorhub.android.ui.components.OSHTonalButton
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.components.OshStatusTone
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshDimensions
-import org.sensorhub.android.ui.theme.OshSpacing
+import org.sensorhub.android.ui.theme.Dimensions
+import org.sensorhub.android.ui.theme.Spacing
 
 @Composable
 fun ServerFormScreen(
@@ -72,13 +72,13 @@ fun ServerFormScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(OshSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             item {
                 OSHCard(
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = OshDimensions.screenHorizontal)
+                        .padding(horizontal = Dimensions.screenHorizontal)
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.ui_connection), style = MaterialTheme.typography.titleMedium)
@@ -128,7 +128,7 @@ fun ServerFormScreen(
                 OSHCard(
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = OshDimensions.screenHorizontal)
+                        .padding(horizontal = Dimensions.screenHorizontal)
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.ui_authentication), style = MaterialTheme.typography.titleMedium)
@@ -164,7 +164,7 @@ fun ServerFormScreen(
                     OSHCard(
                         Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = OshDimensions.screenHorizontal)
+                            .padding(horizontal = Dimensions.screenHorizontal)
                     ) {
                         OSHSwitchRow(
                             title = stringResource(R.string.ui_enable_oauth),

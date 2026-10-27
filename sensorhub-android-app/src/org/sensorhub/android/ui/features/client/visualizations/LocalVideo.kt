@@ -18,6 +18,7 @@ enum class PtzCommand(val item: String, val delta: Double) {
     TILT_DOWN("rtilt", -5.0),
     ZOOM_IN("rzoom", 1000.0),
     ZOOM_OUT("rzoom", -1000.0),
+//    HOME("home", 0)
 }
 
 class VideoStream(

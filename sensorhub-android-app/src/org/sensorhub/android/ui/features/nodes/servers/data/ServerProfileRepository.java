@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers.data;
+package org.sensorhub.android.ui.features.nodes.servers.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,7 +8,6 @@ import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.sensorhub.android.SecurePrefs;
 
 import java.util.ArrayList;

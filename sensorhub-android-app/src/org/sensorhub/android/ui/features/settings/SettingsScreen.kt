@@ -28,10 +28,11 @@ import org.sensorhub.android.R
 import org.sensorhub.android.ui.components.OSHAlertDialogWithoutDismiss
 import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.OSHClickableRowWithIcon
+import org.sensorhub.android.ui.components.OSHInfoRow
 import org.sensorhub.android.ui.components.OSHSingleChoiceDialog
 import org.sensorhub.android.ui.components.OSHTopAppBarWithBack
 import org.sensorhub.android.ui.theme.OSHTheme
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun SettingsScreen(
@@ -96,7 +97,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OSHCard(
                 Modifier
-                    .padding(horizontal = OshDimensions.screenHorizontal)
+                    .padding(horizontal = Dimensions.screenHorizontal)
             ) {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_theme),
@@ -114,7 +115,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OSHCard(
                 Modifier
-                    .padding(horizontal = OshDimensions.screenHorizontal)
+                    .padding(horizontal = Dimensions.screenHorizontal)
             ) {
                 OSHClickableRowWithIcon(
                     title = stringResource(R.string.title_help_faq),
@@ -133,6 +134,16 @@ fun SettingsScreen(
                     imageVector = Icons.Default.Link,
                     contentDescription = stringResource(R.string.github_repo),
                     onClick = onNavigateToRepo
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            OSHCard(
+                Modifier
+                    .padding(horizontal = Dimensions.screenHorizontal)
+            ) {
+                OSHInfoRow(
+                    label = stringResource(R.string.title_version),
+                    value = state.appVersion
                 )
             }
         }

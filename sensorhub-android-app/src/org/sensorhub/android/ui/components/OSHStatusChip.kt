@@ -18,7 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import org.sensorhub.android.ui.theme.LocalOshStatusColors
-import org.sensorhub.android.ui.theme.OshSpacing
+import org.sensorhub.android.ui.theme.Spacing
 
 enum class OshStatusTone {
     Success,
@@ -49,17 +49,17 @@ fun OSHStatusChip(
     ) {
         Row(
             modifier = Modifier
-                .heightIn(min = OshSpacing.lg)
-                .padding(horizontal = OshSpacing.sm, vertical = OshSpacing.xs),
+                .heightIn(min = Spacing.lg)
+                .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Spacer(
                 Modifier
-                    .size(OshSpacing.sm)
+                    .size(Spacing.sm)
                     .clip(CircleShape)
                     .background(colors.second),
             )
-            Spacer(Modifier.width(OshSpacing.xs))
+            Spacer(Modifier.width(Spacing.xs))
             Text(label, style = MaterialTheme.typography.labelMedium)
         }
     }

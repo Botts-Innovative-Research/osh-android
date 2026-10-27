@@ -2,6 +2,8 @@ package org.sensorhub.android.ui.features.client
 
 import android.app.Application
 import android.util.Base64
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -28,9 +30,9 @@ import org.sensorhub.android.ui.features.client.data.StreamCardState
 import org.sensorhub.android.ui.features.client.data.StreamStatus
 import org.sensorhub.android.ui.features.client.data.SystemDetailUiState
 import org.sensorhub.android.ui.features.client.data.TrackRepository
-import org.sensorhub.android.ui.features.servers.data.ServerProfileItem
-import org.sensorhub.android.ui.features.servers.data.ServerProfileRepository
-import org.sensorhub.android.ui.features.servers.data.requireHttpsUrl
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileItem
+import org.sensorhub.android.ui.features.nodes.servers.data.ServerProfileRepository
+import org.sensorhub.android.ui.features.nodes.servers.data.requireHttpsUrl
 import org.sensorhub.android.UnsafeTls
 import org.sensorhub.android.ui.features.client.visualizations.VideoStream
 import java.util.concurrent.ConcurrentHashMap
@@ -49,9 +51,6 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _nodes = MutableStateFlow<List<RemoteNodeState>>(emptyList())
     val nodes: StateFlow<List<RemoteNodeState>> = _nodes.asStateFlow()
-
-    private val _visibleProfileIds = MutableStateFlow<Set<String>>(emptySet())
-    val visibleProfileIds: StateFlow<Set<String>> = _visibleProfileIds.asStateFlow()
 
     private val _enabledLocations = MutableStateFlow<Set<String>>(emptySet())
     val enabledLocations: StateFlow<Set<String>> = _enabledLocations.asStateFlow()
@@ -129,28 +128,16 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
     fun refreshProfiles() {
         val configuredProfiles = profiles.all
         val currentNodes = _nodes.value.associateBy { it.profileId }
-        val configuredIds = configuredProfiles.mapTo(mutableSetOf()) { it.id }
-        val enabledIds = configuredProfiles
-            .filter { it.enabled }
-            .mapTo(mutableSetOf()) { it.id }
 
         _nodes.value = configuredProfiles.map { profile ->
             currentNodes[profile.id]?.copy(
                 name = profile.serverName,
                 endpointUrl = profile.endpointUrl,
-            ) ?: RemoteNodeState(profile.id, profile.serverName, profile.endpointUrl)
-        }
-        _visibleProfileIds.update { selected ->
-            (selected intersect configuredIds).ifEmpty { enabledIds }
-        }
-    }
-
-    fun setProfileVisible(profileId: String, visible: Boolean) {
-        _visibleProfileIds.update { selected ->
-            if (visible) selected + profileId else selected - profileId
-        }
-        if (visible && _nodes.value.firstOrNull { it.profileId == profileId }?.systems.isNullOrEmpty()) {
-            discover(profileId)
+            ) ?: RemoteNodeState(
+                profileId = profile.id,
+                name = profile.serverName,
+                endpointUrl = profile.endpointUrl,
+            )
         }
     }
 
@@ -551,13 +538,16 @@ class OshClientViewModel(application: Application) : AndroidViewModel(applicatio
         params: Map<String, Any>
     ) {
         val profile = profiles.getById(profileId) ?: return
+
         viewModelScope.launch {
             runCatching {
                 withContext(Dispatchers.IO) {
                     postCommand(controlStream.controlStreamId, params, profile)
                 }
             }
-                .onFailure { /* surface to a _commandError flow if you want UI feedback */ }
+                .onFailure { error ->
+                    Toast.makeText(getApplication<Application>(), "Command Failed: ${error.message ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 

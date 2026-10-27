@@ -1,4 +1,4 @@
-package org.sensorhub.android.ui.features.servers.data
+package org.sensorhub.android.ui.features.nodes.servers.data
 
 import org.sensorhub.android.R
 import com.google.gson.JsonParser

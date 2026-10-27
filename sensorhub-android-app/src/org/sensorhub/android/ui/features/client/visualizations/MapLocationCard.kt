@@ -42,7 +42,7 @@ import org.sensorhub.android.ui.components.OSHCard
 import org.sensorhub.android.ui.components.StatusDot
 import org.sensorhub.android.ui.theme.ControlSurface
 import org.sensorhub.android.ui.theme.OSHShapes
-import org.sensorhub.android.ui.theme.OshDimensions
+import org.sensorhub.android.ui.theme.Dimensions
 
 @Composable
 fun MapLocationCard(
@@ -55,12 +55,12 @@ fun MapLocationCard(
     OSHCard(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = OshDimensions.screenHorizontal)
+            .padding(horizontal = Dimensions.screenHorizontal)
     ) {
-        Column(Modifier.padding(OshDimensions.cardContent)) {
+        Column(Modifier.padding(Dimensions.cardContent)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(status.dotStatus());
-                Spacer(Modifier.width(OshDimensions.titleGap));
+                Spacer(Modifier.width(Dimensions.titleGap));
                 Text(
                     visualization.name.ifBlank { location },
                     style = MaterialTheme.typography.titleMedium,
@@ -71,7 +71,7 @@ fun MapLocationCard(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = OshDimensions.contentGap)
+                    .padding(top = Dimensions.contentGap)
                     .aspectRatio(16f / 9f)
                     .clip(OSHShapes.medium)
                     .background(ControlSurface)
@@ -94,7 +94,7 @@ fun MapLocationCard(
                 }
             }
             if (position != null) {
-                Spacer(Modifier.padding(top = OshDimensions.contentGap));
+                Spacer(Modifier.padding(top = Dimensions.contentGap));
                 Text(
                     "${position.first},${position.second}",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

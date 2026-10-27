@@ -23,6 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.sensorhub.android.R
 import org.sensorhub.android.ui.theme.OSHTheme
+import org.sensorhub.android.ui.theme.Dimensions
+import org.sensorhub.android.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,9 +40,9 @@ fun OSHTopAppBarWithLogo(
                 Image(
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = "OSH Logo",
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(Dimensions.iconLg)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(Spacing.sm))
                 Text(title)
             }
         },
