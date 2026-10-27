@@ -68,7 +68,7 @@ On macOS this is typically `~/Library/Android/sdk`. On Linux it is often `~/Andr
 
 #### Option B: Command Line
 ```bash
-./gradlew build
+./gradlew build -x test
 ```
 
 The APK is output to `sensorhub-android-app/build/outputs/apk/debug/`.
