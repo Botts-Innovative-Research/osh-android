@@ -46,7 +46,10 @@ class BluetoothScanner(private val context: Context) {
         } catch (e: IllegalArgumentException) {
             // Receiver wasn't registered
         }
-        btAdapter?.cancelDiscovery()
+        try {
+            btAdapter?.cancelDiscovery()
+        } catch (_: SecurityException) {
+        }
     }
 
 }
